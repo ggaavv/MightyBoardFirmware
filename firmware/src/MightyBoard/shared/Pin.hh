@@ -1,13 +1,16 @@
 #ifndef PIN_HH
 #define PIN_HH
 
-#include "AvrPort.hh"
+#include "LPCPort.hh"
 #include "Pin.hh"
+extern "C" {
+	#include "lpc17xx_gpio.h"
+}
 
 /// \ingroup HardwareLibraries
 class Pin {
 private:
-	port_base_t port_base;
+	uint8_t port_base;
 	bool is_null;
 	uint8_t pin_index;
 	uint8_t pin_mask;
@@ -15,14 +18,15 @@ private:
 
 public:
 	Pin();
-	Pin(const AvrPort& port_in, uint8_t pin_index_in);
+	Pin(const LPCPort& port_in, uint8_t pin_index_in);
 	Pin(const Pin& other_pin);
 	bool isNull() const;
 	void setDirection(bool out) const;
 	bool /*Pin::*/getValue() const {
 		if (is_null)
 			return false; // null pin is always low ... ?
-		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+//		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+		return ((FIO_ReadValue(port_base) & (1 << pin_index))?1:0);
 	};
 
 	void /*Pin::*/setValue(bool on) const {
@@ -31,9 +35,11 @@ public:
 		// uint8_t oldSREG = SREG;
 		// cli();
 		if (on) {
-			PORTx |= pin_mask;
+//			PORTx |= pin_mask;
+			GPIO_SetValue(port_base, (1 << pin_mask));
 		} else {
-			PORTx &= pin_mask_inverted;
+//			PORTx &= pin_mask_inverted;
+			GPIO_ClearValue(port_base, (1 << pin_mask_inverted));
 		}
 		// SREG = oldSREG;
 	};
@@ -43,7 +49,8 @@ public:
 		// 	return;
 		// uint8_t oldSREG = SREG;
 		// cli();
-		PORTx |= pin_mask;
+//		PORTx |= pin_mask;
+		GPIO_SetValue(port_base, (1 << pin_mask));
 		// SREG = oldSREG;
 	};
 
@@ -52,7 +59,8 @@ public:
 		// 	return;
 		// uint8_t oldSREG = SREG;
 		// cli();
-		PORTx &= pin_mask_inverted;
+//		PORTx &= pin_mask_inverted;
+		GPIO_ClearValue(port_base, (1 << pin_mask_inverted));
 		// SREG = oldSREG;
 	};
 	// currently not used:

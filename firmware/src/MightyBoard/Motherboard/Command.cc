@@ -21,17 +21,21 @@
 #include "Configuration.hh"
 #include "Timeout.hh"
 #include "CircularBuffer.hh"
-#include <util/atomic.h>
-#include <avr/eeprom.h>
+//#include <util/atomic.h>
+//#include <avr/eeprom.h>
 #include "EepromMap.hh"
 #include "SDCard.hh"
 #include "Pin.hh"
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "Piezo.hh"
 #include "RGB_LED.hh"
 #include "Interface.hh"
 #include "UtilityScripts.hh"
 #include "Planner.hh"
+
+extern "C" {
+	#include "lpc_types.h"
+}
 
 namespace command {
 
@@ -47,9 +51,9 @@ bool heat_shutdown = false;
 
 uint16_t getRemainingCapacity() {
 	uint16_t sz;
-	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+//	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		sz = command_buffer.getRemainingCapacity();
-	}
+//	}
 	return sz;
 }
 
@@ -552,12 +556,14 @@ void runCommandSlice() {
 					// then record it to the eeprom.
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
-							uint32_t position = steppers::getPosition()[i];
-							cli();
-							eeprom_write_block(&position, (void*) offset, 4);
-							sei();
+							eeprom_address(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + (i*4)) = steppers::getPosition()[i];
+//							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
+//							uint32_t position = steppers::getPosition()[i];
+//							cli();
+//							eeprom_write_block(&position, (void*) offset, 4);
+//							sei();
 						}
+						save_to_flash();
 					}
 				}
 			} else if (command == HOST_CMD_RECALL_HOME_POSITION) {
@@ -571,10 +577,11 @@ void runCommandSlice() {
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
-							cli();
-							eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
-							sei();
+							newPoint[i] = eeprom_address(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + (i*4));
+//							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
+//							cli();
+//							eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
+//							sei();
 						}
 					}
 
@@ -649,7 +656,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2){
 				command_buffer.pop(); // remove the command code
 				uint8_t options = pop8();
-				eeprom::factoryResetEEPROM();
+				eeprom::factoryResetEEPROM(1);
 				Motherboard::getBoard().reset(false);
 				}
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {

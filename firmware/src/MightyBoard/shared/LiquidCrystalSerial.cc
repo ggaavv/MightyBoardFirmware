@@ -1,9 +1,11 @@
 #include "LiquidCrystalSerial.hh"
 #include "Configuration.hh"
 
-#include <stdio.h>
-#include <string.h>
-#include <util/delay.h>
+//#include <stdio.h>
+//#include <string.h>
+//#include <util/delay.h>
+
+#include "Delay.hh"
 
 // When the display powers up, it is configured as follows:
 //

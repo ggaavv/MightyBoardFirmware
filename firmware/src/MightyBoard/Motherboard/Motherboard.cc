@@ -16,9 +16,9 @@
  */
 
 #include <stdint.h>
-#include <avr/interrupt.h>
-#include <avr/io.h>
-#include <util/atomic.h>
+//#include <avr/interrupt.h>
+//#include <avr/io.h>
+//#include <util/atomic.h>
 #include "Motherboard.hh"
 #include "Configuration.hh"
 #include "Steppers.hh"
@@ -32,12 +32,15 @@
 #include "Piezo.hh"
 #include "RGB_LED.hh"
 #include "Errors.hh"
-#include <avr/eeprom.h>
-#include <util/delay.h>
+//#include <avr/eeprom.h>
+//#include <util/delay.h>
 #include "Menu_locales.hh"
 
-
-
+extern "C" {
+	#include "lpc17xx_timer.h"
+	#include "LPC17xx.h"
+	#include "lpc17xx_nvic.h"
+}
 
 /// Instantiate static motherboard instance
 Motherboard Motherboard::motherboard;
@@ -88,52 +91,127 @@ void Motherboard::reset(bool hard_reset) {
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
-	TCCR0A = 0b01;//0b00000011; ////// default mode off / phase correct piezo   
-	TCCR0B = 0b01;//0b00001001; //default pre-scaler 1/1
-	OCR0A = 0;
-	OCR0B = 0;
-	TIMSK0 = 0b00000000; //interrupts default to off   
+//	TCCR0A = 0b01;//0b00000011; ////// default mode off / phase correct piezo   
+//	TCCR0B = 0b01;//0b00001001; //default pre-scaler 1/1
+//	OCR0A = 0;
+//	OCR0B = 0;
+//	TIMSK0 = 0b00000000; //interrupts default to off   
 	
 	// Reset and configure timer 3, the microsecond and stepper
 	// interrupt timer.
-	TCCR3A = 0x00;
-	TCCR3B = 0x09; // no prescaling
-	TCCR3C = 0x00;
-	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
-	TIMSK3 = 0x02; // turn on OCR3A match interrupt
+	TIM_TIMERCFG_Type TMR3_Cfg;
+	TIM_MATCHCFG_Type TMR3_Match;
+	/* On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).*/
+	/* Initialize timer 2, prescale count time of 100uS */
+	TMR3_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
+	TMR3_Cfg.PrescaleValue = 10000;  //reset to 10000
+	/* Use channel 1, MR1 */
+	TMR3_Match.MatchChannel = 1;
+	/* Enable interrupt when MR0 matches the value in TC register */
+	TMR3_Match.IntOnMatch = ENABLE;
+	/* Enable reset on MR0: TIMER will reset if MR0 matches it */
+	TMR3_Match.ResetOnMatch = TRUE;
+	/* Don't stop on MR0 if MR0 matches it*/
+	TMR3_Match.StopOnMatch = FALSE;
+	/* Do nothing for external output pin if match (see cmsis help, there are another options) */
+	TMR3_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
+	/* Set Match value, count value of 100 (10 * 10000uS = 100000us = 1s --> 10 Hz) */
+	TMR3_Match.MatchValue = 100;
+	/* Set configuration for Tim_config and Tim_MatchConfig */
+	TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TMR3_Cfg);
+	TIM_ConfigMatch(LPC_TIM3, &TMR3_Match);
+	// 0 top priority 32 lowest
+	NVIC_SetPriority(TIMER3_IRQn, 17);
+	NVIC_EnableIRQ(TIMER3_IRQn);
+	TIM_Cmd(LPC_TIM3,ENABLE);
+//	TCCR3A = 0x00;
+//	TCCR3B = 0x09; // no prescaling
+//	TCCR3C = 0x00;
+//	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
+//	TIMSK3 = 0x02; // turn on OCR3A match interrupt
 	
 	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
-	TCCR2A = 0x00;  
-	TCCR2B = 0x0A; /// prescaler at 1/8
-	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
-	OCR2B = 0;
-	TIMSK2 = 0x02; // turn on OCR5A match interrupt
+//	TCCR2A = 0x00;
+//	TCCR2B = 0x0A; /// prescaler at 1/8
+//	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
+//	OCR2B = 0;
+//	TIMSK2 = 0x02; // turn on OCR5A match interrupt
 
 	
-	// reset and configure timer 5 - not currently being used
+/*	// reset and configure timer 5 - not currently being used
 	TCCR5A = 0x00;  
 	TCCR5B = 0x09;
 	OCR5A =  0;
 	OCR5B = 0;
-	TIMSK5 = 0x0; 
+	TIMSK5 = 0x0; */
 	
 	// reset and configure timer 1, the Extruder Two PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	TCCR1A = 0b00000001;  
-	TCCR1B = 0b00001011; /// set to PWM mode
-	OCR1A = 0;
-	OCR1B = 0;
-	TIMSK1 = 0b00000000; // no interrupts needed
+	TIM_TIMERCFG_Type TMR1_Cfg;
+	TIM_MATCHCFG_Type TMR1_Match;
+	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
+	// Initialize timer 1, prescale count time of 100uS
+	TMR1_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
+	TMR1_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
+	// Use channel 1, MR1
+	TMR1_Match.MatchChannel = 0;
+	// Enable interrupt when MR0 matches the value in TC register
+	TMR1_Match.IntOnMatch = TRUE;
+	// Enable reset on MR0: TIMER will reset if MR0 matches it
+	TMR1_Match.ResetOnMatch = TRUE;
+	// Don't stop on MR0 if MR0 matches it
+	TMR1_Match.StopOnMatch = FALSE;
+	// Do nothing for external output pin if match (see cmsis help, there are another options)
+	TMR1_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
+	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
+	TMR1_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
+	// Set configuration for Tim_config and Tim_MatchConfig
+	TIM_Init(LPC_TIM1, TIM_TIMER_MODE, &TMR1_Cfg);
+	TIM_ConfigMatch(LPC_TIM1, &TMR1_Match);
+	// 0 top priority 32 lowest
+	NVIC_SetPriority(TIMER1_IRQn, 0);
+	NVIC_EnableIRQ(TIMER1_IRQn);
+	TIM_Cmd(LPC_TIM1,ENABLE);
+//	TCCR1A = 0b00000001;
+//	TCCR1B = 0b00001011; /// set to PWM mode
+//	OCR1A = 0;
+//	OCR1B = 0;
+//	TIMSK1 = 0b00000000; // no interrupts needed
 	
 	// reset and configure timer 4, the Extruder One PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	TCCR4A = 0b00000001;  
-	TCCR4B = 0b00001011; /// set to PWM mode
-	OCR4A = 0;
-	OCR4B = 0;
-	TIMSK4 = 0b00000000; // no interrupts needed
+	TIM_TIMERCFG_Type TMR1_Cfg;
+	TIM_MATCHCFG_Type TMR1_Match;
+	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
+	// Initialize timer 1, prescale count time of 100uS
+	TMR1_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
+	TMR1_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
+	// Use channel 1, MR1
+	TMR1_Match.MatchChannel = 0;
+	// Enable interrupt when MR0 matches the value in TC register
+	TMR1_Match.IntOnMatch = TRUE;
+	// Enable reset on MR0: TIMER will reset if MR0 matches it
+	TMR1_Match.ResetOnMatch = TRUE;
+	// Don't stop on MR0 if MR0 matches it
+	TMR1_Match.StopOnMatch = FALSE;
+	// Do nothing for external output pin if match (see cmsis help, there are another options)
+	TMR1_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
+	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
+	TMR1_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
+	// Set configuration for Tim_config and Tim_MatchConfig
+	TIM_Init(LPC_TIM1, TIM_TIMER_MODE, &TMR1_Cfg);
+	TIM_ConfigMatch(LPC_TIM1, &TMR1_Match);
+	// 0 top priority 32 lowest
+	NVIC_SetPriority(TIMER1_IRQn, 0);
+	NVIC_EnableIRQ(TIMER1_IRQn);
+	TIM_Cmd(LPC_TIM1,ENABLE);
+//	TCCR4A = 0b00000001;
+//	TCCR4B = 0b00001011; /// set to PWM mode
+//	OCR4A = 0;
+//	OCR4B = 0;
+//	TIMSK4 = 0b00000000; // no interrupts needed
 		
 	// Check if the interface board is attached
 	hasInterfaceBoard = interface::isConnected();

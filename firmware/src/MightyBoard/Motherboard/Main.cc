@@ -19,9 +19,9 @@
 #include "DebugPacketProcessor.hh"
 #include "Host.hh"
 #include "Command.hh"
-#include <avr/interrupt.h>
-#include <util/atomic.h>
-#include <avr/wdt.h>
+//#include <avr/interrupt.h>
+//#include <util/atomic.h>
+//#include <avr/wdt.h>
 #include "Timeout.hh"
 #include "Steppers.hh"
 #include "Motherboard.hh"
@@ -29,27 +29,31 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 #include "ThermistorTable.hh"
-#include <util/delay.h>
+//#include <util/delay.h>
 #include "UtilityScripts.hh"
 
+extern "C" {
+	#include "LPC17xx.h"
+	#include "vcomdemo.c"
+}
 
 void reset(bool hard_reset) {
-	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+//	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		
-		bool brown_out = false;
-		uint8_t resetFlags = MCUSR & 0x0f;
+//		bool brown_out = false;
+//		uint8_t resetFlags = MCUSR & 0x0f;
 		// check for brown out reset flag and report if true
-		if(resetFlags & (1 << 2)){
-			brown_out = true;
-		}
+//		if(resetFlags & (1 << 2)){
+//			brown_out = true;
+//		}
 		
         // clear watch dog timer and re-enable
 		if(hard_reset)
 		{ 
             // ATODO: remove disable
-			wdt_disable();
-			MCUSR = 0x0;
-			wdt_enable(WDTO_8S); // 8 seconds is max timeout
+//			wdt_disable();
+//			MCUSR = 0x0;
+//			wdt_enable(WDTO_8S); // 8 seconds is max timeout
 		}
 		
 		// initialize major classes
@@ -70,15 +74,24 @@ void reset(bool hard_reset) {
 	//		board.getInterfaceBoard().errorMessage("Brown-Out Reset     Occured", 27);
 	//		board.startButtonWait();
 	//	}	
-	}
+//	}
 }
 
 int main() {
-
+	
+	//----Initialization of LPC----//
+	/* NOTE: you will need to call SystemCoreClockUpdate() as the very
+	first line in your main function. This will update the various
+	registers and constants to allow accurate timing. */
+	SystemCoreClockUpdate();
+	SystemInit();									// Initialize clocks
+	NVIC_SetPriorityGrouping(0);					// Configure the NVIC Preemption Priority Bits
+	
+	
 	Motherboard& board = Motherboard::getBoard();
 	reset(true);
 	steppers::init();
-	sei();
+//	sei();
 	while (1) {
 		// Host interaction thread.
 		host::runHostSlice();
@@ -87,7 +100,7 @@ int main() {
 		// Motherboard slice
 		board.runMotherboardSlice();
         // reset the watch dog timer
-		wdt_reset();
+//		wdt_reset();
 		
 	}
 	return 0;

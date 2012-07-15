@@ -3,9 +3,13 @@
 
 // TODO: Proper attribution
 
-#include <stdint.h>
-#include <avr/pgmspace.h>
+//#include <stdint.h>
+//#include <avr/pgmspace.h>
 #include "Pin.hh"
+
+extern "C" {
+	#include "pgmspace.h"
+}
 
 // commands
 #define LCD_CLEARDISPLAY 0x01

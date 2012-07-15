@@ -9,8 +9,9 @@
  */
 
 #include <string.h>
-#include <avr/io.h>
+//#include <avr/io.h>
 #include "sd_raw.h"
+#include "lpc17xx_spi.h"
 
 /**
  * \addtogroup sd_raw MMC/SD/SDHC card raw access
@@ -183,16 +184,26 @@ uint8_t sd_raw_init()
 
     unselect_card();
 
+    SPI_CFG_Type spi_cfg;
+    spi_cfg.Databit = SPI_DATABIT_8;
+    spi_cfg.CPHA = SPI_CPHA_FIRST;
+    spi_cfg.CPOL = SPI_CPOL_HI;
+    spi_cfg.Mode = SPI_MASTER_MODE;
+    spi_cfg.DataOrder = SPI_DATA_MSB_FIRST;
+    spi_cfg.ClockRate = 50000000/128;
+
+    SPI_Init((LPC_SPI_TypeDef *)LPC_SPI, &spi_cfg);
+
     /* initialize SPI with lowest frequency; max. 400kHz during identification mode of card */
-    SPCR = (0 << SPIE) | /* SPI Interrupt Enable */
-           (1 << SPE)  | /* SPI Enable */
-           (0 << DORD) | /* Data Order: MSB first */
-           (1 << MSTR) | /* Master mode */
-           (0 << CPOL) | /* Clock Polarity: SCK low when idle */
-           (0 << CPHA) | /* Clock Phase: sample on rising SCK edge */
-           (1 << SPR1) | /* Clock Frequency: f_OSC / 128 */
-           (1 << SPR0);
-    SPSR &= ~(1 << SPI2X); /* No doubled clock frequency */
+//    SPCR = (0 << SPIE) | /* SPI Interrupt Enable */
+//           (1 << SPE)  | /* SPI Enable */
+//           (0 << DORD) | /* Data Order: MSB first */
+//           (1 << MSTR) | /* Master mode */
+//           (0 << CPOL) | /* Clock Polarity: SCK low when idle */
+//           (0 << CPHA) | /* Clock Phase: sample on rising SCK edge */
+//           (1 << SPR1) | /* Clock Frequency: f_OSC / 128 */
+//           (1 << SPR0);
+//    SPSR &= ~(1 << SPI2X); /* No doubled clock frequency */
 
     /* initialization procedure */
     sd_raw_card_type = 0;
@@ -201,7 +212,8 @@ uint8_t sd_raw_init()
         return 0;
 
     /* card needs 74 cycles minimum to start up */
-    for(uint8_t i = 0; i < 10; ++i)
+    uint8_t i;
+    for(i = 0; i < 10; ++i)
     {
         /* wait 8 clock cycles */
         sd_raw_rec_byte();
@@ -212,7 +224,7 @@ uint8_t sd_raw_init()
 
     /* reset card */
     uint8_t response;
-    for(uint16_t i = 0; ; ++i)
+    for(i = 0; ; ++i)
     {
         response = sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
         if(response == (1 << R1_IDLE_STATE))
@@ -258,7 +270,7 @@ uint8_t sd_raw_init()
     }
 
     /* wait for card to get ready */
-    for(uint16_t i = 0; ; ++i)
+    for(i = 0; ; ++i)
     {
         if(sd_raw_card_type & ((1 << SD_RAW_SPEC_1) | (1 << SD_RAW_SPEC_2)))
         {
@@ -314,8 +326,9 @@ uint8_t sd_raw_init()
     unselect_card();
 
     /* switch to highest SPI frequency possible */
-    SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
-    SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+//    SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
+//    SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+    SPI_SetClock ((LPC_SPI_TypeDef *)LPC_SPI, 50000000/4);
 
 #if !SD_RAW_SAVE_RAM
     /* the first block is likely to be accessed first, so precache it here */
@@ -361,10 +374,16 @@ uint8_t sd_raw_locked()
  */
 void sd_raw_send_byte(uint8_t b)
 {
-    SPDR = b;
+	uint8_t tx_buf[0];
+	tx_buf[0] = b;
+    SPI_DATA_SETUP_Type  xferConfig;
+	xferConfig.tx_data = tx_buf;
+    xferConfig.length = 1;
+	SPI_ReadWrite((LPC_SPI_TypeDef *)LPC_SPI, &xferConfig, SPI_TRANSFER_POLLING);
+//    SPDR = b;
     /* wait for byte to be shifted out */
-    while(!(SPSR & (1 << SPIF)));
-    SPSR &= ~(1 << SPIF);
+//    while(!(SPSR & (1 << SPIF)));
+//    SPSR &= ~(1 << SPIF);
 }
 
 /**
@@ -376,12 +395,17 @@ void sd_raw_send_byte(uint8_t b)
  */
 uint8_t sd_raw_rec_byte()
 {
+	uint8_t rx_buf[0];
+    SPI_DATA_SETUP_Type  xferConfig;
+	xferConfig.rx_data = rx_buf;
+    xferConfig.length = 1;
+	SPI_ReadWrite((LPC_SPI_TypeDef *)LPC_SPI, &xferConfig, SPI_TRANSFER_POLLING);
+	return rx_buf[0];
     /* send dummy data for receiving some */
-    SPDR = 0xff;
-    while(!(SPSR & (1 << SPIF)));
-    SPSR &= ~(1 << SPIF);
-
-    return SPDR;
+//    SPDR = 0xff;
+//    while(!(SPSR & (1 << SPIF)));
+//    SPSR &= ~(1 << SPIF);
+//    return SPDR;
 }
 
 /**
@@ -419,7 +443,8 @@ uint8_t sd_raw_send_command(uint8_t command, uint32_t arg)
     }
     
     /* receive response */
-    for(uint8_t i = 0; i < 10; ++i)
+    uint8_t i;
+    for(i = 0; i < 10; ++i)
     {
         response = sd_raw_rec_byte();
         if(response != 0xff)
@@ -483,7 +508,7 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
 #if SD_RAW_SAVE_RAM
             /* read byte block */
             uint16_t read_to = block_offset + read_length;
-            for(uint16_t i = 0; i < 512; ++i)
+            for(i = 0; i < 512; ++i)
             {
                 uint8_t b = sd_raw_rec_byte();
                 if(i >= block_offset && i < read_to)
@@ -492,7 +517,8 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
 #else
             /* read byte block */
             uint8_t* cache = raw_block;
-            for(uint16_t i = 0; i < 512; ++i)
+            uint8_t i;
+            for(i = 0; i < 512; ++i)
                 *cache++ = sd_raw_rec_byte();
             raw_block_address = block_address;
 
@@ -599,7 +625,8 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
         while(sd_raw_rec_byte() != 0xfe);
 
         /* read up to the data of interest */
-        for(uint16_t i = 0; i < block_offset; ++i)
+        uint8_t i;
+        for(i = 0; i < block_offset; ++i)
             sd_raw_rec_byte();
 
         /* read interval bytes of data and execute the callback */
@@ -609,7 +636,7 @@ uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interva
                 break;
 
             buffer_cur = buffer;
-            for(uint16_t i = 0; i < interval; ++i)
+            for(i = 0; i < interval; ++i)
                 *buffer_cur++ = sd_raw_rec_byte();
 
             if(!callback(buffer, offset + (512 - read_length), p))
@@ -729,7 +756,8 @@ uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
 
         /* write byte block */
         uint8_t* cache = raw_block;
-        for(uint16_t i = 0; i < 512; ++i)
+        uint8_t i;
+        for(i = 0; i < 512; ++i)
             sd_raw_send_byte(*cache++);
 
         /* write dummy crc16 */
@@ -864,7 +892,8 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         return 0;
     }
     while(sd_raw_rec_byte() != 0xfe);
-    for(uint8_t i = 0; i < 18; ++i)
+    uint8_t i;
+    for(i = 0; i < 18; ++i)
     {
         uint8_t b = sd_raw_rec_byte();
 
@@ -917,7 +946,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         return 0;
     }
     while(sd_raw_rec_byte() != 0xfe);
-    for(uint8_t i = 0; i < 18; ++i)
+    for(i = 0; i < 18; ++i)
     {
         uint8_t b = sd_raw_rec_byte();
 

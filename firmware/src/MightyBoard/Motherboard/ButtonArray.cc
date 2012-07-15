@@ -1,7 +1,7 @@
 #include "ButtonArray.hh"
 #include "Configuration.hh"
 #include "Pin.hh"
-#include <util/delay.h>
+//#include <util/delay.h>
 
 static uint8_t previousJ;
 bool  center_holding = false;
@@ -10,9 +10,10 @@ bool right_holding = false;
 void ButtonArray::init() {
         previousJ = 0;
 
+        // TODO: set for LPC1768
         // Set all of the known buttons to inputs (see above note)
-        DDRJ = DDRJ & 0xE0;
-        PORTJ = PORTJ & 0xE0;
+//        DDRJ = DDRJ & 0xE0;
+//        PORTJ = PORTJ & 0xE0;
 }
 
 void ButtonArray::scanButtons() {
@@ -24,7 +25,9 @@ void ButtonArray::scanButtons() {
         
         buttonTimeout.clear();
 
-        uint8_t newJ = PINJ;// & 0xFE;
+        // TODO: set for LPC1768
+//        uint8_t newJ = PINJ;// & 0xFE;
+    	uint8_t newJ;
         
         /// test for special holds
         /// center hold
@@ -87,12 +90,12 @@ bool ButtonArray::getButton(ButtonName& button) {
         bool buttonValid;
         uint8_t buttonNumber;
 
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
-        {
+//        ATOMIC_BLOCK(ATOMIC_FORCEON)
+//        {
                 buttonValid =  buttonPressWaiting;
                 buttonNumber = buttonPress;        
                 buttonPressWaiting = false;             
-        }
+//        }
 
         if (buttonValid) {
                 button = (ButtonName)(buttonNumber);

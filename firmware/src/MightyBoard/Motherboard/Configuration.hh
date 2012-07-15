@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef BOARDS_MBV40_CONFIGURATION_HH_
-#define BOARDS_MBV40_CONFIGURATION_HH_
+#ifndef BOARDS_LPC1768_CONFIGURATION_HH_
+#define BOARDS_LPC1768_CONFIGURATION_HH_
 
 // This file details the pin assignments and features of the Makerbot Extended Motherboard 4.0
 
-#include "AvrPort.hh"
+#include "LPCPort.hh"
 
 // Interval for the stepper update in microseconds.  This interval is the minimum
 // possible time between steps; in practical terms, your time between steps should
@@ -43,22 +43,30 @@
 //  SCK    |   CLK
 
 // Define as 1 if and SD card slot is present; 0 if not.
-#define HAS_SD          0
+#define HAS_SD          1
 // The pin that connects to the write protect line on the SD header.
-#define SD_WRITE_PIN    Pin(PortH,5)
+//#define SD_WRITE_PIN    Pin(Port1,0)
 // The pin that connects to the card detect line on the SD header.
-#define SD_DETECT_PIN   Pin(PortH,6)
+#define SD_DETECT_PIN   Pin(Port2,1)
 // The pin that connects to the chip select line on the SD header.
-#define SD_SELECT_PIN   Pin(PortB,0)
+#define SD_SELECT_PIN   Pin(Port2,0)
+
+//#define MOSI_PIN   Pin(Port1,0)
+//#define SCK_PIN   Pin(Port1,0)
+//#define SS_PIN   Pin(Port1,0)
+//#define MISO_PIN   Pin(Port1,0)
+
+//USB
+//#define USB_DISC_PIN Pin(Port1,7)
 
 // --- Slave UART configuration ---
 // The slave UART is presumed to be an RS485 connection through a sn75176 chip.
 // Define as 1 if the slave UART is present; 0 if not.
-#define HAS_SLAVE_UART 0
+#define HAS_SLAVE_UART 1
 // The pin that connects to the driver enable line on the RS485 chip.
-#define TX_ENABLE_PIN           Pin(PortD,3)
+#define TX_ENABLE_PIN   Pin(Port1,21)
 // The pin that connects to the active-low recieve enable line on the RS485 chip.
-#define RX_ENABLE_PIN           Pin(PortD,2)
+#define RX_ENABLE_PIN   Pin(Port2,8)
 
 // --- Host UART configuration ---
 // The host UART is presumed to always be present on the RX/TX lines.
@@ -67,7 +75,7 @@
 // Define as 1 if the piezo buzzer is present, 0 if not.
 #define HAS_BUZZER 1
 // The pin that drives the buzzer
-#define BUZZER_PIN Pin(PortG,5)  //OC0B
+#define BUZZER_PIN Pin(Port2,5)  //OC0B
 
 // --- Axis configuration ---
 // Define the number of stepper axes supported by the board.  The axes are
@@ -85,59 +93,59 @@
 #define DEFAULT_INVERTED_ENDSTOPS 1
 
 // The X stepper step pin (active on rising edge)
-#define X_STEP_PIN      Pin(PortF,1)
+#define X_STEP_PIN      Pin(Port2,13)
 // The X direction pin (forward on logic high)
-#define X_DIR_PIN       Pin(PortF,0)
+#define X_DIR_PIN       Pin(Port2,12)
 // The X stepper enable pin (active low)
-#define X_ENABLE_PIN    Pin(PortF,2)
+#define X_ENABLE_PIN    Pin(Port2,11)
 // X stepper potentiometer pin
 #define X_POT_PIN	Pin(PortF,3)
 // The X minimum endstop pin (active high)
-#define X_MIN_PIN       Pin(PortL,0)
+#define X_MIN_PIN       Pin(Port0,22)
 // The X maximum endstop pin (active high)
-#define X_MAX_PIN       Pin(PortL,1)
+#define X_MAX_PIN       Pin(Port0,11)
 
 // The Y stepper step pin (active on rising edge)
-#define Y_STEP_PIN      Pin(PortF,5)
+#define Y_STEP_PIN      Pin(Port1,28)
 // The Y direction pin (forward on logic high)
-#define Y_DIR_PIN       Pin(PortF,4)
+#define Y_DIR_PIN       Pin(Port1,29)
 // The Y stepper enable pin (active low)
-#define Y_ENABLE_PIN    Pin(PortF,6)
+#define Y_ENABLE_PIN    Pin(Port0,10)
 // Y stepper potentiometer pin
 #define Y_POT_PIN	Pin(PortF,7)
 // The Y minimum endstop pin (active high)
-#define Y_MIN_PIN       Pin(PortL,2)
+#define Y_MIN_PIN       Pin(Port1,27)
 // The Y maximum endstop pin (active high)
-#define Y_MAX_PIN       Pin(PortL,3)
+#define Y_MAX_PIN       Pin(Port1,23)
 
 // The Z stepper step pin (active on rising edge)
-#define Z_STEP_PIN      Pin(PortK,1)
+#define Z_STEP_PIN      Pin(Port1,24)
 // The Z direction pin (forward on logic high)
-#define Z_DIR_PIN       Pin(PortK,0)
+#define Z_DIR_PIN       Pin(Port1,25)
 // The Z stepper enable pin (active low)
-#define Z_ENABLE_PIN    Pin(PortK,2)
+#define Z_ENABLE_PIN    Pin(Port1,26)
 // Z stepper potentiometer pin
 #define Z_POT_PIN	Pin(PortK,3)
 // The Z minimum endstop pin (active high)
-#define Z_MIN_PIN       Pin(PortL,6)
+#define Z_MIN_PIN       Pin(Port1,27)
 // The Z maximum endstop pin (active high)
-#define Z_MAX_PIN       Pin(PortL,7)
+#define Z_MAX_PIN       Pin(Port3,25)
 
 // The A stepper step pin (active on rising edge)
-#define A_STEP_PIN      Pin(PortA,3)
+#define A_STEP_PIN      Pin(Port1,19)
 // The A direction pin (forward on logic high)
-#define A_DIR_PIN       Pin(PortA,2)
+#define A_DIR_PIN       Pin(Port1,20)
 // The A stepper enable pin (active low)
-#define A_ENABLE_PIN    Pin(PortA,4)
+#define A_ENABLE_PIN    Pin(Port1,21)
 // A stepper potentiometer pin
 #define A_POT_PIN	Pin(PortA,5)
 
 // The B stepper step pin (active on rising edge)
-#define B_STEP_PIN      Pin(PortA,7)
+#define B_STEP_PIN      Pin(Port0,27)
 // The B direction pin (forward on logic high)
-#define B_DIR_PIN       Pin(PortA,6)
+#define B_DIR_PIN       Pin(Port0,28)
 // The B stepper enable pin (active low)
-#define B_ENABLE_PIN    Pin(PortG,2)
+#define B_ENABLE_PIN    Pin(Port3,26)
 // B stepper potentiometer pin
 #define B_POT_PIN       Pin(PortJ,6)
 
@@ -148,7 +156,7 @@
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
-#define DEBUG_PIN       Pin(PortB,7)
+#define DEBUG_PIN       Pin(Port0,22)
 // Additional Debug Pins
 #define DEBUG_PIN1	Pin(PortC,1)
 #define DEBUG_PIN2	Pin(PortC,0)
@@ -162,9 +170,16 @@
 // By default, debugging packets should be honored; this is made
 // configurable if we're short on cycles or EEPROM.
 // Define as 1 if debugging packets are honored; 0 if not.
-#define HONOR_DEBUG_PACKETS 0
+#define HONOR_DEBUG_PACKETS 1
 
-#define HAS_INTERFACE_BOARD     1
+#define HAS_INTERFACE_BOARD     0
+
+//#define LCD_RS_PIN		Pin(Port1,4)
+//#define LCD_ENABLE_PIN	Pin(Port1,3)
+//#define LCD_D0_PIN		Pin(Port1,7)
+//#define LCD_D1_PIN		Pin(Port1,2)
+//#define LCD_D2_PIN		Pin(Port1,1)
+//#define LCD_D3_PIN		Pin(Port1,0)
 
 // LCD interface pins
 #define LCD_STROBE		Pin(PortC,4)
@@ -245,4 +260,4 @@
 #define BSTEPS_PER_MM          96.2752018f
 
 
-#endif // BOARDS_MBV40_CONFIGURATION_HH_
+#endif // BOARDS_LPC1768_CONFIGURATION_HH_

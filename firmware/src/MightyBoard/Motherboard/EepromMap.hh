@@ -21,6 +21,16 @@
 
 #include <stdint.h>
 
+#define EEPROM_FLASH_AREA_START		USER_FLASH_AREA_START
+//#define EEPROM_START_ADDRESS		(0x10007000)
+#define EEPROM_START_ADDRESS		(0x10007000)
+//#define EEPROM_SIZE         		(0x00001000)
+#define eeprom_address(x)   (*(volatile unsigned long *)(EEPROM_START_ADDRESS + x))
+
+void read_all_from_flash (void);
+void save_to_flash (void);
+//uint8_t microstep_pinout(uint8_t port_no);
+
 /** EEPROM storage offsets for ??? data */
 namespace cooler_eeprom_offsets{
 	const static uint16_t ENABLE_OFFSET   =     0;
@@ -110,6 +120,7 @@ const static uint16_t COOLING_FAN_SETTINGS 	= 	0x001A;
  * structure to define the general EEPROM map for storing all kinds
  * of data onboard the bot
  */
+
 namespace eeprom_offsets {
 /// Firmware Version, low byte: 1 byte
 const static uint16_t VERSION_LOW				= 0x0000;
@@ -311,14 +322,14 @@ enum {
 }
 
 namespace eeprom {
-	void factoryResetEEPROM();
-	void fullResetEEPROM();
+	void factoryResetEEPROM(uint8_t save_now);
+	void fullResetEEPROM(uint8_t save_now);
 	void setToolHeadCount(uint8_t count);
-    void setDefaultSettings();
-    void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
+    void setDefaultSettings(uint8_t save_now);
+    void setCustomColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t save_now);
     bool isSingleTool();
-    void setDefaultsAcceleration();
-    void storeToolheadToleranceDefaults();
-    void setDefaultAxisHomePositions();
+    void setDefaultsAcceleration(uint8_t save_now);
+    void storeToolheadToleranceDefaults(uint8_t save_now);
+    void setDefaultAxisHomePositions(uint8_t save_now);
 }
 #endif // EEPROMMAP_HHe

@@ -1,7 +1,7 @@
 #ifndef BUTTONARRAY_HH
 #define BUTTONARRAY_HH
 
-#include <util/atomic.h>
+//#include <util/atomic.h>
 #include "Types.hh"
 #include "Timeout.hh"
 
