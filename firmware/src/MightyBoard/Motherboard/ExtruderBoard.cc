@@ -73,18 +73,22 @@ void ExtruderBoard::setFan(uint8_t on)
 // Turn on/off PWM for Extruder Two (OC1A)
 void pwmEx2_On(bool on) {
 	if (on) {
-		TCCR1A |= 0b10000000;
+		TIM_Cmd(LPC_TIM1,ENABLE);
+//		TCCR1A |= 0b10000000;
 	} else {
-		TCCR1A &= 0b00111111;
+		TIM_Cmd(LPC_TIM1,DISABLE);
+//		TCCR1A &= 0b00111111;
 	}
 }
 
 // Turn on/off PWM for Extruder One (OC4A)
 void pwmEx1_On(bool on) {
 	if (on) {
-		TCCR4A |= 0b10000000;
+		TIM_Cmd(LPC_TIM2,ENABLE);
+//		TCCR4A |= 0b10000000;
 	} else {
-		TCCR4A &= 0b00111111;
+		TIM_Cmd(LPC_TIM2,DISABLE);
+//		TCCR4A &= 0b00111111;
 	} 
 }
 

@@ -179,34 +179,34 @@ void Motherboard::reset(bool hard_reset) {
 //	OCR1B = 0;
 //	TIMSK1 = 0b00000000; // no interrupts needed
 	
-	// reset and configure timer 4, the Extruder One PWM timer
+	// reset and configure timer 2, the Extruder One PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	TIM_TIMERCFG_Type TMR1_Cfg;
-	TIM_MATCHCFG_Type TMR1_Match;
+	TIM_TIMERCFG_Type TMR2_Cfg;
+	TIM_MATCHCFG_Type TMR2_Match;
 	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
 	// Initialize timer 1, prescale count time of 100uS
-	TMR1_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR1_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
+	TMR2_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
+	TMR2_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
 	// Use channel 1, MR1
-	TMR1_Match.MatchChannel = 0;
+	TMR2_Match.MatchChannel = 0;
 	// Enable interrupt when MR0 matches the value in TC register
-	TMR1_Match.IntOnMatch = TRUE;
+	TMR2_Match.IntOnMatch = TRUE;
 	// Enable reset on MR0: TIMER will reset if MR0 matches it
-	TMR1_Match.ResetOnMatch = TRUE;
+	TMR2_Match.ResetOnMatch = TRUE;
 	// Don't stop on MR0 if MR0 matches it
-	TMR1_Match.StopOnMatch = FALSE;
+	TMR2_Match.StopOnMatch = FALSE;
 	// Do nothing for external output pin if match (see cmsis help, there are another options)
-	TMR1_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
+	TMR2_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
 	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
-	TMR1_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
+	TMR2_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
 	// Set configuration for Tim_config and Tim_MatchConfig
-	TIM_Init(LPC_TIM1, TIM_TIMER_MODE, &TMR1_Cfg);
-	TIM_ConfigMatch(LPC_TIM1, &TMR1_Match);
+	TIM_Init(LPC_TIM2, TIM_TIMER_MODE, &TMR2_Cfg);
+	TIM_ConfigMatch(LPC_TIM2, &TMR2_Match);
 	// 0 top priority 32 lowest
-	NVIC_SetPriority(TIMER1_IRQn, 0);
-	NVIC_EnableIRQ(TIMER1_IRQn);
-	TIM_Cmd(LPC_TIM1,ENABLE);
+	NVIC_SetPriority(TIMER2_IRQn, 0);
+	NVIC_EnableIRQ(TIMER2_IRQn);
+	TIM_Cmd(LPC_TIM2,ENABLE);
 //	TCCR4A = 0b00000001;
 //	TCCR4B = 0b00001011; /// set to PWM mode
 //	OCR4A = 0;
@@ -287,9 +287,9 @@ void Motherboard::reset(bool hard_reset) {
 /// the board was booted.
 micros_t Motherboard::getCurrentMicros() {
 	micros_t micros_snapshot;
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		micros_snapshot = micros;
-	}
+//	}
 	return micros_snapshot;
 }
 
@@ -490,10 +490,10 @@ void Motherboard::UpdateMicros(){
 
 
 /// Timer three comparator match interrupt
-ISR(TIMER3_COMPA_vect) {
+extern "C" void TIMER3_IRQHandler (void){
+//ISR(TIMER3_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
 }
-
 
 
 /// Number of times to blink the debug LED on each cycle
@@ -567,7 +567,9 @@ int interface_ovfs_remaining = 0;
 uint16_t blink_overflow_counter = 0;
 
 /// Timer 2 overflow interrupt
-ISR(TIMER2_COMPA_vect) {
+
+extern "C" void TIMER2_IRQHandler (void){
+//ISR(TIMER2_COMPA_vect) {
 	
 	Motherboard::getBoard().UpdateMicros();
 	
@@ -620,7 +622,8 @@ ISR(TIMER2_COMPA_vect) {
 
 // piezo buzzer update
 // this interrupt gets garbled with the much more rapid stepper interrupt
-ISR(TIMER0_COMPA_vect)
+extern "C" void TIMER0_IRQHandler (void)
+//ISR(TIMER0_COMPA_vect)
 {
   Piezo::doInterrupt();
 }
@@ -640,21 +643,21 @@ void Motherboard::setUsingPlatform(bool is_using) {
 }
 
 void Motherboard::setValve(bool on) {
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		//setUsingPlatform(false);
 		//pwmHBP_On(false);
 		EXTRA_FET.setDirection(true);
 		EXTRA_FET.setValue(on);
-	}
+//	}
 }
 
 void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// This is a bit of a hack to get the temperatures right until we fix our
 	// PWM'd PID implementation.  We reduce the MV to one bit, essentially.
 	// It works relatively well.
-  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		pwmHBP_On(false);
-		HBP_HEAT.setValue(value != 0);
+//		HBP_HEAT.setValue(value != 0);
 	}
   
 }
