@@ -70,7 +70,7 @@
 
 
 #include "Planner.hh"
-#include <util/atomic.h>
+//#include <util/atomic.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h> // for memmove and memcpy
@@ -266,7 +266,7 @@ namespace planner {
 	{
 		/// if eeprom has not been initialized. store default values
 		if (eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0xFFFFFFFF) == 0xFFFFFFFF) {
-			eeprom::storeToolheadToleranceDefaults();
+			eeprom::storeToolheadToleranceDefaults(0);
 		}
 		
 		setAxisStepsPerMM(XSTEPS_PER_MM,0);           
@@ -279,7 +279,7 @@ namespace planner {
 		// if not, load defaults
 		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
 		if(accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)){
-			eeprom::setDefaultsAcceleration();
+			eeprom::setDefaultsAcceleration(0);
 		}
 		
 		// Master acceleration
@@ -303,7 +303,7 @@ namespace planner {
 		setAxisMaxLength(0, 2, false);
 
 		abort();
-
+//		save_to_flash();
 
 #ifdef CENTREPEDAL
 		previous_unit_vec[0]= 0.0;
@@ -453,13 +453,13 @@ namespace planner {
 		}
 
 		//bool successfully_replanned = true;
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {  // Fill variables used by the stepper in a critical section
+//		ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {  // Fill variables used by the stepper in a critical section
 				accelerate_until = accelerate_steps;
 				decelerate_after = accelerate_steps+plateau_steps;
 				initial_rate     = local_initial_rate;
 				final_rate       = local_final_rate;
 		
-		} // ISR state will be automatically restored here
+//		} // ISR state will be automatically restored here
 		
 	
 		
@@ -877,7 +877,7 @@ namespace planner {
 	
 	inline void loadToleranceOffsets(){
 		// get toolhead offsets
-		ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+//		ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
 			for(int i = 0; i  < 3; i++){
 				int32_t tolerance_err = (int32_t)(eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS + i*4, 0)) / 10;
 				tolerance_offset_T0[i] = (tolerance_err/2);
@@ -889,7 +889,7 @@ namespace planner {
 
 			for(int i = 0; i < STEPPER_COUNT; i++)
 				tolerance_offset_T1[i] = -1 * tolerance_offset_T0[i];
-		}
+//		}
 	}
 
 	/// call when a move is starting or ending, or canceling a move

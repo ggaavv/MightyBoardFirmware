@@ -24,6 +24,7 @@
 
 extern "C" {
 	#include "lpc_types.h"
+	#include "lpc17xx_gpio.h"
 }
 
 

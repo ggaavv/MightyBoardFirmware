@@ -155,7 +155,7 @@ class Heater
     
     /// get the difference between the current temperature
     /// and the set temperature
-    int getDelta();
+    int16_t getDelta();
     
     /// is heater temperature target different than current
     bool isHeating();

@@ -15,14 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
  
- #include "Piezo.hh"
- #include "Configuration.hh"
- #include <avr/io.h>
- #include <avr/interrupt.h>
- #include <util/delay.h>
+#include "Piezo.hh"
+#include "Configuration.hh"
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
+//#include <util/delay.h>
 #include "EepromMap.hh"
 #include "Eeprom.hh"
-#include <avr/eeprom.h>
+//#include <avr/eeprom.h>
  
  namespace Piezo{
 
@@ -146,11 +146,11 @@ CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
           }
         }
       }
-      TCCR0B = 0b00001000 + prescalarbits; //set prescaler to desired value
+//      TCCR0B = 0b00001000 + prescalarbits; //set prescaler to desired value
       
-      OCR0A = ocr & 0xFF;
-      OCR0B = ocr & 0xFF; //set pwm frequency
-      TIMSK0 = 0b00000010; //turn compA interrupt on
+//      OCR0A = ocr & 0xFF;
+//      OCR0B = ocr & 0xFF; //set pwm frequency
+//      TIMSK0 = 0b00000010; //turn compA interrupt on
       toggleCount = 2L * frequency * duration / 1000L;
       lastMicros = 0;
 }
@@ -169,9 +169,9 @@ void doInterrupt()
  // clear after interval
   else
   {
-    TIMSK0 = 0;
-    OCR0B = 0;
-    OCR0A = 0;
+//    TIMSK0 = 0;
+//    OCR0B = 0;
+//    OCR0A = 0;
     BuzzPin.setValue(false);  // keep pin low after stop
     ToneOn = false;
     if(frequencies.isEmpty() == false)

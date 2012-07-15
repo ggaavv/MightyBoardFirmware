@@ -16,11 +16,11 @@ void Pin::setDirection(bool out) const {
 	if (out) {
 //		DDRx |= (uint8_t)pin_mask;
 //		GPIO_SetDir(port_base, (1 << pin_mask), 1);
-		GPIO_SetDir(port_base, pin_mask, 1);
+		GPIO_SetDir(port_base, _BV(pin_mask), 1);
 	} else {
 //		DDRx &= (uint8_t)pin_mask_inverted;
 //		GPIO_SetDir(port_base, (1 << pin_mask_inverted), 0);
-		GPIO_SetDir(port_base, pin_mask_inverted, 0);
+		GPIO_SetDir(port_base, _BV(pin_mask_inverted), 0);
 	}
 //	SREG = oldSREG;
 }

@@ -11,14 +11,14 @@
 #include "Timeout.hh"
 #include "InterfaceBoard.hh"
 #include "Interface.hh"
-#include <util/delay.h>
+//#include <util/delay.h>
 #include <stdlib.h>
 #include "SDCard.hh"
 #include <string.h>
 #include "Version.hh"
 #include "EepromMap.hh"
 #include "Eeprom.hh"
-#include <avr/eeprom.h>
+//#include <avr/eeprom.h>
 #include "RGB_LED.hh"
 #include "Planner.hh"
 #include "stdio.h"

@@ -36,6 +36,7 @@
 //#include <util/delay.h>
 #include "Menu_locales.hh"
 
+#include "Delay.hh"
 extern "C" {
 	#include "lpc17xx_timer.h"
 	#include "LPC17xx.h"
@@ -631,9 +632,9 @@ extern "C" void TIMER0_IRQHandler (void)
 // HBP PWM
 void pwmHBP_On(bool on) {
 	if (on) {
-		TCCR5A |= 0b00100000; /// turn on OC5B PWM output
+//		TCCR5A |= 0b00100000; /// turn on OC5B PWM output
 	} else {
-		TCCR5A &= 0b11001111; /// turn off OC5B PWM output
+//		TCCR5A &= 0b11001111; /// turn off OC5B PWM output
 	}
 }
 
@@ -644,8 +645,8 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 void Motherboard::setValve(bool on) {
 //  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		//setUsingPlatform(false);
-		//pwmHBP_On(false);
+		setUsingPlatform(false);
+		pwmHBP_On(false);
 		EXTRA_FET.setDirection(true);
 		EXTRA_FET.setValue(on);
 //	}
@@ -657,8 +658,8 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 	// It works relatively well.
 //  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		pwmHBP_On(false);
-//		HBP_HEAT.setValue(value != 0);
-	}
+		HBP_HEAT.setValue(value != 0);
+//	}
   
 }
 

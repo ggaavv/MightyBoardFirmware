@@ -15,35 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
  
- #include <util/twi.h>
+ //#include <util/twi.h>
  
+extern "C" {
+	#include "lpc_types.h"
+}
+
  //TODO write proper error codes
 uint8_t TWI_write_data(uint8_t address, uint8_t * data, uint8_t length){
  			
-  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
-  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-  if((TWSR & 0xF8) != TW_START)
+//  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
+//  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//  if((TWSR & 0xF8) != TW_START)
 	return 1;
 
 
   /* send address */
-  TWDR = address | TW_WRITE;
-  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
-  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-  if ((TWSR & 0xF8) != TW_MT_SLA_ACK)
+//  TWDR = address | TW_WRITE;
+//  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
+//  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//  if ((TWSR & 0xF8) != TW_MT_SLA_ACK)
 		return 2;
 
 
   for (int i = 0; i < length; i++)
     {
-      TWDR = data[i];
-      TWCR = _BV(TWINT) | _BV(TWEN); /* start transmission */
-      while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-      if ((TWSR & 0xF8) != TW_MT_DATA_ACK)
+//      TWDR = data[i];
+//      TWCR = _BV(TWINT) | _BV(TWEN); /* start transmission */
+//      while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//      if ((TWSR & 0xF8) != TW_MT_DATA_ACK)
 			return 3;
     }
 
-  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
+//  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
   
   return 0;
   
@@ -51,25 +55,25 @@ uint8_t TWI_write_data(uint8_t address, uint8_t * data, uint8_t length){
   //TODO write proper error codes
 uint8_t TWI_write_byte(uint8_t address, uint8_t data){
  
-  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
-  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-  if((TWSR & 0xF8) != TW_START)
+//  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
+//  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//  if((TWSR & 0xF8) != TW_START)
 	return 1;
 
   /* send address */
-  TWDR = address | TW_WRITE;
-  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
-  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-  if ((TWSR & 0xF8) != TW_MT_SLA_ACK)
+//  TWDR = address | TW_WRITE;
+//  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
+//  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//  if ((TWSR & 0xF8) != TW_MT_SLA_ACK)
 		return 2;
 
-  TWDR = data;
-  TWCR = _BV(TWINT) | _BV(TWEN); /* start transmission */
-  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-  if ((TWSR & 0xF8) != TW_MT_DATA_ACK)
+//  TWDR = data;
+//  TWCR = _BV(TWINT) | _BV(TWEN); /* start transmission */
+//  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//  if ((TWSR & 0xF8) != TW_MT_DATA_ACK)
 		return 3;
 
-  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
+//  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
   
   return 0;
   
@@ -78,44 +82,44 @@ uint8_t TWI_write_byte(uint8_t address, uint8_t data){
  void TWI_init(){
 
   /* initialize TWI clock: 100 kHz clock, TWPS = 0 => prescaler = 1 */
-  TWSR = 0;
+//  TWSR = 0;
 
   uint32_t fCPU = 8000000;
-  TWBR = (fCPU / 100000UL - 16) / 2;
+//  TWBR = (fCPU / 100000UL - 16) / 2;
  }
  
  //TODO write proper error codes
  // read function is Totally untested
  uint8_t TWI_read_byte(uint8_t address, uint8_t * data, uint8_t length){
  
-  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
-  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-  if((TWSR & 0xF8) != TW_START)
+//  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
+//  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//  if((TWSR & 0xF8) != TW_START)
 	return 1;
 	
   /* send address */
-   TWDR = address | TW_READ;
-  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
-  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-   if((TWSR & 0xF8) != TW_MR_SLA_ACK)
+//   TWDR = address | TW_READ;
+//  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
+//  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//   if((TWSR & 0xF8) != TW_MR_SLA_ACK)
 	return 2;
     
-    uint8_t twcr = _BV(TWINT) | _BV(TWEN) | _BV(TWEA);
+//    uint8_t twcr = _BV(TWINT) | _BV(TWEN) | _BV(TWEA);
     /* send data bytes */
     for (int i=0; i < length; i++){
 	 // if last byte send NAK
       if (i == length - 1)
-			twcr = _BV(TWINT) | _BV(TWEN); /* send NAK this time */
+//			twcr = _BV(TWINT) | _BV(TWEN); /* send NAK this time */
       
-      TWCR = twcr;		/* clear int to start transmission */
-      while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
-      if((TWSR & 0xF8) != TW_MR_DATA_ACK)
+//      TWCR = twcr;		/* clear int to start transmission */
+//      while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+//      if((TWSR & 0xF8) != TW_MR_DATA_ACK)
 		return 3;
-	  else
-		  data[i] = TWDR;
+//	  else
+//		  data[i] = TWDR;
     }
  
-  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
+//  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
 
   return 0;
 

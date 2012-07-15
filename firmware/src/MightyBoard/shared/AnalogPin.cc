@@ -16,9 +16,9 @@
  */
 
 #include "AnalogPin.hh"
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/atomic.h>
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
+//#include <util/atomic.h>
 
 
 volatile int16_t* adc_destination; //< Address to write the sampled data to
@@ -91,24 +91,24 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
     void initAnalogPin(uint8_t pin) {
             // Analog pins are on ports F and K
             if (pin < 8) {
-                    DDRF &= ~(_BV(pin));
-                    PORTF &= ~(_BV(pin));
+//                    DDRF &= ~(_BV(pin));
+//                    PORTF &= ~(_BV(pin));
                     // clear ADC Channel bit selecting upper 8 ADCs
-					ADCSRB &= ~0b01000;
+//					ADCSRB &= ~0b01000;
             }
             else{
 				pin -= 8;
-				DDRK &= ~(_BV(pin));
-				PORTK &= ~(_BV(pin));
+//				DDRK &= ~(_BV(pin));
+//				PORTK &= ~(_BV(pin));
 				// set ADC Channel bit selecting upper 8 ADCs
-				ADCSRB |= 0b01000;
+//				ADCSRB |= 0b01000;
 			}
 			
 			// select ADC Channel and connect AREF to AVCC
-			ADMUX = 0b01000000 + pin;
+//			ADMUX = 0b01000000 + pin;
             // enable a2d conversions, interrupt on completion
-            ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) |
-                            _BV(ADEN) | _BV(ADIE);
+//            ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) |
+//                            _BV(ADEN) | _BV(ADIE);
     }
 
     bool startAnalogRead(uint8_t pin,
@@ -116,35 +116,35 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
                          volatile bool* finished) {
             // ADSC is cleared when the conversion finishes.
             // We should not start a new read while an existing one is in progress.
-            if ((ADCSRA & _BV(ADSC)) != 0) {
-                    return false;
-            }
-            ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//            if ((ADCSRA & _BV(ADSC)) != 0) {
+//                    return false;
+//            }
+//            ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
                     adc_destination = destination;
                     adc_finished = finished;
                     *adc_finished = false;
 
                     if (pin < 8) {
 						// clear ADC Channel bit selecting upper 8 ADCs
-						ADCSRB &= ~0b01000;
+//						ADCSRB &= ~0b01000;
 					}
 					else{
 						pin -= 8;
 						// set ADC Channel bit selecting upper 8 ADCs
-						ADCSRB |= 0b01000;
+//						ADCSRB |= 0b01000;
 					}
 			
 					// select ADC Channel and connect AREF to AVCC
-					ADMUX = 0b01000000 + pin;
+//					ADMUX = 0b01000000 + pin;
 
                     // start the conversion.
-                    ADCSRA |= _BV(ADSC);
-            }
+//                    ADCSRA |= _BV(ADSC);
+//            }
             // An interrupt will signal conversion completion.
             return true;
     }
 
-    ISR(ADC_vect)
+/*    ISR(ADC_vect)
     {
             uint8_t low_byte, high_byte;
             // we have to read ADCL first; doing so locks both ADCL
@@ -157,7 +157,7 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
             // combine the two bytes
             *adc_destination = (high_byte << 8) | low_byte;
             *adc_finished = true;
-    }
+    }*/
 
 #endif
 

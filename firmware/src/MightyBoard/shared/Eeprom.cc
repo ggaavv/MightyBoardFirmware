@@ -15,8 +15,8 @@ namespace eeprom {
 void init() {
 	read_all_from_flash();
 	uint8_t prom_version[2];
-	prom_version[0] = eeprom_address(VERSION_LOW);
-	prom_version[1] = eeprom_address(VERSION_HIGH);
+	prom_version[0] = eeprom_address(eeprom_offsets::VERSION_LOW);
+	prom_version[1] = eeprom_address(eeprom_offsets::VERSION_HIGH);
 //	eeprom_read_block(prom_version,(const uint8_t*)eeprom_offsets::VERSION_LOW,2);
 	if ((prom_version[1]*100+prom_version[0]) == firmware_version)
 		return;
@@ -30,7 +30,7 @@ void init() {
 	//Update eeprom version # to match current firmware version
 	prom_version[0] = firmware_version % 100;
 	prom_version[1] = firmware_version / 100;
-	for (uint8_t i=0; i<2);i++) {
+	for (uint8_t i=0; i<2;i++) {
 		eeprom_address(eeprom_offsets::VERSION_LOW) = prom_version[i];
 	}
 //	eeprom_write_block(prom_version,(uint8_t*)eeprom_offsets::VERSION_LOW,2);

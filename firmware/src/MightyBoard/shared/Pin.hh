@@ -26,7 +26,7 @@ public:
 		if (is_null)
 			return false; // null pin is always low ... ?
 //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
-		return ((FIO_ReadValue(port_base) & (1 << pin_index))?1:0);
+		return ((FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
 	};
 
 	void /*Pin::*/setValue(bool on) const {
@@ -36,10 +36,10 @@ public:
 		// cli();
 		if (on) {
 //			PORTx |= pin_mask;
-			GPIO_SetValue(port_base, (1 << pin_mask));
+			GPIO_SetValue(port_base, _BV(pin_mask));
 		} else {
 //			PORTx &= pin_mask_inverted;
-			GPIO_ClearValue(port_base, (1 << pin_mask_inverted));
+			GPIO_ClearValue(port_base, _BV(pin_mask_inverted));
 		}
 		// SREG = oldSREG;
 	};
@@ -50,7 +50,7 @@ public:
 		// uint8_t oldSREG = SREG;
 		// cli();
 //		PORTx |= pin_mask;
-		GPIO_SetValue(port_base, (1 << pin_mask));
+		GPIO_SetValue(port_base, _BV(pin_mask));
 		// SREG = oldSREG;
 	};
 
@@ -60,7 +60,7 @@ public:
 		// uint8_t oldSREG = SREG;
 		// cli();
 //		PORTx &= pin_mask_inverted;
-		GPIO_ClearValue(port_base, (1 << pin_mask_inverted));
+		GPIO_ClearValue(port_base, _BV(pin_mask_inverted));
 		// SREG = oldSREG;
 	};
 	// currently not used:

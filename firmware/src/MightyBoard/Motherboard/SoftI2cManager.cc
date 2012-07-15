@@ -19,8 +19,11 @@
  */
 
 #include "SoftI2cManager.hh"
-#include <util/delay.h>
-#include <util/atomic.h>
+//#include <util/delay.h>
+//#include <util/atomic.h>
+
+#include "Delay.hh"
+
 
 // initiate static i2cManager instance
 SoftI2cManager SoftI2cManager::i2cManager;

@@ -25,6 +25,12 @@
 //#include <util/atomic.h>
 //#include <avr/sfr_defs.h>
 //#include <avr/io.h>
+extern "C" {
+	#include "lpc17xx_timer.h"
+//	#include "LPC17xx.h"
+//	#include "lpc17xx_nvic.h"
+}
+
 
 //ExtruderBoard ExtruderBoard::extruder_board;
 
@@ -107,7 +113,7 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			pwmEx1_On(false);
 			EX1_PWR.setValue(value == 255);
 			} else {
-				OCR4A = value;
+//				OCR4A = value;
 				pwmEx1_On(true);
 				
 				
@@ -120,7 +126,7 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
 			EX2_PWR.setValue(value == 255);
 			
 			} else {
-				OCR1A = value;
+//				OCR1A = value;
 				pwmEx2_On(true);
 			}
 		}

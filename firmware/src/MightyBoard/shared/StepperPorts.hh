@@ -24,6 +24,8 @@
 //#define STEP0_PORT 		PORTG
 //#define STEP0_PIN 		PING1
 
+#define LPC1768
+#ifndef LPC1768
 #define X_STEP_PORT		PORTF	//step 
 #define X_STEP_PIN		PINF1
 #define X_STEP_DDR		DDRF
@@ -138,4 +140,56 @@
 #define	_SET_INPUT(IO) do {IO ## _DDR &= ~_BV(IO ## _PIN); } while (0)
 /// set pin as output
 #define	_SET_OUTPUT(IO) do {IO ## _DDR |=  _BV(IO ## _PIN); } while (0)
+#else
 
+#define X_STEP_PORT		2	//step
+#define X_STEP_PIN		13
+#define X_DIR_PORT		2	//dir
+#define X_DIR_PIN		12
+#define X_ENABLE_PORT	2	//enable
+#define X_ENABLE_PIN	11
+#define X_MIN_PORT		0	//min
+#define X_MIN_PIN		22
+#define X_MAX_PORT		0	//max
+#define X_MAX_PIN		11
+
+#define Y_STEP_PORT		1	//step
+#define Y_STEP_PIN		28
+#define Y_DIR_PORT		1	//dir
+#define Y_DIR_PIN		29
+#define Y_ENABLE_PORT	0	//enable
+#define Y_ENABLE_PIN	10
+#define Y_MIN_PORT		1	//min
+#define Y_MIN_PIN		27
+#define Y_MAX_PORT		1	//max
+#define Y_MAX_PIN		23
+
+#define Z_STEP_PORT		1	//step
+#define Z_STEP_PIN		24
+#define Z_DIR_PORT		1	//dir
+#define Z_DIR_PIN		25
+#define Z_ENABLE_PORT	1	//enable
+#define Z_ENABLE_PIN	26
+#define Z_MIN_PORT		1	//min
+#define Z_MIN_PIN		27
+#define Z_MAX_PORT		3	//max
+#define Z_MAX_PIN		25
+
+#define A_STEP_PORT		1	//step
+#define A_STEP_PIN		19
+#define A_DIR_PORT		1	//dir
+#define A_DIR_PIN		20
+#define A_ENABLE_PORT	1	//enable
+#define A_ENABLE_PIN	21
+
+#define B_STEP_PORT		0	//step
+#define B_STEP_PIN		27
+#define B_DIR_PORT		0	//dir
+#define B_DIR_PIN		28
+#define B_ENABLE_PORT	3	//enable
+#define B_ENABLE_PIN	26
+
+#define _WRITE(POIO, PIIO, v)  do { if (v) {GPIO_SetValue(POIO, PIIO);} else {GPIO_ClearValue(POIO, PIIO); }; } while (0)
+#define _READ(POIO, PIIO) ((bool)(FIO_ReadValue(POIO) & PIIO)?1:0)
+
+#endif

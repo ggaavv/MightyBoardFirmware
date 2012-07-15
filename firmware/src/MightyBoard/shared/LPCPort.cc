@@ -28,7 +28,7 @@ extern const LPCPort NullPort = LPCPort();
 
 LPCPort::LPCPort() : port_base(NULL_PORT) {};
 
-LPCPort::LPCPort(port_base_t port_base_in) : port_base(port_base_in) {
+LPCPort::LPCPort(uint8_t port_base_in) : port_base(port_base_in) {
 };
 
 bool LPCPort::isNull() const {
@@ -39,31 +39,31 @@ void LPCPort::setPinDirectionOut(uint8_t pin_mask) const {
 //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 //		DDRx |= (uint8_t)pin_mask;
 //	}
-	GPIO_SetDir(port_base, (1 << pin_mask), 1)
+	GPIO_SetDir(port_base, _BV(pin_mask), 1);
 };
 
 void LPCPort::setPinDirectionIn(uint8_t pin_mask_inverted) const {
 //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 //		DDRx &= (uint8_t)pin_mask_inverted;
 //	}
-	GPIO_SetDir(port_base, (1 << pin_mask_inverted), 0)
+	GPIO_SetDir(port_base, _BV(pin_mask_inverted), 0);
 };
 
 bool LPCPort::getPin(uint8_t pin_mask) const {
 //	return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
-	return ((FIO_ReadValue(port_base) & (1 << pin_index))?1:0);
+	return ((FIO_ReadValue(port_base) & _BV(pin_mask))?1:0);
 };
 
 void LPCPort::setPinOn(uint8_t pin_mask) const {
 //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 //		PORTx |= (uint8_t)pin_mask;
 //	}
-	GPIO_SetValue(port_base, (1 << pin_mask));
+	GPIO_SetValue(port_base, _BV(pin_mask));
 };
 
 void LPCPort::setPinOff(uint8_t pin_mask_inverted) const {
 //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 //		PORTx &= (uint8_t)pin_mask_inverted;
 //	}
-	GPIO_ClearValue(port_base, (1 << pin_mask_inverted));
+	GPIO_ClearValue(port_base, _BV(pin_mask_inverted));
 };

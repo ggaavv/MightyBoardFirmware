@@ -18,14 +18,15 @@
  
  #include "RGB_LED.hh"
  #include "TWI.hh"
- #include <util/delay.h>
+// #include <util/delay.h>
  #include "Configuration.hh"
  #include "Pin.hh"
  #include "EepromMap.hh"
 #include "Eeprom.hh"
-#include <avr/eeprom.h>
+//#include <avr/eeprom.h>
 
- 
+ #include "Delay.hh"
+
  
 namespace RGB_LED{
 	const static int LEDAddress = 0B11000100;
@@ -200,7 +201,7 @@ void setLEDBlink(uint8_t rate){
 
     // set LED color and store to EEPROM "custom" color area
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
-	eeprom::setCustomColor(red, green, blue);
+	eeprom::setCustomColor(red, green, blue, 0);
 	setColor(red, green, blue, true);
 }
 

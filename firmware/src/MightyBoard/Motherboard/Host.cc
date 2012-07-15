@@ -23,11 +23,11 @@
 #include "DebugPacketProcessor.hh"
 #include "Timeout.hh"
 #include "Version.hh"
-#include <util/atomic.h>
-#include <avr/eeprom.h>
-#include <avr/pgmspace.h>
-#include <util/delay.h>
-#include <avr/wdt.h>
+//#include <util/atomic.h>
+//#include <avr/eeprom.h>
+//#include <avr/pgmspace.h>
+//#include <util/delay.h>
+//#include <avr/wdt.h>
 #include "Main.hh"
 #include "Errors.hh"
 #include "Eeprom.hh"
@@ -35,6 +35,11 @@
 #include "UtilityScripts.hh"
 #include "Planner.hh"
 #include "stdio.h"
+
+#include "Delay.hh"
+extern "C" {
+	#include "pgmspace.h"
+}
 
 namespace host {
 
@@ -196,7 +201,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 			}
 			// Queue command, if there's room.
 			// Turn off interrupts while querying or manipulating the queue!
-			ATOMIC_BLOCK(ATOMIC_FORCEON) {
+//			ATOMIC_BLOCK(ATOMIC_FORCEON) {
 				const uint8_t command_length = from_host.getLength();
 				if (command::getRemainingCapacity() >= command_length) {
 					// Append command to buffer
@@ -207,7 +212,7 @@ bool processCommandPacket(const InPacket& from_host, OutPacket& to_host) {
 				} else {
 					to_host.append8(RC_BUFFER_OVERFLOW);
 				}
-			}
+//			}
 			return true;
 		}
 	}
@@ -252,7 +257,7 @@ inline void handleGetBufferSize(const InPacket& from_host, OutPacket& to_host) {
 }
 
 inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
-	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+//	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		const Point p = planner::getPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
@@ -269,11 +274,11 @@ inline void handleGetPosition(const InPacket& from_host, OutPacket& to_host) {
 		//	endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
 		//}
 		to_host.append8(endstop_status);
-	}
+//	}
 }
 
 inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) {
-	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+//	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		const Point p = planner::getPosition();
 		to_host.append8(RC_OK);
 		to_host.append32(p[0]);
@@ -298,7 +303,7 @@ inline void handleGetPositionExt(const InPacket& from_host, OutPacket& to_host) 
 		//	endstop_status |= (si.isAtMaximum()?2:0) | (si.isAtMinimum()?1:0);
 		//}
 		to_host.append16(endstop_status);
-	}
+//	}
 }
 
     // capture to SD
@@ -362,10 +367,10 @@ inline void handlePause(const InPacket& from_host, OutPacket& to_host) {
     // check if steppers are still executing a command
 inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 	to_host.append8(RC_OK);
-	ATOMIC_BLOCK(ATOMIC_FORCEON) {
+//	ATOMIC_BLOCK(ATOMIC_FORCEON) {
 		bool done = !steppers::isRunning() && command::isEmpty();
 		to_host.append8(done?1:0);
-	}
+//	}
 }
     // read value from eeprom
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
@@ -373,10 +378,11 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
     uint8_t data[length];
-    eeprom_read_block(data, (const void*) offset, length);
+//    eeprom_read_block(data, (const void*) offset, length);
     to_host.append8(RC_OK);
     for (int i = 0; i < length; i++) {
-        to_host.append8(data[i]);
+		to_host.append8(eeprom_address(offset + i));
+//		to_host.append8(data[i]);
     }
 }
 
@@ -386,14 +392,16 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
 inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
-    uint8_t data[length];
-    eeprom_read_block(data, (const void*) offset, length);
+//    uint8_t data[length];
+//    eeprom_read_block(data, (const void*) offset, length);
     for (int i = 0; i < length; i++) {
-        data[i] = from_host.read8(i + 4);
+		eeprom_address(offset + i) = from_host.read8(i + 4);
+//        data[i] = from_host.read8(i + 4);
     }
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-		eeprom_write_block(data, (void*) offset, length);
-	}
+//    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+    	save_to_flash();
+//		eeprom_write_block(data, (void*) offset, length);
+//	}
     to_host.append8(RC_OK);
     to_host.append8(length);
 }
@@ -550,11 +558,12 @@ char* getMachineName() {
 
 	// If EEPROM is zero, load in a default. The 0 is there on purpose
 	// since this fallback should only happen on EEPROM total failure
-	static PROGMEM prog_uchar defaultMachineName[] =  "The Replicat0r";
+	static PROGMEM char defaultMachineName[] =  "The Replicat0r";
 
 	if (machineName[0] == 0) {
 		for(uint8_t i = 0; i < 14; i++) {
-			machineName[i] = pgm_read_byte_near(defaultMachineName+i);
+			machineName[i] = defaultMachineName[i];
+//			machineName[i] = pgm_read_byte_near(defaultMachineName+i);
 		}
 	}
 
