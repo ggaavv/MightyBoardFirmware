@@ -16,7 +16,11 @@
  */
 
 #include "Packet.hh"
-#include <util/crc16.h>
+//#include <util/crc16.h>
+
+extern "C" {
+	#include "crc16.h"
+}
 
 /// Append a byte and update the CRC
 void Packet::appendByte(uint8_t data) {

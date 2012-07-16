@@ -87,7 +87,7 @@ int main() {
 	SystemInit();									// Initialize clocks
 	NVIC_SetPriorityGrouping(0);					// Configure the NVIC Preemption Priority Bits
 	
-	
+
 	Motherboard& board = Motherboard::getBoard();
 	reset(true);
 	steppers::init();

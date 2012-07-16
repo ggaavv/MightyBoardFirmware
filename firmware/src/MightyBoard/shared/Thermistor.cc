@@ -18,7 +18,7 @@
 #include "Thermistor.hh"
 #include "ThermistorTable.hh"
 #include "AnalogPin.hh"
-#include <util/atomic.h>
+//#include <util/atomic.h>
 
 
 struct ThermTableEntry {
@@ -47,7 +47,7 @@ Thermistor::SensorState Thermistor::update() {
 	int16_t temp;
 	bool valid;
 
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		valid = raw_valid;
 		temp = raw_value;
 
@@ -55,7 +55,7 @@ Thermistor::SensorState Thermistor::update() {
 		if (raw_valid) {
 			raw_valid = false;
                 }
-	}
+//	}
 
 	// initiate next read
 	if (!startAnalogRead(analog_pin,&raw_value, &raw_valid)) return SS_ADC_BUSY;

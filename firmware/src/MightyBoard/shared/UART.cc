@@ -19,12 +19,23 @@
 #include "UART.hh"
 #include "Pin.hh"
 #include <stdint.h>
-#include <avr/sfr_defs.h>
-#include <avr/interrupt.h>
-#include <avr/io.h>
-#include <util/delay.h>
-#include <avr/io.h>
+//#include <avr/sfr_defs.h>
+//#include <avr/interrupt.h>
+//#include <avr/io.h>
+//#include <util/delay.h>
+//#include <avr/io.h>
 
+#include "Delay.hh"
+extern "C" {
+	#include "lpc17xx_uart.h"
+	#include "lpc17xx_pinsel.h"
+	#include "LPC17xx.h"
+
+	#include "usbhw.h"
+	#include "usbcfg.h"
+	#include "cdcuser.h"
+	#include "usbcore.h"
+}
 
 // TODO: There should be a better way to enable this flag?
 #if ASSERT_LINE_FIX
@@ -38,7 +49,7 @@ const Pin RX_Enable = RX_ENABLE_PIN;
 // We have to track the number of bytes that have been sent, so that we can filter
 // them from our receive buffer later.This is only used for RS485 mode.
 volatile uint8_t loopback_bytes = 0;
-
+/*
 // We support three platforms: Atmega168 (1 UART), Atmega644, and Atmega1280/2560
 #if defined (__AVR_ATmega168__)     \
     || defined (__AVR_ATmega328__)  \
@@ -59,7 +70,7 @@ volatile uint8_t loopback_bytes = 0;
         UBRR0H = UBRR_VALUE >> 8; \
         UBRR0L = UBRR_VALUE & 0xff; \
         \
-        /* set config for uart, explicitly clear TX interrupt flag */ \
+        // set config for uart, explicitly clear TX interrupt flag \
         UCSR0A = UCSR0A_VALUE | _BV(TXC0); \
         UCSR0B = _BV(RXEN0) | _BV(TXEN0); \
         UCSR0C = _BV(UCSZ01)|_BV(UCSZ00); \
@@ -76,7 +87,7 @@ volatile uint8_t loopback_bytes = 0;
         UBRR##uart_##H = UBRR_VALUE >> 8; \
         UBRR##uart_##L = UBRR_VALUE & 0xff; \
         \
-        /* set config for uart_ */ \
+        // set config for uart_  \
         UCSR##uart_##A = UBRRA_VALUE; \
         UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
         UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
@@ -95,7 +106,7 @@ volatile uint8_t loopback_bytes = 0;
         UBRR##uart_##H = UBRR##uart_##_VALUE >> 8; \
         UBRR##uart_##L = UBRR##uart_##_VALUE & 0xff; \
         \
-        /* set config for uart_ */ \
+        // set config for uart_  \
         UCSR##uart_##A = UCSRA_VALUE(uart_); \
         UCSR##uart_##B = _BV(RXEN##uart_) | _BV(TXEN##uart_); \
         UCSR##uart_##C = _BV(UCSZ##uart_##1)|_BV(UCSZ##uart_##0); \
@@ -129,19 +140,43 @@ UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
     #endif
 
 #endif
-
+*/
 
 void UART::init_serial() {
-    if(index_ == 0) {
-        INIT_SERIAL(0);
+    if(index_ == RS232) {
+		uint8_t menu322[] = "b4 USB config\n";
+		UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu322, sizeof(menu322), BLOCKING);
+	while (!USB_Configuration);		// wait until USB is configured
+//        INIT_SERIAL(0);
     }
 #if HAS_SLAVE_UART
     else {
-        INIT_SERIAL(1);
+		uint8_t menu3722[] = "rs485\n";
+		UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu3722, sizeof(menu3722), BLOCKING);
+		// UART Configuration Structure
+		UART_CFG_Type u_cfg;
+		u_cfg.Baud_rate = 38400;
+		u_cfg.Databits = UART_DATABIT_8;
+		u_cfg.Parity = UART_PARITY_NONE;
+		u_cfg.Stopbits = UART_STOPBIT_1;
+		UART_Init((LPC_UART_TypeDef *)LPC_UART1, &u_cfg);
+		// Initialize UART0 pin connect
+		PINSEL_CFG_Type PinCfg;
+		PinCfg.Funcnum = 1;
+		PinCfg.OpenDrain = 0;
+		PinCfg.Pinmode = 0;
+		PinCfg.Pinnum = 0;
+		PinCfg.Portnum = 0;
+		PINSEL_ConfigPin(&PinCfg);
+		PinCfg.Pinnum = 1;
+		PINSEL_ConfigPin(&PinCfg);
+		NVIC_SetPriority(UART1_IRQn, 8);
+		NVIC_EnableIRQ(UART1_IRQn);
+//        INIT_SERIAL(1);
     }
 #endif
 }
-
+/*
 void UART::send_byte(char data) {
     if(index_ == 0) {
         UDR0 = data;
@@ -151,7 +186,7 @@ void UART::send_byte(char data) {
         UDR1 = data;
     }
 #endif
-}
+}*/
 
 // Transition to a non-transmitting state. This is only used for RS485 mode.
 inline void listen() {
@@ -175,7 +210,26 @@ UART::UART(uint8_t index, communication_mode mode) :
 
 // Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
-        if (!enabled_) { return; }
+	if (!enabled_) { return; }
+	if (index_ == RS232) {		//uart0 eg usb
+		static unsigned char sendBuffer[64];
+		sendBuffer[0] = UART::getHostUART().out.getNextByteToSend();
+		while (UART::getHostUART().out.isSending()) {
+			uint32_t i;
+			for (i = 1; i < USB_CDC_BUFSIZE-1; i++){
+				sendBuffer[i] = UART::getHostUART().out.getNextByteToSend();
+				if (!UART::getHostUART().out.isSending()) goto skip;
+			}
+			skip:
+			USB_WriteEP (CDC_DEP_IN, (unsigned char *)&sendBuffer[0], i+1);
+		}
+	} else if (index_ == RS485) {
+		speak();
+		_delay_us(10);
+		loopback_bytes = 1;
+		uint8_t bytestosend = getSlaveUART().out.getNextByteToSend();
+	}
+/*        if (!enabled_) { return; }
 
         if (mode_ == RS485) {
                 speak();
@@ -183,11 +237,37 @@ void UART::beginSend() {
                 loopback_bytes = 1;
         }
 
-        send_byte(out.getNextByteToSend());
+        send_byte(out.getNextByteToSend());*/
 }
 
 void UART::enable(bool enabled) {
-        enabled_ = enabled;
+//	UART_8((LPC_UART_TypeDef *)LPC_UART2, index_);
+	enabled_ = enabled;
+	if (index_ == 0) {
+		if (enabled) {
+			USB_Connect(TRUE);      // USB Connect
+//			USBHwConnect(TRUE);			// USB Connect
+		}
+		else {
+			uint8_t menu9910[] = "\nUart0 Disabled ";
+			UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu9910, sizeof(menu9910), BLOCKING);
+//			UART_8((LPC_UART_TypeDef *)LPC_UART2, enabled);
+			USB_Connect(FALSE);      // USB Disconnect
+//			USBHwConnect(FALSE);			// USB Disconnect
+		}
+	} else if (index_ == 1) {
+		if (enabled){
+			uint8_t menu5910[] = "\nUart1 Enabled ";
+			UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu5910, sizeof(menu5910), BLOCKING);
+			UART_TxCmd((LPC_UART_TypeDef *)LPC_UART1, ENABLE);
+		}
+		else {
+			uint8_t menu9105[] = "\nUart1 Disabled ";
+			UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu9105, sizeof(menu9105), BLOCKING);
+			UART_TxCmd((LPC_UART_TypeDef *)LPC_UART1, DISABLE);
+		}
+	}
+/*        enabled_ = enabled;
         if (index_ == 0) {
                 if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
                 else { DISABLE_SERIAL_INTERRUPTS(0); }
@@ -207,7 +287,62 @@ void UART::enable(bool enabled) {
                 listen();
 
                 loopback_bytes = 0;
-        }
+        }*/
+}
+
+extern "C" void UART1_IRQHandler(void){
+	uint8_t menu910[] = "\n UartQ1 ";
+	UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu910, sizeof(menu910), BLOCKING);
+
+	uint32_t intsrc, tmp, tmp1;
+	// Determine the interrupt source
+	intsrc = UART_GetIntId((LPC_UART_TypeDef *)LPC_UART1);
+	tmp = intsrc & UART_IIR_INTID_MASK;
+	// Receive Line Status
+	if (tmp == UART_IIR_INTID_RLS){
+		// Check line status
+		tmp1 = UART_GetLineStatus((LPC_UART_TypeDef *)LPC_UART1);
+		// Mask out the Receive Ready and Transmit Holding empty status
+		tmp1 &= (UART_LSR_OE | UART_LSR_PE | UART_LSR_FE | UART_LSR_BI | UART_LSR_RXFE);
+		// If any error exist
+		// if (tmp1) {
+		//	UART_IntErr(tmp1);
+		// }
+	}
+	// Receive Data Available or Character time-out
+	if ((tmp == UART_IIR_INTID_RDA) || (tmp == UART_IIR_INTID_CTI)) {
+//		static uint8_t byte_in;
+//		byte_in = UART_ReceiveByte((LPC_UART_TypeDef *)LPC_UART1);
+		if (loopback_bytes > 0) {
+			loopback_bytes--;
+		} else {
+			UART::getSlaveUART().in.processByte( UART_ReceiveByte((LPC_UART_TypeDef *)LPC_UART1) );
+		}
+	}
+
+	// Transmit Holding Empty
+	if (tmp == UART_IIR_INTID_THRE){
+		if (UART::getSlaveUART().out.isSending()) {
+			loopback_bytes++;
+			UART_SendByte((LPC_UART_TypeDef *)LPC_UART1, UART::getSlaveUART().out.getNextByteToSend());  // NEED to choose which UART
+		} else {
+			_delay_us(10);
+			listen();
+		}
+	}
+}
+
+uint8_t BulkBufOut  [USB_CDC_BUFSIZE];
+
+extern "C" void CANActivity_IRQHandler(void){
+//	uint8_t menu910[] = "\nCQ";
+//	UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu910, sizeof(menu910), BLOCKING);
+	int numBytesRead = USB_ReadEP(CDC_DEP_OUT, &BulkBufOut[0]);
+//	UART_8((LPC_UART_TypeDef *)LPC_UART2, numBytesRead);
+	for (int i = 0; i < numBytesRead; i++){
+//		UART_8((LPC_UART_TypeDef *)LPC_UART2, BulkBufOut[i]);
+		UART::getSlaveUART().in.processByte( BulkBufOut[i] );
+	}
 }
 
 // Reset the UART to a listening state.  This is important for

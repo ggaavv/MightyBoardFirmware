@@ -123,7 +123,7 @@ codesourcery_path = 'C:/PROGRA~2/CodeSourcery/SOURCE~1/bin'
 
 OBJECTS = 'startup_LPC17xx.o core_cm3.o system_LPC17xx.o main_LPC17xx.o'
 ########### Uncomment top for 64bit win7 #########################
-LSCRIPT = '/src/Motherboard/system/ldscript_rom_gnu.ld'
+LSCRIPT = '/src/MightyBoard/Motherboard/system/ldscript_rom_gnu.ld'
 ########### Uncomment top for 32bit xp #########################
 #LSCRIPT = 'D:/DOCUME~1/113007~1/git/G3Firmware/v3/src/Mother~1/system/ldscript_rom_gnu.ld'
 #LSCRIPT = '/src/Motherboard/system/LPC17xx_For_NXP_USB_Bootloader.ld'
@@ -155,9 +155,9 @@ env=Environment(tools=['g++', 'gcc', 'as'],
 	OBJCOPY=codesourcery_path+'/arm-none-eabi-objcopy',
 	SIZE=codesourcery_path+'/arm-none-eabi-size',
 	#  Compiler Options
-	CCFLAGS = '-fno-inline -Wcast-align -Wunreachable-code -Wall -Wextra -fno-common -mcpu='+mcu+' -mthumb -Wno-write-strings -O'+optimization+' '+DEBUG+' -D__RAM_MODE__=0 -DVERSION=505 -fpermissive',		#+str(version),
-	CXXFLAGS = '-fno-inline -Wcast-align -Wunreachable-code -Wall -Wextra -fno-common -mcpu='+mcu+' -mthumb -Wno-write-strings -O'+optimization+' '+DEBUG+' -D__RAM_MODE__=0 -DVERSION=505 -fpermissive',		#+str(version),
-	LDFLAGS = '-mcpu='+mcu+' --gc-sections -mthumb -Wno-write-strings -O'+optimization+' -Wl,-Map='+target_name+'.map,--cref -Wl,-T '+LD_PATH+' -Wl,--allow-multiple-definition',
+	CCFLAGS = '-fno-inline -Wunused-variable -Wcast-align -Wunreachable-code -Wall -Wextra -fno-common -mcpu='+mcu+' -mthumb -Wno-write-strings -O'+optimization+' '+DEBUG+' -D__RAM_MODE__=0 -DVERSION=505 -fpermissive',		#+str(version),
+	CXXFLAGS = '-fno-inline -Wunused-variable -Wcast-align -Wunreachable-code -Wall -Wextra -fno-common -mcpu='+mcu+' -mthumb -Wno-write-strings -O'+optimization+' '+DEBUG+' -D__RAM_MODE__=0 -DVERSION=505 -fpermissive',		#+str(version),
+	LDFLAGS = '-mcpu='+mcu+' -mthumb -Wno-write-strings -O'+optimization+' -Wl,-Map='+target_name+'.map,--cref -Wl,-T '+LD_PATH+' -Wl,--allow-multiple-definition',
 	ASFLAGS = '-mcpu='+mcu+' --defsym RAM_MODE=0',
 	CPPPATH=include_paths)
 

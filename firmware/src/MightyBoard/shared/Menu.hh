@@ -78,16 +78,16 @@ public:
         /// refreshing too fast during a build is certain to interfere with
         /// the serial and stepper processes, which will decrease build quality.
         /// \return refresh interval, in microseconds.
-	virtual micros_t getUpdateRate();
+	virtual micros_t getUpdateRate() = 0;
 
         /// Update the screen display,
         /// \param[in] lcd LCD to write to
         /// \param[in] forceRedraw if true, redraw the entire screen. If false,
         ///                        only updated sections need to be redrawn.
-	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw) = 0;
 
         /// Reset the screen to it's default state
-	virtual void reset();
+	virtual void reset() = 0;
 
         /// Get a notification that a button was pressed down.
         /// This function is called for every button that is pressed. Screen
@@ -97,7 +97,7 @@ public:
         /// Note that the current implementation only supports one button
         /// press at a time, and will discard any other events.
         /// \param button Button that was pressed
-        virtual void notifyButtonPressed(ButtonArray::ButtonName button);
+        virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
         
         /// return true if this screen uses continuous button mode
         virtual bool continuousButtons(void){ return false;}
@@ -148,7 +148,7 @@ protected:
         /// Draw an item at the current cursor position.
         /// \param[in] index Index of the item to draw
         /// \param[in] LCD screen to draw onto
-	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd) = 0;
 
         /// Handle selection of a menu item
         /// \param[in] index Index of the menu item that was selected
@@ -176,7 +176,7 @@ protected:
     
     void reset();
 
-    virtual void handleCounterUpdate(uint8_t index, bool up);
+    virtual void handleCounterUpdate(uint8_t index, bool up) = 0;
 };
 
 /// Display a welcome splash screen, that removes itself when updated.

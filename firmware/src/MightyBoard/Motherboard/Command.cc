@@ -563,7 +563,7 @@ void runCommandSlice() {
 //							eeprom_write_block(&position, (void*) offset, 4);
 //							sei();
 						}
-						save_to_flash();
+						eeprom::save_to_flash();
 					}
 				}
 			} else if (command == HOST_CMD_RECALL_HOME_POSITION) {

@@ -18,9 +18,9 @@
 #include "ThermistorTable.hh"
 #include "Configuration.hh"
 #include "EepromMap.hh"
-#include <avr/eeprom.h>
+//#include <avr/eeprom.h>
 #include <stdint.h>
-#include <avr/pgmspace.h>
+//#include <avr/pgmspace.h>
 
 
 // TODO: Clean this up...
@@ -40,7 +40,7 @@
 // beta: 4066
 // max adc: 1023
 
-TempTable default_therm_table PROGMEM = {
+TempTable default_therm_table = {
   {1, 841},
   {54, 255},
   {107, 209},
@@ -77,11 +77,13 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 //		else {
 //			offset = eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET;
 //		}
-		offset += sizeof(Entry) * entryIdx;
-		eeprom_read_block(&rv,(const void*)offset,sizeof(Entry));
+//		offset += sizeof(Entry) * entryIdx;				//TODO: Fix if if(0) changes
+//		eeprom_read_block(&rv,(const void*)offset,sizeof(Entry)); //TODO: Fix if if(0) changes
 	} else {
 		// get from progmem
-		memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
+		rv.adc = default_therm_table[entryIdx].adc;
+		rv.value = default_therm_table[entryIdx].value;
+//		memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
 	}
 	return rv;
 }
@@ -124,7 +126,8 @@ int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
 bool isTableSet(uint16_t off) {
 	const void* offset = (const void*)off;
 	uint8_t first_byte;
-	eeprom_read_block(&first_byte,offset,1);
+	first_byte = eeprom_address(offset);
+//	eeprom_read_block(&first_byte,offset,1);
 	return first_byte != 0xff;
 }
 

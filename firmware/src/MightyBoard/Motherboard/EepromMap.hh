@@ -27,8 +27,6 @@
 //#define EEPROM_SIZE         		(0x00001000)
 #define eeprom_address(x)   (*(volatile unsigned long *)(EEPROM_START_ADDRESS + x))
 
-void read_all_from_flash (void);
-void save_to_flash (void);
 //uint8_t microstep_pinout(uint8_t port_no);
 
 /** EEPROM storage offsets for ??? data */
@@ -322,9 +320,11 @@ enum {
 }
 
 namespace eeprom {
+	void read_all_from_flash (void);
+	void save_to_flash (void);
 	void factoryResetEEPROM(uint8_t save_now);
 	void fullResetEEPROM(uint8_t save_now);
-	void setToolHeadCount(uint8_t count);
+	void setToolHeadCount(uint8_t count, uint8_t save_now);
     void setDefaultSettings(uint8_t save_now);
     void setCustomColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t save_now);
     bool isSingleTool();

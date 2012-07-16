@@ -37,6 +37,7 @@
 #include "stdio.h"
 
 #include "Delay.hh"
+#include "UART.hh"
 extern "C" {
 	#include "pgmspace.h"
 }
@@ -399,7 +400,7 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 //        data[i] = from_host.read8(i + 4);
     }
 //    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-    	save_to_flash();
+    	eeprom::save_to_flash();
 //		eeprom_write_block(data, (void*) offset, length);
 //	}
     to_host.append8(RC_OK);
