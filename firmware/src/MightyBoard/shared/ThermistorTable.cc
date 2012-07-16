@@ -40,7 +40,7 @@
 // beta: 4066
 // max adc: 1023
 
-TempTable default_therm_table = {
+TempTable const default_therm_table = {
   {1, 841},
   {54, 255},
   {107, 209},

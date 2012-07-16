@@ -8,7 +8,7 @@ import sys
 
 if sys.argv[1] == 'slow':
 
-	print "static uint16_t rate_table_slow[] PROGMEM = {" ,
+	print "static PROGMEM uint16_t rate_table_slow[] = {" ,
 
 	# values less than 32 clamp to zero (keeps results in uin16_t range)
 	for i in range(0,32):
@@ -22,7 +22,7 @@ if sys.argv[1] == 'slow':
 
 elif sys.argv[1] == 'fast':
 
-	print "static uint16_t rate_table_fast[] PROGMEM = {" ,
+	print "static PROGMEM uint16_t rate_table_fast[] = {" ,
 
 	for i in range(8192,32768,16):
 		print "%d, " % (int(round(1000000.0/float(i)))),
@@ -32,7 +32,7 @@ elif sys.argv[1] == 'fast':
 
 if sys.argv[1] == 'full_slow':
 
-	print "static uint16_t rate_table_slow[] PROGMEM = {" ,
+	print "static PROGMEM uint16_t rate_table_slow[] = {" ,
 
 	# values less than 32 clamp to zero (keeps results in uin16_t range)
 	for i in range(0,32):
@@ -46,7 +46,7 @@ if sys.argv[1] == 'full_slow':
 
 if sys.argv[1] == 'full_fast':
 
-	print "static uint8_t rate_table_fast[] PROGMEM = {" ,
+	print "static PROGMEM = uint8_t rate_table_fast[] {" ,
 
 	for i in range (4906, 18839):
 		print "%d, " % (1000000 / i),
