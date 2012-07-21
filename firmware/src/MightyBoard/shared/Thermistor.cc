@@ -17,7 +17,7 @@
 
 #include "Thermistor.hh"
 #include "ThermistorTable.hh"
-#include "AnalogPin.hh"
+//#include "AnalogPin.hh"
 //#include <util/atomic.h>
 
 
@@ -40,7 +40,7 @@ Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
 
 void Thermistor::init() {
   current_temp = 0;
-	initAnalogPin(analog_pin);
+//	initAnalogPin(analog_pin);
 }
 
 Thermistor::SensorState Thermistor::update() {
@@ -58,7 +58,7 @@ Thermistor::SensorState Thermistor::update() {
 //	}
 
 	// initiate next read
-	if (!startAnalogRead(analog_pin,&raw_value, &raw_valid)) return SS_ADC_BUSY;
+//	if (!startAnalogRead(analog_pin,&raw_value, &raw_valid)) return SS_ADC_BUSY;
 
 	// If we haven't gotten data yet, return.
 	if (!valid) return SS_ADC_WAITING;

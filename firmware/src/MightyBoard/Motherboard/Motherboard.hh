@@ -25,9 +25,9 @@
 #include "Configuration.hh"
 #include "Timeout.hh"
 #include "Menu.hh"
-#include "InterfaceBoard.hh"
-#include "LiquidCrystalSerial.hh"
-#include "ButtonArray.hh"
+//#include "InterfaceBoard.hh"
+//#include "LiquidCrystalSerial.hh"
+//#include "ButtonArray.hh"
 #include "Thermistor.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
@@ -59,7 +59,7 @@ private:
 public:
         /// Get the motherboard instance.
         static Motherboard& getBoard() { return motherboard; }
-        ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
+       ExtruderBoard& getExtruderBoard(uint8_t id) { if(id == 1){ return Extruder_Two;} else  { return Extruder_One;} }
 
 private:
 
@@ -79,15 +79,15 @@ private:
 	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
 	
-	ButtonArray buttonArray;
-	LiquidCrystalSerial lcd;
-	InterfaceBoard interfaceBoard;
+//	ButtonArray buttonArray;
+//	LiquidCrystalSerial lcd;
+//	InterfaceBoard interfaceBoard;
 	
-	MainMenu mainMenu;              ///< Main system menu
-	SplashScreen splashScreen;      ///< Displayed at startup
-	MonitorMode monitorMode;        ///< Displayed during build
-	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
-	MessageScreen messageScreen;    ///< Displayed by user-specified messages
+//	MainMenu mainMenu;              ///< Main system menu
+//	SplashScreen splashScreen;      ///< Displayed at startup
+//	MonitorMode monitorMode;        ///< Displayed during build
+//	WelcomeScreen welcomeScreen;	///< Displayed on Startup for the first time
+//	MessageScreen messageScreen;    ///< Displayed by user-specified messages
     
 	Thermistor platform_thermistor;
 	BuildPlatformHeatingElement platform_element;
@@ -112,7 +112,7 @@ public:
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.
-        const int getStepperCount() const { return STEPPER_COUNT; }
+    const int getStepperCount() const { return STEPPER_COUNT; }
 	
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
@@ -135,9 +135,9 @@ public:
 	void setValve(bool on);
 	Heater& getPlatformHeater() { return platform_heater; }
 
-	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }	
+//	InterfaceBoard& getInterfaceBoard() { return interfaceBoard; }
 
-	MessageScreen* getMessageScreen() { return &messageScreen; }
+//	MessageScreen* getMessageScreen() { return &messageScreen; }
 	
 	void resetUserInputTimeout();
 	void startButtonWait();

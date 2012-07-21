@@ -7,7 +7,7 @@
 #include "Configuration.hh"
 #include "CircularBuffer.hh"
 #include "Timeout.hh"
-#include "Host.hh"
+//#include "Host.hh"
 #include "UtilityScripts.hh"
 
 /// states for Welcome Menu

@@ -46,14 +46,13 @@ public:
 };
 
 
-extern const LPCPort Port0;
-extern const LPCPort Port1;
-extern const LPCPort Port2;
-extern const LPCPort Port3;
-extern const LPCPort Port4;
+const LPCPort Port0;
+const LPCPort Port1;
+const LPCPort Port2;
+const LPCPort Port3;
+const LPCPort Port4;
 
-
-extern const LPCPort NullPort;
+const LPCPort NullPort;
 
 #endif // SHARED_AVR_PORT_HH_
 

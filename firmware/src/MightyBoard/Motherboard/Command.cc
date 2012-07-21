@@ -33,6 +33,8 @@
 #include "UtilityScripts.hh"
 #include "Planner.hh"
 
+#include "Host.hh"
+
 extern "C" {
 	#include "lpc_types.h"
 }
@@ -377,14 +379,14 @@ void runCommandSlice() {
 			}
 		} else {
 			// Check buttons
-			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-			if (ib.buttonPushed()) {			
-				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
-					ib.popScreen();
-				Motherboard::getBoard().interfaceBlink(0,0);
-				RGB_LED::setDefaultColor();
-				mode = READY;
-			}
+//			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+//			if (ib.buttonPushed()) {
+//				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
+//					ib.popScreen();
+//				Motherboard::getBoard().interfaceBlink(0,0);
+//				RGB_LED::setDefaultColor();
+//				mode = READY;
+//			}
 		}
 	}
 
@@ -467,12 +469,12 @@ void runCommandSlice() {
 					}
                     // set button wait via interface board
 					Motherboard::getBoard().interfaceBlink(25,15);
-					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-					ib.waitForButton(button_mask);
+//					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+//					ib.waitForButton(button_mask);
 					mode = WAIT_ON_BUTTON;
 				}
 			} else if (command == HOST_CMD_DISPLAY_MESSAGE) {
-				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
+//				MessageScreen* scr = Motherboard::getBoard().getMessageScreen();
 				if (command_buffer.getLength() >= 6) {
 					command_buffer.pop(); // remove the command code
 					uint8_t options = command_buffer.pop();
@@ -480,32 +482,32 @@ void runCommandSlice() {
 					uint8_t ypos = command_buffer.pop();
 					uint8_t timeout_seconds = command_buffer.pop();
                     // check message clear bit
-					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
-					scr->setXY(xpos,ypos);
-					scr->addMessage(command_buffer, (options & (1 << 1)));
+//					if ( (options & (1 << 0)) == 0 ) { scr->clearMessage(); }
+//					scr->setXY(xpos,ypos);
+//					scr->addMessage(command_buffer, (options & (1 << 1)));
                     // push message screen
-					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-					if (ib.getCurrentScreen() != scr) {
-						ib.pushScreen(scr);
-					}
+//					InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+//					if (ib.getCurrentScreen() != scr) {
+//						ib.pushScreen(scr);
+//					}
                     // set message timeout if not a buttonWait call
-					if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
-							scr->setTimeout(timeout_seconds, true);
-					}
+//					if ((timeout_seconds != 0) && (!(options & (1 <<2)))) {
+//							scr->setTimeout(timeout_seconds, true);
+//					}
                     
-					if (options & (1 << 2)) { // button wait bit --> start button wait
-						if (timeout_seconds != 0) {
-							button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
-						} else {
-							button_wait_timeout = Timeout();
-						}
+//					if (options & (1 << 2)) { // button wait bit --> start button wait
+//						if (timeout_seconds != 0) {
+//							button_wait_timeout.start(timeout_seconds * 1000L * 1000L);
+//						} else {
+//							button_wait_timeout = Timeout();
+//						}
 						button_mask = 0x01;  // center button
 						button_timeout_behavior &= (1 << BUTTON_CLEAR_SCREEN);
 						Motherboard::getBoard().interfaceBlink(25,15);
-						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-						ib.waitForButton(button_mask);
+//						InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
+//						ib.waitForButton(button_mask);
 						mode = WAIT_ON_BUTTON;
-					}
+//					}
 				}
 					
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||

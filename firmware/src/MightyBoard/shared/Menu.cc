@@ -25,6 +25,7 @@
 #include "Menu_locales.hh"
 
 #include "Delay.hh"
+#include "Command.hh"
 
 
 //#define HOST_PACKET_TIMEOUT_MS 20

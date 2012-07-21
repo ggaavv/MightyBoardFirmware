@@ -20,6 +20,7 @@
 
 extern "C" {
 	#include "crc16.h"
+#include "comm.h"
 }
 
 /// Append a byte and update the CRC
@@ -55,12 +56,14 @@ void InPacket::reset() {
 //process a byte for our packet.
 void InPacket::processByte(uint8_t b) {
 	if (state == PS_START) {
+		xprintf("PS_START" " (%s:%d)\n",_F_,_L_);
 		if (b == START_BYTE) {
 			state = PS_LEN;
 		} else {
 			error(PacketError::NOISE_BYTE);
 		}
 	} else if (state == PS_LEN) {
+		xprintf("PS_LEN" " (%s:%d)\n",_F_,_L_);
 		if (b < MAX_PACKET_PAYLOAD) {
 			expected_length = b;
 			state = (expected_length == 0) ? PS_CRC : PS_PAYLOAD;
@@ -68,11 +71,13 @@ void InPacket::processByte(uint8_t b) {
 			error(PacketError::EXCEEDED_MAX_LENGTH);
 		}
 	} else if (state == PS_PAYLOAD) {
+		xprintf("PS_PAYLOAD" " (%s:%d)\n",_F_,_L_);
 		appendByte(b);
 		if (length >= expected_length) {
 			state = PS_CRC;
 		}
 	} else if (state == PS_CRC) {
+		xprintf("PS_CRC" " (%s:%d)\n",_F_,_L_);
 		if (crc == b) {
 			state = PS_LAST;
 		} else {

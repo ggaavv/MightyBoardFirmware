@@ -20,7 +20,7 @@
 
 //#include "UART.hh"
 //#include "ExtruderMotor.hh"
-//#include "Thermistor.hh"
+#include "Thermistor.hh"
 #include "Thermocouple.hh"
 #include "HeatingElement.hh"
 #include "Heater.hh"
@@ -43,7 +43,7 @@ public:
 /// \ingroup ECv34
 class ExtruderBoard {
 //private:
-//        static ExtruderBoard extruder_board;
+        static ExtruderBoard extruder_board;
 
 public:
 			/**

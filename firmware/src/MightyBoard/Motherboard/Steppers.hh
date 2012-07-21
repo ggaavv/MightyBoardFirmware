@@ -22,9 +22,10 @@
 #include "Types.hh"
 #include <stdlib.h>
 #include "Pin.hh"
-#include "Command.hh"
+//#include "Command.hh"
 #include "Point.hh"
 #include "Planner.hh"
+#include "DigiPots.hh"
 
 #include "Motherboard.hh"
 

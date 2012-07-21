@@ -32,10 +32,19 @@
 //#include <util/delay.h>
 #include "UtilityScripts.hh"
 
+
+
 extern "C" {
 	#include "LPC17xx.h"
 	#include "vcomdemo.c"
+	#include "lpc17xx_nvic.h"
+	#include "comm.h"
 }
+
+#define USER_FLASH_START 0x3000 // For USB bootloader
+//#define USER_FLASH_START 0x0 // No USB bootloader
+#define BOOTLOADER_START 0x0 // To enter bootloader
+
 
 void reset(bool hard_reset) {
 //	ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -57,8 +66,8 @@ void reset(bool hard_reset) {
 		}
 		
 		// initialize major classes
-		Motherboard& board = Motherboard::getBoard();	
-        sdcard::reset();
+		Motherboard& board = Motherboard::getBoard();
+		sdcard::reset();
 		utility::reset();
 		planner::init();
 		planner::abort();
@@ -83,15 +92,25 @@ int main() {
 	/* NOTE: you will need to call SystemCoreClockUpdate() as the very
 	first line in your main function. This will update the various
 	registers and constants to allow accurate timing. */
-	SystemCoreClockUpdate();
-	SystemInit();									// Initialize clocks
+//	SystemCoreClockUpdate();
+//	SystemInit();									// Initialize clocks
+	// DeInit NVIC and SCBNVIC
+	NVIC_DeInit();
+	NVIC_SCBDeInit();
+
 	NVIC_SetPriorityGrouping(0);					// Configure the NVIC Preemption Priority Bits
-	
+
+	SCB->VTOR = (USER_FLASH_START & 0x1FFFFF80);
+
+	comm_init();
+//	xprintf("\033[2J");
+	xprintf("\r\n\r\n\r\n\r\n\r\n**BOOTED**" " (%s:%d)\n",_F_,_L_);
 
 	Motherboard& board = Motherboard::getBoard();
 	reset(true);
 	steppers::init();
 //	sei();
+		xprintf("Loop" " (%s:%d)\n",_F_,_L_);
 	while (1) {
 		// Host interaction thread.
 		host::runHostSlice();
@@ -101,7 +120,7 @@ int main() {
 		board.runMotherboardSlice();
         // reset the watch dog timer
 //		wdt_reset();
-		
+//		xprintf(".");
 	}
 	return 0;
 }

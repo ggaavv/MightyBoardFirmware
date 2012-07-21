@@ -17,15 +17,15 @@
 
 
 #include "LPCPort.hh"
-
+/*
 extern const LPCPort Port0(0);
 extern const LPCPort Port1(1);
 extern const LPCPort Port2(2);
 extern const LPCPort Port3(3);
 extern const LPCPort Port4(4);
 
-extern const LPCPort NullPort = LPCPort();
-
+extern const LPCPort NullPort(NULL_PORT);
+*/
 LPCPort::LPCPort() : port_base(NULL_PORT) {};
 
 LPCPort::LPCPort(uint8_t port_base_in) : port_base(port_base_in) {

@@ -15,29 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef VERSION_HH_
-#define VERSION_HH_
+#include "PSU.hh"
 
-#include <stdint.h>
+PSU::PSU(const Pin& psu) :
+    psu_pin(psu)
+{
+}
 
-const uint16_t firmware_version = 505;
-//#ifndef VERSION
-//#error "Version not defined! Please define the version number for this build."
-//#else
-//const uint16_t firmware_version = VERSION;
-//#endif
+void PSU::init() {
+        psu_pin.setDirection(true);
+        turnOn(true);
+}
 
-#ifndef VERSION_INTERNAL
-const uint16_t internal_version = 0;
-#else
-const uint16_t internal_version = VERSION_INTERNAL;
-#endif
-
-
-#ifndef BUILD_NAME
-const char* const build_name = "Makerbot";
-#else
-const char* const build_name = BUILD_NAME;
-#endif
-
-#endif // VERSION_HH_
+void PSU::turnOn(bool on) {
+	// PSU pin is pulled low to turn on power supply
+        psu_pin.setValue(!on);
+}

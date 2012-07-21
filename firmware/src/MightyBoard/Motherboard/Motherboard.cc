@@ -24,7 +24,7 @@
 #include "Steppers.hh"
 #include "Planner.hh"
 #include "Command.hh"
-#include "Interface.hh"
+//#include "Interface.hh"
 #include "Commands.hh"
 #include "Eeprom.hh"
 #include "EepromMap.hh"
@@ -35,12 +35,15 @@
 //#include <avr/eeprom.h>
 //#include <util/delay.h>
 #include "Menu_locales.hh"
+#include "Host.hh"
 
+#include "Pin.hh"
 #include "Delay.hh"
 extern "C" {
 	#include "lpc17xx_timer.h"
 	#include "LPC17xx.h"
 	#include "lpc17xx_nvic.h"
+	#include "comm.h"
 }
 
 /// Instantiate static motherboard instance
@@ -48,14 +51,14 @@ Motherboard Motherboard::motherboard;
 
 /// Create motherboard object
 Motherboard::Motherboard() :
-        lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
-        interfaceBoard(buttonArray,
-            lcd,
-            INTERFACE_GLED,
-            INTERFACE_RLED,
-            &mainMenu,
-            &monitorMode,
-            &messageScreen),
+//        lcd(LCD_STROBE, LCD_DATA, LCD_CLK),
+//        interfaceBoard(buttonArray,
+ //           lcd,
+ //           INTERFACE_GLED,
+//            INTERFACE_RLED,
+//            &mainMenu,
+//            &monitorMode,
+//            &messageScreen),
             platform_thermistor(PLATFORM_PIN,0),
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
@@ -83,9 +86,12 @@ void Motherboard::reset(bool hard_reset) {
 	bool hold_z = (axis_invert & (1<<7)) == 0;
 	steppers::setHoldZ(hold_z);
 
+	xprintf("before uart" " (%s:%d)\n",_F_,_L_);
 	// Initialize the host and slave UARTs
 	UART::getHostUART().enable(true);
+	xprintf("between uart" " (%s:%d)\n",_F_,_L_);
 	UART::getHostUART().in.reset();
+	xprintf("after uart" " (%s:%d)\n",_F_,_L_);
 	
 	micros = 0;
 		
@@ -102,23 +108,23 @@ void Motherboard::reset(bool hard_reset) {
 	// interrupt timer.
 	TIM_TIMERCFG_Type TMR3_Cfg;
 	TIM_MATCHCFG_Type TMR3_Match;
-	/* On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).*/
-	/* Initialize timer 2, prescale count time of 100uS */
+	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
+	// Initialize timer 2, prescale count time of 100uS
 	TMR3_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
 	TMR3_Cfg.PrescaleValue = 10000;  //reset to 10000
-	/* Use channel 1, MR1 */
-	TMR3_Match.MatchChannel = 1;
-	/* Enable interrupt when MR0 matches the value in TC register */
+	// Use channel 1, MR1
+	TMR3_Match.MatchChannel = TIM_MR1_INT;
+	// Enable interrupt when MR0 matches the value in TC register
 	TMR3_Match.IntOnMatch = ENABLE;
-	/* Enable reset on MR0: TIMER will reset if MR0 matches it */
+	// Enable reset on MR0: TIMER will reset if MR0 matches it
 	TMR3_Match.ResetOnMatch = TRUE;
-	/* Don't stop on MR0 if MR0 matches it*/
+	// Don't stop on MR0 if MR0 matches it
 	TMR3_Match.StopOnMatch = FALSE;
-	/* Do nothing for external output pin if match (see cmsis help, there are another options) */
+	// Do nothing for external output pin if match (see cmsis help, there are another options)
 	TMR3_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
-	/* Set Match value, count value of 100 (10 * 10000uS = 100000us = 1s --> 10 Hz) */
-	TMR3_Match.MatchValue = 100;
-	/* Set configuration for Tim_config and Tim_MatchConfig */
+	// Set Match value, count value of 100 (10 * 10000uS = 100000us = 1s --> 10 Hz)
+	TMR3_Match.MatchValue = INTERVAL_IN_MICROSECONDS * 16 *1000;
+	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TMR3_Cfg);
 	TIM_ConfigMatch(LPC_TIM3, &TMR3_Match);
 	// 0 top priority 32 lowest
@@ -156,7 +162,7 @@ void Motherboard::reset(bool hard_reset) {
 	TMR1_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
 	TMR1_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
 	// Use channel 1, MR1
-	TMR1_Match.MatchChannel = 0;
+	TMR1_Match.MatchChannel = TIM_MR1_INT;
 	// Enable interrupt when MR0 matches the value in TC register
 	TMR1_Match.IntOnMatch = TRUE;
 	// Enable reset on MR0: TIMER will reset if MR0 matches it
@@ -166,14 +172,14 @@ void Motherboard::reset(bool hard_reset) {
 	// Do nothing for external output pin if match (see cmsis help, there are another options)
 	TMR1_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
 	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
-	TMR1_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
+	TMR1_Match.MatchValue = INTERVAL_IN_MICROSECONDS *1000;
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM1, TIM_TIMER_MODE, &TMR1_Cfg);
 	TIM_ConfigMatch(LPC_TIM1, &TMR1_Match);
 	// 0 top priority 32 lowest
-	NVIC_SetPriority(TIMER1_IRQn, 0);
+	NVIC_SetPriority(TIMER1_IRQn, 3);
 	NVIC_EnableIRQ(TIMER1_IRQn);
-	TIM_Cmd(LPC_TIM1,ENABLE);
+//	TIM_Cmd(LPC_TIM1,ENABLE);
 //	TCCR1A = 0b00000001;
 //	TCCR1B = 0b00001011; /// set to PWM mode
 //	OCR1A = 0;
@@ -190,7 +196,7 @@ void Motherboard::reset(bool hard_reset) {
 	TMR2_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
 	TMR2_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
 	// Use channel 1, MR1
-	TMR2_Match.MatchChannel = 0;
+	TMR2_Match.MatchChannel = TIM_MR1_INT;
 	// Enable interrupt when MR0 matches the value in TC register
 	TMR2_Match.IntOnMatch = TRUE;
 	// Enable reset on MR0: TIMER will reset if MR0 matches it
@@ -200,12 +206,12 @@ void Motherboard::reset(bool hard_reset) {
 	// Do nothing for external output pin if match (see cmsis help, there are another options)
 	TMR2_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
 	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
-	TMR2_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
+	TMR2_Match.MatchValue = INTERVAL_IN_MICROSECONDS *1000;
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM2, TIM_TIMER_MODE, &TMR2_Cfg);
 	TIM_ConfigMatch(LPC_TIM2, &TMR2_Match);
 	// 0 top priority 32 lowest
-	NVIC_SetPriority(TIMER2_IRQn, 0);
+	NVIC_SetPriority(TIMER2_IRQn, 4);
 	NVIC_EnableIRQ(TIMER2_IRQn);
 	TIM_Cmd(LPC_TIM2,ENABLE);
 //	TCCR4A = 0b00000001;
@@ -215,9 +221,9 @@ void Motherboard::reset(bool hard_reset) {
 //	TIMSK4 = 0b00000000; // no interrupts needed
 		
 	// Check if the interface board is attached
-	hasInterfaceBoard = interface::isConnected();
+//	hasInterfaceBoard = interface::isConnected();
 
-	if (hasInterfaceBoard) {
+/*	if (hasInterfaceBoard) {
 		// Make sure our interface board is initialized
         interfaceBoard.init();
 
@@ -265,7 +271,7 @@ void Motherboard::reset(bool hard_reset) {
 		cutoff.init();
 		
 		board_status = STATUS_NONE;
-    } 	
+   } 		 */
     
      // initialize the extruders
     Extruder_One.reset();
@@ -280,7 +286,7 @@ void Motherboard::reset(bool hard_reset) {
 	platform_heater.set_target_temperature(0);	
 	
 	RGB_LED::setDefaultColor(); 
-	buttonWait = false;	
+	buttonWait = false;
 	
 }
 
@@ -296,7 +302,7 @@ micros_t Motherboard::getCurrentMicros() {
 
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
-
+	xprintf("Motherboard::doInterrupt" " (%s:%d)\n",micros,_F_,_L_);
 	//micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
 	if (command::isPaused()) return;
@@ -333,14 +339,14 @@ void Motherboard::startButtonWait(){
     // blink the interface LEDs
 	interfaceBlink(25,15);
     
-	interfaceBoard.waitForButton(0xFF);
+//	interfaceBoard.waitForButton(0xFF);
 	buttonWait = true;
 
 }
 
 // set an error message on the interface and wait for user button press
 void Motherboard::errorResponse(char msg[], bool reset){
-	interfaceBoard.errorMessage(msg);
+//	interfaceBoard.errorMessage(msg);
 	startButtonWait();
 	reset_request = reset;
 }
@@ -366,15 +372,15 @@ void Motherboard::runMotherboardSlice() {
     
     // check for user button press
     // update interface screen as necessary
-	if (hasInterfaceBoard) {
-		interfaceBoard.doInterrupt();
+//	if (hasInterfaceBoard) {
+//		interfaceBoard.doInterrupt();
 		// stagger motherboard updates so that they do not all occur on the same loop
-		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
-			interfaceBoard.doUpdate();
-			interface_update_timeout.start(interfaceBoard.getUpdateRate());
-			stagger = STAGGER_MID;
-		}
-	}
+//		if (interface_update_timeout.hasElapsed() && (stagger == STAGGER_INTERFACE)) {
+//			interfaceBoard.doUpdate();
+//			interface_update_timeout.start(interfaceBoard.getUpdateRate());
+//			stagger = STAGGER_MID;
+//		}
+//	}
 			   
     if(isUsingPlatform()) {
 		// manage heating loops for the HBP
@@ -382,28 +388,28 @@ void Motherboard::runMotherboardSlice() {
 	}
 	
     // if waiting on button press
-	if(buttonWait)
-	{
+//	if(buttonWait)
+//	{
         // if user presses enter
-		if (interfaceBoard.buttonPushed()) {
+//		if (interfaceBoard.buttonPushed()) {
 			// set interface LEDs to solid
-			interfaceBlink(0,0);
+//			interfaceBlink(0,0);
 			// restore default LED behavior
-			RGB_LED::setDefaultColor();
+//			RGB_LED::setDefaultColor();
 			//clear error messaging
-			buttonWait = false;
-			interfaceBoard.popScreen();
-			if(reset_request)
-				host::stopBuild();
-			triggered = false;
-		}
+//			buttonWait = false;
+//			interfaceBoard.popScreen();
+//			if(reset_request)
+//				host::stopBuild();
+//			triggered = false;
+//		}
 		
-	}
+//	}
 	
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
-	{
+//	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
+//	{
         // clear timeout
 		user_input_timeout.clear();
 		
@@ -413,7 +419,7 @@ void Motherboard::runMotherboardSlice() {
 		if((Extruder_One.getExtruderHeater().get_set_temperature() > 0) ||
 			(Extruder_Two.getExtruderHeater().get_set_temperature() > 0) ||
 			(platform_heater.get_set_temperature() > 0)){
-				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
+//				interfaceBoard.errorMessage(HEATER_INACTIVITY_MSG);//37
 				startButtonWait();
                 // turn LEDs blue
 				RGB_LED::setColor(0,0,255, true);
@@ -422,7 +428,7 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
-	}
+//	}
 	
     // respond to heatshutdown.  response only needs to be called once
 	if(heatShutdown && !triggered && !Piezo::isPlaying())
@@ -437,16 +443,16 @@ void Motherboard::runMotherboardSlice() {
 		/// error message
 		switch (heatFailMode){
 			case HEATER_FAIL_SOFTWARE_CUTOFF:
-				interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);//,79);
+//				interfaceBoard.errorMessage(HEATER_FAIL_SOFTWARE_CUTOFF_MSG);//,79);
 				break;
 			case HEATER_FAIL_NOT_HEATING:
-				interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);//,79);
+//				interfaceBoard.errorMessage(HEATER_FAIL_NOT_HEATING_MSG);//,79);
 				break;
 			case HEATER_FAIL_DROPPING_TEMP:
-				interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);//,79);
+//				interfaceBoard.errorMessage(HEATER_FAIL_DROPPING_TEMP_MSG);//,79);
 				break;
 			case HEATER_FAIL_NOT_PLUGGED_IN:
-				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
+//				interfaceBoard.errorMessage(HEATER_FAIL_NOT_PLUGGED_IN_MSG);//,79);
                 startButtonWait();
                 heatShutdown = false;
                 return;
@@ -482,16 +488,19 @@ void Motherboard::resetUserInputTimeout(){
 	user_input_timeout.start(USER_INPUT_TIMEOUT);
 }
 
-#define MICROS_INTERVAL 128
+#define MICROS_INTERVAL INTERVAL_IN_MICROSECONDS
+//#define MICROS_INTERVAL 128
 
 void Motherboard::UpdateMicros(){
+//	xprintf("%x" " (%s:%d)\n",micros,_F_,_L_);
 	micros += MICROS_INTERVAL;//_IN_MICROSECONDS;
-
 }
 
 
 /// Timer three comparator match interrupt
 extern "C" void TIMER3_IRQHandler (void){
+	xprintf("TIMER3_IRQHandler" " (%s:%d)\n",_F_,_L_);
+	TIM_ClearIntCapturePending(LPC_TIM3,TIM_MR1_INT);
 //ISR(TIMER3_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
 }
@@ -534,10 +543,10 @@ void Motherboard::interfaceBlink(int on_time, int off_time){
 	
 	if(off_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(true);
+//		interface::setLEDs(true);
 	}else if(on_time == 0){
 		interface_blink_state = BLINK_NONE;
-		interface::setLEDs(false);
+//		interface::setLEDs(false);
 	} else{
 		interface_on_time = on_time;
 		interface_off_time = off_time;
@@ -570,6 +579,7 @@ uint16_t blink_overflow_counter = 0;
 /// Timer 2 overflow interrupt
 
 extern "C" void TIMER2_IRQHandler (void){
+	TIM_ClearIntCapturePending(LPC_TIM2,TIM_MR1_INT);
 //ISR(TIMER2_COMPA_vect) {
 	
 	Motherboard::getBoard().UpdateMicros();
@@ -611,13 +621,13 @@ extern "C" void TIMER2_IRQHandler (void){
 		if (interface_blink_state == BLINK_ON) {
 			interface_blink_state = BLINK_OFF;
 			interface_ovfs_remaining = interface_on_time;
-			interface::setLEDs(true);
+//			interface::setLEDs(true);
 		} else if (interface_blink_state == BLINK_OFF) {
 			interface_blink_state = BLINK_ON;
 			interface_ovfs_remaining = interface_off_time;
-			interface::setLEDs(false);
+//			interface::setLEDs(false);
 		}
-	} 
+	}
 
 }
 
@@ -626,16 +636,17 @@ extern "C" void TIMER2_IRQHandler (void){
 extern "C" void TIMER0_IRQHandler (void)
 //ISR(TIMER0_COMPA_vect)
 {
-  Piezo::doInterrupt();
+	TIM_ClearIntCapturePending(LPC_TIM0,TIM_MR1_INT);
+	Piezo::doInterrupt();
 }
 
 // HBP PWM
-void pwmHBP_On(bool on) {
+void pwmHBP_On(bool on) {/*
 	if (on) {
 //		TCCR5A |= 0b00100000; /// turn on OC5B PWM output
 	} else {
 //		TCCR5A &= 0b11001111; /// turn off OC5B PWM output
-	}
+	}*/
 }
 
 

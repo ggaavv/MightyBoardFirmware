@@ -15,29 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#ifndef VERSION_HH_
-#define VERSION_HH_
+#ifndef BOARDS_RRMBV12_PSU_HH_
+#define BOARDS_RRMBV12_PSU_HH_
 
-#include <stdint.h>
+#include "Pin.hh"
 
-const uint16_t firmware_version = 505;
-//#ifndef VERSION
-//#error "Version not defined! Please define the version number for this build."
-//#else
-//const uint16_t firmware_version = VERSION;
-//#endif
+/// Simple wrapper class for encapsulating the PSU functionality
+/// \ingroup SoftwareLibraries
+class PSU {
+private:
+        Pin psu_pin;    ///< Power supply enable pin
+public:
+        PSU(const Pin& psu);
 
-#ifndef VERSION_INTERNAL
-const uint16_t internal_version = 0;
-#else
-const uint16_t internal_version = VERSION_INTERNAL;
-#endif
+	/// Initialize the PSU
+	void init();
 
+	/// Turn the PSU on or off
+        /// \param[in] on True to turn the PSU on, False to turn it off.
+	void turnOn(bool on);
+};
 
-#ifndef BUILD_NAME
-const char* const build_name = "Makerbot";
-#else
-const char* const build_name = BUILD_NAME;
-#endif
-
-#endif // VERSION_HH_
+#endif // BOARDS_RRMBV12_PSU_HH_

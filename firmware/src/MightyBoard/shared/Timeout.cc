@@ -16,7 +16,7 @@
  */
 
 #include "Timeout.hh"
-#include "Configuration.hh"
+//#include "Configuration.hh"
 
 #if defined IS_EXTRUDER_BOARD
     #include "ExtruderBoard.hh"

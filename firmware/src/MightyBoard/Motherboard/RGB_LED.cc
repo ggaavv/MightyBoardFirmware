@@ -17,7 +17,7 @@
  
  
  #include "RGB_LED.hh"
- #include "TWI.hh"
+// #include "TWI.hh"
 // #include <util/delay.h>
  #include "Configuration.hh"
  #include "Pin.hh"
@@ -35,7 +35,7 @@ namespace RGB_LED{
  
 void init(){
 	 
-	 TWI_init();
+//	 TWI_init();
 	 
 	 setDefaultColor();
  }
@@ -67,9 +67,9 @@ void init(){
  		return;
  	}
  	
- 	uint8_t error = TWI_write_data(LEDAddress, data1, 2);
+// 	uint8_t error = TWI_write_data(LEDAddress, data1, 2);
      _delay_us(1);
-    error = TWI_write_data(LEDAddress, data2, 2);
+//    error = TWI_write_data(LEDAddress, data2, 2);
      _delay_us(1);
  	
      LEDSelect = data1[1];
@@ -100,9 +100,9 @@ void init(){
  	else
  		return;
  	
-     uint8_t error = TWI_write_data(LEDAddress, data1, 2);
+//     uint8_t error = TWI_write_data(LEDAddress, data1, 2);
      _delay_us(1);
-     error = TWI_write_data(LEDAddress, data2, 2);
+//     error = TWI_write_data(LEDAddress, data2, 2);
      _delay_us(1);
      
  	LEDSelect = data1[1];	
@@ -122,7 +122,7 @@ void init(){
  	// clear past select data and turn LEDs full off
  		data[1] = (LEDSelect & ~LEDs) | (LED_OFF & LEDs); 
  		
- 	uint8_t error = TWI_write_data(LEDAddress, data, 2);
+// 	uint8_t error = TWI_write_data(LEDAddress, data, 2);
  	
      LEDSelect = data[1];
  }

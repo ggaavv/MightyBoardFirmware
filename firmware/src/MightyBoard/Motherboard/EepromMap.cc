@@ -33,6 +33,10 @@
 #include "CoolingFan.hh"
 #include "IAP.hh"
 
+extern "C" {
+	#include "lpc_types.h"
+}
+
 namespace eeprom {
 
 #define DEFAULT_P_VALUE  (7.0f)
@@ -51,15 +55,6 @@ void read_all_from_flash (void){
 	for (i = 0x00000000; i < eeprom_info::EEPROM_SIZE; i++,i++,i++,i++) {
 		eeprom_address(i) = eeprom_address(EEPROM_FLASH_AREA_START+i - EEPROM_START_ADDRESS);
 	}
-/*		uint8_t menu22[] = "\ni value : ";
-		UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu22, sizeof(menu22), BLOCKING);
-		UART_32_HEX((LPC_UART_TypeDef *)LPC_UART2, i);
-		uint8_t menu222[] = " from flash address : ";
-		UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu222, sizeof(menu222), BLOCKING);
-		UART_32_HEX((LPC_UART_TypeDef *)LPC_UART2, EEPROM_FLASH_AREA_START + i);
-		uint8_t menu223[] = " eeprom address : ";
-		UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu223, sizeof(menu223), BLOCKING);
-		UART_32_HEX((LPC_UART_TypeDef *)LPC_UART2, EEPROM_START_ADDRESS + i);*/
 	__enable_irq ();
 };
 

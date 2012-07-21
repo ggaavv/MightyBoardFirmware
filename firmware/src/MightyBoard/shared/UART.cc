@@ -35,6 +35,7 @@ extern "C" {
 	#include "usbcfg.h"
 	#include "cdcuser.h"
 	#include "usbcore.h"
+#include "comm.h"
 }
 
 // TODO: There should be a better way to enable this flag?
@@ -144,15 +145,16 @@ UCSR##uart_##B &= ~(_BV(RXCIE##uart_) | _BV(TXCIE##uart_)); \
 
 void UART::init_serial() {
     if(index_ == RS232) {
-		uint8_t menu322[] = "b4 USB config\n";
-		UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu322, sizeof(menu322), BLOCKING);
-	while (!USB_Configuration);		// wait until USB is configured
-//        INIT_SERIAL(0);
+    	xprintf("USB_Init" " (%s:%d)\n",_F_,_L_);
+    	USB_Init();
+    	xprintf("b4 USB config" " (%s:%d)\n",_F_,_L_);
+ //   	while (!USB_Configuration){		// wait until USB is configured
+ //   		xprintf("b4 USB config" " (%s:%d)\n",_F_,_L_);
+ //   	}
     }
 #if HAS_SLAVE_UART
     else {
-		uint8_t menu3722[] = "rs485\n";
-		UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu3722, sizeof(menu3722), BLOCKING);
+    	xprintf("rs485" " (%s:%d)\n",_F_,_L_);
 		// UART Configuration Structure
 		UART_CFG_Type u_cfg;
 		u_cfg.Baud_rate = 38400;
@@ -172,21 +174,10 @@ void UART::init_serial() {
 		PINSEL_ConfigPin(&PinCfg);
 		NVIC_SetPriority(UART1_IRQn, 8);
 		NVIC_EnableIRQ(UART1_IRQn);
-//        INIT_SERIAL(1);
     }
 #endif
+    xprintf("end UART::init_serial" " (%s:%d)\n",_F_,_L_);
 }
-/*
-void UART::send_byte(char data) {
-    if(index_ == 0) {
-        UDR0 = data;
-    }
-#if HAS_SLAVE_UART
-    else {
-        UDR1 = data;
-    }
-#endif
-}*/
 
 // Transition to a non-transmitting state. This is only used for RS485 mode.
 inline void listen() {
@@ -210,6 +201,7 @@ UART::UART(uint8_t index, communication_mode mode) :
 
 // Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
+	xprintf("beginSend()" " (%s:%d)\n",_F_,_L_);
 	if (!enabled_) { return; }
 	if (index_ == RS232) {		//uart0 eg usb
 		static unsigned char sendBuffer[64];
@@ -218,6 +210,9 @@ void UART::beginSend() {
 			uint32_t i;
 			for (i = 1; i < USB_CDC_BUFSIZE-1; i++){
 				sendBuffer[i] = UART::getHostUART().out.getNextByteToSend();
+				xprintf(".out.isSending[i]" " (%s:%d)\n",_F_,_L_);
+				xprintf("%x",sendBuffer[i]);
+				xprintf("\n" " (%s:%d)\n",_F_,_L_);
 				if (!UART::getHostUART().out.isSending()) goto skip;
 			}
 			skip:
@@ -229,70 +224,47 @@ void UART::beginSend() {
 		loopback_bytes = 1;
 		uint8_t bytestosend = getSlaveUART().out.getNextByteToSend();
 	}
-/*        if (!enabled_) { return; }
-
-        if (mode_ == RS485) {
-                speak();
-                _delay_us(10);
-                loopback_bytes = 1;
-        }
-
-        send_byte(out.getNextByteToSend());*/
 }
 
 void UART::enable(bool enabled) {
-//	UART_8((LPC_UART_TypeDef *)LPC_UART2, index_);
+	xprintf("UART::enable" " (%s:%d)\n",_F_,_L_);
 	enabled_ = enabled;
 	if (index_ == 0) {
 		if (enabled) {
+			xprintf("USB_Connect(TRUE)" " (%s:%d)\n",_F_,_L_);
 			USB_Connect(TRUE);      // USB Connect
-//			USBHwConnect(TRUE);			// USB Connect
+			while (!USB_Configuration){		// wait until USB is configured
+				xprintf("enable !USB_Configuration" " (%s:%d)\n",_F_,_L_);
+			}
+			xprintf("after USB_Connect(TRUE)" " (%s:%d)\n",_F_,_L_);
 		}
 		else {
-			uint8_t menu9910[] = "\nUart0 Disabled ";
-			UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu9910, sizeof(menu9910), BLOCKING);
-//			UART_8((LPC_UART_TypeDef *)LPC_UART2, enabled);
+			xprintf("Uart0 Disabled" " (%s:%d)\n",_F_,_L_);
 			USB_Connect(FALSE);      // USB Disconnect
-//			USBHwConnect(FALSE);			// USB Disconnect
 		}
 	} else if (index_ == 1) {
 		if (enabled){
-			uint8_t menu5910[] = "\nUart1 Enabled ";
-			UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu5910, sizeof(menu5910), BLOCKING);
+			xprintf("Uart1 Enabled" " (%s:%d)\n",_F_,_L_);
 			UART_TxCmd((LPC_UART_TypeDef *)LPC_UART1, ENABLE);
 		}
 		else {
-			uint8_t menu9105[] = "\nUart1 Disabled ";
-			UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu9105, sizeof(menu9105), BLOCKING);
+			xprintf("Uart1 Disabled" " (%s:%d)\n",_F_,_L_);
 			UART_TxCmd((LPC_UART_TypeDef *)LPC_UART1, DISABLE);
 		}
 	}
-/*        enabled_ = enabled;
-        if (index_ == 0) {
-                if (enabled) { ENABLE_SERIAL_INTERRUPTS(0); }
-                else { DISABLE_SERIAL_INTERRUPTS(0); }
-        }
-#if HAS_SLAVE_UART
-        else if (index_ == 1) {
-                if (enabled) { ENABLE_SERIAL_INTERRUPTS(1); }
-                else { DISABLE_SERIAL_INTERRUPTS(1); }
-        }
-#endif
-
         if (mode_ == RS485) {
                 // If this is an RS485 pin, set up the RX and TX enable control lines.
                 TX_Enable.setDirection(true);
                 RX_Enable.setDirection(true);
                 RX_Enable.setValue(false);  // Active low
                 listen();
-
                 loopback_bytes = 0;
-        }*/
+        }
+	xprintf("end UART::enable" " (%s:%d)\n",_F_,_L_);
 }
 
 extern "C" void UART1_IRQHandler(void){
-	uint8_t menu910[] = "\n UartQ1 ";
-	UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu910, sizeof(menu910), BLOCKING);
+	xprintf("UART1_IRQ" " (%s:%d)\n",_F_,_L_);
 
 	uint32_t intsrc, tmp, tmp1;
 	// Determine the interrupt source
@@ -311,8 +283,8 @@ extern "C" void UART1_IRQHandler(void){
 	}
 	// Receive Data Available or Character time-out
 	if ((tmp == UART_IIR_INTID_RDA) || (tmp == UART_IIR_INTID_CTI)) {
-//		static uint8_t byte_in;
-//		byte_in = UART_ReceiveByte((LPC_UART_TypeDef *)LPC_UART1);
+		static uint8_t byte_in;
+		byte_in = UART_ReceiveByte((LPC_UART_TypeDef *)LPC_UART1);
 		if (loopback_bytes > 0) {
 			loopback_bytes--;
 		} else {
@@ -335,12 +307,12 @@ extern "C" void UART1_IRQHandler(void){
 uint8_t BulkBufOut  [USB_CDC_BUFSIZE];
 
 extern "C" void CANActivity_IRQHandler(void){
-//	uint8_t menu910[] = "\nCQ";
-//	UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu910, sizeof(menu910), BLOCKING);
+	xprintf("CAN_IRQ" " (%s:%d)\n",_F_,_L_);
 	int numBytesRead = USB_ReadEP(CDC_DEP_OUT, &BulkBufOut[0]);
-//	UART_8((LPC_UART_TypeDef *)LPC_UART2, numBytesRead);
 	for (int i = 0; i < numBytesRead; i++){
-//		UART_8((LPC_UART_TypeDef *)LPC_UART2, BulkBufOut[i]);
+		xprintf("BulkBufOut[i]" " (%s:%d)\n",_F_,_L_);
+		xprintf("%x",BulkBufOut[i]);
+		xprintf("\n" " (%s:%d)\n",_F_,_L_);
 		UART::getSlaveUART().in.processByte( BulkBufOut[i] );
 	}
 }
@@ -348,10 +320,10 @@ extern "C" void CANActivity_IRQHandler(void){
 // Reset the UART to a listening state.  This is important for
 // RS485-based comms.
 void UART::reset() {
-        if (mode_ == RS485) {
-                loopback_bytes = 0;
-                listen();
-        }
+	if (mode_ == RS485) {
+		loopback_bytes = 0;
+		listen();
+	}
 }
 
 #if defined (__AVR_ATmega168__) || defined (__AVR_ATmega328__)

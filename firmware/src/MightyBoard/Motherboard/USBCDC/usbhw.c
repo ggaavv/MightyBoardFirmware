@@ -28,15 +28,7 @@
 #include "usbuser.h"
 
 /********************************/
-//#include "test.hh"  // testing
-//#include "test_led.hh"  // testing
-//#include "test_u.hh"
-#include "Uart32.c"
-//#include "Delay.hh"
-//	#include "lpc17xx_nvic.h"
-//	#include "lpc17xx_timer.h"
-//	#include "LPC17xx.h"
-//test_led(1);
+#include "comm.h"
 /********************************/
 
 #if defined (  __CC_ARM__  )
@@ -183,10 +175,10 @@ void USB_Init (void) {
   while ((LPC_USB->USBClkSt & 0x1A) != 0x1A);
 //  UART_32_HEX((LPC_UART_TypeDef *)LPC_UART2, 0x08080808);
 
-  NVIC_SetPriority(USB_IRQn, 2);
+  NVIC_SetPriority(USB_IRQn, 1);
   NVIC_EnableIRQ(USB_IRQn);               /* enable USB interrupt */
 
-  NVIC_SetPriority(CANActivity_IRQn, 4);
+  NVIC_SetPriority(CANActivity_IRQn, 2);
   NVIC_EnableIRQ(CANActivity_IRQn);
 
   USB_Reset();
@@ -685,8 +677,7 @@ uint32_t USB_GetFrame (void) {
  */
 
 extern void USB_IRQHandler (void) {
-//	uint8_t menu710[] = "\nUQ ";
-//	UART_Send((LPC_UART_TypeDef *)LPC_UART2, menu710, sizeof(menu710), BLOCKING);
+	xprintf("USB_IRQ" " (%s:%d)\n",_F_,_L_);
 
   uint32_t disr, val, n, m;
   uint32_t episr, episrCur;
