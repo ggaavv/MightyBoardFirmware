@@ -24,6 +24,33 @@
 //#define STEP0_PORT 		PORTG
 //#define STEP0_PIN 		PING1
 
+/// we map the stepper pins to arbitrary number for use in the sped up pin-access functions
+#define X_DIR			0
+#define X_STEP			1
+#define X_ENABLE		2
+#define X_MAX			3
+#define X_MIN			4
+
+#define Y_DIR			10
+#define Y_STEP			11
+#define Y_ENABLE		12
+#define Y_MAX			13
+#define Y_MIN			14
+
+#define Z_DIR			20
+#define Z_STEP			21
+#define Z_ENABLE		22
+#define Z_MAX			23
+#define Z_MIN			24
+
+#define A_DIR			30
+#define A_STEP			31
+#define A_ENABLE		32
+
+#define B_DIR			40
+#define B_STEP			41
+#define B_ENABLE		41
+
 #define LPC1768
 #ifndef LPC1768
 #define X_STEP_PORT		PORTF	//step 
@@ -99,33 +126,6 @@
 #define B_ENABLE_PORT	PORTG	//enable
 #define B_ENABLE_PIN	PING2
 #define B_ENABLE_DDR	DDRG
-
-/// we map the stepper pins to arbitrary number for use in the sped up pin-access functions
-#define X_DIR			0
-#define X_STEP			1
-#define X_ENABLE		2
-#define X_MAX			3
-#define X_MIN			4
-
-#define Y_DIR			10
-#define Y_STEP			11
-#define Y_ENABLE		12
-#define Y_MAX			13
-#define Y_MIN			14
-
-#define Z_DIR			20
-#define Z_STEP			21
-#define Z_ENABLE		22	
-#define Z_MAX			23
-#define Z_MIN			24
-
-#define A_DIR			30		
-#define A_STEP			31
-#define A_ENABLE		32
-
-#define B_DIR			40		
-#define B_STEP			41
-#define B_ENABLE		41
 
 /// write a pin
 #define _WRITE(IO, v)  do { if (v) {IO ## _PORT |= _BV(IO ## _PIN); } else {IO ## _PORT &= ~_BV(IO ## _PIN); }; } while (0)

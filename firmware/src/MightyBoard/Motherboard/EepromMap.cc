@@ -404,7 +404,8 @@ void factoryResetEEPROM(uint8_t save_now) {
     // startup script flag is cleared
     eeprom_address(eeprom_offsets::FIRST_BOOT_FLAG) = save_now;
 //    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
-    save_to_flash();
+    if (save_now)
+    	save_to_flash();
 }
 
 void setToolHeadCount(uint8_t count, uint8_t save_now){

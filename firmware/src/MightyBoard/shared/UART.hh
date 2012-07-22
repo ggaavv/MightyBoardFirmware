@@ -45,21 +45,22 @@ enum communication_mode {
 /// \ingroup HardwareLibraries
 class UART {
 private:
-           ///< The controller accepts commands from the host UART
-
+//	static UART hostUART;       ///< The controller accepts commands from the host UART
 #if HAS_SLAVE_UART
-          ///< The controller can forward commands to the slave UART
+//	static UART slaveUART;      ///< The controller can forward commands to the slave UART
 #endif
 
 public:
     /// Get a reference to the host UART
     /// \return hostUART instance, which should act as a slave to a computer (or motherboard)
     static UART& getHostUART() {static UART hostUART(0,RS232); return hostUART; }
+//    static UART& getHostUART() { return hostUART; }
 
 #if HAS_SLAVE_UART
     /// Get a reference to the slave UART
     /// \return slaveUART instance, which should act as a master to one or more slave toolheads.
     static UART& getSlaveUART() {static UART slaveUART(1,RS485); return slaveUART; }
+//    static UART& getSlaveUART() { return slaveUART; }
 #endif
 
 private:

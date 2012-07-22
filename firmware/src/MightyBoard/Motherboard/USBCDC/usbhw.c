@@ -175,10 +175,10 @@ void USB_Init (void) {
   while ((LPC_USB->USBClkSt & 0x1A) != 0x1A);
 //  UART_32_HEX((LPC_UART_TypeDef *)LPC_UART2, 0x08080808);
 
-  NVIC_SetPriority(USB_IRQn, 1);
+  NVIC_SetPriority(USB_IRQn, 4);
   NVIC_EnableIRQ(USB_IRQn);               /* enable USB interrupt */
 
-  NVIC_SetPriority(CANActivity_IRQn, 2);
+  NVIC_SetPriority(CANActivity_IRQn, 8);
   NVIC_EnableIRQ(CANActivity_IRQn);
 
   USB_Reset();
@@ -677,7 +677,7 @@ uint32_t USB_GetFrame (void) {
  */
 
 extern void USB_IRQHandler (void) {
-	xprintf("USB_IRQ" " (%s:%d)\n",_F_,_L_);
+//	xprintf("USB_IRQ" " (%s:%d)\n",_F_,_L_);
 
   uint32_t disr, val, n, m;
   uint32_t episr, episrCur;

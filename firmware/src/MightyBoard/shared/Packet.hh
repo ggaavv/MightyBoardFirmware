@@ -20,6 +20,10 @@
 
 #include <stdint.h>
 
+extern "C" {
+#include "comm.h"
+}
+
 #define START_BYTE 0xD5
 #define MAX_PACKET_PAYLOAD 32
 

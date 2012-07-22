@@ -40,6 +40,7 @@
 #include "UART.hh"
 extern "C" {
 	#include "pgmspace.h"
+#include "comm.h"
 }
 
 namespace host {
@@ -78,22 +79,30 @@ bool hard_reset = false;
 bool cancelBuild = false;
 
 void runHostSlice() {
-		
+
         InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
+
+ //       xprintf("%x" " (%s:%d)\n",&UART::getHostUART().in.state,_F_,_L_);
+ //       xprintf("%x" " (%s:%d)\n",&UART::getHostUART().out.state,_F_,_L_);
+
+
 	if (out.isSending()) {
+		xprintf("out.isSending()" " (%s:%d)\n",_F_,_L_);
 		// still sending; wait until send is complete before reading new host packets.
 		return;
 	}
     // after cancel print, try to send a msg to repG that print has been canceled
     // timeout if this is not possible and reset the bot
 	if(cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())){
+		xprintf("cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())" " (%s:%d)\n",_F_,_L_);
 		cancelBuild = true;
 		cancel_timeout = Timeout();
 		_delay_us(500000);
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && !cancelBuild){
+		xprintf("do_host_reset && !cancelBuild" " (%s:%d)\n",_F_,_L_);
 		
 		do_host_reset = false;
 
@@ -114,6 +123,7 @@ void runHostSlice() {
 	}
     // new packet coming in
 	if (in.isStarted() && !in.isFinished()) {
+		xprintf("in.isStarted() && !in.isFinished()" " (%s:%d)\n",_F_,_L_);
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
 			packet_in_timeout.start(HOST_PACKET_TIMEOUT_MICROS);
@@ -122,6 +132,7 @@ void runHostSlice() {
 		}
 	}
 	if (in.hasError()) {
+		xprintf("in.hasError()" " (%s:%d)\n",_F_,_L_);
 		// Reset packet quickly and start handling the next packet.
 		// Report error code.
 		if (in.getErrorCode() == PacketError::PACKET_TIMEOUT) {
@@ -132,6 +143,7 @@ void runHostSlice() {
 		in.reset();
 	}
 	if (in.isFinished()) {
+//		xprintf("in.isFinished()" " (%s:%d)\n",_F_,_L_);
 		packet_in_timeout.abort();
 		out.reset();
 	  // do not respond to commands if the bot has had a heater failure
@@ -375,14 +387,17 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 }
     // read value from eeprom
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
-    
+	xprintf("handleReadEeprom" " (%s:%d)\n",_F_,_L_);
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
+	xprintf("%x\n",offset);
+	xprintf("%x\n",length);
     uint8_t data[length];
 //    eeprom_read_block(data, (const void*) offset, length);
     to_host.append8(RC_OK);
     for (int i = 0; i < length; i++) {
-		to_host.append8(eeprom_address(offset + i));
+		to_host.append8((uint8_t)(eeprom_address(offset + i)));
+		xprintf("%x %c\n",(uint8_t)(eeprom_address(offset + i)),(uint8_t)(eeprom_address(offset + i)));
 //		to_host.append8(data[i]);
     }
 }

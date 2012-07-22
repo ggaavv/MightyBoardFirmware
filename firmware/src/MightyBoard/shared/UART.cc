@@ -172,7 +172,7 @@ void UART::init_serial() {
 		PINSEL_ConfigPin(&PinCfg);
 		PinCfg.Pinnum = 1;
 		PINSEL_ConfigPin(&PinCfg);
-		NVIC_SetPriority(UART1_IRQn, 8);
+		NVIC_SetPriority(UART1_IRQn, 9);
 		NVIC_EnableIRQ(UART1_IRQn);
     }
 #endif
@@ -201,7 +201,7 @@ UART::UART(uint8_t index, communication_mode mode) :
 
 // Subsequent bytes will be triggered by the tx complete interrupt.
 void UART::beginSend() {
-	xprintf("beginSend()" " (%s:%d)\n",_F_,_L_);
+//	xprintf("beginSend()" " (%s:%d)\n",_F_,_L_);
 	if (!enabled_) { return; }
 	if (index_ == RS232) {		//uart0 eg usb
 		static unsigned char sendBuffer[64];
@@ -210,9 +210,7 @@ void UART::beginSend() {
 			uint32_t i;
 			for (i = 1; i < USB_CDC_BUFSIZE-1; i++){
 				sendBuffer[i] = UART::getHostUART().out.getNextByteToSend();
-				xprintf(".out.isSending[i]" " (%s:%d)\n",_F_,_L_);
-				xprintf("%x",sendBuffer[i]);
-				xprintf("\n" " (%s:%d)\n",_F_,_L_);
+//				xprintf("%x %c\n",sendBuffer[i],sendBuffer[i]);
 				if (!UART::getHostUART().out.isSending()) goto skip;
 			}
 			skip:
@@ -307,13 +305,11 @@ extern "C" void UART1_IRQHandler(void){
 uint8_t BulkBufOut  [USB_CDC_BUFSIZE];
 
 extern "C" void CANActivity_IRQHandler(void){
-	xprintf("CAN_IRQ" " (%s:%d)\n",_F_,_L_);
 	int numBytesRead = USB_ReadEP(CDC_DEP_OUT, &BulkBufOut[0]);
+//		xprintf("USB_in" " (%s:%d)\n",_F_,_L_);
 	for (int i = 0; i < numBytesRead; i++){
-		xprintf("BulkBufOut[i]" " (%s:%d)\n",_F_,_L_);
-		xprintf("%x",BulkBufOut[i]);
-		xprintf("\n" " (%s:%d)\n",_F_,_L_);
-		UART::getSlaveUART().in.processByte( BulkBufOut[i] );
+//		xprintf("%x %c\n",BulkBufOut[i],BulkBufOut[i]);
+		UART::getHostUART().in.processByte( BulkBufOut[i] );
 	}
 }
 

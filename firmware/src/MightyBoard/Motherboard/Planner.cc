@@ -281,7 +281,7 @@ namespace planner {
 		if(accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)){
 			eeprom::setDefaultsAcceleration(0);
 		}
-		
+
 		// Master acceleration
 		setAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET, DEFAULT_ACCELERATION));
 		
@@ -902,7 +902,6 @@ namespace planner {
 		loadToleranceOffsets();
 		/// tool 0 is default
 		changeToolIndex(0);
-		
 		// reset speed
 		for (int i = 0; i < STEPPER_COUNT; i++) {
 			previous_speed[i] = 0.0;
