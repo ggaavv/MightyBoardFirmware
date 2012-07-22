@@ -28,7 +28,7 @@ extern "C" {
 }
 
 
-#define NULL_PORT 0xffffffff
+#define NULL_PORT 0xff
 
 class LPCPort {
 private:
@@ -38,21 +38,21 @@ public:
 	LPCPort();
 	LPCPort(uint8_t port_base_in);
 	bool isNull() const;
-	void setPinDirectionOut(uint8_t pin_mask) const;
-	void setPinDirectionIn(uint8_t pin_mask_inverted) const;
-	bool getPin(uint8_t pin_mask) const;
-	void setPinOn(uint8_t pin_mask) const;
-	void setPinOff(uint8_t pin_mask_inverted) const;
+	void setPinDirectionOut(uint8_t pin_index) const;
+	void setPinDirectionIn(uint8_t pin_index) const;
+	bool getPin(uint8_t pin_index) const;
+	void setPinOn(uint8_t pin_index) const;
+	void setPinOff(uint8_t pin_index) const;
 };
 
 
-const LPCPort Port0;
-const LPCPort Port1;
-const LPCPort Port2;
-const LPCPort Port3;
-const LPCPort Port4;
+const LPCPort Port0(0);
+const LPCPort Port1(1);
+const LPCPort Port2(2);
+const LPCPort Port3(3);
+const LPCPort Port4(4);
 
-const LPCPort NullPort;
+const LPCPort NullPort(0xff);
 
 #endif // SHARED_AVR_PORT_HH_
 

@@ -5,6 +5,7 @@
 #include "Pin.hh"
 extern "C" {
 	#include "lpc17xx_gpio.h"
+#include "comm.h"
 }
 
 /// \ingroup HardwareLibraries
@@ -36,10 +37,10 @@ public:
 		// cli();
 		if (on) {
 //			PORTx |= pin_mask;
-			GPIO_SetValue(port_base, _BV(pin_mask));
+			GPIO_SetValue(port_base, _BV(pin_index));
 		} else {
 //			PORTx &= pin_mask_inverted;
-			GPIO_ClearValue(port_base, _BV(pin_mask_inverted));
+			GPIO_ClearValue(port_base, _BV(pin_index));
 		}
 		// SREG = oldSREG;
 	};
@@ -50,7 +51,7 @@ public:
 		// uint8_t oldSREG = SREG;
 		// cli();
 //		PORTx |= pin_mask;
-		GPIO_SetValue(port_base, _BV(pin_mask));
+		GPIO_SetValue(port_base, _BV(pin_index));
 		// SREG = oldSREG;
 	};
 
@@ -60,7 +61,7 @@ public:
 		// uint8_t oldSREG = SREG;
 		// cli();
 //		PORTx &= pin_mask_inverted;
-		GPIO_ClearValue(port_base, _BV(pin_mask_inverted));
+		GPIO_ClearValue(port_base, _BV(pin_index));
 		// SREG = oldSREG;
 	};
 	// currently not used:

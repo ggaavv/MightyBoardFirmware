@@ -387,17 +387,17 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 }
     // read value from eeprom
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
-	xprintf("handleReadEeprom" " (%s:%d)\n",_F_,_L_);
+//	xprintf("handleReadEeprom" " (%s:%d)\n",_F_,_L_);
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
-	xprintf("%x\n",offset);
-	xprintf("%x\n",length);
+//	xprintf("%x\n",offset);
+//	xprintf("%x\n",length);
     uint8_t data[length];
 //    eeprom_read_block(data, (const void*) offset, length);
     to_host.append8(RC_OK);
     for (int i = 0; i < length; i++) {
 		to_host.append8((uint8_t)(eeprom_address(offset + i)));
-		xprintf("%x %c\n",(uint8_t)(eeprom_address(offset + i)),(uint8_t)(eeprom_address(offset + i)));
+//		xprintf("%x %c\n",(uint8_t)(eeprom_address(offset + i)),(uint8_t)(eeprom_address(offset + i)));
 //		to_host.append8(data[i]);
     }
 }

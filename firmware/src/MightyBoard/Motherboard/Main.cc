@@ -77,8 +77,10 @@ void reset(bool hard_reset) {
 		eeprom::init();
 		xprintf("eeprom::init" " (%s:%d)\n",_F_,_L_);
 		steppers::reset();
+		xprintf("steppers::reset" " (%s:%d)\n",_F_,_L_);
 		initThermistorTables();
 		board.reset(hard_reset);
+		xprintf("board.reset(hard_reset)" " (%s:%d)\n",_F_,_L_);
 		
 	// brown out occurs on normal power shutdown, so this is not a good message		
 	//	if(brown_out)
@@ -116,6 +118,19 @@ int main() {
 	comm_init();
 //	xprintf("\033[2J");
 	xprintf("\r\n\r\n\r\n\r\n\r\n**BOOTED**" " (%s:%d)\n",_F_,_L_);
+
+	xprintf("before set direction" " (%s:%d)\n",_F_,_L_);
+	A_DIR_PIN.setDirection(true);
+	xprintf("after set direction" " (%s:%d)\n",_F_,_L_);
+
+//	while(1){
+		A_DIR_PIN.setValue(false);
+		xprintf("after A_DIR_PIN.setValue(false);" " (%s:%d)\n",_F_,_L_);
+		_delay_us(100000);
+		A_DIR_PIN.setValue(true);
+		xprintf("after A_DIR_PIN.setValue(true);" " (%s:%d)\n",_F_,_L_);
+		_delay_us(100000);
+//	}
 
 	Motherboard& board = Motherboard::getBoard();
 	reset(true);

@@ -152,7 +152,6 @@ void InitPins(){
 		_WRITE(Z_ENABLE, true);
 		_SET_DIRECTION(Z_ENABLE, true);*/
 
-
 #if STEPPER_COUNT > 3	
 		GPIO_SetDir(A_STEP_PORT, A_DIR_PIN, true);
 		GPIO_SetDir(A_DIR_PORT, A_STEP_PIN, true);
@@ -227,10 +226,12 @@ void InitPins(){
 		
 		// there are no endstops for the extruder axes
 		
+		xprintf("// set digi pots to stored default values" " (%s:%d)\n",_F_,_L_);
 		// set digi pots to stored default values
 		for(int i = 0; i < STEPPER_COUNT; i++){
 			digi_pots[i].init(i);
 		}
+		xprintf("end of InitPins" " (%s:%d)\n",_F_,_L_);
 }
 
 void ResetCounters() {

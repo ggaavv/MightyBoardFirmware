@@ -23,7 +23,9 @@
 //#include <util/atomic.h>
 
 #include "Delay.hh"
-
+extern "C" {
+#include "comm.h"
+}
 
 // initiate static i2cManager instance
 SoftI2cManager SoftI2cManager::i2cManager;

@@ -13,15 +13,18 @@ void Pin::setDirection(bool out) const {
 	// 	return;
 //	uint8_t oldSREG = SREG;
 //               cli();
-	if (out) {
+//	xprintf("Pin::setDirection - port_base:%d pin_index:%d (%s:%d)\n",port_base,pin_index,_F_,_L_);
+//	xprintf("Pin::setDirection - port_base:%d pin_index:%x (%s:%d)\n",port_base,_BV(pin_index),_F_,_L_);
+//	if (out) {
 //		DDRx |= (uint8_t)pin_mask;
 //		GPIO_SetDir(port_base, (1 << pin_mask), 1);
-		GPIO_SetDir(port_base, _BV(pin_mask), 1);
-	} else {
+//		GPIO_SetDir(port_base, _BV(pin_index), 1);
+//	} else {
 //		DDRx &= (uint8_t)pin_mask_inverted;
 //		GPIO_SetDir(port_base, (1 << pin_mask_inverted), 0);
-		GPIO_SetDir(port_base, _BV(pin_mask_inverted), 0);
-	}
+//		GPIO_SetDir(port_base, _BV(pin_index), 0);
+//	}
+	GPIO_SetDir(port_base, _BV(pin_index), out);
 //	SREG = oldSREG;
 }
 
