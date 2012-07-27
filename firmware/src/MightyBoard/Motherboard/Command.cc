@@ -583,7 +583,7 @@ void runCommandSlice() {
 //							eeprom_write_block(&position, (void*) offset, 4);
 //							sei();
 						}
-						eeprom::save_to_flash();
+						//eeprom::save_to_flash();
 					}
 				}
 			} else if (command == HOST_CMD_RECALL_HOME_POSITION) {
@@ -677,7 +677,7 @@ void runCommandSlice() {
 				if (command_buffer.getLength() >= 2){
 				command_buffer.pop(); // remove the command code
 				uint8_t options = pop8();
-				eeprom::factoryResetEEPROM(1);
+				eeprom::factoryResetEEPROM();
 				Motherboard::getBoard().reset(false);
 				}
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {

@@ -1,13 +1,3 @@
-/*
- * syscalls.c
- *
- *  Created on: 03.12.2009
- *      Author: Martin Thomas, 3BSD license
- */
- /* MOdified by Sagar G V, Feb 2011.
- Ported to LPC17xx.
-*/
-
 #ifndef __SYSCALLS_H__
 #define __SYSCALLS_H__
 

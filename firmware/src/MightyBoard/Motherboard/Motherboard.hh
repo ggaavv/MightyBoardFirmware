@@ -76,8 +76,8 @@ private:
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 	
-	ExtruderBoard Extruder_Two;
 	ExtruderBoard Extruder_One;
+	ExtruderBoard Extruder_Two;
 	
 //	ButtonArray buttonArray;
 //	LiquidCrystalSerial lcd;

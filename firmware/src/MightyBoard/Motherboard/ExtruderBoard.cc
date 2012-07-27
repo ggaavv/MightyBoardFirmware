@@ -27,8 +27,7 @@
 //#include <avr/io.h>
 extern "C" {
 	#include "lpc17xx_timer.h"
-//	#include "LPC17xx.h"
-//	#include "lpc17xx_nvic.h"
+#include "comm.h"
 }
 
 
@@ -36,9 +35,11 @@ extern "C" {
 
 ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
 		Pin ThermocouplePin_In,	uint16_t eeprom_base) :
-     		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
+//     		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
+			extruder_thermistor(slave_id_in, 0),
      		extruder_element(slave_id_in),
-     		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
+//     		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
+     		extruder_heater(extruder_thermistor,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
         		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),
       		coolingFan(extruder_heater, (eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS), FanPin_In),
       		slave_id(slave_id_in),
@@ -56,7 +57,8 @@ void ExtruderBoard::reset() {
 	Heater_Pin.setDirection(true);
 
 	extruder_heater.reset();
-	extruder_thermocouple.init();
+//	extruder_thermocouple.init();
+	extruder_thermistor.init();
 	coolingFan.reset();
 
 }
@@ -80,9 +82,11 @@ void ExtruderBoard::setFan(uint8_t on)
 void pwmEx2_On(bool on) {
 	if (on) {
 		TIM_Cmd(LPC_TIM1,ENABLE);
+		xprintf("TIM_Cmd(LPC_TIM1,ENABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR1A |= 0b10000000;
 	} else {
 		TIM_Cmd(LPC_TIM1,DISABLE);
+		xprintf("TIM_Cmd(LPC_TIM1,DISABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR1A &= 0b00111111;
 	}
 }
@@ -91,9 +95,11 @@ void pwmEx2_On(bool on) {
 void pwmEx1_On(bool on) {
 	if (on) {
 		TIM_Cmd(LPC_TIM2,ENABLE);
+		xprintf("TIM_Cmd(LPC_TIM2,ENABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR4A |= 0b10000000;
 	} else {
 		TIM_Cmd(LPC_TIM2,DISABLE);
+		xprintf("TIM_Cmd(LPC_TIM2,DISABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR4A &= 0b00111111;
 	} 
 }

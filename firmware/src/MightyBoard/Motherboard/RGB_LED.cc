@@ -201,7 +201,7 @@ void setLEDBlink(uint8_t rate){
 
     // set LED color and store to EEPROM "custom" color area
 void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
-	eeprom::setCustomColor(red, green, blue, 0);
+	eeprom::setCustomColor(red, green, blue);
 	setColor(red, green, blue, true);
 }
 

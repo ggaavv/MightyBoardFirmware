@@ -34,7 +34,7 @@ MEMORY
 /*  rom (rx)  : ORIGIN = 64K, LENGTH = (512K - 64K)*/ /* Bootloader uses first 64Kbytes of flash memory */
   rom (rx)  : ORIGIN = 0x00003000, LENGTH = 0x7D000 /* Bootloader uses first 3Kbytes of flash memory */
   /* rom (rx)  : ORIGIN = 0, LENGTH = 512K */
-  ram (rwx) : ORIGIN = 0x10000000, LENGTH = 0x7000
+  ram (rwx) : ORIGIN = 0x10000000, LENGTH = 0x6000
   ahbb0(rw) : ORIGIN = 0x2007C000, LENGTH = 0x4000
   ahbb1(rw) : ORIGIN = 0x20080000, LENGTH = 0x4000
 }

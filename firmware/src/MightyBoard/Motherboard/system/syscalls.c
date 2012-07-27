@@ -4,55 +4,203 @@
  *  Created on: 03.12.2009
  *      Author: Martin Thomas, 3BSD license
  */
- /* MOdified by Sagar G V, Feb 2011.
- Ported to LPC17xx.
- */
 
-#include "syscalls.h"
+#include <reent.h>
+#include <errno.h>
+#include <stdlib.h> /* abort */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <time.h>
 
+#include "term_io.h"
+#include "LPC17xx.h" /* for _get_PSP() from core_cm3.h*/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern UNIX;
 
 #undef errno
 extern int errno;
 
+char *__env[1] = { 0 };
+char **environ = __env;
+
+int _execve(char *name, char **argv, char **env) {
+//	xprintf("%s{\n",__func__);
+	(void)name; /* avoid warning */
+	(void)argv; /* avoid warning */
+	(void)env; /* avoid warning */
+	errno = ENOMEM;
+	return -1;
+}
+int _fork(void) {
+//	xprintf("%s{\n",__func__);
+	errno = EAGAIN;
+	return -1;
+}
+int _link(char *old, char *new) {
+//	xprintf("%s{\n",__func__);
+	(void)old; /* avoid warning */
+	(void)new; /* avoid warning */
+	errno = EMLINK;
+	return -1;
+}
+int _times(struct tms *buf) {
+//	xprintf("%s{\n",__func__);
+	(void)buf; /* avoid warning */
+	return -1;
+}
+int _unlink(char *name) {
+//	xprintf("%s{\n",__func__);
+	(void)name; /* avoid warning */
+	errno = ENOENT;
+	return -1;
+}
+int _wait(int *status) {
+//	xprintf("%s{\n",__func__);
+	(void)status; /* avoid warning */
+	errno = ECHILD;
+	return -1;
+}
+#if 1
+int _gettimeofday (struct timeval * tp, void * tzvp){
+//	xprintf("%s{\n",__func__);
+	(void)tp; /* avoid warning */
+	(void)tzvp; /* avoid warning */
+//	return sys_millis();
+//	return Getunix();
+//	return time2.unix;
+//	xprintf("%d\n",UNIX);
+	tp->tv_sec=UNIX;
+	return 0;
+//	return -1;
+}
+#else
+int
+_gettimeofday (struct timeval * tp, void * tzvp)
+{
+  struct timezone *tzp = tzvp;
+  if (tp)
+    {
+    /* Ask the host for the seconds since the Unix epoch.  */
+#ifdef ARM_RDI_MONITOR
+      tp->tv_sec = do_AngelSWI (AngelSWI_Reason_Time,NULL);
+#else
+      {
+        int value;
+        asm ("swi %a1; mov %0, r0" : "=r" (value): "i" (SWI_Time) : "r0");
+        tp->tv_sec = value;
+      }
+#endif
+      tp->tv_usec = 0;
+    }
+
+  /* Return fixed data for the timezone.  */
+  if (tzp)
+    {
+      tzp->tz_minuteswest = 0;
+      tzp->tz_dsttime = 0;
+    }
+
+  return 0;
+}
+#endif
+
+
+#if 0
+/* Return a clock that ticks at 100Hz.  */
+clock_t
+_clock (void)
+{
+  clock_t timeval;
+
+#ifdef ARM_RDI_MONITOR
+  timeval = do_AngelSWI (AngelSWI_Reason_Clock,NULL);
+#else
+  asm ("swi %a1; mov %0, r0" : "=r" (timeval): "i" (SWI_Clock) : "r0");
+#endif
+  return timeval;
+}
+#endif
+
+
+#if 0
+/* Return a clock that ticks at 100Hz.  */
+clock_t
+_times (struct tms * tp)
+{
+  clock_t timeval = _clock();
+
+  if (tp)
+    {
+      tp->tms_utime  = timeval;	/* user time */
+      tp->tms_stime  = 0;	/* system time */
+      tp->tms_cutime = 0;	/* user time, children */
+      tp->tms_cstime = 0;	/* system time, children */
+    }
+
+  return timeval;
+}
+#endif
+
+#if 0
+/* Return a clock that ticks at 100Hz.  */
+clock_t _times (struct tms * tp){
+	clock_t timeval = _clock();
+
+	if (tp){
+		tp->tms_utime  = timeval;	/* user time */
+		tp->tms_stime  = 0;	/* system time */
+		tp->tms_cutime = 0;	/* user time, children */
+		tp->tms_cstime = 0;	/* system time, children */
+    }
+	return timeval;
+}
+#endif
+
+
+
+
+
 int _kill(int pid, int sig)
 {
-	pid = pid; sig = sig; /* avoid warnings */
+//	xprintf("%s{\n",__func__);
+	(void)pid;
+	(void)sig; /* avoid warnings */
 	errno = EINVAL;
 	return -1;
 }
 
 void _exit(int status)
 {
-	status = status;
+	xprintf("_exit called with parameter %d\n", status);
 	while(1) {;}
 }
 
 int _getpid(void)
 {
+//	xprintf("%s{\n",__func__);
 	return 1;
 }
-
 
 extern char _end; /* Defined by the linker */
 static char *heap_end;
 
 char* get_heap_end(void)
 {
+//	xprintf("%s{\n",__func__);
 	return (char*) heap_end;
 }
 
 char* get_stack_top(void)
 {
+//	xprintf("%s{\n",__func__);
 	return (char*) __get_MSP();
 	// return (char*) __get_PSP();
 }
 
 caddr_t _sbrk(int incr)
 {
+//	xprintf("%s{\n",__func__);
 	char *prev_heap_end;
 	if (heap_end == 0) {
 		heap_end = &_end;
@@ -60,7 +208,7 @@ caddr_t _sbrk(int incr)
 	prev_heap_end = heap_end;
 #if 1
 	if (heap_end + incr > get_stack_top()) {
-		
+		xprintf("Heap and stack collision\n");
 		abort();
 	}
 #endif
@@ -70,53 +218,87 @@ caddr_t _sbrk(int incr)
 
 int _close(int file)
 {
-	file = file; /* avoid warning */
+//	xprintf("%s{\n",__func__);
+	(void)file; /* avoid warning */
+	return -1;
+}
+
+int _open(int file)
+{
+//	xprintf("%s{\n",__func__);
+	(void)file; /* avoid warning */
 	return -1;
 }
 
 int _fstat(int file, struct stat *st)
 {
-	file = file; /* avoid warning */
+//	xprintf("%s{\n",__func__);
+	(void)file; /* avoid warning */
 	st->st_mode = S_IFCHR;
 	return 0;
 }
 
 int _isatty(int file)
 {
-	file = file; /* avoid warning */
+//	xprintf("%s{\n",__func__);
+	(void)file; /* avoid warning */
 	return 1;
 }
 
 int _lseek(int file, int ptr, int dir) {
-	file = file; /* avoid warning */
-	ptr = ptr; /* avoid warning */
-	dir = dir; /* avoid warning */
+//	xprintf("%s{\n",__func__);
+	(void)file; /* avoid warning */
+	(void)ptr;  /* avoid warning */
+	(void)dir;  /* avoid warning */
 	return 0;
 }
 
 int _read(int file, char *ptr, int len)
 {
-	file = file; /* avoid warning */
-	ptr = ptr; /* avoid warning */
-	len = len; /* avoid warning */
+//	(void)file; /* avoid warning */
+//	(void)ptr;  /* avoid warning */
+//	(void)len;  /* avoid warning */
+//	xprintf("len=%d,func=%s{\n",len,__func__);
+//	printf("len=%d,ptr=%s,func=%s{\n",len,ptr,__func__);
+//	switch (file) {
+//		case STDIN_FILENO:
+//			UART_Receive(LPC_UART0, ptr, len, BLOCKING);
+			len = UART_Receive(LPC_UART0, ptr, 1, BLOCKING);
+//			xprintf("%s}\n",__func__);
+//			break;
+//		default:
+//			errno = EBADF;
+//			return -1;
+//	}
+	return len;
 
-	ptr = ptr;
-	return 0;
-
+#if 0
+	int n;
+	int num = 0;
+	switch (file) {
+		case STDIN_FILENO:
+			for (n = 0; n < len; n++) {
+				while ((USART1->SR & USART_FLAG_RXNE) == (uint16_t)RESET) {}
+				char c = (char)(USART1->DR & (uint16_t)0x01FF);
+				*ptr++ = c;
+				num++;
+			}
+			break;
+		default:
+			errno = EBADF;
+			return -1;
+	}
+	return num;
+#endif
+//	return 0;
 }
 
 int _write(int file, char *ptr, int len)
 {
 	int todo;
-	ptr = ptr;
-	file = file; /* avoid warning */
+	(void)file; /* avoid warning */
 	for (todo = 0; todo < len; todo++) {
-		ptr++;
+		xputc(*ptr++);
 	}
 	return len;
 }
-
-
-#ifdef __cplusplus
-}
-#endif

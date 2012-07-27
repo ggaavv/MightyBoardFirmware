@@ -387,18 +387,14 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 }
     // read value from eeprom
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
-	xprintf("handleReadEeprom" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
+//	xprintf("handleReadEeprom" " (%s:%d)\n",_F_,_L_);
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
-//	xprintf("%x" " (%s:%d)\n",offset,_F_,_L_);
-//	xprintf("%x" " (%s:%d)\n",length,_F_,_L_);
     uint8_t data[length];
 //    eeprom_read_block(data, (const void*) offset, length);
     to_host.append8(RC_OK);
     for (int i = 0; i < length; i++) {
 		to_host.append8(eeprom::getEeprom8(offset + i,0));
-		xprintf("%x %x %c" "\n",EEPROM_START_ADDRESS + offset + i,(uint8_t)(eeprom_address(EEPROM_START_ADDRESS, offset + i)),eeprom_address(EEPROM_START_ADDRESS, offset + i));
 //		to_host.append8(data[i]);
     }
 }
@@ -416,11 +412,11 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 //    eeprom_read_block(data, (const void*) offset, length);
     for (int i = 0; i < length; i++) {
     	eeprom::setEeprom8(offset + i, from_host.read8(i + 4));
-//		xprintf("%x %x %c" "\n",EEPROM_START_ADDRESS + offset + i,eeprom_address(EEPROM_START_ADDRESS, offset + i),eeprom_address(EEPROM_START_ADDRESS, offset + i));
+		xprintf("%x %x %c" "\n",EEPROM_START_ADDRESS + offset + i,eeprom_address(EEPROM_START_ADDRESS, offset + i),eeprom_address(EEPROM_START_ADDRESS, offset + i));
 //        data[i] = from_host.read8(i + 4);
     }
 //    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-    	eeprom::save_to_flash();
+//    	eeprom::save_to_flash();
 //		eeprom_write_block(data, (void*) offset, length);
 //	}
     to_host.append8(RC_OK);

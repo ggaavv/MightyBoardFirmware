@@ -22,6 +22,9 @@
 #include <stdint.h>
 //#include <avr/pgmspace.h>
 
+extern "C" {
+	#include "comm.h"
+}
 
 // TODO: Clean this up...
 #if defined HAS_THERMISTOR_TABLES
@@ -40,7 +43,7 @@
 // beta: 4066
 // max adc: 1023
 
-TempTable const default_therm_table = {
+/*TempTable const default_therm_table = {
   {1, 841},
   {54, 255},
   {107, 209},
@@ -61,11 +64,46 @@ TempTable const default_therm_table = {
   {902, 50},
   {955, 34},
   {1008, 3}
+};*/
+TempTable const default_therm_table = {
+  /* {ADC value Extruder0, temperature} */
+		{	92	,	300	}	,
+		{	105	,	290	}	,
+		{	121	,	280	}	,
+		{	140	,	270	}	,
+		{	162	,	260	}	,
+		{	189	,	250	}	,
+		{	222	,	240	}	,
+		{	261	,	230	}	,
+		{	308	,	220	}	,
+		{	365	,	210	}	,
+		{	434	,	200	}	,
+		{	519	,	190	}	,
+		{	621	,	180	}	,
+		{	744	,	170	}	,
+		{	891	,	160	}	,
+		{	1067	,	150	}	,
+		{	1272	,	140	}	,
+		{	1507	,	130	}	,
+		{	1771	,	120	}	,
+		{	2058	,	110	}	,
+		{	2357	,	100	}	,
+		{	2657	,	90	}	,
+		{	2943	,	80	}	,
+		{	3204	,	70	}	,
+		{	3429	,	60	}	,
+		{	3614	,	50	}	,
+		{	3760	,	40	}	,
+		{	3869	,	30	}	,
+		{	3948	,	20	}	,
+		{	4003	,	10	}	,
+		{	4039	,	0	}
 };
 
 bool has_table[2];//TODO: using just a single bool for MightyBoard
 
 inline Entry getEntry(int8_t entryIdx, int8_t which) {
+	xprintf("%d" " (%s:%d)\n",entryIdx,_F_,_L_);
 	Entry rv;
 	if (0){//has_table[which]) {
 		// get from eeprom
@@ -83,6 +121,8 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 		// get from progmem
 		rv.adc = default_therm_table[entryIdx].adc;
 		rv.value = default_therm_table[entryIdx].value;
+		xprintf("%d" " (%s:%d)\n",rv.adc,_F_,_L_);
+		xprintf("%d" " (%s:%d)\n",rv.value,_F_,_L_);
 //		memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
 	}
 	return rv;

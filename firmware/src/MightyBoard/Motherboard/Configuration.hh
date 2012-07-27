@@ -52,7 +52,7 @@
 // Define as 1 if and SD card slot is present; 0 if not.
 #define HAS_SD          1
 // The pin that connects to the write protect line on the SD header.
-//#define SD_WRITE_PIN    Pin(Port1,0)
+#define SD_WRITE_PIN    Pin(Port1,0)
 // The pin that connects to the card detect line on the SD header.
 #define SD_DETECT_PIN   Pin(Port2,1)
 // The pin that connects to the chip select line on the SD header.
@@ -106,7 +106,7 @@
 // The X stepper enable pin (active low)
 #define X_ENABLE_PIN    Pin(Port2,11)
 // X stepper potentiometer pin
-#define X_POT_PIN	Pin(Port1,31)
+#define X_POT_PIN		Pin(NULL_PORT,NULL_PORT)
 // The X minimum endstop pin (active high)
 #define X_MIN_PIN       Pin(Port0,22)
 // The X maximum endstop pin (active high)
@@ -119,7 +119,7 @@
 // The Y stepper enable pin (active low)
 #define Y_ENABLE_PIN    Pin(Port0,10)
 // Y stepper potentiometer pin
-#define Y_POT_PIN	Pin(Port1,31)
+#define Y_POT_PIN		Pin(NULL_PORT,NULL_PORT)
 // The Y minimum endstop pin (active high)
 #define Y_MIN_PIN       Pin(Port1,27)
 // The Y maximum endstop pin (active high)
@@ -132,7 +132,7 @@
 // The Z stepper enable pin (active low)
 #define Z_ENABLE_PIN    Pin(Port1,26)
 // Z stepper potentiometer pin
-#define Z_POT_PIN	Pin(Port1,31)
+#define Z_POT_PIN		Pin(NULL_PORT,NULL_PORT)
 // The Z minimum endstop pin (active high)
 #define Z_MIN_PIN       Pin(Port1,27)
 // The Z maximum endstop pin (active high)
@@ -145,7 +145,7 @@
 // The A stepper enable pin (active low)
 #define A_ENABLE_PIN    Pin(Port1,21)
 // A stepper potentiometer pin
-#define A_POT_PIN	Pin(Port1,31)
+#define A_POT_PIN		Pin(NULL_PORT,NULL_PORT)
 
 // The B stepper step pin (active on rising edge)
 #define B_STEP_PIN      Pin(Port0,27)
@@ -154,25 +154,25 @@
 // The B stepper enable pin (active low)
 #define B_ENABLE_PIN    Pin(Port3,26)
 // B stepper potentiometer pin
-#define B_POT_PIN       Pin(Port1,31)
+#define B_POT_PIN       Pin(NULL_PORT,NULL_PORT)
 
 // i2c pots SCL pin
-#define POTS_SCL        Pin(Port1,31)
+#define POTS_SCL        Pin(NULL_PORT,NULL_PORT)
 // default value for pots (0-127 valid)
 #define POTS_DEFAULT_VAL 50
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
-#define DEBUG_PIN       Pin(Port0,27)
+#define DEBUG_PIN       Pin(Port1,27)
 // Additional Debug Pins
-#define DEBUG_PIN1	Pin(Port1,31)
-#define DEBUG_PIN2	Pin(Port1,31)
-#define DEBUG_PIN3	Pin(Port1,31)
-#define DEBUG_PIN4  Pin(Port1,31)
-#define DEBUG_PIN5  Pin(Port1,31)
-#define DEBUG_PIN6  Pin(Port1,31)
-#define DEBUG_PIN7  Pin(Port1,31)
-#define DEBUG_PIN8  Pin(Port1,31)
+#define DEBUG_PIN1	Pin(NULL_PORT,NULL_PORT)
+#define DEBUG_PIN2	Pin(NULL_PORT,NULL_PORT)
+#define DEBUG_PIN3	Pin(NULL_PORT,NULL_PORT)
+#define DEBUG_PIN4  Pin(NULL_PORT,NULL_PORT)
+#define DEBUG_PIN5  Pin(NULL_PORT,NULL_PORT)
+#define DEBUG_PIN6  Pin(NULL_PORT,NULL_PORT)
+#define DEBUG_PIN7  Pin(NULL_PORT,NULL_PORT)
+#define DEBUG_PIN8  Pin(NULL_PORT,NULL_PORT)
 
 // By default, debugging packets should be honored; this is made
 // configurable if we're short on cycles or EEPROM.
@@ -181,32 +181,32 @@
 
 #define HAS_INTERFACE_BOARD     0
 
-//#define LCD_RS_PIN		Pin(Port1,4)
-//#define LCD_ENABLE_PIN	Pin(Port1,3)
-//#define LCD_D0_PIN		Pin(Port1,7)
-//#define LCD_D1_PIN		Pin(Port1,2)
-//#define LCD_D2_PIN		Pin(Port1,1)
-//#define LCD_D3_PIN		Pin(Port1,0)
+#define LCD_RS_PIN			Pin(Port0,2)
+#define LCD_ENABLE_PIN		Pin(Port0,3)
+#define LCD_D0_PIN			Pin(Port1,4)
+#define LCD_D1_PIN			Pin(Port1,10)
+#define LCD_D2_PIN			Pin(Port1,9)
+#define LCD_D3_PIN			Pin(Port1,15)
 
 // LCD interface pins
-#define LCD_STROBE		Pin(Port1,31)
-#define LCD_CLK			Pin(Port1,31)
-#define LCD_DATA		Pin(Port1,31)
+#define LCD_STROBE		Pin(NULL_PORT,NULL_PORT)
+#define LCD_CLK			Pin(NULL_PORT,NULL_PORT)
+#define LCD_DATA		Pin(NULL_PORT,NULL_PORT)
 
 /// This is the pin mapping for the interface board. Because of the relatively
 /// high cost of using the pins in a direct manner, we will instead read the
 /// buttons directly by scanning their ports. If any of these definitions are
 /// modified, the #scanButtons() function _must_ be updated to reflect this.
-#define INTERFACE_UP		Pin(Port1,31)
-#define INTERFACE_DOWN		Pin(Port1,31)
-#define INTERFACE_RIGHT		Pin(Port1,31)
-#define INTERFACE_LEFT		Pin(Port1,31)
-#define INTERFACE_CENTER	Pin(Port1,31)
+#define INTERFACE_UP		Pin(NULL_PORT,NULL_PORT)
+#define INTERFACE_DOWN		Pin(NULL_PORT,NULL_PORT)
+#define INTERFACE_RIGHT		Pin(NULL_PORT,NULL_PORT)
+#define INTERFACE_LEFT		Pin(NULL_PORT,NULL_PORT)
+#define INTERFACE_CENTER	Pin(NULL_PORT,NULL_PORT)
 
-#define INTERFACE_GLED		Pin(Port1,31)
-#define INTERFACE_RLED		Pin(Port1,31)
+#define INTERFACE_GLED		Pin(NULL_PORT,NULL_PORT)
+#define INTERFACE_RLED		Pin(NULL_PORT,NULL_PORT)
 
-#define INTERFACE_DETECT	Pin(Port1,31)
+#define INTERFACE_DETECT	Pin(NULL_PORT,NULL_PORT)
 
 /// Character LCD screen geometry
 #define LCD_SCREEN_WIDTH        20
@@ -218,27 +218,28 @@
 #define HAS_THERMISTOR_TABLES
 
 // Extruder thermistor analog pin
-#define THERMISTOR_PIN          15
+#define THERMISTOR_PIN			26 // ADC3 Extruder0
+//#define THERMISTOR_PIN			Pin(Port0,26)
 
 #define HAS_THERMOCOUPLE        0
 
-#define THERMOCOUPLE_CS1        Pin(Port1,31)
-#define THERMOCOUPLE_CS2        Pin(Port1,31)
-#define THERMOCOUPLE_SCK        Pin(Port1,31)
-#define THERMOCOUPLE_SO         Pin(Port1,31)
+#define THERMOCOUPLE_CS1        Pin(NULL_PORT,NULL_PORT)
+#define THERMOCOUPLE_CS2        Pin(NULL_PORT,NULL_PORT)
+#define THERMOCOUPLE_SCK        Pin(NULL_PORT,NULL_PORT)
+#define THERMOCOUPLE_SO         Pin(NULL_PORT,NULL_PORT)
 
 #define DEFAULT_THERMOCOUPLE_VAL	1024
 
 // Platform thermistor analog pin
-#define PLATFORM_PIN            15
+#define PLATFORM_PIN            25
 
 /// POWER Pins for extruders, fans and heated build platform
-#define EX1_PWR	                Pin(Port1,31) // OC4A
-#define EX2_PWR	                Pin(Port1,31) // OC1A
-#define EX1_FAN                 Pin(Port1,31) // EX1_FAN
-#define HBP_HEAT                Pin(Port1,31) // OC5B
-#define EX2_FAN                 Pin(Port1,31)
-#define EXTRA_FET               Pin(Port1,31)
+#define EX1_PWR	                Pin(Port2,4) // OC4A
+#define EX2_PWR	                Pin(Port2,3) // OC1A
+#define EX1_FAN                 Pin(NULL_PORT,NULL_PORT) // EX1_FAN
+#define HBP_HEAT                Pin(NULL_PORT,NULL_PORT) // OC5B
+#define EX2_FAN                 Pin(NULL_PORT,NULL_PORT)
+#define EXTRA_FET               Pin(NULL_PORT,NULL_PORT)
 
 // sample intervals for heaters
 #define SAMPLE_INTERVAL_MICROS_THERMISTOR (50L * 1000L)
@@ -250,21 +251,21 @@
 #endif // CUTOFF_PRESENT
 
 // safety cutoff circuit 
-#define CUTOFF_RESET			Pin(Port1,31)
-#define CUTOFF_TEST				Pin(Port1,31)
-#define CUTOFF_SR_CHECK			Pin(Port1,31)
+#define CUTOFF_RESET			Pin(NULL_PORT,NULL_PORT)
+#define CUTOFF_TEST				Pin(NULL_PORT,NULL_PORT)
+#define CUTOFF_SR_CHECK			Pin(NULL_PORT,NULL_PORT)
 
-#define EX2_PWR_CHECK			Pin(Port1,31)
-#define EX1_PWR_CHECK			Pin(Port1,31)
+#define EX2_PWR_CHECK			Pin(NULL_PORT,NULL_PORT)
+#define EX1_PWR_CHECK			Pin(NULL_PORT,NULL_PORT)
 
 // bot shuts down printers after a defined timeout 
 #define USER_INPUT_TIMEOUT		1800000000 // 30 minutes
 
-#define XSTEPS_PER_MM          94.139704f
-#define YSTEPS_PER_MM          94.139704f
-#define ZSTEPS_PER_MM          400
-#define ASTEPS_PER_MM          96.2752018f
-#define BSTEPS_PER_MM          96.2752018f
+#define XSTEPS_PER_MM          64.15f
+#define YSTEPS_PER_MM          45.93f
+#define ZSTEPS_PER_MM          2560
+#define ASTEPS_PER_MM          330.49f
+#define BSTEPS_PER_MM          330.49f
 
 
 #endif // BOARDS_LPC1768_CONFIGURATION_HH_

@@ -20,6 +20,15 @@
 //#include <avr/interrupt.h>
 //#include <util/atomic.h>
 
+#include "Configuration.hh"
+extern "C" {
+	#include "lpc_types.h"
+	#include "lpc17xx_adc.h"
+	#include "lpc17xx_pinsel.h"
+	#include "lpc17xx_gpio.h"
+	#include "comm.h"
+}
+
 
 volatile int16_t* adc_destination; //< Address to write the sampled data to
 
@@ -86,29 +95,44 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
 #else
     // We are using the AVcc as our reference.  There's a 100nF cap
     // to ground on the AREF pin.
-    const uint8_t ANALOG_REF = 0x01;
+//    const uint8_t ANALOG_REF = 0x01;
 
-    void initAnalogPin(uint8_t pin) {
+void initAnalogPin(uint8_t pin) {
+	xprintf("initAnalogPin" " (%s:%d)\n",_F_,_L_);
             // Analog pins are on ports F and K
-            if (pin < 8) {
+//            if (pin < 8) {
 //                    DDRF &= ~(_BV(pin));
 //                    PORTF &= ~(_BV(pin));
                     // clear ADC Channel bit selecting upper 8 ADCs
 //					ADCSRB &= ~0b01000;
-            }
-            else{
-				pin -= 8;
+//            }
+//            else{
+//				pin -= 8;
 //				DDRK &= ~(_BV(pin));
 //				PORTK &= ~(_BV(pin));
 				// set ADC Channel bit selecting upper 8 ADCs
 //				ADCSRB |= 0b01000;
-			}
+//			}
 			
 			// select ADC Channel and connect AREF to AVCC
 //			ADMUX = 0b01000000 + pin;
             // enable a2d conversions, interrupt on completion
 //            ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) |
 //                            _BV(ADEN) | _BV(ADIE);
+	  PINSEL_CFG_Type PinCfg;
+
+	  PinCfg.Funcnum = PINSEL_FUNC_1; /* ADC function */
+	  PinCfg.OpenDrain = PINSEL_PINMODE_NORMAL;
+	  PinCfg.Pinmode = PINSEL_PINMODE_PULLUP;
+	  PinCfg.Portnum = 0;
+	  PinCfg.Pinnum = pin;
+	  PINSEL_ConfigPin(&PinCfg);
+	  GPIO_SetDir(0, _BV(pin), 0);
+
+	  ADC_Init(LPC_ADC, 1000); /* ADC conversion rate = 200Khz */
+	  ADC_IntConfig(LPC_ADC,ADC_ADINTEN3,ENABLE);
+	  ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_3,ENABLE);
+	  NVIC_SetPriority(ADC_IRQn, 17);
     }
 
     bool startAnalogRead(uint8_t pin,
@@ -124,15 +148,15 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
                     adc_finished = finished;
                     *adc_finished = false;
 
-                    if (pin < 8) {
+//                    if (pin < 8) {
 						// clear ADC Channel bit selecting upper 8 ADCs
 //						ADCSRB &= ~0b01000;
-					}
-					else{
-						pin -= 8;
+//					}
+//					else{
+//						pin -= 8;
 						// set ADC Channel bit selecting upper 8 ADCs
 //						ADCSRB |= 0b01000;
-					}
+//					}
 			
 					// select ADC Channel and connect AREF to AVCC
 //					ADMUX = 0b01000000 + pin;
@@ -140,6 +164,9 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
                     // start the conversion.
 //                    ADCSRA |= _BV(ADSC);
 //            }
+              // Start conversion
+              ADC_StartCmd(LPC_ADC, ADC_START_NOW);
+              NVIC_EnableIRQ(ADC_IRQn);
             // An interrupt will signal conversion completion.
             return true;
     }
@@ -158,6 +185,18 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
             *adc_destination = (high_byte << 8) | low_byte;
             *adc_finished = true;
     }*/
+    extern "C" void ADC_IRQHandler(void){
+//    	xprintf("A");
+    	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_3,ADC_DATA_DONE)){
+    		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3);
+    		NVIC_DisableIRQ(ADC_IRQn);
+    	}
+    	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_2,ADC_DATA_DONE)){
+    		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2);
+    		NVIC_DisableIRQ(ADC_IRQn);
+    	}
+    	*adc_finished = true;
+    }
 
 #endif
 

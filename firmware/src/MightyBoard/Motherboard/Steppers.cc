@@ -175,10 +175,11 @@ void InitPins(){
 		_SET_DIRECTION(B_ENABLE, true);*/
 #endif	
 		
+		// get inversion characteristics
+		uint8_t axes_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
+		uint8_t endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
+
 		for (uint8_t i = 0; i < STEPPER_COUNT; i++){
-			// get inversion characteristics
-			uint8_t axes_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-			uint8_t endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
 			
 			bool endstops_present = (endstops_invert & (1<<7)) != 0;	
 			

@@ -38,16 +38,13 @@
 #include "Delay.hh"
 extern "C" {
 	#include "LPC17xx.h"
-//	#include "vcomdemo.c"
 	#include "lpc17xx_nvic.h"
 	#include "comm.h"
 	#include "lpc17xx_wdt.h"
 	#include "lpc17xx_rtc.h"
-//#include "lpc17xx_clkpwr.h"
 }
 
 #define USER_FLASH_START 0x3000 // For USB bootloader
-//#define USER_FLASH_START 0x0 // No USB bootloader
 #define BOOTLOADER_START 0x0 // To enter bootloader
 
 extern "C" void WDT_IRQHandler (void){
@@ -77,7 +74,7 @@ void reset(bool hard_reset) {
             // ATODO: remove disable
 			NVIC_SetPriority(WDT_IRQn, 0);
 			WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_INT_ONLY);
-			WDT_Start(1000000);
+			WDT_Start(8000000);
 			NVIC_EnableIRQ(WDT_IRQn);
 //			wdt_disable();
 //			MCUSR = 0x0;
@@ -140,42 +137,36 @@ int main() {
 	// assign Uart0 - debug to group 2 sub-priority 1 = 10
 	// assign timer to group 3 sub-priority 0 = 12
 	// assign pizo to group 4 sub-priority 0 = 16
+	// assign ADC to group 4 sub-priority 1 = 17
 	NVIC_SetPriorityGrouping(4);
 
 //	SCB->VTOR = (USER_FLASH_START & 0x1FFFFF80);
 
 	comm_init();
 	comm_flush();
-//	xprintf("\033[2J");
 	xprintf("\r\n\r\n\r\n\r\n\r\n**BOOTED**" " (%s:%d)\n",_F_,_L_);
-//	xprintf("before set direction" " (%s:%d)\n",_F_,_L_);
-	DEBUG_LED1.setDirection(true);
-	DEBUG_LED2.setDirection(true);
-	DEBUG_LED3.setDirection(true);
-	DEBUG_LED4.setDirection(true);
-	xprintf("%x" " (%s:%d)\n",LPC_SC->PCLKSEL1,_F_,_L_);
-	xprintf("%x" " (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
-	xprintf("%x" " (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
-//	xprintf("after set direction" " (%s:%d)\n",_F_,_L_);
-	xprintf("after A_DIR_PIN.setValue(false);" " (%s:%d)\n",_F_,_L_);
-//	while(1){
-		DEBUG_LED1.setValue(false);
-		DEBUG_LED2.setValue(false);
-		DEBUG_LED3.setValue(false);
-		DEBUG_LED4.setValue(false);
+	if(0){
+		DEBUG_LED1.setDirection(true);
+		DEBUG_LED2.setDirection(true);
+		DEBUG_LED3.setDirection(true);
+		DEBUG_LED4.setDirection(true);
+//		xprintf("after set direction" " (%s:%d)\n",_F_,_L_);
 		xprintf("after A_DIR_PIN.setValue(false);" " (%s:%d)\n",_F_,_L_);
-		_delay_us(100000);
-		DEBUG_LED1.setValue(true);
-		DEBUG_LED2.setValue(true);
-		DEBUG_LED3.setValue(true);
-		DEBUG_LED4.setValue(true);
-		xprintf("after A_DIR_PIN.setValue(true);" " (%s:%d)\n",_F_,_L_);
-		_delay_us(100000);
-//	}
-//	for (uint32_t i = 0x10000000; i < 0x10007fff0; i++,i++,i++,i++) {
-//		xprintf("%x %x %c\n",i,eeprom_address(i, 0),eeprom_address(i, 0));
-//		_delay_us(1000);
-//	}
+//		if(0){
+			DEBUG_LED1.setValue(false);
+			DEBUG_LED2.setValue(false);
+			DEBUG_LED3.setValue(false);
+			DEBUG_LED4.setValue(false);
+			xprintf("after A_DIR_PIN.setValue(false);" " (%s:%d)\n",_F_,_L_);
+			_delay_us(10000);
+			DEBUG_LED1.setValue(true);
+			DEBUG_LED2.setValue(true);
+			DEBUG_LED3.setValue(true);
+			DEBUG_LED4.setValue(true);
+			xprintf("after A_DIR_PIN.setValue(true);" " (%s:%d)\n",_F_,_L_);
+			_delay_us(10000);
+//		}
+	}
 
 	Motherboard& board = Motherboard::getBoard();
 	reset(true);
@@ -184,7 +175,6 @@ int main() {
 	xprintf("stepper init done" " (%s:%d)\n",_F_,_L_);
 //	sei();
 		xprintf("Loop" " (%s:%d)\n",_F_,_L_);
-//		eeprom::read_all_from_flash();
 	while (1) {
 		// Host interaction thread.
 		host::runHostSlice();
@@ -199,13 +189,21 @@ int main() {
 			LINE_READY=0;
 		}
 //		wdt_reset();
-		uint32_t loop;
-		loop++;
-		if (loop > 5000){
-			loop=0;
+		uint32_t loop1;
+		loop1++;
+		if (loop1 > 5000){
+			loop1=0;
 			xprintf(".");
 		}
-//		_delay_us(100000);
+		// only update flash after a few reads have taken place - Limited Life!!!
+		uint32_t loop2;
+		if (eeprom::getflashupdate()){
+			loop2++;
+		}
+		if (loop2 > 500000){
+			eeprom::save_to_flash();
+			loop2=0;
+		}
 	}
 	return 0;
 }

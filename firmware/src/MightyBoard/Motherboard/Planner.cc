@@ -272,7 +272,7 @@ namespace planner {
 		/// if eeprom has not been initialized. store default values
 		if (eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0xFFFFFFFF) == 0xFFFFFFFF) {
 			xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
-			eeprom::storeToolheadToleranceDefaults(0);
+			eeprom::storeToolheadToleranceDefaults();
 		}
 		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 		
@@ -290,7 +290,7 @@ namespace planner {
 		if(accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)){
 			xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 			_delay_us(10000);
-			eeprom::setDefaultsAcceleration(0);
+			eeprom::setDefaultsAcceleration();
 		}
 		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 

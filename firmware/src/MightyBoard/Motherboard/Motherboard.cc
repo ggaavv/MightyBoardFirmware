@@ -111,7 +111,7 @@ void Motherboard::reset(bool hard_reset) {
 	TIM_TIMERCFG_Type TMR0_Cfg;
 	TIM_MATCHCFG_Type TMR0_Match;
 	TMR0_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR0_Cfg.PrescaleValue = 10000;
+	TMR0_Cfg.PrescaleValue = 1;
 	TMR0_Match.MatchChannel = TIM_MR0_INT;
 	TMR0_Match.IntOnMatch = ENABLE;
 	TMR0_Match.ResetOnMatch = ENABLE;
@@ -155,7 +155,7 @@ void Motherboard::reset(bool hard_reset) {
 	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
 	// Initialize timer 1, prescale count time of 100uS
 	TMR3_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR3_Cfg.PrescaleValue = 10000; // reset to 1 - 1uS
+	TMR3_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
 	// Use channel 1, MR1
 	TMR3_Match.MatchChannel = TIM_MR0_INT;
 	// Enable interrupt when MR0 matches the value in TC register
@@ -188,7 +188,7 @@ void Motherboard::reset(bool hard_reset) {
 	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
 	// Initialize timer 1, prescale count time of 100uS
 	TMR2_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR2_Cfg.PrescaleValue = 10000; // reset to 1 - 1uS
+	TMR2_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
 	// Use channel 1, MR1
 	TMR2_Match.MatchChannel = TIM_MR0_INT;
 	// Enable interrupt when MR0 matches the value in TC register
@@ -410,8 +410,7 @@ void Motherboard::runMotherboardSlice() {
 	
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-//	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING))
-//	{
+    if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING)){
         // clear timeout
 		user_input_timeout.clear();
 		
@@ -430,7 +429,7 @@ void Motherboard::runMotherboardSlice() {
 		Extruder_One.getExtruderHeater().set_target_temperature(0);
 		Extruder_Two.getExtruderHeater().set_target_temperature(0);
 		platform_heater.set_target_temperature(0);
-//	}
+	}
 	
     // respond to heatshutdown.  response only needs to be called once
 	if(heatShutdown && !triggered && !Piezo::isPlaying())
@@ -498,24 +497,31 @@ void Motherboard::UpdateMicros(){
 	micros += MICROS_INTERVAL;//_IN_MICROSECONDS;
 }
 
+volatile bool led_toggle0;
+volatile bool led_toggle1;
+volatile bool led_toggle2;
+volatile bool led_toggle3;
+volatile uint32_t loop0;
+volatile uint32_t loop1;
+volatile uint32_t loop2;
+volatile uint32_t loop3;
 
 /// Timer three comparator match interrupt
+//ISR(TIMER3_COMPA_vect) {
 extern "C" void TIMER0_IRQHandler (void){
-	xprintf("0" " (%s:%d)\n",_F_,_L_);
-	DEBUG_LED1.setValue(true);
+//	xprintf("0" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER0_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
-/*	if (TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT)== SET)
-	{
-	xprintf("TIMER0_IRQHandler" " (%s:%d)\n",_F_,_L_);
-	xprintf("b4");
-	xprintf("%d",TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT));
-	xprintf("%d",TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT));
-	xprintf("\n");
-	}*/
-//ISR(TIMER3_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
-	DEBUG_LED1.setValue(false);
+
+	if(0){
+		loop0++;
+		if (loop0 > 500){
+			loop0=0;
+			led_toggle0 = led_toggle0^1;
+			DEBUG_LED1.setValue(led_toggle0);
+		}
+	}
 }
 
 
@@ -591,11 +597,11 @@ uint16_t blink_overflow_counter = 0;
 
 /// Timer 2 overflow interrupt
 
+//ISR(TIMER2_COMPA_vect) {
 extern "C" void TIMER2_IRQHandler (void){
-	xprintf("2" " (%s:%d)\n",_F_,_L_);
+//	xprintf("2" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER2_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM2,TIM_MR0_INT);
-//ISR(TIMER2_COMPA_vect) {
 	
 	Motherboard::getBoard().UpdateMicros();
 	
@@ -643,30 +649,42 @@ extern "C" void TIMER2_IRQHandler (void){
 //			interface::setLEDs(false);
 		}
 	}
-	DEBUG_LED2.setValue(false);
-
+	if(0){
+		loop2++;
+		if (loop2 > 20){
+			loop2=0;
+			led_toggle2 = led_toggle2^1;
+			DEBUG_LED2.setValue(led_toggle2);
+		}
+	}
 }
 
 // piezo buzzer update
 // this interrupt gets garbled with the much more rapid stepper interrupt
-extern "C" void TIMER3_IRQHandler (void)
 //ISR(TIMER0_COMPA_vect)
-{
-	xprintf("3" " (%s:%d)\n",_F_,_L_);
-	DEBUG_LED3.setValue(true);
+extern "C" void TIMER3_IRQHandler (void){
+//	xprintf("3" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER3_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM3,TIM_MR0_INT);
-//	Piezo::doInterrupt();
-	DEBUG_LED3.setValue(false);
+	Piezo::doInterrupt();
+
+	if(0){
+		loop3++;
+		if (loop3 > 500){
+			loop3=0;
+			led_toggle3 = led_toggle3^1;
+			DEBUG_LED3.setValue(led_toggle3);
+		}
+	}
 }
 
 // HBP PWM
-void pwmHBP_On(bool on) {/*
+void pwmHBP_On(bool on) {
 	if (on) {
 //		TCCR5A |= 0b00100000; /// turn on OC5B PWM output
 	} else {
 //		TCCR5A &= 0b11001111; /// turn off OC5B PWM output
-	}*/
+	}
 }
 
 
@@ -691,7 +709,6 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 		pwmHBP_On(false);
 		HBP_HEAT.setValue(value != 0);
 //	}
-  
 }
 
 

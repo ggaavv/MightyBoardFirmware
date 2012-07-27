@@ -2231,7 +2231,7 @@ void ResetSettingsMenu::handleSelect(uint8_t index) {
             break;
         case 3:
             // Reset setings to defaults
-            eeprom::setDefaultSettings(0);
+            eeprom::setDefaultSettings();
             RGB_LED::setDefaultColor();
             interface::popScreen();
             break;
@@ -2747,7 +2747,7 @@ void SettingsMenu::handleSelect(uint8_t index) {
 			break;
 		case 2:
 			// update tool count
-            eeprom::setToolHeadCount(singleExtruder, 0);
+            eeprom::setToolHeadCount(singleExtruder);
             if(singleExtruder)
 				Motherboard::getBoard().getExtruderBoard(1).getExtruderHeater().set_target_temperature(0);
             lineUpdate = 1;

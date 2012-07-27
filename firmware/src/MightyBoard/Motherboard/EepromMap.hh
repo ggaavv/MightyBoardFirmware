@@ -328,14 +328,14 @@ namespace eeprom {
 	void write_ff_to_ram (void);
 	void read_all_from_flash (void);
 	void save_to_flash (void);
-	void factoryResetEEPROM(uint8_t save_now);
-	void fullResetEEPROM(uint8_t save_now);
-	void setToolHeadCount(uint8_t count, uint8_t save_now);
-    void setDefaultSettings(uint8_t save_now);
-    void setCustomColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t save_now);
+	void factoryResetEEPROM();
+	void fullResetEEPROM();
+	void setToolHeadCount(uint8_t count);
+    void setDefaultSettings();
+    void setCustomColor(uint8_t red, uint8_t green, uint8_t blue);
     bool isSingleTool();
-    void setDefaultsAcceleration(uint8_t save_now);
-    void storeToolheadToleranceDefaults(uint8_t save_now);
-    void setDefaultAxisHomePositions(uint8_t save_now);
+    void setDefaultsAcceleration();
+    void storeToolheadToleranceDefaults();
+    void setDefaultAxisHomePositions();
 }
 #endif // EEPROMMAP_HHe

@@ -58,7 +58,8 @@ public:
 			ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
 					Pin ThermocouplePin_In, uint16_t eeprom_base);
 private:
-        Thermocouple extruder_thermocouple;
+//        Thermocouple extruder_thermocouple;
+		Thermistor extruder_thermistor;
         ExtruderHeatingElement extruder_element;
         Heater extruder_heater;
         

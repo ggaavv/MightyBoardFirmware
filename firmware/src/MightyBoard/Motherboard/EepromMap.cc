@@ -81,6 +81,7 @@ void save_to_flash (void) {
 //	error_code_ret = in_ap_prog.write((char)0x10007000, (char)USER_FLASH_AREA_START, (int)USER_FLASH_AREA_SIZE );
 	// read all variables back into Ram
 	__enable_irq ();
+	clearflashupdate();
 };
 /*
 uint8_t microstep_pinout(uint8_t port_no) {
@@ -100,14 +101,12 @@ uint8_t microstep_pinout(uint8_t port_no) {
  *
  * @param eeprom_base start of eeprom map of cooling settings
  */
-void setDefaultCoolingFan(uint16_t eeprom_base, uint8_t save_now){
+void setDefaultCoolingFan(uint16_t eeprom_base){
 
 	uint8_t fan_settings[] = {1, DEFAULT_COOLING_FAN_SETPOINT_C};
 	setEeprom8(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET, fan_settings[0]);
 	setEeprom8(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET+1, fan_settings[1]);
 //    eeprom_write_block( fan_settings, (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET),2);
-	if (save_now)
-		save_to_flash();
 }
 
 
@@ -115,7 +114,7 @@ void setDefaultCoolingFan(uint16_t eeprom_base, uint8_t save_now){
  * Start of PID block of EEPROM. Can be extruder or HPB
  * @param eeprom_base
  */
-void setDefaultPID(uint16_t eeprom_base, uint8_t save_now)
+void setDefaultPID(uint16_t eeprom_base)
 {
 	setEeprom16(eeprom_base + pid_eeprom_offsets::P_TERM_OFFSET, DEFAULT_P_VALUE);
 	setEeprom16(eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET, DEFAULT_I_VALUE);
@@ -123,8 +122,6 @@ void setDefaultPID(uint16_t eeprom_base, uint8_t save_now)
 //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::P_TERM_OFFSET ), DEFAULT_P_VALUE);
 //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET ), DEFAULT_I_VALUE);
 //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET ), DEFAULT_D_VALUE);
-	if (save_now)
-		save_to_flash();
 }
 
 
@@ -133,7 +130,7 @@ void setDefaultPID(uint16_t eeprom_base, uint8_t save_now)
  * @param index
  * @param eeprom_base start of this extruder's data in the eeprom
  */
-void setDefaultsExtruder(int index,uint16_t eeprom_base, uint8_t save_now)
+void setDefaultsExtruder(int index,uint16_t eeprom_base)
 {
 	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR | eeprom_info::HEATER_0_THERMOCOUPLE;
 	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR | eeprom_info::HEATER_1_THERMOCOUPLE;
@@ -151,9 +148,9 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base, uint8_t save_now)
 //		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT1);
 //		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
 	}
-	setDefaultPID((eeprom_base + toolhead_eeprom_offsets::EXTRUDER_PID_BASE),save_now);
-    setDefaultPID((eeprom_base + toolhead_eeprom_offsets::HBP_PID_BASE),save_now);
-    setDefaultCoolingFan(eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS,save_now);
+	setDefaultPID(eeprom_base + toolhead_eeprom_offsets::EXTRUDER_PID_BASE);
+    setDefaultPID(eeprom_base + toolhead_eeprom_offsets::HBP_PID_BASE);
+    setDefaultCoolingFan(eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS);
 
     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_FORWARD_TIME, 500);
     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_STOP_TIME, 5);
@@ -163,9 +160,6 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base, uint8_t save_now)
 //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_STOP_TIME),5);
 //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_REVERSE_TIME),500);
 //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_TRIGGER_TIME),300);
-
-	if (save_now)
-		save_to_flash();
 }
 
 
@@ -173,7 +167,7 @@ void setDefaultsExtruder(int index,uint16_t eeprom_base, uint8_t save_now)
  * Set thermal table offsets
  * @param eeprom_base
  */
-void SetDefaultsThermal(uint16_t eeprom_base, uint8_t save_now)
+void SetDefaultsThermal(uint16_t eeprom_base)
 {
     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET, THERM_R0_DEFAULT_VALUE);
     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET, THERM_T0_DEFAULT_VALUE);
@@ -193,8 +187,6 @@ void SetDefaultsThermal(uint16_t eeprom_base, uint8_t save_now)
 	}
 	//	eeprom_write_block( (const uint8_t*)default_therm_table,
 //			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS);
-	if (save_now)
-		save_to_flash();
 }
 
 typedef struct Color {
@@ -209,7 +201,7 @@ typedef struct Color {
  *
  * @param eeprom_base start of Led effects table
  */
-void setDefaultLedEffects(uint16_t eeprom_base, uint8_t save_now)
+void setDefaultLedEffects(uint16_t eeprom_base)
 {
 	Color colors;
 
@@ -225,8 +217,6 @@ void setDefaultLedEffects(uint16_t eeprom_base, uint8_t save_now)
 	setEeprom8(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+2, colors.blue);
 
 	//	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
-	if (save_now)
-		save_to_flash();
 }
     /**
      *
@@ -235,7 +225,7 @@ void setDefaultLedEffects(uint16_t eeprom_base, uint8_t save_now)
      * @param blue value
      */
 
-void setCustomColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t save_now){
+void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
 	
 	Color colors;
 	
@@ -247,8 +237,6 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t save_now){
 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+1, colors.green);
 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+2, colors.blue);
 	//	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET),sizeof(colors));
-	if (save_now)
-		save_to_flash();
 }
 
     /**
@@ -256,33 +244,29 @@ void setCustomColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t save_now){
      * @param sound desired
      * @param dest in eeprom
      */   
-void eeprom_write_sound(Sound sound, uint16_t dest, uint8_t save_now)
+void eeprom_write_sound(Sound sound, uint16_t dest)
 {
 	setEeprom16(dest,sound.freq);
 	setEeprom16(dest + 2, sound.durationMs);
 //	eeprom_write_word((uint16_t*)dest, 	sound.freq);
 //	eeprom_write_word((uint16_t*)dest + 2, sound.durationMs);
-	if (save_now)
-		save_to_flash();
 }
 
 /**
  *
  * @param eeprom_base start of buzz effects table
  */
-void setDefaultBuzzEffects(uint16_t eeprom_base, uint8_t save_now)
+void setDefaultBuzzEffects(uint16_t eeprom_base)
 {
 	Sound blare = {NOTE_B2, 500};
-	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET, save_now);
-	if (save_now)
-		save_to_flash();
+	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET);
 }
     
 /**
  *
  * @param eeprom_base start of preheat settings table
  */
-void setDefaultsPreheat(uint16_t eeprom_base, uint8_t save_now)
+void setDefaultsPreheat(uint16_t eeprom_base)
 {
 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
@@ -292,8 +276,6 @@ void setDefaultsPreheat(uint16_t eeprom_base, uint8_t save_now)
 //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 220);
 //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET), 110);
 //    eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1<<HEAT_MASK_RIGHT) + (1<<HEAT_MASK_PLATFORM));
-	if (save_now)
-		save_to_flash();
 }
 
 
@@ -302,8 +284,7 @@ void setDefaultsPreheat(uint16_t eeprom_base, uint8_t save_now)
  * break with the form here as eeprom_base is available in class and we
  * want to cleanly call this function externally
  */
-void setDefaultsAcceleration(uint8_t save_now)
-{
+void setDefaultsAcceleration(){
 //	xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET),_F_,_L_);
 //	xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET),_F_,_L_);
 //	_delay_us(10000);
@@ -337,13 +318,11 @@ void setDefaultsAcceleration(uint8_t save_now)
 	
 	setEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, _BV(ACCELERATION_INIT_BIT));
 //	eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG), _BV(ACCELERATION_INIT_BIT));
-	if (save_now)
-		save_to_flash();
 }
 
 /// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
 /// from idealized point-center of the toolhead
-void setDefaultAxisHomePositions(uint8_t save_now)
+void setDefaultAxisHomePositions()
 {
 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_OFFSET_STEPS,0,0,0};
 	if(isSingleTool()){
@@ -355,12 +334,10 @@ void setDefaultAxisHomePositions(uint8_t save_now)
 		setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4), homes[i]);
 	}
 //	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 20 );
-	if (save_now)
-		save_to_flash();
 }
     
 /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
-void factoryResetEEPROM(uint8_t save_now) {
+void factoryResetEEPROM() {
 
 //	xprintf("factoryResetEEPROM" " (%s:%d)\n",_F_,_L_);
 	// Default: enstops inverted, Z axis inverted
@@ -389,7 +366,7 @@ void factoryResetEEPROM(uint8_t save_now) {
 //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
     
 
-	setDefaultAxisHomePositions(save_now);
+	setDefaultAxisHomePositions();
     
     /// store the default axis lengths for the machine
     for (uint8_t i=0;i<5;i++){
@@ -397,16 +374,16 @@ void factoryResetEEPROM(uint8_t save_now) {
     }
 //    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_offsets::AXIS_LENGTHS), 20);
     
-    setDefaultsAcceleration(save_now);
+    setDefaultsAcceleration();
 	
     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 //	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 
     /// Thermal table settings
-    SetDefaultsThermal(eeprom_offsets::THERM_TABLE, save_now);
+    SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
     
     /// Preheat heater settings
-    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS, save_now);
+    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
 
     /// write MightyBoard VID/PID. Only after verification does production write
     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
@@ -415,24 +392,21 @@ void factoryResetEEPROM(uint8_t save_now) {
 //    eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
 
     /// Write 'extruder 0' settings
-    setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE, save_now);
+    setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
 
     /// Write 'extruder 1' stttings
-    setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE, save_now);
+    setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
 
     /// write blink and buzz defaults
-    setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS, save_now);
-    setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS, save_now);
+    setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+    setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
     
     // startup script flag is cleared
-    setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, save_now);
+    setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0);
 //    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
-    if (save_now)
-    	save_to_flash();
 }
 
-void setToolHeadCount(uint8_t count, uint8_t save_now){
-	
+void setToolHeadCount(uint8_t count){
 	// update toolhead count
 	if(count > 2)
 		count = 1;
@@ -440,10 +414,7 @@ void setToolHeadCount(uint8_t count, uint8_t save_now){
 //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
 	
 	// update XY axis offsets to match tool head settins
-	setDefaultAxisHomePositions(save_now);
-	
-	if (save_now)
-		save_to_flash();
+	setDefaultAxisHomePositions();
 }
 
     // check single / dual tool status
@@ -453,20 +424,17 @@ bool isSingleTool(){
 
 
 // reset the settings that can be changed via the onboard UI to defaults
-void setDefaultSettings(uint8_t save_now){
-    
+void setDefaultSettings(){
     /// write blink and buzz defaults
-    setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS, save_now);
-    setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS, save_now);
-    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS, save_now);
+    setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+    setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+    setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
 //   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
-	if (save_now)
-		save_to_flash();}
+}
 
 //
-void storeToolheadToleranceDefaults(uint8_t save_now){
-	
+void storeToolheadToleranceDefaults(){
 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
 	uint32_t offsets[3] = {0,0,0};
 	for (uint8_t i=0;i<3;i++){
@@ -475,15 +443,11 @@ void storeToolheadToleranceDefaults(uint8_t save_now){
 //		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS+(i*4)),_F_,_L_);
 	}
 //	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
-		if (save_now)
-		save_to_flash();
 }
 
 /// Initialize entire eeprom map, including factor-set settings
-void fullResetEEPROM(uint8_t save_now) {
-
+void fullResetEEPROM() {
 	write_ff_to_ram();
-
 	// axis inversion settings
 	uint8_t axis_invert = 0b10111; // invert XYBZ
 	setEeprom8(eeprom_offsets::AXIS_INVERSION, axis_invert);
@@ -494,11 +458,9 @@ void fullResetEEPROM(uint8_t save_now) {
 //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
 	
 	// toolhead offset defaults
-	storeToolheadToleranceDefaults(0);
+	storeToolheadToleranceDefaults();
 	
-	factoryResetEEPROM(0);
-	if (save_now)
-		save_to_flash();
+	factoryResetEEPROM();
 }
 
 }

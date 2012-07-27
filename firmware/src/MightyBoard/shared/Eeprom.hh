@@ -7,6 +7,8 @@ namespace eeprom {
 
 void init();
 
+bool getflashupdate();
+void clearflashupdate(void);
 uint8_t getEeprom8(const uint16_t location, const uint8_t default_value);
 void setEeprom8(const uint16_t location, const uint8_t set_value);
 uint16_t getEeprom16(const uint16_t location, const uint16_t default_value);
