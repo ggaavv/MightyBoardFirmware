@@ -25,6 +25,8 @@
 #include "EepromMap.hh"
 #include "stdio.h"
 
+#include "Delay.hh"
+
 extern "C" {
 	#include "lpc17xx_gpio.h"
 	#include "lpc17xx_timer.h"
@@ -123,20 +125,20 @@ bool isRunning() {
 void InitPins(){
 		
 		// initialize stepper control pins
-		GPIO_SetDir(X_STEP_PORT, X_DIR_PIN, true);
-		GPIO_SetDir(X_DIR_PORT, X_STEP_PIN, true);
-		GPIO_SetValue(X_ENABLE_PORT, X_ENABLE_PIN);
-		GPIO_SetDir(X_ENABLE_PORT, X_ENABLE_PIN, true);
+		GPIO_SetDir(X_STEP_PORT, X_DIR_BIT, true);
+		GPIO_SetDir(X_DIR_PORT, X_STEP_BIT, true);
+		GPIO_SetValue(X_ENABLE_PORT, X_ENABLE_BIT);
+		GPIO_SetDir(X_ENABLE_PORT, X_ENABLE_BIT, true);
 
-		GPIO_SetDir(Y_STEP_PORT, Y_DIR_PIN, true);
-		GPIO_SetDir(Y_DIR_PORT, Y_STEP_PIN, true);
-		GPIO_SetValue(Y_ENABLE_PORT, Y_ENABLE_PIN);
-		GPIO_SetDir(Y_ENABLE_PORT, Y_ENABLE_PIN, true);
+		GPIO_SetDir(Y_STEP_PORT, Y_DIR_BIT, true);
+		GPIO_SetDir(Y_DIR_PORT, Y_STEP_BIT, true);
+		GPIO_SetValue(Y_ENABLE_PORT, Y_ENABLE_BIT);
+		GPIO_SetDir(Y_ENABLE_PORT, Y_ENABLE_BIT, true);
 
-		GPIO_SetDir(Z_STEP_PORT, Z_DIR_PIN, true);
-		GPIO_SetDir(Z_DIR_PORT, Z_STEP_PIN, true);
-		GPIO_SetValue(Z_ENABLE_PORT, Z_ENABLE_PIN);
-		GPIO_SetDir(Z_ENABLE_PORT, Z_ENABLE_PIN, true);
+		GPIO_SetDir(Z_STEP_PORT, Z_DIR_BIT, true);
+		GPIO_SetDir(Z_DIR_PORT, Z_STEP_BIT, true);
+		GPIO_SetValue(Z_ENABLE_PORT, Z_ENABLE_BIT);
+		GPIO_SetDir(Z_ENABLE_PORT, Z_ENABLE_BIT, true);
 /*		_SET_DIRECTION(X_DIR, true);
 		_SET_DIRECTION(X_STEP, true);
 		_WRITE(X_ENABLE, true);
@@ -153,20 +155,20 @@ void InitPins(){
 		_SET_DIRECTION(Z_ENABLE, true);*/
 
 #if STEPPER_COUNT > 3	
-		GPIO_SetDir(A_STEP_PORT, A_DIR_PIN, true);
-		GPIO_SetDir(A_DIR_PORT, A_STEP_PIN, true);
-		GPIO_SetValue(A_ENABLE_PORT, A_ENABLE_PIN);
-		GPIO_SetDir(A_ENABLE_PORT, A_ENABLE_PIN, true);
+		GPIO_SetDir(A_STEP_PORT, A_DIR_BIT, true);
+		GPIO_SetDir(A_DIR_PORT, A_STEP_BIT, true);
+		GPIO_SetValue(A_ENABLE_PORT, A_ENABLE_BIT);
+		GPIO_SetDir(A_ENABLE_PORT, A_ENABLE_BIT, true);
 /*		_SET_DIRECTION(A_DIR, true);
 		_SET_DIRECTION(A_STEP, true);
 		_WRITE(A_ENABLE, true);
 		_SET_DIRECTION(A_ENABLE, true);*/
 #endif
 #if STEPPER_COUNT > 4
-		GPIO_SetDir(B_STEP_PORT, B_DIR_PIN, true);
-		GPIO_SetDir(B_DIR_PORT, B_STEP_PIN, true);
-		GPIO_SetValue(B_ENABLE_PORT, B_ENABLE_PIN);
-		GPIO_SetDir(B_ENABLE_PORT, B_ENABLE_PIN, true);
+		GPIO_SetDir(B_STEP_PORT, B_DIR_BIT, true);
+		GPIO_SetDir(B_DIR_PORT, B_STEP_BIT, true);
+		GPIO_SetValue(B_ENABLE_PORT, B_ENABLE_BIT);
+		GPIO_SetDir(B_ENABLE_PORT, B_ENABLE_BIT, true);
 /*		_SET_DIRECTION(B_DIR, true);
 		_SET_DIRECTION(B_STEP, true);
 		_WRITE(B_ENABLE, true);
@@ -176,7 +178,7 @@ void InitPins(){
 		for (uint8_t i = 0; i < STEPPER_COUNT; i++){
 			// get inversion characteristics
 			uint8_t axes_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION, 0);
-			uint8_t endstops_invert = eeprom::getEeprom8(eeprom_offsets::AXIS_INVERSION + 2, 0);
+			uint8_t endstops_invert = eeprom::getEeprom8(eeprom_offsets::ENDSTOP_INVERSION, 0);
 			
 			bool endstops_present = (endstops_invert & (1<<7)) != 0;	
 			
@@ -189,37 +191,37 @@ void InitPins(){
 		
 		// intialize endstop pins
 		if ( X_MAX != NULL){
-			GPIO_SetDir(X_MIN_PORT, X_MIN_PIN, false);
-			_WRITE(X_MIN_PORT, X_MIN_PIN, invert_endstops[X_AXIS]);
+			GPIO_SetDir(X_MIN_PORT, X_MIN_BIT, false);
+			_WRITE(X_MIN_PORT, X_MIN_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(X_MAX, false);
 //			_WRITE(X_MAX, invert_endstops[X_AXIS]);
 		}if ( X_MIN != NULL) {
-			GPIO_SetDir(X_MAX_PORT, X_MAX_PIN, false);
-			_WRITE(X_MAX_PORT, X_MAX_PIN, invert_endstops[X_AXIS]);
+			GPIO_SetDir(X_MAX_PORT, X_MAX_BIT, false);
+			_WRITE(X_MAX_PORT, X_MAX_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(X_MIN, false);
 //			_WRITE(X_MIN, invert_endstops[X_AXIS]);
 		}
 		
 		if ( Y_MAX != NULL){
-			GPIO_SetDir(Y_MIN_PORT, Y_MIN_PIN, false);
-			_WRITE(Y_MIN_PORT, Y_MIN_PIN, invert_endstops[X_AXIS]);
+			GPIO_SetDir(Y_MIN_PORT, Y_MIN_BIT, false);
+			_WRITE(Y_MIN_PORT, Y_MIN_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Y_MAX, false);
 //			_WRITE(Y_MAX, invert_endstops[Y_AXIS]);
 		}if ( Y_MIN != NULL) {
-			GPIO_SetDir(Y_MAX_PORT, Y_MAX_PIN, false);
-			_WRITE(Y_MAX_PORT, Y_MAX_PIN, invert_endstops[X_AXIS]);
+			GPIO_SetDir(Y_MAX_PORT, Y_MAX_BIT, false);
+			_WRITE(Y_MAX_PORT, Y_MAX_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Y_MIN, false);
 //			_WRITE(Y_MIN, invert_endstops[Y_AXIS]);
 		}
 		
 		if ( Z_MAX != NULL){
-			GPIO_SetDir(Z_MIN_PORT, Z_MIN_PIN, false);
-			_WRITE(Z_MIN_PORT, Z_MIN_PIN, invert_endstops[X_AXIS]);
+			GPIO_SetDir(Z_MIN_PORT, Z_MIN_BIT, false);
+			_WRITE(Z_MIN_PORT, Z_MIN_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Z_MAX, false);
 //			_WRITE(Z_MAX, invert_endstops[Z_AXIS]);
 		}if ( Z_MIN != NULL) {
-			GPIO_SetDir(Z_MAX_PORT, Z_MAX_PIN, false);
-			_WRITE(Z_MAX_PORT, Z_MAX_PIN, invert_endstops[X_AXIS]);
+			GPIO_SetDir(Z_MAX_PORT, Z_MAX_BIT, false);
+			_WRITE(Z_MAX_PORT, Z_MAX_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Z_MIN, false);
 //			_WRITE(Z_MIN, invert_endstops[Z_AXIS]);
 		}
@@ -294,7 +296,7 @@ void abort() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 
-//	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS * 16);
+	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS * 16);
 //	OCR3A = INTERVAL_IN_MICROSECONDS * 16;	// TODO: find value
 }
 
@@ -355,7 +357,7 @@ void setTarget(Point target_in) {
 
 	// The A3982 stepper driver chip has an inverted enable.
 	if(delta[X_AXIS] != 0){
-		_WRITE(X_ENABLE_PORT, X_ENABLE_PIN, false);
+		_WRITE(X_ENABLE_PORT, X_ENABLE_BIT, false);
 //		_WRITE(X_ENABLE, false);
 		if(delta[X_AXIS] < 0){
 			delta[X_AXIS] = -delta[X_AXIS];
@@ -365,12 +367,12 @@ void setTarget(Point target_in) {
 			direction[X_AXIS] = true;
 			step_change[X_AXIS] = 1;
 			}
-		_WRITE(X_DIR_PORT, X_DIR_PIN, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);
+		_WRITE(X_DIR_PORT, X_DIR_BIT, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);
 //		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);
 	}
 	
 	if(delta[Y_AXIS] != 0){
-		_WRITE(Y_ENABLE_PORT, Y_ENABLE_PIN, false);
+		_WRITE(Y_ENABLE_PORT, Y_ENABLE_BIT, false);
 //		_WRITE(Y_ENABLE, false);
 		if(delta[Y_AXIS] < 0){
 			delta[Y_AXIS] = -delta[Y_AXIS];
@@ -380,12 +382,12 @@ void setTarget(Point target_in) {
 			direction[Y_AXIS] = true;
 			step_change[Y_AXIS] = 1;
 			}
-		_WRITE(Y_DIR_PORT, Y_DIR_PIN, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);
+		_WRITE(Y_DIR_PORT, Y_DIR_BIT, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);
 //		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);
 	}
 	
 	if(delta[Z_AXIS] != 0){
-		_WRITE(Z_ENABLE_PORT, Z_ENABLE_PIN, false);
+		_WRITE(Z_ENABLE_PORT, Z_ENABLE_BIT, false);
 //		_WRITE(Z_ENABLE, false);
 		if(delta[Z_AXIS] < 0){
 			delta[Z_AXIS] = -delta[Z_AXIS];
@@ -395,14 +397,14 @@ void setTarget(Point target_in) {
 			direction[Z_AXIS] = true;
 			step_change[Z_AXIS] = 1;
 			}
-		_WRITE(Z_DIR_PORT, Z_DIR_PIN, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);
+		_WRITE(Z_DIR_PORT, Z_DIR_BIT, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);
 //		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);
 	}
 	
 
 #if STEPPER_COUNT > 3
 	if(delta[A_AXIS] != 0){
-		_WRITE(A_ENABLE_PORT, A_ENABLE_PIN, false);
+		_WRITE(A_ENABLE_PORT, A_ENABLE_BIT, false);
 //		_WRITE(A_ENABLE, false);
 		if(delta[A_AXIS] < 0){
 			delta[A_AXIS] = -delta[A_AXIS];
@@ -412,13 +414,13 @@ void setTarget(Point target_in) {
 			direction[A_AXIS] = true;
 			step_change[A_AXIS] = 1;
 			}
-		_WRITE(A_DIR_PORT, A_DIR_PIN, invert_axis[A_AXIS] ? !direction[A_AXIS] : direction[A_AXIS]);
+		_WRITE(A_DIR_PORT, A_DIR_BIT, invert_axis[A_AXIS] ? !direction[A_AXIS] : direction[A_AXIS]);
 //		_WRITE(A_DIR, invert_axis[A_AXIS] ? !direction[A_AXIS] : direction[A_AXIS]);
 	}
 #endif
 #if STEPPER_COUNT > 4
 	if(delta[B_AXIS] != 0){
-		_WRITE(B_ENABLE_PORT, B_ENABLE_PIN, false);
+		_WRITE(B_ENABLE_PORT, B_ENABLE_BIT, false);
 //		_WRITE(B_ENABLE, false);
 		if(delta[B_AXIS] < 0){
 			delta[B_AXIS] = -delta[B_AXIS];
@@ -428,8 +430,8 @@ void setTarget(Point target_in) {
 			direction[B_AXIS] = true;
 			step_change[B_AXIS] = 1;
 			}
-		_WRITE(B_DIR_PORT, B_DIR_PIN, invert_axis[B_AXIS] ? !direction[B_AXIS] : direction[B_AXIS]);
-		_WRITE(B_DIR_PORT, B_DIR_PIN, invert_axis[B_AXIS] ? !direction[B_AXIS] : direction[B_AXIS]);
+		_WRITE(B_DIR_PORT, B_DIR_BIT, invert_axis[B_AXIS] ? !direction[B_AXIS] : direction[B_AXIS]);
+		_WRITE(B_DIR_PORT, B_DIR_BIT, invert_axis[B_AXIS] ? !direction[B_AXIS] : direction[B_AXIS]);
 //		_WRITE(B_DIR, invert_axis[B_AXIS] ? !direction[B_AXIS] : direction[B_AXIS]);
 	}
 #endif	
@@ -440,20 +442,33 @@ void setTarget(Point target_in) {
 /// load up the next movement
 /// WARNING: called from inside the ISR, so get out fast
 bool getNextMove() {
+//	xprintf("getNextMove" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
 	if (current_block != NULL) {
+//		xprintf("current_block == NULL" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(10000);
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
 		current_block = NULL;
 	}
+//	xprintf("current_block == NULL" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
 
 	if (!planner::isReady()) {
+//		xprintf("!planner::isReady()" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(10000);
 		is_running = !planner::isBufferEmpty();
 		return false;
 	}
+//	xprintf("done !planner::isReady()" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
 
 	current_block = planner::getNextBlock();
+
+//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
 
 	// Mark block as busy (being executed by the stepper interrupt)
 	// Also mark it a locked
@@ -462,8 +477,14 @@ bool getNextMove() {
 	Point &target = current_block->target;
 
 	int32_t max_delta = current_block->step_event_count;
+
+//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
 	
 	setTarget(target);
+
+//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
 	
 	current_feedrate_index = 0;
 	int feedrate_being_setup = 0;
@@ -479,6 +500,8 @@ bool getNextMove() {
 		feedrate_being_setup++;
 
 	}
+//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(10000);
 
 	// setup plateau
 	if (current_block->decelerate_after > current_block->accelerate_until) {
@@ -490,6 +513,9 @@ bool getNextMove() {
 		feedrate_elements[feedrate_being_setup].target    = current_block->nominal_rate;
 		feedrate_being_setup++;
 	}
+
+	DEBUG_LED2.setValue(true);
+//	_delay_us(10000);
 
 	// setup deceleration
 	if (current_block->decelerate_after < current_block->step_event_count) {
@@ -505,8 +531,7 @@ bool getNextMove() {
 		feedrate_elements[feedrate_being_setup-1].steps     = INT16_MAX;
 		// We don't setup anything else because we limit to the target speed anyway.
 	}
-	
-	// unlock the block
+
 	current_block->flags &= ~planner::Block::Locked;
 
 	if (feedrate == 0) {
@@ -519,6 +544,9 @@ bool getNextMove() {
 	acceleration_tick_counter = TICKS_PER_ACCELERATION;
 
 	timer_counter = 0;
+
+	xprintf("t");
+//	_delay_us(10000);
 
 	intervals = max_delta;
 	intervals_remaining = intervals;
@@ -533,6 +561,8 @@ bool getNextMove() {
 	counter[B_AXIS] = negative_half_interval;
 #endif
 	is_running = true;
+	xprintf("TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS);" " (%s:%d)\n",_F_,_L_);
+	_delay_us(10000);
 	
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
 		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS);
@@ -565,9 +595,9 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	// The A3982 stepper driver chip has an inverted enable.
 	if ((axes_enabled & (1<<X_AXIS)) != 0) {
 		direction[X_AXIS] = maximums;
-		_WRITE(X_DIR_PORT, X_DIR_PIN, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);
+		_WRITE(X_DIR_PORT, X_DIR_BIT, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);
 //		_WRITE(X_DIR, invert_axis[X_AXIS] ? !direction[X_AXIS] : direction[X_AXIS]);
-		_WRITE(X_ENABLE_PORT, X_ENABLE_PIN, false);
+		_WRITE(X_ENABLE_PORT, X_ENABLE_BIT, false);
 //		_WRITE(X_ENABLE, false);
 		delta[X_AXIS] = 1;
 		step_change[X_AXIS] = direction[X_AXIS] ? 1 : -1;
@@ -575,9 +605,9 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	
 	if ((axes_enabled & (1<<Y_AXIS)) != 0) {
 		direction[Y_AXIS] = maximums;
-		_WRITE(Y_DIR_PORT, Y_DIR_PIN, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);
+		_WRITE(Y_DIR_PORT, Y_DIR_BIT, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);
 //		_WRITE(Y_DIR, invert_axis[Y_AXIS] ? !direction[Y_AXIS] : direction[Y_AXIS]);
-		_WRITE(Y_ENABLE_PORT, Y_ENABLE_PIN, false);
+		_WRITE(Y_ENABLE_PORT, Y_ENABLE_BIT, false);
 //		_WRITE(Y_ENABLE, false);
 		delta[Y_AXIS] = 1;
 		step_change[Y_AXIS] = direction[Y_AXIS] ? 1 : -1;
@@ -585,9 +615,9 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	
 	if ((axes_enabled & (1<<Z_AXIS)) != 0) {
 		direction[Z_AXIS] = maximums;
-		_WRITE(Z_DIR_PORT, Z_DIR_PIN, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);
+		_WRITE(Z_DIR_PORT, Z_DIR_BIT, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);
 //		_WRITE(Z_DIR, invert_axis[Z_AXIS] ? !direction[Z_AXIS] : direction[Z_AXIS]);
-		_WRITE(Z_ENABLE_PORT, Z_ENABLE_PIN, false);
+		_WRITE(Z_ENABLE_PORT, Z_ENABLE_BIT, false);
 //		_WRITE(Z_ENABLE, false);
 		delta[Z_AXIS] = 1;
 		step_change[Z_AXIS] = direction[Z_AXIS] ? 1 : -1;
@@ -603,23 +633,23 @@ void enableAxis(uint8_t index, bool enable) {
 	// The A3982 stepper driver chip has an inverted enable.
 	switch(index){
 		case X_AXIS: 
-			_WRITE(X_ENABLE_PORT, X_ENABLE_PIN, !enable);
+			_WRITE(X_ENABLE_PORT, X_ENABLE_BIT, !enable);
 //			_WRITE(X_ENABLE, !enable);
 			break;
         case Y_AXIS: 
-			_WRITE(Y_ENABLE_PORT, Y_ENABLE_PIN, !enable);
+			_WRITE(Y_ENABLE_PORT, Y_ENABLE_BIT, !enable);
 //			_WRITE(Y_ENABLE, !enable);
 			break;
 		case Z_AXIS: 
-			_WRITE(Z_ENABLE_PORT, Z_ENABLE_PIN, !enable);
+			_WRITE(Z_ENABLE_PORT, Z_ENABLE_BIT, !enable);
 //			_WRITE(Z_ENABLE, !enable);
 			break;
 		case A_AXIS: 
-			_WRITE(A_ENABLE_PORT, A_ENABLE_PIN, !enable);
+			_WRITE(A_ENABLE_PORT, A_ENABLE_BIT, !enable);
 //			_WRITE(A_ENABLE, !enable);
 			break;
 		case B_AXIS: 
-			_WRITE(B_ENABLE_PORT, B_ENABLE_PIN, !enable);
+			_WRITE(B_ENABLE_PORT, B_ENABLE_BIT, !enable);
 //			_WRITE(B_ENABLE, !enable);
 			break;
 	}
@@ -683,7 +713,7 @@ bool IsActive(uint8_t axis){
 }
 #endif
 
-bool SetAccelerationOn(bool on){
+void SetAccelerationOn(bool on){
 	acceleration_on = on;
 }
 
@@ -692,26 +722,34 @@ bool SetAccelerationOn(bool on){
 uint8_t getEndstopStatus(){
 
 	uint8_t status = 0;
-	status |= (_READ(Z_MAX_PORT,Z_MAX_PIN)) ? 0x20 : 0;
-	status |= (_READ(Z_MIN_PORT,Z_MIN_PIN)) ? 0x10 : 0;
-	status |= (_READ(Y_MAX_PORT,Y_MAX_PIN)) ? 0x08 : 0;
-	status |= (_READ(Y_MIN_PORT,Y_MIN_PIN)) ? 0x04 : 0;
-	status |= (_READ(X_MAX_PORT,X_MAX_PIN)) ? 0x02 : 0;
-	status |= (_READ(X_MIN_PORT,X_MIN_PIN)) ? 0x01 : 0;
+	status |= (_READ(Z_MAX_PORT,Z_MAX_BIT)) ? 0x20 : 0;
+	status |= (_READ(Z_MIN_PORT,Z_MIN_BIT)) ? 0x10 : 0;
+	status |= (_READ(Y_MAX_PORT,Y_MAX_BIT)) ? 0x08 : 0;
+	status |= (_READ(Y_MIN_PORT,Y_MIN_BIT)) ? 0x04 : 0;
+	status |= (_READ(X_MAX_PORT,X_MAX_BIT)) ? 0x02 : 0;
+	status |= (_READ(X_MIN_PORT,X_MIN_BIT)) ? 0x01 : 0;
 	
 	return status;
 }
 
 
 bool doInterrupt() {
-	
+
 	if (is_running) {
+//	xprintf("is_running" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
 		if (current_block == NULL) {
+//			xprintf("current_block == NULL" " (%s:%d)\n",_F_,_L_);
+//			_delay_us(10000);
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
+//				xprintf("!got_a_move" " (%s:%d)\n",_F_,_L_);
+//				_delay_us(10000);
 				return is_running;
 			}
 		}
+//		xprintf("after current_block == NULL" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(10000);
 	
 		timer_counter -= INTERVAL_IN_MICROSECONDS; //interval_microseconds;
 
@@ -736,9 +774,9 @@ bool doInterrupt() {
 #else		
 			//TODO: Port this to handle max/min pins = NULL and non-inverted endstops ( see old stepper interface functions)
 			//TODO: READ ENDSTOPS ALL AT ONCE
-			axis_active[X_AXIS] = (delta[X_AXIS] != 0) && !(direction[X_AXIS] ? !_READ(X_MAX_PORT, X_MAX_PIN) : !_READ(X_MIN_PORT, X_MIN_PIN));
-			axis_active[Y_AXIS] = (delta[Y_AXIS] != 0) && !(direction[Y_AXIS] ? !_READ(Y_MAX_PORT, Y_MAX_PIN) : !_READ(Y_MIN_PORT, Y_MIN_PIN));
-			axis_active[Z_AXIS] = (delta[Z_AXIS] != 0) && !(direction[Z_AXIS] ? !_READ(Z_MAX_PORT, Z_MAX_PIN) : !_READ(Z_MIN_PORT, Z_MIN_PIN));
+			axis_active[X_AXIS] = (delta[X_AXIS] != 0) && !(direction[X_AXIS] ? !_READ(X_MAX_PORT, X_MAX_BIT) : !_READ(X_MIN_PORT, X_MIN_BIT));
+			axis_active[Y_AXIS] = (delta[Y_AXIS] != 0) && !(direction[Y_AXIS] ? !_READ(Y_MAX_PORT, Y_MAX_BIT) : !_READ(Y_MIN_PORT, Y_MIN_BIT));
+			axis_active[Z_AXIS] = (delta[Z_AXIS] != 0) && !(direction[Z_AXIS] ? !_READ(Z_MAX_PORT, Z_MAX_BIT) : !_READ(Z_MIN_PORT, Z_MIN_BIT));
 //			axis_active[X_AXIS] = (delta[X_AXIS] != 0) && !(direction[X_AXIS] ? !_READ(X_MAX) : !_READ(X_MIN));
 //			axis_active[Y_AXIS] = (delta[Y_AXIS] != 0) && !(direction[Y_AXIS] ? !_READ(Y_MAX) : !_READ(Y_MIN));
 //			axis_active[Z_AXIS] = (delta[Z_AXIS] != 0) && !(direction[Z_AXIS] ? !_READ(Z_MAX) : !_READ(Z_MIN));
@@ -754,33 +792,33 @@ bool doInterrupt() {
 				if(axis_active[X_AXIS]){
 					counter[X_AXIS] += delta[X_AXIS] ;
 					if (counter[X_AXIS]  >= 0) {
-						_WRITE(X_STEP_PORT, X_STEP_PIN, true);
+						_WRITE(X_STEP_PORT, X_STEP_BIT, true);
 //						_WRITE(X_STEP, true);
 						counter[X_AXIS]  -= intervals ;
 						position[X_AXIS]  += step_change[X_AXIS] ;
-						_WRITE(X_STEP_PORT, X_STEP_PIN, false);
+						_WRITE(X_STEP_PORT, X_STEP_BIT, false);
 //						_WRITE(X_STEP, false);
 					}
 				}
 				if(axis_active[Y_AXIS])	{
 					counter[Y_AXIS] += delta[Y_AXIS] ;
 					if (counter[Y_AXIS]  >= 0) {
-						_WRITE(Y_STEP_PORT, Y_STEP_PIN, true);
+						_WRITE(Y_STEP_PORT, Y_STEP_BIT, true);
 //						_WRITE(Y_STEP, true);
 						counter[Y_AXIS]  -= intervals ;
 						position[Y_AXIS]  += step_change[Y_AXIS] ;
-						_WRITE(Y_STEP_PORT, Y_STEP_PIN, false);
+						_WRITE(Y_STEP_PORT, Y_STEP_BIT, false);
 //						_WRITE(Y_STEP, false);
 					}
 				}
 				if(axis_active[Z_AXIS])	{
 					counter[Z_AXIS] += delta[Z_AXIS] ;
 					if (counter[Z_AXIS]  >= 0) {
-						_WRITE(Z_STEP_PORT, Z_STEP_PIN, true);
+						_WRITE(Z_STEP_PORT, Z_STEP_BIT, true);
 //						_WRITE(Z_STEP, true);
 						counter[Z_AXIS]  -= intervals ;
 						position[Z_AXIS]  += step_change[Z_AXIS] ;
-						_WRITE(Z_STEP_PORT, Z_STEP_PIN, false);
+						_WRITE(Z_STEP_PORT, Z_STEP_BIT, false);
 //						_WRITE(Z_STEP, false);
 					}
 				}
@@ -788,11 +826,11 @@ bool doInterrupt() {
 				if(axis_active[A_AXIS]){
 					counter[A_AXIS] += delta[A_AXIS] ;
 					if (counter[A_AXIS]  >= 0) {
-						_WRITE(A_STEP_PORT, A_STEP_PIN, true);
+						_WRITE(A_STEP_PORT, A_STEP_BIT, true);
 //						_WRITE(A_STEP, true);
 						counter[A_AXIS]  -= intervals ;
 						position[A_AXIS]  += step_change[A_AXIS] ;
-						_WRITE(A_STEP_PORT, A_STEP_PIN, false);
+						_WRITE(A_STEP_PORT, A_STEP_BIT, false);
 //						_WRITE(A_STEP, false);
 					}
 				}
@@ -801,11 +839,11 @@ bool doInterrupt() {
 				if(axis_active[B_AXIS]){
 					counter[B_AXIS] += delta[B_AXIS] ;
 					if (counter[B_AXIS]  >= 0) {
-						_WRITE(B_STEP_PORT, B_STEP_PIN, true);
+						_WRITE(B_STEP_PORT, B_STEP_BIT, true);
 //						_WRITE(B_STEP, true);
 						counter[B_AXIS]  -= intervals ;
 						position[B_AXIS]  += step_change[B_AXIS] ;
-						_WRITE(B_STEP_PORT, B_STEP_PIN, false);
+						_WRITE(B_STEP_PORT, B_STEP_BIT, false);
 //						_WRITE(B_STEP, false);
 					}
 				}
@@ -844,6 +882,8 @@ bool doInterrupt() {
 				feedrate = feedrate_target;
 			} 
 		}
+//		xprintf("return is_running" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(10000);
 	
 		return is_running;
 	} else if (is_homing) {
@@ -863,14 +903,14 @@ bool doInterrupt() {
 					counter[X_AXIS] += delta[X_AXIS];
 					if (counter[X_AXIS] >= 0) {
 						counter[X_AXIS] -= intervals;
-						bool hit_endstop = direction[X_AXIS] ? !_READ(X_MAX_PORT, X_MAX_PIN) : !_READ(X_MIN_PORT, X_MIN_PIN);
+						bool hit_endstop = direction[X_AXIS] ? !_READ(X_MAX_PORT, X_MAX_BIT) : !_READ(X_MIN_PORT, X_MIN_BIT);
 //						bool hit_endstop = direction[X_AXIS] ? !_READ(X_MAX) : !_READ(X_MIN);
 						if (!hit_endstop) {
-							_WRITE(X_STEP_PORT, X_STEP_PIN, true);
+							_WRITE(X_STEP_PORT, X_STEP_BIT, true);
 //							_WRITE(X_STEP, true);
 							is_homing |= true;
 							position[X_AXIS] += step_change[X_AXIS];
-							_WRITE(X_STEP_PORT, X_STEP_PIN, false);
+							_WRITE(X_STEP_PORT, X_STEP_BIT, false);
 //							_WRITE(X_STEP, false);
 						} else {
 							is_homing |= false;
@@ -882,14 +922,14 @@ bool doInterrupt() {
 					counter[Y_AXIS] += delta[Y_AXIS];
 					if (counter[Y_AXIS] >= 0) {
 						counter[Y_AXIS] -= intervals;
-						bool hit_endstop = direction[Y_AXIS] ? !_READ(Y_MAX_PORT, Y_MAX_PIN) : !_READ(Y_MIN_PORT, Y_MIN_PIN);
+						bool hit_endstop = direction[Y_AXIS] ? !_READ(Y_MAX_PORT, Y_MAX_BIT) : !_READ(Y_MIN_PORT, Y_MIN_BIT);
 //						bool hit_endstop = direction[Y_AXIS] ? !_READ(Y_MAX) : !_READ(Y_MIN);
 						if (!hit_endstop) {
-							_WRITE(Y_STEP_PORT, Y_STEP_PIN, true);
+							_WRITE(Y_STEP_PORT, Y_STEP_BIT, true);
 //							_WRITE(Y_STEP, true);
 							is_homing |= true;
 							position[Y_AXIS] += step_change[Y_AXIS];
-							_WRITE(Y_STEP_PORT, Y_STEP_PIN, false);
+							_WRITE(Y_STEP_PORT, Y_STEP_BIT, false);
 //							_WRITE(Y_STEP, false);
 						} else {
 							is_homing |= false;
@@ -901,14 +941,14 @@ bool doInterrupt() {
 					counter[Z_AXIS] += delta[Z_AXIS];
 					if (counter[Z_AXIS] >= 0) {
 						counter[Z_AXIS] -= intervals;
-						bool hit_endstop = direction[Z_AXIS] ? !_READ(Z_MAX_PORT, Z_MAX_PIN) : !_READ(Z_MIN_PORT, Z_MIN_PIN);
+						bool hit_endstop = direction[Z_AXIS] ? !_READ(Z_MAX_PORT, Z_MAX_BIT) : !_READ(Z_MIN_PORT, Z_MIN_BIT);
 //						bool hit_endstop = direction[Z_AXIS] ? !_READ(Z_MAX) : !_READ(Z_MIN);
 						if (!hit_endstop) {
-							_WRITE(Z_STEP_PORT, Z_STEP_PIN, true);
+							_WRITE(Z_STEP_PORT, Z_STEP_BIT, true);
 //							_WRITE(Z_STEP, true);
 							is_homing |= true;
 							position[Z_AXIS] += step_change[Z_AXIS];
-							_WRITE(Z_STEP_PORT, Z_STEP_PIN, false);
+							_WRITE(Z_STEP_PORT, Z_STEP_BIT, false);
 //							_WRITE(Z_STEP, false);
 						} else {
 							is_homing |= false;
@@ -923,6 +963,9 @@ bool doInterrupt() {
 
 			timer_counter += feedrate_inverted;
 		}
+		xprintf("e");
+//		xprintf("end ??" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(10000);
 		// if we're done, force a sync with the planner
 		if (!is_homing)
 			planner::abort();

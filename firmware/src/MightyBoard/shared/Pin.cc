@@ -9,8 +9,8 @@ Pin::Pin(const Pin& other_pin) : port_base(other_pin.port_base), is_null(port_ba
 bool Pin::isNull() const { return is_null; }
 
 void Pin::setDirection(bool out) const {
-	// if (is_null)
-	// 	return;
+	 if (is_null)
+	 	return;
 //	uint8_t oldSREG = SREG;
 //               cli();
 //	xprintf("Pin::setDirection - port_base:%d pin_index:%d (%s:%d)\n",port_base,pin_index,_F_,_L_);
@@ -24,6 +24,16 @@ void Pin::setDirection(bool out) const {
 //		GPIO_SetDir(port_base, (1 << pin_mask_inverted), 0);
 //		GPIO_SetDir(port_base, _BV(pin_index), 0);
 //	}
+//	xprintf("%x (%s:%d)\n",&GPIO_SetDir,_F_,_L_);
+
+	PINSEL_CFG_Type PinCfg;
+	PinCfg.Funcnum = PINSEL_FUNC_0;
+	PinCfg.OpenDrain = PINSEL_PINMODE_NORMAL;
+	PinCfg.Pinmode = PINSEL_PINMODE_PULLUP;
+	PinCfg.Pinnum = pin_index;
+	PinCfg.Portnum = port_base;
+	PINSEL_ConfigPin(&PinCfg);
+
 	GPIO_SetDir(port_base, _BV(pin_index), out);
 //	SREG = oldSREG;
 }

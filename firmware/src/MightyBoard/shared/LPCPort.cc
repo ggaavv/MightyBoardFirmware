@@ -51,7 +51,7 @@ void LPCPort::setPinDirectionIn(uint8_t pin_index) const {
 
 bool LPCPort::getPin(uint8_t pin_index) const {
 //	return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
-	return ((FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+	return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
 };
 
 void LPCPort::setPinOn(uint8_t pin_index) const {

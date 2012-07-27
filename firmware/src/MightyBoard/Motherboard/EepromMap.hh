@@ -21,11 +21,16 @@
 
 #include <stdint.h>
 
+extern "C" {
+	#include "comm.h"
+}
+
 #define EEPROM_FLASH_AREA_START		USER_FLASH_AREA_START
-//#define EEPROM_START_ADDRESS		(0x10007000)
 #define EEPROM_START_ADDRESS		(0x10007000)
+//#define EEPROM_START_ADDRESS		(0x20080000)
+//#define EEPROM_START_ADDRESS		(0x10000000)
 //#define EEPROM_SIZE         		(0x00001000)
-#define eeprom_address(x)   (*(volatile unsigned long *)(EEPROM_START_ADDRESS + x))
+#define eeprom_address(x,y)   (*(volatile unsigned long *)(x+((y)*4)))
 
 //uint8_t microstep_pinout(uint8_t port_no);
 
@@ -260,7 +265,7 @@ enum HeatMask{
 
 namespace eeprom_info {
 
-const static uint16_t EEPROM_SIZE = 0x0200;
+const static uint16_t EEPROM_SIZE = 0x0200 * 4;
 const int MAX_MACHINE_NAME_LEN = 16;
 
 
@@ -320,6 +325,7 @@ enum {
 }
 
 namespace eeprom {
+	void write_ff_to_ram (void);
 	void read_all_from_flash (void);
 	void save_to_flash (void);
 	void factoryResetEEPROM(uint8_t save_now);

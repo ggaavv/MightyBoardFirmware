@@ -124,9 +124,9 @@ int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
 }
 
 bool isTableSet(uint16_t off) {
-	const void* offset = (const void*)off;
+//	const void* offset = (const void*)off;
 	uint8_t first_byte;
-	first_byte = eeprom_address(offset);
+//	first_byte = (uint8_t)(eeprom_address(EEPROM_START_ADDRESS, off));
 //	eeprom_read_block(&first_byte,offset,1);
 	return first_byte != 0xff;
 }

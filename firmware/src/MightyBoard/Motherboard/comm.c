@@ -5,13 +5,20 @@
  *      Author: Jamie
  */
 
+#include <string.h>
 #include "comm.h"
 
 #include "lpc17xx_uart.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_gpio.h"
-//#include "sys_timer.h"
-//#include "pinout.h"
+#include "lpc17xx_wdt.h"
+#include "pinout.h"
+#include "lpc17xx_wdt.h"
+
+
+#define USER_FLASH_START 0x3000 // For USB bootloader
+//#define USER_FLASH_START 0x0 // No USB bootloader
+#define BOOTLOADER_START 0x0 // To enter bootloader
 
 volatile int LINE_READY=0;
 volatile int RX_TOG=0;
@@ -24,7 +31,7 @@ volatile uint32_t UART_LINE_LEN=0;
 
 /************************** PRIVATE DEFINTIONS *************************/
 /* buffer size definition */
-#define UART_RING_BUFSIZE 256
+#define UART_RING_BUFSIZE 1024
 
 /* Buf mask */
 #define __BUF_MASK (UART_RING_BUFSIZE-1)
@@ -59,6 +66,39 @@ UART_RING_BUFFER_T rb;
 
 // Current Tx Interrupt enable state
 __IO FlagStatus TxIntStat;
+
+void exec_cmd(char *cmd){
+	comm_flush();
+	if(stricmp(cmd,"b")==0){
+		xprintf(INFO "resetting to bootloader" " (%s:%d)\n",_F_,_L_);
+		SCB->VTOR = (BOOTLOADER_START & 0x1FFFFF80);
+		RTC_WriteGPREG(LPC_RTC, 2, 0xbbbbbbbb);
+		WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+		WDT_Start(1);
+		NVIC_EnableIRQ(WDT_IRQn);
+	}
+	else if(stricmp(cmd,"r")==0){
+		xprintf(INFO "reseting" " (%s:%d)\n",_F_,_L_);
+		WDT_Init(WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+		WDT_Start(1);
+		NVIC_EnableIRQ(WDT_IRQn);
+		while(1);//lockup, wdt will reset board
+		//WDT_ClrTimeOutFlag();
+	}
+	else if(stricmp(cmd,"t")==0){
+		xprintf(INFO "tests running" " (%s:%d)\n",_F_,_L_);
+	}
+	else if(stricmp(cmd,"q")==0){
+		xprintf(INFO "q" " (%s:%d)\n",_F_,_L_);
+	}
+	else if(stricmp(cmd,"")==0){
+		xprintf(INFO "\r\nr-Resets board\r\nb-Resets to bootloader\r\nt-led test\r\n" " (%s:%d)\n",_F_,_L_);
+	}
+	else{
+		xprintf(INFO "Command not found (cmd=%s)" " (%s:%d)\n",cmd,_F_,_L_);
+	}
+	return;
+}
 
 int comm_test(void){
 	xprintf("%s{\n",__func__);
@@ -116,7 +156,15 @@ uint8_t comm_get(void){
 		len = UARTReceive(LPC_UART0, buffer, 1);
 	}
 	UART_LINE_LEN=0;
+	UART_LINE[0]='\0';
 	return buffer;
+#endif
+}
+
+void comm_flush(void){
+#if 1
+	uint8_t buffer[1], len;
+	while (UARTReceive(LPC_UART0, buffer, 1));
 #endif
 }
 
@@ -132,9 +180,6 @@ uint8_t comm_gets(void){
 #endif
 
 void comm_put(uint8_t d){
-////	UARTSend(LPC_UART_TypeDef *UARTPort, uint8_t *txbuf, uint8_t buflen)
-////	UARTSend(LPC_UART0, d, 1);
-////	UART_SendByte(LPC_UART0, d);
 //	UART_Send(LPC_UART0, &d, 1, BLOCKING);//without interrupt
 	UARTSend(LPC_UART0, &d, 1);//with interrupt
 ////	serial_writechar(d);
@@ -160,14 +205,8 @@ void comm_init(void){
 //	UART_FIFO_CFG_Type UARTFIFOConfigStruct;
 	// Pin configuration for UART0
 	PINSEL_CFG_Type PinCfg;
-/*
-	uint32_t idx, len;
-	__IO FlagStatus exitflag;
-	uint8_t buffer[100];
-*/
-	/*
-	 * Initialize UART0 pin connect
-	 */
+
+	//Initialize UART0 pin connect
 	PinCfg.Funcnum = 1;
 	PinCfg.OpenDrain = 0;
 	PinCfg.Pinmode = 0;
@@ -185,27 +224,14 @@ void comm_init(void){
 	 * 1 Stop bit
 	 * None parity
 	 */
-	UARTConfigStruct.Baud_rate = 115200;
+	UARTConfigStruct.Baud_rate = 512000;
+//	UARTConfigStruct.Baud_rate = 115200;
 	UARTConfigStruct.Parity = UART_PARITY_NONE;
 	UARTConfigStruct.Stopbits = UART_STOPBIT_1;
 	UARTConfigStruct.Databits = UART_DATABIT_8;
 
 	// Initialize UART0 peripheral with given to corresponding parameter
 	UART_Init(LPC_UART0, &UARTConfigStruct);
-
-
-	/* Initialize FIFOConfigStruct to default state:
-	 * 				- FIFO_DMAMode = DISABLE
-	 * 				- FIFO_Level = UART_FIFO_TRGLEV0
-	 * 				- FIFO_ResetRxBuf = ENABLE
-	 * 				- FIFO_ResetTxBuf = ENABLE
-	 * 				- FIFO_State = ENABLE
-	 */
-//	UART_FIFOConfigStructInit(&UARTFIFOConfigStruct);
-
-	// Initialize FIFO for UART0 peripheral
-//	UART_FIFOConfig((LPC_UART_TypeDef *)LPC_UART0, &UARTFIFOConfigStruct);
-
 
 	// Enable UART Transmit
 	UART_TxCmd(LPC_UART0, ENABLE);
@@ -228,7 +254,7 @@ void comm_init(void){
 	__BUF_RESET(rb.tx_tail);
 
     /* preemption = 1, sub-priority = 1 */
-    NVIC_SetPriority(UART0_IRQn, ((0x01<<3)|0x01));
+    NVIC_SetPriority(UART0_IRQn, 10);
 	/* Enable Interrupt for UART0 channel */
     NVIC_EnableIRQ(UART0_IRQn);
 #endif
@@ -285,28 +311,23 @@ void UART_IntReceive(void)
 {
 	uint8_t tmpc;
 	uint32_t rLen;
-
-//	if(RX_TOG)
-//		GPIO_SetValue(LED_3_PORT, LED_3_BIT);
-//	else
-//		GPIO_ClearValue(LED_3_PORT, LED_3_BIT);
-//	RX_TOG=!RX_TOG;
-
+/*
+	if(RX_TOG)
+		GPIO_SetValue(LED_3_PORT, LED_3_BIT);
+	else
+		GPIO_ClearValue(LED_3_PORT, LED_3_BIT);
+	RX_TOG=!RX_TOG;
+*/
 	while(1){
 		// Call UART read function in UART driver
 		rLen = UART_Receive((LPC_UART_TypeDef *)LPC_UART0, &tmpc, 1, NONE_BLOCKING);
 		// If data received
 		if (rLen){
 			UART_LINE[UART_LINE_LEN++]=tmpc;
-//			xprintf("%s|%s;---%s{=%s\n",tmpc,UART_LINE[UART_LINE_LEN],__func__,tmpc);
-
-//			xprintf("r---%s{=%s\n",__func__,tmpc);
 			if((tmpc=='\r')||(tmpc=='\n')){
 				LINE_READY = 1;
-				UART_LINE[UART_LINE_LEN-1]=NULL;
+				UART_LINE[UART_LINE_LEN-1]='\0';
 				UART_LINE_LEN=0;
-//				UART_LINE[0]='\0';
-//				xprintf("LINE_READY = 1;---%s{=%s\n",__func__,tmpc);
 			}
 			/* Check if buffer is more space
 			 * If no more space, remaining character will be trimmed out
@@ -330,11 +351,13 @@ void UART_IntReceive(void)
  *********************************************************************/
 void UART_IntTransmit(void)
 {
-//	if(TX_TOG)
-//		GPIO_SetValue(LED_2_PORT, LED_2_BIT);
-//	else
-//		GPIO_ClearValue(LED_2_PORT, LED_2_BIT);
-//	TX_TOG=!TX_TOG;
+/*
+	if(TX_TOG)
+		GPIO_SetValue(LED_2_PORT, LED_2_BIT);
+	else
+		GPIO_ClearValue(LED_2_PORT, LED_2_BIT);
+	TX_TOG=!TX_TOG;
+*/
 
     // Disable THRE interrupt
     UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_THRE, DISABLE);

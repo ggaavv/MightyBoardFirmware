@@ -53,6 +53,7 @@ extern "C" {
 
 class LiquidCrystalSerial {
 public:
+  virtual ~LiquidCrystalSerial(){};
   LiquidCrystalSerial(Pin strobe, Pin data, Pin CLK);
 
   void init(Pin strobe, Pin data, Pin CLK);

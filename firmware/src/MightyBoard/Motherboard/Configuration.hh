@@ -42,6 +42,13 @@
 //  MOSI   |   DATA_IN
 //  SCK    |   CLK
 
+
+//		LPCMini LED's
+#define DEBUG_LED1 Pin(Port1,18)
+#define DEBUG_LED2 Pin(Port1,20)
+#define DEBUG_LED3 Pin(Port1,21)
+#define DEBUG_LED4 Pin(Port1,23)
+
 // Define as 1 if and SD card slot is present; 0 if not.
 #define HAS_SD          1
 // The pin that connects to the write protect line on the SD header.

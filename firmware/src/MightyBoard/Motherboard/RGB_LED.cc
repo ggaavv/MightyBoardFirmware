@@ -29,7 +29,7 @@
 
  
 namespace RGB_LED{
-	const static int LEDAddress = 0B11000100;
+//	const static int LEDAddress = 0B11000100;
 	uint8_t LEDSelect = 0;
 	uint8_t blinkRate = 0;
  

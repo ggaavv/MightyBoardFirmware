@@ -32,11 +32,11 @@ SEARCH_DIR(.)
 MEMORY
 {
 /*  rom (rx)  : ORIGIN = 64K, LENGTH = (512K - 64K)*/ /* Bootloader uses first 64Kbytes of flash memory */
-  rom (rx)  : ORIGIN = 0x00003000, LENGTH = (504K) /* Bootloader uses first 3Kbytes of flash memory */
+  rom (rx)  : ORIGIN = 0x00003000, LENGTH = 0x7D000 /* Bootloader uses first 3Kbytes of flash memory */
   /* rom (rx)  : ORIGIN = 0, LENGTH = 512K */
-  ram (rwx) : ORIGIN = 0x10000000, LENGTH =  32K
-  ahbb0(rw) : ORIGIN = 0x2007C000, LENGTH =  16K
-  /* ahbb1(rw) : ORIGIN = 0x20080000, LENGTH =  16K */
+  ram (rwx) : ORIGIN = 0x10000000, LENGTH = 0x7000
+  ahbb0(rw) : ORIGIN = 0x2007C000, LENGTH = 0x4000
+  ahbb1(rw) : ORIGIN = 0x20080000, LENGTH = 0x4000
 }
 
 /* These force the linker to search for particular symbols from
@@ -179,6 +179,11 @@ SECTIONS
   {
     *(.ahb_sram_bank0 .ahb_sram_bank0.*)
   } > ahbb0
+    
+  .ahb_bank1(NOLOAD) :
+  {
+    *(.ahb_sram_bank1 .ahb_sram_bank1.*)
+  } > ahbb1
   
   
   __cs3_region_init_ram = LOADADDR (.data);

@@ -238,11 +238,11 @@ void WDT_UpdateTimeOut ( uint32_t TimeOut)
 void WDT_Feed (void)
 {
 	// Disable irq interrupt
-	__disable_irq();
+//	__disable_irq();
 	LPC_WDT->WDFEED = 0xAA;
 	LPC_WDT->WDFEED = 0x55;
 	// Then enable irq interrupt
-	__enable_irq();
+//	__enable_irq();
 }
 
 /********************************************************************//**

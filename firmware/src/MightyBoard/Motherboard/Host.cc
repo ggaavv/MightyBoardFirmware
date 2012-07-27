@@ -98,7 +98,7 @@ void runHostSlice() {
 		xprintf("cancel_timeout.isActive() && !(cancel_timeout.hasElapsed())" " (%s:%d)\n",_F_,_L_);
 		cancelBuild = true;
 		cancel_timeout = Timeout();
-		_delay_us(500000);
+//		_delay_us(500000);
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && !cancelBuild){
@@ -387,17 +387,18 @@ inline void handleIsFinished(const InPacket& from_host, OutPacket& to_host) {
 }
     // read value from eeprom
 inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
-//	xprintf("handleReadEeprom" " (%s:%d)\n",_F_,_L_);
+	xprintf("handleReadEeprom" " (%s:%d)\n",_F_,_L_);
+//	_delay_us(10000);
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
-//	xprintf("%x\n",offset);
-//	xprintf("%x\n",length);
+//	xprintf("%x" " (%s:%d)\n",offset,_F_,_L_);
+//	xprintf("%x" " (%s:%d)\n",length,_F_,_L_);
     uint8_t data[length];
 //    eeprom_read_block(data, (const void*) offset, length);
     to_host.append8(RC_OK);
     for (int i = 0; i < length; i++) {
-		to_host.append8((uint8_t)(eeprom_address(offset + i)));
-//		xprintf("%x %c\n",(uint8_t)(eeprom_address(offset + i)),(uint8_t)(eeprom_address(offset + i)));
+		to_host.append8(eeprom::getEeprom8(offset + i,0));
+		xprintf("%x %x %c" "\n",EEPROM_START_ADDRESS + offset + i,(uint8_t)(eeprom_address(EEPROM_START_ADDRESS, offset + i)),eeprom_address(EEPROM_START_ADDRESS, offset + i));
 //		to_host.append8(data[i]);
     }
 }
@@ -406,12 +407,16 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
  * writes a chunk of data from a input packet to eeprom
  */
 inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
+	xprintf("handleWriteEeprom" " (%s:%d)\n",_F_,_L_);
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
+//	xprintf("%x" " (%s:%d)\n",offset,_F_,_L_);
+//	xprintf("%x" " (%s:%d)\n",length,_F_,_L_);
 //    uint8_t data[length];
 //    eeprom_read_block(data, (const void*) offset, length);
     for (int i = 0; i < length; i++) {
-		eeprom_address(offset + i) = from_host.read8(i + 4);
+    	eeprom::setEeprom8(offset + i, from_host.read8(i + 4));
+//		xprintf("%x %x %c" "\n",EEPROM_START_ADDRESS + offset + i,eeprom_address(EEPROM_START_ADDRESS, offset + i),eeprom_address(EEPROM_START_ADDRESS, offset + i));
 //        data[i] = from_host.read8(i + 4);
     }
 //    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
@@ -577,7 +582,7 @@ char* getMachineName() {
 	static PROGMEM char defaultMachineName[] =  "The Replicat0r";
 
 	if (machineName[0] == 0) {
-		for(uint8_t i = 0; i < 14; i++) {
+		for(uint8_t i = 0; i < 15; i++) {
 			machineName[i] = defaultMachineName[i];
 //			machineName[i] = pgm_read_byte_near(defaultMachineName+i);
 		}

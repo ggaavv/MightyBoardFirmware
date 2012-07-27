@@ -26,7 +26,9 @@ THE SOFTWARE.
 extern "C" {
 #endif
 
+extern "C" {
 #include "LPC17xx.h"
+}
 
 //not very accurate. -O2 @ 100Mhz produces best results.
 

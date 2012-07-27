@@ -32,6 +32,7 @@ protected:
         /// #BAD_TEMPERATURE if the last reading is invalid.
 	volatile uint16_t current_temp;
 public:
+	virtual ~TemperatureSensor(){};
 	enum SensorState {
 		SS_OK,              ///< Temperature measured correctly
 		SS_ADC_BUSY,        ///< Temperature failed to update because ADC is busy

@@ -29,19 +29,22 @@
 //#include <util/delay.h>
 #include "Piezo.hh"
 #include "RGB_LED.hh"
-#include "Interface.hh"
+//#include "Interface.hh"
 #include "UtilityScripts.hh"
 #include "Planner.hh"
 
 #include "Host.hh"
+#include "Delay.hh"
+#include "Eeprom.hh"
 
 extern "C" {
 	#include "lpc_types.h"
+#include "comm.h"
 }
 
 namespace command {
 
-#define COMMAND_BUFFER_SIZE 512
+#define COMMAND_BUFFER_SIZE 4096//512
 uint8_t buffer_data[COMMAND_BUFFER_SIZE];
 CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
 uint8_t currentToolIndex = 0;
@@ -319,13 +322,24 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == MOVING) {
+//		xprintf("1");
+//		xprintf("12" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(10000);
 		if (!steppers::isRunning()) {
+//			xprintf("2");
+//			xprintf("13" " (%s:%d)\n",_F_,_L_);
+//			_delay_us(10000);
 			mode = READY;
 		} else {
+//			xprintf("3");
+//			xprintf("13" " (%s:%d)\n",_F_,_L_);
+//			_delay_us(10000);
 			if (command_buffer.getLength() > 0) {
 				Motherboard::getBoard().resetUserInputTimeout();
 				uint8_t command = command_buffer[0];
 				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
+//					xprintf("command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW" " (%s:%d)\n",_F_,_L_);
+					_delay_us(100);
 					handleMovementCommand(command);
 				}
 				else if (command == HOST_CMD_ENABLE_AXES) {
@@ -391,6 +405,8 @@ void runCommandSlice() {
 	}
 
 	if (mode == READY) {
+//		xprintf("mode == READY" " (%s:%d)\n",_F_,_L_);
+//		_delay_us(100);
 		
 		// process next command on the queue.
 		if ((command_buffer.getLength() > 0)){
@@ -558,7 +574,9 @@ void runCommandSlice() {
 					// then record it to the eeprom.
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							eeprom_address(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + (i*4)) = steppers::getPosition()[i];
+							eeprom::setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + (i*4), steppers::getPosition()[i]);
+//							xprintf("%x" " (%s:%d)\n",eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + (i*4),_F_,_L_);
+//							xprintf("%x" " (%s:%d)\n",steppers::getPosition()[i],_F_,_L_);
 //							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
 //							uint32_t position = steppers::getPosition()[i];
 //							cli();
@@ -579,7 +597,8 @@ void runCommandSlice() {
 
 					for (uint8_t i = 0; i < STEPPER_COUNT; i++) {
 						if ( axes & (1 << i) ) {
-							newPoint[i] = eeprom_address(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + (i*4));
+							newPoint[i] = eeprom::getEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + (i*4),0);
+//							xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4))*4,eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4)),_F_,_L_);
 //							uint16_t offset = eeprom_offsets::AXIS_HOME_POSITIONS_STEPS + 4*i;
 //							cli();
 //							eeprom_read_block(&(newPoint[i]), (void*) offset, 4);
@@ -635,7 +654,7 @@ void runCommandSlice() {
 					command_buffer.pop(); // remove the command code
 					uint8_t percent = pop8();
 					uint8_t ignore = pop8(); // remove the reserved byte
-					interface::setBuildPercentage(percent);
+//					interface::setBuildPercentage(percent);
 				}
 			} else if (command == HOST_CMD_QUEUE_SONG ) //queue a song for playing
  			{

@@ -81,6 +81,7 @@
 #include "Eeprom.hh"
 #include "EepromMap.hh"
 
+#include "Delay.hh"
 
 
 #define  FORCE_INLINE __attribute__((always_inline)) inline
@@ -264,23 +265,34 @@ namespace planner {
 	
 	void init()
 	{
+//		xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET),_F_,_L_);
+//		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS, eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET),_F_,_L_);
+		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
+
 		/// if eeprom has not been initialized. store default values
 		if (eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0xFFFFFFFF) == 0xFFFFFFFF) {
+			xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 			eeprom::storeToolheadToleranceDefaults(0);
 		}
+		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 		
-		setAxisStepsPerMM(XSTEPS_PER_MM,0);           
+		setAxisStepsPerMM(XSTEPS_PER_MM,0);
 		setAxisStepsPerMM(YSTEPS_PER_MM,1);               
 		setAxisStepsPerMM(ZSTEPS_PER_MM,2);
 		setAxisStepsPerMM(ASTEPS_PER_MM,3);
 		setAxisStepsPerMM(BSTEPS_PER_MM,4);
-		
+
+		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 		// check that acceleration settings have been initialized 
 		// if not, load defaults
+
 		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
 		if(accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)){
+			xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
+			_delay_us(10000);
 			eeprom::setDefaultsAcceleration(0);
 		}
+		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 
 		// Master acceleration
 		setAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET, DEFAULT_ACCELERATION));
@@ -291,10 +303,10 @@ namespace planner {
 		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 6, DEFAULT_A_ACCELERATION), 3);
 		setAxisAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET+ 8, DEFAULT_B_ACCELERATION), 4);
 
-		setMaxXYJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET, DEFAULT_MAX_XY_JERK));
-		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4, DEFAULT_MAX_Z_JERK), 2);
-		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6, DEFAULT_MAX_A_JERK), 3);
-		setMaxAxisJerk(eeprom::getEepromFixed16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8, DEFAULT_MAX_B_JERK), 4);
+		setMaxXYJerk((float)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET, DEFAULT_MAX_XY_JERK));
+		setMaxAxisJerk((float)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4, DEFAULT_MAX_Z_JERK), 2);
+		setMaxAxisJerk((float)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6, DEFAULT_MAX_A_JERK), 3);
+		setMaxAxisJerk((float)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8, DEFAULT_MAX_B_JERK), 4);
 
 		minimum_planner_speed = eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DEFAULT_MIN_SPEED);
 		
@@ -467,7 +479,7 @@ namespace planner {
 	}
 	
 	// forward declare, so we can order the code in a slightly more readable fashion
-	inline void planner_reverse_pass_kernel(Block *previous, Block *current, Block *next);
+//	inline void planner_reverse_pass_kernel(Block *previous, Block *current, Block *next);
 	void planner_reverse_pass();
 	inline void planner_forward_pass_kernel(Block *previous, Block *current, Block *next);
 	void planner_forward_pass();

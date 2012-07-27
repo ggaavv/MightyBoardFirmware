@@ -34,7 +34,7 @@ public:
         /// \param [in] cs Chip Select (output).
         /// \param [in] sck Clock Pin (output). Can be shared with other thermocouples.
         /// \param [in] so Data Pin (input)
-	Thermocouple(const Pin& cs,const Pin& sck,const Pin& so);
+	Thermocouple(const Pin cs,const Pin sck,const Pin so);
 
 	void init();
 

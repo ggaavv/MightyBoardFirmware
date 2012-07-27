@@ -33,6 +33,7 @@
 #include "lpc17xx_i2c.h"
 #include "lpc17xx_clkpwr.h"
 #include "lpc17xx_pinsel.h"
+#include <stdlib.h>
 
 
 /* If this source file built with example, the LPC17xx FW library configuration

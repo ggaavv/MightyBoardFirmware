@@ -35,7 +35,8 @@ extern "C" {
 	#include "usbcfg.h"
 	#include "cdcuser.h"
 	#include "usbcore.h"
-#include "comm.h"
+	#include "comm.h"
+	#include "lpc17xx_wdt.h"
 }
 
 // TODO: There should be a better way to enable this flag?
@@ -191,8 +192,8 @@ inline void speak() {
 }
 
 UART::UART(uint8_t index, communication_mode mode) :
-    index_(index),
     mode_(mode),
+    index_(index),
     enabled_(false) {
 
         init_serial();
@@ -232,7 +233,9 @@ void UART::enable(bool enabled) {
 			xprintf("USB_Connect(TRUE)" " (%s:%d)\n",_F_,_L_);
 			USB_Connect(TRUE);      // USB Connect
 			while (!USB_Configuration){		// wait until USB is configured
-				xprintf("enable !USB_Configuration" " (%s:%d)\n",_F_,_L_);
+				_delay_us(100);
+				WDT_Feed ();
+//				xprintf("enable !USB_Configuration" " (%s:%d)\n",_F_,_L_);
 			}
 			xprintf("after USB_Connect(TRUE)" " (%s:%d)\n",_F_,_L_);
 		}

@@ -71,6 +71,8 @@ enum AlignmentState {
 /// The screen class defines a standard interface for anything that should
 /// be displayed on the LCD.
 class Screen {
+protected:
+	virtual ~Screen()=0;
 public:
         /// Get the rate that this display should be updated. This is called
         /// after every screen display, so it can be used to dynamically
@@ -277,7 +279,7 @@ public:
 	void addMessage(CircularBuffer& buf, bool msgComplete);
 	void addMessage(char * msg, bool msgComplete);
 	void clearMessage();
-	void setTimeout(uint8_t seconds, bool pop);
+	void setTimeout(uint8_t seconds, bool pop2);
 
 	micros_t getUpdateRate() {return 50L * 1000L;}
   

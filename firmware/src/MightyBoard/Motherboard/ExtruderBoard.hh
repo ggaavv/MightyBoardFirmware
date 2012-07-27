@@ -67,7 +67,7 @@ private:
         uint8_t slave_id;
 
         CoolingFan coolingFan;
-        uint8_t* eeprom_base;
+        uint8_t eeprom_base;
 
 public:
 	void reset();

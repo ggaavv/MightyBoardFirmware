@@ -90,7 +90,7 @@ namespace steppers {
     void startRunning();
 
 	/// set acceleration on or off
-    bool SetAccelerationOn(bool on);
+    void SetAccelerationOn(bool on);
 };
 
 #endif // STEPPERS_HH_

@@ -24,7 +24,7 @@
 #include "PSU.hh"
 #include "Configuration.hh"
 #include "Timeout.hh"
-#include "Menu.hh"
+//#include "Menu.hh"
 //#include "InterfaceBoard.hh"
 //#include "LiquidCrystalSerial.hh"
 //#include "ButtonArray.hh"
@@ -76,8 +76,8 @@ private:
         /// True if we have an interface board attached
 	bool hasInterfaceBoard;
 	
-	ExtruderBoard Extruder_One;
 	ExtruderBoard Extruder_Two;
+	ExtruderBoard Extruder_One;
 	
 //	ButtonArray buttonArray;
 //	LiquidCrystalSerial lcd;

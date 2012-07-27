@@ -111,7 +111,7 @@ void Motherboard::reset(bool hard_reset) {
 	TIM_TIMERCFG_Type TMR0_Cfg;
 	TIM_MATCHCFG_Type TMR0_Match;
 	TMR0_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR0_Cfg.PrescaleValue = 100;
+	TMR0_Cfg.PrescaleValue = 10000;
 	TMR0_Match.MatchChannel = TIM_MR0_INT;
 	TMR0_Match.IntOnMatch = ENABLE;
 	TMR0_Match.ResetOnMatch = ENABLE;
@@ -123,7 +123,7 @@ void Motherboard::reset(bool hard_reset) {
 	TIM_Init(LPC_TIM0, TIM_TIMER_MODE, &TMR0_Cfg);
 	TIM_ConfigMatch(LPC_TIM0, &TMR0_Match);
 	// 0 top priority 32 lowest
-	NVIC_SetPriority(TIMER0_IRQn, 0);
+	NVIC_SetPriority(TIMER0_IRQn, 1);
 	TIM_Cmd(LPC_TIM0,ENABLE);
 	NVIC_EnableIRQ(TIMER0_IRQn);
 //	TCCR3A = 0x00;
@@ -155,7 +155,7 @@ void Motherboard::reset(bool hard_reset) {
 	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
 	// Initialize timer 1, prescale count time of 100uS
 	TMR3_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR3_Cfg.PrescaleValue = 100; // reset to 1 - 1uS
+	TMR3_Cfg.PrescaleValue = 10000; // reset to 1 - 1uS
 	// Use channel 1, MR1
 	TMR3_Match.MatchChannel = TIM_MR0_INT;
 	// Enable interrupt when MR0 matches the value in TC register
@@ -171,7 +171,7 @@ void Motherboard::reset(bool hard_reset) {
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TMR3_Cfg);
 	TIM_ConfigMatch(LPC_TIM3, &TMR3_Match);
-	NVIC_SetPriority(TIMER3_IRQn, 3);
+	NVIC_SetPriority(TIMER3_IRQn, 0);
 	TIM_Cmd(LPC_TIM3,ENABLE);
 	NVIC_EnableIRQ(TIMER3_IRQn);
 //	TCCR1A = 0b00000001;
@@ -183,12 +183,12 @@ void Motherboard::reset(bool hard_reset) {
 	// reset and configure timer 2, the Extruder One PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-/*	TIM_TIMERCFG_Type TMR2_Cfg;
+	TIM_TIMERCFG_Type TMR2_Cfg;
 	TIM_MATCHCFG_Type TMR2_Match;
 	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
 	// Initialize timer 1, prescale count time of 100uS
 	TMR2_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR2_Cfg.PrescaleValue = 100; // reset to 1 - 1uS
+	TMR2_Cfg.PrescaleValue = 10000; // reset to 1 - 1uS
 	// Use channel 1, MR1
 	TMR2_Match.MatchChannel = TIM_MR0_INT;
 	// Enable interrupt when MR0 matches the value in TC register
@@ -200,14 +200,14 @@ void Motherboard::reset(bool hard_reset) {
 	// Do nothing for external output pin if match (see cmsis help, there are another options)
 	TMR2_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
 	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
-	TMR2_Match.MatchValue = INTERVAL_IN_MICROSECONDS *10000;
+	TMR2_Match.MatchValue = INTERVAL_IN_MICROSECONDS;// *10000;
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM2, TIM_TIMER_MODE, &TMR2_Cfg);
 	TIM_ConfigMatch(LPC_TIM2, &TMR2_Match);
 	// 0 top priority 32 lowest
 	NVIC_SetPriority(TIMER2_IRQn, 4);
 	TIM_Cmd(LPC_TIM2,ENABLE);
-	NVIC_EnableIRQ(TIMER2_IRQn);*/
+	NVIC_EnableIRQ(TIMER2_IRQn);
 //	TCCR4A = 0b00000001;
 //	TCCR4B = 0b00001011; /// set to PWM mode
 //	OCR4A = 0;
@@ -284,6 +284,12 @@ void Motherboard::reset(bool hard_reset) {
 	RGB_LED::setDefaultColor(); 
 	buttonWait = false;
 	
+
+	DEBUG_LED1.setDirection(true);
+	DEBUG_LED2.setDirection(false);
+	DEBUG_LED3.setDirection(true);
+	DEBUG_LED4.setDirection(false);
+
 }
 
 /// Get the number of microseconds that have passed since
@@ -495,6 +501,8 @@ void Motherboard::UpdateMicros(){
 
 /// Timer three comparator match interrupt
 extern "C" void TIMER0_IRQHandler (void){
+	xprintf("0" " (%s:%d)\n",_F_,_L_);
+	DEBUG_LED1.setValue(true);
 //	xprintf("TIMER0_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
 /*	if (TIM_GetIntStatus(LPC_TIM0, TIM_MR0_INT)== SET)
@@ -507,6 +515,7 @@ extern "C" void TIMER0_IRQHandler (void){
 	}*/
 //ISR(TIMER3_COMPA_vect) {
 	Motherboard::getBoard().doInterrupt();
+	DEBUG_LED1.setValue(false);
 }
 
 
@@ -583,6 +592,7 @@ uint16_t blink_overflow_counter = 0;
 /// Timer 2 overflow interrupt
 
 extern "C" void TIMER2_IRQHandler (void){
+	xprintf("2" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER2_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM2,TIM_MR0_INT);
 //ISR(TIMER2_COMPA_vect) {
@@ -633,6 +643,7 @@ extern "C" void TIMER2_IRQHandler (void){
 //			interface::setLEDs(false);
 		}
 	}
+	DEBUG_LED2.setValue(false);
 
 }
 
@@ -641,9 +652,12 @@ extern "C" void TIMER2_IRQHandler (void){
 extern "C" void TIMER3_IRQHandler (void)
 //ISR(TIMER0_COMPA_vect)
 {
+	xprintf("3" " (%s:%d)\n",_F_,_L_);
+	DEBUG_LED3.setValue(true);
 //	xprintf("TIMER3_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM3,TIM_MR0_INT);
-	Piezo::doInterrupt();
+//	Piezo::doInterrupt();
+	DEBUG_LED3.setValue(false);
 }
 
 // HBP PWM

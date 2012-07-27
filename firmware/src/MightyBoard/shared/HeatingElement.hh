@@ -25,6 +25,7 @@
 /// \ingroup SoftwareLibraries
 class HeatingElement {
 public:
+		virtual ~HeatingElement(){};
         /// Set the output of the heating element
         /// \param[in] value Duty cycle to run the heating element at, 0 - 255.
         ///                  Note that some implementations (relay driven DC motors)

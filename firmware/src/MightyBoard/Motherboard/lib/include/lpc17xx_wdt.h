@@ -85,8 +85,8 @@ extern "C"
 
 /* ---------------- CHECK PARAMETER DEFINITIONS ---------------------------- */
 /* Macro check clock source selection  */
-#define PARAM_WDT_CLK_OPT(OPTION)  ((OPTION ==WDT_CLKSRC_IRC)||(OPTION ==WDT_CLKSRC_IRC)\
-||(OPTION ==WDT_CLKSRC_IRC))
+#define PARAM_WDT_CLK_OPT(OPTION)  ((OPTION ==WDT_CLKSRC_IRC)||(OPTION ==WDT_CLKSRC_PCLK)\
+||(OPTION ==WDT_CLKSRC_RTC))
 
 /* Macro check WDT mode */
 #define PARAM_WDT_MODE_OPT(OPTION)  ((OPTION ==WDT_MODE_INT_ONLY)||(OPTION ==WDT_MODE_RESET))
