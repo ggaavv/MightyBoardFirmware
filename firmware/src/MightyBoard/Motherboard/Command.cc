@@ -46,7 +46,7 @@ extern "C" {
 
 namespace command {
 
-#define COMMAND_BUFFER_SIZE 4096//512
+#define COMMAND_BUFFER_SIZE 512
 uint8_t buffer_data[COMMAND_BUFFER_SIZE];
 CircularBuffer command_buffer(COMMAND_BUFFER_SIZE, buffer_data);
 uint8_t currentToolIndex = 0;

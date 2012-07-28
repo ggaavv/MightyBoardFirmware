@@ -114,7 +114,7 @@ public:
 	void runMotherboardSlice();
 
 	/// Count the number of steppers available on this board.
-    const int getStepperCount() const { return STEPPER_COUNT; }
+    int getStepperCount() const { return STEPPER_COUNT; }
 	
 	/// Get the number of microseconds that have passed since
 	/// the board was initialized.  This value will wrap after
@@ -145,7 +145,7 @@ public:
 	void startButtonWait();
 	void heaterFail(HeaterFailMode mode);
 	/// push an error screen, and wait until button 
-	void errorResponse(char msg[], bool reset = false);
+	void errorResponse(char msg[], bool reset_errorResponse = false);
 	
 	uint8_t GetErrorStatus();
 	

@@ -192,36 +192,36 @@ void InitPins(){
 		}
 		
 		// intialize endstop pins
-		if ( X_MAX != NULL){
+		if ( X_MAX != 0){
 			GPIO_SetDir(X_MIN_PORT, X_MIN_BIT, false);
 			_WRITE(X_MIN_PORT, X_MIN_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(X_MAX, false);
 //			_WRITE(X_MAX, invert_endstops[X_AXIS]);
-		}if ( X_MIN != NULL) {
+		}if ( X_MIN != 0) {
 			GPIO_SetDir(X_MAX_PORT, X_MAX_BIT, false);
 			_WRITE(X_MAX_PORT, X_MAX_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(X_MIN, false);
 //			_WRITE(X_MIN, invert_endstops[X_AXIS]);
 		}
 		
-		if ( Y_MAX != NULL){
+		if ( Y_MAX != 0){
 			GPIO_SetDir(Y_MIN_PORT, Y_MIN_BIT, false);
 			_WRITE(Y_MIN_PORT, Y_MIN_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Y_MAX, false);
 //			_WRITE(Y_MAX, invert_endstops[Y_AXIS]);
-		}if ( Y_MIN != NULL) {
+		}if ( Y_MIN != 0) {
 			GPIO_SetDir(Y_MAX_PORT, Y_MAX_BIT, false);
 			_WRITE(Y_MAX_PORT, Y_MAX_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Y_MIN, false);
 //			_WRITE(Y_MIN, invert_endstops[Y_AXIS]);
 		}
 		
-		if ( Z_MAX != NULL){
+		if ( Z_MAX != 0){
 			GPIO_SetDir(Z_MIN_PORT, Z_MIN_BIT, false);
 			_WRITE(Z_MIN_PORT, Z_MIN_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Z_MAX, false);
 //			_WRITE(Z_MAX, invert_endstops[Z_AXIS]);
-		}if ( Z_MIN != NULL) {
+		}if ( Z_MIN != 0) {
 			GPIO_SetDir(Z_MAX_PORT, Z_MAX_BIT, false);
 			_WRITE(Z_MAX_PORT, Z_MAX_BIT, invert_endstops[X_AXIS]);
 //			_SET_DIRECTION(Z_MIN, false);
@@ -463,7 +463,7 @@ bool getNextMove() {
 
 	// Mark block as busy (being executed by the stepper interrupt)
 	// Also mark it a locked
-	current_block->flags |= planner::Block::Busy | planner::Block::Locked;
+	current_block->flags |= (planner::Block::Busy | planner::Block::Locked);
 
 	Point &target = current_block->target;
 
@@ -516,7 +516,7 @@ bool getNextMove() {
 	}
 
 	DEBUG_LED1.setValue(false);
-	current_block->flags &= ~planner::Block::Locked;
+	current_block->flags &= ~planner::Block::Locked; // LOCKS UP HERE!!!!!!!!!!!!!!!!!!!!!
 	DEBUG_LED2.setValue(false);
 
 	if (feedrate == 0) {

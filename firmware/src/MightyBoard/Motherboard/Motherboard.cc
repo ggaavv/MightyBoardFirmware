@@ -65,7 +65,8 @@ Motherboard::Motherboard() :
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(true),
 			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE)
+			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE),
+			hasInterfaceBoard(0)
 {
 }
 
@@ -354,10 +355,10 @@ void Motherboard::startButtonWait(){
 }
 
 // set an error message on the interface and wait for user button press
-void Motherboard::errorResponse(char msg[], bool reset){
+void Motherboard::errorResponse(char msg[], bool reset_errorResponse){
 //	interfaceBoard.errorMessage(msg);
 	startButtonWait();
-	reset_request = reset;
+	reset_request = reset_errorResponse;
 }
 
 enum stagger_timers{

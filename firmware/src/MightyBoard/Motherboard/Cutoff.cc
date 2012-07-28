@@ -17,7 +17,7 @@
 
 #include "Cutoff.hh"
 #include "Pin.hh"
-//#include "Piezo.hh"
+#include "Piezo.hh"
 
 
 void Cutoff::init()
@@ -42,42 +42,42 @@ void Cutoff::init()
 bool Cutoff::isCutoffActive()
 {
 	// if cutoff test pin is high or if cutoff output is latched high, flag as cutoff active
-//	if(CUTOFF_TEST.getValue() || CUTOFF_SR_CHECK.getValue())
+	if(CUTOFF_TEST.getValue() || CUTOFF_SR_CHECK.getValue())
 		return true;
-//	else
-//		return false;
+	else
+		return false;
 }
 
 void Cutoff::enable()
 {
 	// cutoff test pin is an input
-//	CUTOFF_TEST.setValue(false);
-//	CUTOFF_TEST.setDirection(false);
+	CUTOFF_TEST.setValue(false);
+	CUTOFF_TEST.setDirection(false);
 	
 	// set enabled flag
 	cutoff_enabled = true;
 	
 	// if output is shut off (high when off), toggle reset pin
-//	if(CUTOFF_SR_CHECK.getValue())
+	if(CUTOFF_SR_CHECK.getValue())
 		resetCutoff();
 	
 	// set reset line to default value (low)
-//	CUTOFF_RESET.setValue(false);
+	CUTOFF_RESET.setValue(false);
 	
 }
 void Cutoff::disable()
 {
 	// cutoff test pin is an output and pulled down
-//	CUTOFF_TEST.setValue(false);
-//	CUTOFF_TEST.setDirection(true);
+	CUTOFF_TEST.setValue(false);
+	CUTOFF_TEST.setDirection(true);
 	
 	cutoff_enabled = false;
 	// if output is shut off (high when off), toggle reset pin
-//	if(CUTOFF_SR_CHECK.getValue())
+	if(CUTOFF_SR_CHECK.getValue())
 		resetCutoff();
 	
 	// set reset line to default value (low)
-//	CUTOFF_RESET.setValue(false);
+	CUTOFF_RESET.setValue(false);
 	
 }
 
@@ -86,19 +86,19 @@ void Cutoff::resetCutoff(){
 	//Timeout resetTimeout;
 
 	// abort if cutoff test is high
-//	if(CUTOFF_TEST.getValue())
-//		return;
+	if(CUTOFF_TEST.getValue())
+		return;
 		
 	// toggle reset pin	
-//	CUTOFF_RESET.setValue(true);
+	CUTOFF_RESET.setValue(true);
 	
 	// ensure that reset worked
 	// if not, enable hardware circuit
-//	if(CUTOFF_SR_CHECK.getValue())
-//		disable();
+	if(CUTOFF_SR_CHECK.getValue())
+		disable();
 	// if reset OK, return reset line to default (pulled down)
-//	else
-//		CUTOFF_RESET.setValue(false);
+	else
+		CUTOFF_RESET.setValue(false);
 }
 
 // call piezo alarm in cutoff is triggered
@@ -106,7 +106,7 @@ void Cutoff::setAlarm()
 {
 	if(!alarmRun)
 	{
-//		Piezo::errorTone(5);
+		Piezo::errorTone(5);
 		alarmRun = true;
 	}
 }
@@ -126,21 +126,21 @@ bool Cutoff::noiseResponse(){
 		}
 			
 		// if cutoff test line is high do nothing / clear cutoffCount
-//		if(CUTOFF_TEST.getValue())
-//		{
+		if(CUTOFF_TEST.getValue())
+		{
 			noiseCount = 0;
 			cutoffCount++;
-//		}
+		}
 		// if cutoff test line is low, reset circuit - check low 5 times
 		// before resetting.  
-//		else{
+		else{
 			if(noiseCount > NOISE_COUNT_LIMIT){
 					resetCutoff();
 					noiseCount = 0;
 			}
 			noiseCount++;
 			cutoffCount = 0;
-//		}
+		}
 		
 		return true;
 }

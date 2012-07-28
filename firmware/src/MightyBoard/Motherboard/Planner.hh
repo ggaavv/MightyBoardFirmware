@@ -89,7 +89,9 @@ namespace planner {
 		uint32_t acceleration_st;                     // acceleration steps/sec^2
 		uint8_t flags;
 		
-		Block() : target() {};
+		Block() : target(), step_event_count(0), accelerate_until(0), decelerate_after(0), acceleration_rate(0),
+				nominal_speed(0), entry_speed(0), max_entry_speed(0), millimeters(0), acceleration(0), stop_speed(0),
+				nominal_rate(0), initial_rate(0), final_rate(0), acceleration_st(0), flags(0) {};
 		
 	// functions
 		bool calculate_trapezoid(const float &exit_factor_speed);
@@ -100,7 +102,7 @@ namespace planner {
 			uint32_t us_per_step;
 			Point steps;
 		
-			planner_move_t() : target() {};
+			planner_move_t() : target(), us_per_step(0){};
 	};
 
 	/// Initilaize the planner data structures
