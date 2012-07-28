@@ -154,11 +154,15 @@ static PROGMEM prog_uchar RESET2_MSG[] = "Default values?";
 static PROGMEM prog_uchar CANCEL_MSG[] = "Cancel this print?";
 static PROGMEM prog_uchar CANCEL_PROCESS_MSG[] = "Quit this process?";
 
-static PROGMEM prog_uchar PAUSE_MSG[] = "Pause";
+static PROGMEM prog_uchar PAUSE_MSG[] = "Pause    ";
 static PROGMEM prog_uchar UNPAUSE_MSG[] = "UnPause";
 
 
 static PROGMEM prog_uchar NOCARD_MSG[] = "No SD card found";
+static PROGMEM prog_uchar CARDERROR_MSG[] = "SD card read error";
+static PROGMEM prog_uchar CARDFORMAT_MSG[] = "I can't read this   SD card format!     Try reformatting    the card to FAT16. ";
+#define STATICFAIL_MSG "I saw a glitch in mySD card file.SomedayI'll be smart enoughto restart printing."
+static PROGMEM prog_uchar CARDSIZE_MSG[]   = "I can't read SD 	   cards with storage  larger than 2GB.                      ";
 
 static PROGMEM prog_uchar BUILD_MSG[] =            "Print from SD";
 static PROGMEM prog_uchar PREHEAT_MSG[] =          "Preheat";
@@ -211,6 +215,15 @@ static PROGMEM prog_uchar WAITING_MSG[] = "waiting ";
 #define HEATER_FAIL_NOT_HEATING_MSG     "Heating Failure!    " "My extruders are not" "heating properly.   " "Check my connections"
 #define HEATER_FAIL_DROPPING_TEMP_MSG   "Heating Failure!    " "My extruders are    " "losing temperature. " "Check my connections"
 #define HEATER_FAIL_NOT_PLUGGED_IN_MSG  "Heater Error!       " "My temperature reads" "are failing! Please " "Check my connections"
+
+static PROGMEM prog_uchar BUILD_TIME_MSG[]	= "Print Time:     h  m"; 
+static PROGMEM prog_uchar LINE_NUMBER_MSG[] = "Line:               ";
+static PROGMEM prog_uchar LEFT_EXIT_MSG []  = "Left Key to Go Back ";
+
+static PROGMEM prog_uchar BACK_TO_MONITOR_MSG[] ="Back to Monitor";
+static PROGMEM prog_uchar STATS_MSG[]			= "Build Statistics";
+static PROGMEM prog_uchar CANCEL_BUILD_MSG[]    = "Cancel Build"; 
+
 #endif //end of default ELSE for US English */
 
 

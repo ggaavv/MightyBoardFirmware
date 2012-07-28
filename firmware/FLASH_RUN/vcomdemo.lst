@@ -1,0 +1,337 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "vcomdemo.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.VCOM_Init,"ax",%progbits
+  19              	 .align 2
+  20              	 .global VCOM_Init
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	VCOM_Init:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/USBCDC/vcomdemo.c"
+   1:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /*----------------------------------------------------------------------------
+   2:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      Name:    vcomdemo.c
+   3:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      Purpose: USB virtual COM port Demo
+   4:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      Version: V1.20
+   5:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *----------------------------------------------------------------------------
+   6:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      This software is supplied "AS IS" without any warranties, express,
+   7:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      implied or statutory, including but not limited to the implied
+   8:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      warranties of fitness for purpose, satisfactory quality and
+   9:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      noninfringement. Keil extends you a royalty-free right to reproduce
+  10:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      and distribute executable files created using this software for use
+  11:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      on NXP Semiconductors LPC microcontroller devices only. Nothing else
+  12:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *      gives you the right to use this software.
+  13:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *
+  14:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  * Copyright (c) 2009 Keil - An ARM Company. All rights reserved.
+  15:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *---------------------------------------------------------------------------*/
+  16:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  17:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "LPC17xx.h"
+  18:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "lpc_types.h"
+  19:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  20:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "usb.h"
+  21:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "usbcfg.h"
+  22:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "usbhw.h"
+  23:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "usbcore.h"
+  24:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "cdc.h"
+  25:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "cdcuser.h"
+  26:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #include "serial.h"
+  27:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** //#include "vcomdemo.h"
+  28:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  29:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /* Example group ----------------------------------------------------------- */
+  30:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /** @defgroup USBDEV_USBCDC	USBCDC
+  31:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  * @ingroup USBDEV_Examples
+  32:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  * @{
+  33:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  */
+  34:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  35:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /*----------------------------------------------------------------------------
+  36:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  Initialises the VCOM port.
+  37:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  Call this function before using VCOM_putchar or VCOM_getchar
+  38:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *---------------------------------------------------------------------------*/
+  39:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  void VCOM_Init(void) {
+  27              	 .loc 1 39 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31 0000 08B5     	 push {r3,lr}
+  32              	.LCFI0:
+  33              	 .cfi_def_cfa_offset 8
+  34              	 .cfi_offset 14,-4
+  35              	 .cfi_offset 3,-8
+  40:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #if PORT_NUM
+  41:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   CDC_Init (1);
+  36              	 .loc 1 41 0
+  37 0002 4FF00100 	 mov r0,#1
+  38 0006 FFF7FEFF 	 bl CDC_Init
+  42:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #else
+  43:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   CDC_Init (0);
+  44:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #endif
+  45:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** }
+  39              	 .loc 1 45 0
+  40 000a 08BD     	 pop {r3,pc}
+  41              	 .cfi_endproc
+  42              	.LFE55:
+  44              	 .section .text.VCOM_Usb2Serial,"ax",%progbits
+  45              	 .align 2
+  46              	 .global VCOM_Usb2Serial
+  47              	 .thumb
+  48              	 .thumb_func
+  50              	VCOM_Usb2Serial:
+  51              	.LFB56:
+  46:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  47:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /*----------------------------------------------------------------------------
+  48:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   Reads character from serial port buffer and writes to USB buffer
+  49:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *---------------------------------------------------------------------------*/
+  50:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /*
+  51:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  void VCOM_Serial2Usb(void) {
+  52:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   static char serBuf [USB_CDC_BUFSIZE];
+  53:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****          int  numBytesRead, numAvailByte;
+  54:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  55:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   ser_AvailChar (&numAvailByte);
+  56:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   if (numAvailByte > 0) {
+  57:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****     if (CDC_DepInEmpty) {
+  58:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****       numBytesRead = ser_Read (&serBuf[0], &numAvailByte);
+  59:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  60:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****       CDC_DepInEmpty = 0;
+  61:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 	  USB_WriteEP (CDC_DEP_IN, (unsigned char *)&serBuf[0], numBytesRead);
+  62:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****     }
+  63:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   }
+  64:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  65:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** }
+  66:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** */
+  67:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  68:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /*----------------------------------------------------------------------------
+  69:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   Reads character from USB buffer and writes to serial port buffer
+  70:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *---------------------------------------------------------------------------*/
+  71:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** void VCOM_Usb2Serial(void) {
+  52              	 .loc 1 71 0
+  53              	 .cfi_startproc
+  54              	 
+  55              	 
+  56 0000 10B5     	 push {r4,lr}
+  57              	.LCFI1:
+  58              	 .cfi_def_cfa_offset 8
+  59              	 .cfi_offset 14,-4
+  60              	 .cfi_offset 4,-8
+  61 0002 84B0     	 sub sp,sp,#16
+  62              	.LCFI2:
+  63              	 .cfi_def_cfa_offset 24
+  72:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   static char serBuf [32];
+  73:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****          int  numBytesToRead, numBytesRead, numAvailByte;
+  74:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  75:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   CDC_OutBufAvailChar (&numAvailByte);
+  64              	 .loc 1 75 0
+  65 0004 01A8     	 add r0,sp,#4
+  66 0006 FFF7FEFF 	 bl CDC_OutBufAvailChar
+  67              	.LVL0:
+  76:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   if (numAvailByte > 0) {
+  68              	 .loc 1 76 0
+  69 000a 019B     	 ldr r3,[sp,#4]
+  70 000c 002B     	 cmp r3,#0
+  71 000e 14DD     	 ble .L2
+  77:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****       numBytesToRead = numAvailByte > 32 ? 32 : numAvailByte;
+  72              	 .loc 1 77 0
+  73 0010 202B     	 cmp r3,#32
+  74 0012 A8BF     	 it ge
+  75 0014 2023     	 movge r3,#32
+  76 0016 04A9     	 add r1,sp,#16
+  77 0018 41F8043D 	 str r3,[r1,#-4]!
+  78              	.LVL1:
+  78:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****       numBytesRead = CDC_RdOutBuf (&serBuf[0], &numBytesToRead);
+  79              	 .loc 1 78 0
+  80 001c 40F20004 	 movw r4,#:lower16:.LANCHOR0
+  81 0020 C0F20004 	 movt r4,#:upper16:.LANCHOR0
+  82 0024 2046     	 mov r0,r4
+  83 0026 FFF7FEFF 	 bl CDC_RdOutBuf
+  84 002a 04AA     	 add r2,sp,#16
+  85 002c 42F8080D 	 str r0,[r2,#-8]!
+  86              	.LVL2:
+  79:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #if PORT_NUM
+  80:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****       ser_Write (1, &serBuf[0], &numBytesRead);
+  87              	 .loc 1 80 0
+  88 0030 4FF00100 	 mov r0,#1
+  89 0034 2146     	 mov r1,r4
+  90 0036 FFF7FEFF 	 bl ser_Write
+  91              	.L2:
+  81:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #else
+  82:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****       ser_Write (0, &serBuf[0], &numBytesRead);
+  83:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** #endif
+  84:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   }
+  85:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  86:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** }
+  92              	 .loc 1 86 0
+  93 003a 04B0     	 add sp,sp,#16
+  94 003c 10BD     	 pop {r4,pc}
+  95              	 .cfi_endproc
+  96              	.LFE56:
+  98 003e 00BF     	 .section .text.VCOM_CheckSerialState,"ax",%progbits
+  99              	 .align 2
+ 100              	 .global VCOM_CheckSerialState
+ 101              	 .thumb
+ 102              	 .thumb_func
+ 104              	VCOM_CheckSerialState:
+ 105              	.LFB57:
+  87:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  88:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  89:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /*----------------------------------------------------------------------------
+  90:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   checks the serial state and initiates notification
+  91:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *---------------------------------------------------------------------------*/
+  92:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** void VCOM_CheckSerialState (void) {
+ 106              	 .loc 1 92 0
+ 107              	 .cfi_startproc
+ 108              	 
+ 109              	 
+ 110 0000 08B5     	 push {r3,lr}
+ 111              	.LCFI3:
+ 112              	 .cfi_def_cfa_offset 8
+ 113              	 .cfi_offset 14,-4
+ 114              	 .cfi_offset 3,-8
+  93:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****          unsigned short temp;
+  94:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   static unsigned short serialState;
+  95:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+  96:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   temp = CDC_GetSerialState();
+ 115              	 .loc 1 96 0
+ 116 0002 FFF7FEFF 	 bl CDC_GetSerialState
+ 117              	.LVL3:
+  97:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   if (serialState != temp) {
+ 118              	 .loc 1 97 0
+ 119 0006 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 120 000a C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 121 000e 1B88     	 ldrh r3,[r3,#0]
+ 122 0010 8342     	 cmp r3,r0
+ 123 0012 06D0     	 beq .L4
+  98:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****      serialState = temp;
+ 124              	 .loc 1 98 0
+ 125 0014 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 126 0018 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 127 001c 1880     	 strh r0,[r3,#0]
+  99:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****      CDC_NotificationIn();                  // send SERIAL_STATE notification
+ 128              	 .loc 1 99 0
+ 129 001e FFF7FEFF 	 bl CDC_NotificationIn
+ 130              	.LVL4:
+ 131              	.L4:
+ 132 0022 08BD     	 pop {r3,pc}
+ 133              	 .cfi_endproc
+ 134              	.LFE57:
+ 136              	 .section .text.VCOM_Start,"ax",%progbits
+ 137              	 .align 2
+ 138              	 .global VCOM_Start
+ 139              	 .thumb
+ 140              	 .thumb_func
+ 142              	VCOM_Start:
+ 143              	.LFB58:
+ 100:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   }
+ 101:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** }
+ 102:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+ 103:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** /*----------------------------------------------------------------------------
+ 104:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   Main Program
+ 105:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****  *---------------------------------------------------------------------------*/
+ 106:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** void VCOM_Start(void) {
+ 144              	 .loc 1 106 0
+ 145              	 .cfi_startproc
+ 146              	 
+ 147              	 
+ 148 0000 08B5     	 push {r3,lr}
+ 149              	.LCFI4:
+ 150              	 .cfi_def_cfa_offset 8
+ 151              	 .cfi_offset 14,-4
+ 152              	 .cfi_offset 3,-8
+ 107:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+ 108:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   VCOM_Init();                              // VCOM Initialization
+ 153              	 .loc 1 108 0
+ 154 0002 FFF7FEFF 	 bl VCOM_Init
+ 109:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+ 110:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   USB_Init();                               // USB Initialization
+ 155              	 .loc 1 110 0
+ 156 0006 FFF7FEFF 	 bl USB_Init
+ 111:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   USB_Connect(TRUE);                        // USB Connect
+ 157              	 .loc 1 111 0
+ 158 000a 4FF00100 	 mov r0,#1
+ 159 000e FFF7FEFF 	 bl USB_Connect
+ 112:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c **** 
+ 113:src/MightyBoard/Motherboard/USBCDC/vcomdemo.c ****   while (!USB_Configuration) ;              // wait until USB is configured
+ 160              	 .loc 1 113 0
+ 161 0012 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 162 0016 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 163 001a 1B78     	 ldrb r3,[r3,#0]
+ 164 001c 03B9     	 cbnz r3,.L8
+ 165              	.L9:
+ 166 001e FEE7     	 b .L9
+ 167              	.L8:
+ 168 0020 08BD     	 pop {r3,pc}
+ 169              	 .cfi_endproc
+ 170              	.LFE58:
+ 172              	 .comm FCR_0,1,1
+ 173              	 .comm IER_0,1,1
+ 174              	 .comm DLM_0,1,1
+ 175              	 .comm DLL_0,1,1
+ 176              	 .comm LCR_0,1,1
+ 177              	 .comm FDR_0,1,1
+ 178 0022 00BF     	 .section .bss.serialState.5982,"aw",%nobits
+ 179              	 .align 1
+ 180              	 .set .LANCHOR1,.+0
+ 183              	serialState.5982:
+ 184 0000 0000     	 .space 2
+ 185              	 .section .bss.serBuf.5974,"aw",%nobits
+ 186              	 .align 2
+ 187              	 .set .LANCHOR0,.+0
+ 190              	serBuf.5974:
+ 191 0000 00000000 	 .space 32
+ 191      00000000 
+ 191      00000000 
+ 191      00000000 
+ 191      00000000 
+ 192              	 .text
+ 193              	.Letext0:
+ 194              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 195              	 .file 3 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 196              	 .file 4 "src/MightyBoard/Motherboard/USBCDC/usbcore.h"
+ 197              	 .file 5 "src/MightyBoard/Motherboard/USBCDC/serial.h"
+ 198              	 .file 6 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 vcomdemo.c
+    {standard input}:19     .text.VCOM_Init:00000000 $t
+    {standard input}:24     .text.VCOM_Init:00000000 VCOM_Init
+    {standard input}:45     .text.VCOM_Usb2Serial:00000000 $t
+    {standard input}:50     .text.VCOM_Usb2Serial:00000000 VCOM_Usb2Serial
+    {standard input}:187    .bss.serBuf.5974:00000000 .LANCHOR0
+    {standard input}:99     .text.VCOM_CheckSerialState:00000000 $t
+    {standard input}:104    .text.VCOM_CheckSerialState:00000000 VCOM_CheckSerialState
+    {standard input}:180    .bss.serialState.5982:00000000 .LANCHOR1
+    {standard input}:137    .text.VCOM_Start:00000000 $t
+    {standard input}:142    .text.VCOM_Start:00000000 VCOM_Start
+                            *COM*:00000001 FCR_0
+                            *COM*:00000001 IER_0
+                            *COM*:00000001 DLM_0
+                            *COM*:00000001 DLL_0
+                            *COM*:00000001 LCR_0
+                            *COM*:00000001 FDR_0
+    {standard input}:179    .bss.serialState.5982:00000000 $d
+    {standard input}:183    .bss.serialState.5982:00000000 serialState.5982
+    {standard input}:186    .bss.serBuf.5974:00000000 $d
+    {standard input}:190    .bss.serBuf.5974:00000000 serBuf.5974
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+CDC_Init
+CDC_OutBufAvailChar
+CDC_RdOutBuf
+ser_Write
+CDC_GetSerialState
+CDC_NotificationIn
+USB_Init
+USB_Connect
+USB_Configuration

@@ -1,0 +1,258 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "byteordering.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.read16,"ax",%progbits
+  19              	 .align 2
+  20              	 .global read16
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	read16:
+  25              	.LFB0:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib_sd/byteordering.c"
+   1:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+   2:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /*
+   3:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Copyright (c) 2006-2011 by Roland Riegel <feedback@roland-riegel.de>
+   4:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+   5:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * This file is free software; you can redistribute it and/or modify
+   6:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * it under the terms of either the GNU General Public License version 2
+   7:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * or the GNU Lesser General Public License version 2.1, both as
+   8:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * published by the Free Software Foundation.
+   9:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  10:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  11:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** #include "byteordering.h"
+  12:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  13:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+  14:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \addtogroup byteordering
+  15:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  16:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Architecture-dependent handling of byte-ordering.
+  17:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  18:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * @{
+  19:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  20:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+  21:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \file
+  22:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Byte-order handling implementation (license: GPLv2 or LGPLv2.1)
+  23:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  24:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \author Roland Riegel
+  25:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  26:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  27:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  28:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** #if DOXYGEN || SWAP_NEEDED
+  29:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  30:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+  31:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  32:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \internal
+  33:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Swaps the bytes of a 16-bit integer.
+  34:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  35:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  36:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  37:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] i A 16-bit integer which to swap.
+  38:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \returns The swapped 16-bit integer.
+  39:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  40:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** uint16_t swap16(uint16_t i)
+  41:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** {
+  42:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     return SWAP16(i);
+  43:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** }
+  44:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  45:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+  46:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \internal
+  47:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Swaps the bytes of a 32-bit integer.
+  48:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  49:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] i A 32-bit integer which to swap.
+  50:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  51:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \returns The swapped 32-bit integer.
+  52:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  53:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  54:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** uint32_t swap32(uint32_t i)
+  55:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** {
+  56:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     return SWAP32(i);
+  57:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** }
+  58:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  59:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** #endif
+  60:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  61:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** #if DOXYGEN || !__AVR__
+  62:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  63:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+  64:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Reads a 16-bit integer from memory in little-endian byte order.
+  65:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  66:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  67:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  68:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] p Pointer from where to read the integer.
+  69:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \returns The 16-bit integer read from memory.
+  70:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  71:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** uint16_t read16(const uint8_t* p)
+  72:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** {
+  27              	 .loc 1 72 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  73:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     return (((uint16_t) p[1]) << 8) |
+  33              	 .loc 1 73 0
+  34 0000 4278     	 ldrb r2,[r0,#1]
+  35 0002 0378     	 ldrb r3,[r0,#0]
+  74:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****            (((uint16_t) p[0]) << 0);
+  75:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** }
+  36              	 .loc 1 75 0
+  37 0004 43EA0220 	 orr r0,r3,r2,lsl#8
+  38              	.LVL1:
+  39 0008 7047     	 bx lr
+  40              	 .cfi_endproc
+  41              	.LFE0:
+  43 000a 00BF     	 .section .text.read32,"ax",%progbits
+  44              	 .align 2
+  45              	 .global read32
+  46              	 .thumb
+  47              	 .thumb_func
+  49              	read32:
+  50              	.LFB1:
+  76:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  77:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+  78:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Reads a 32-bit integer from memory in little-endian byte order.
+  79:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  80:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  81:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] p Pointer from where to read the integer.
+  82:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \returns The 32-bit integer read from memory.
+  83:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  84:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** uint32_t read32(const uint8_t* p)
+  85:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** {
+  51              	 .loc 1 85 0
+  52              	 .cfi_startproc
+  53              	 
+  54              	 
+  55              	 
+  56              	.LVL2:
+  86:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  87:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     return (((uint32_t) p[3]) << 24) |
+  57              	 .loc 1 87 0
+  58 0000 C278     	 ldrb r2,[r0,#3]
+  88:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****            (((uint32_t) p[2]) << 16) |
+  59              	 .loc 1 88 0
+  60 0002 8378     	 ldrb r3,[r0,#2]
+  61 0004 4FEA0343 	 lsl r3,r3,#16
+  87:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     return (((uint32_t) p[3]) << 24) |
+  62              	 .loc 1 87 0
+  63 0008 43EA0263 	 orr r3,r3,r2,lsl#24
+  89:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****            (((uint32_t) p[1]) <<  8) |
+  90:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****            (((uint32_t) p[0]) <<  0);
+  64              	 .loc 1 90 0
+  65 000c 0278     	 ldrb r2,[r0,#0]
+  88:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****            (((uint32_t) p[2]) << 16) |
+  66              	 .loc 1 88 0
+  67 000e 1343     	 orrs r3,r3,r2
+  89:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****            (((uint32_t) p[1]) <<  8) |
+  68              	 .loc 1 89 0
+  69 0010 4078     	 ldrb r0,[r0,#1]
+  70              	.LVL3:
+  91:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** }
+  71              	 .loc 1 91 0
+  72 0012 43EA0020 	 orr r0,r3,r0,lsl#8
+  73 0016 7047     	 bx lr
+  74              	 .cfi_endproc
+  75              	.LFE1:
+  77              	 .section .text.write16,"ax",%progbits
+  78              	 .align 2
+  79              	 .global write16
+  80              	 .thumb
+  81              	 .thumb_func
+  83              	write16:
+  84              	.LFB2:
+  92:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+  93:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+  94:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Writes a 16-bit integer into memory in little-endian byte order.
+  95:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+  96:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] p Pointer where to write the integer to.
+  97:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] i The 16-bit integer to write.
+  98:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+  99:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** void write16(uint8_t* p, uint16_t i)
+ 100:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** {
+  85              	 .loc 1 100 0
+  86              	 .cfi_startproc
+  87              	 
+  88              	 
+  89              	 
+  90              	.LVL4:
+ 101:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     p[1] = (uint8_t) ((i & 0xff00) >> 8);
+  91              	 .loc 1 101 0
+  92 0000 4FEA1123 	 lsr r3,r1,#8
+  93 0004 4370     	 strb r3,[r0,#1]
+ 102:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     p[0] = (uint8_t) ((i & 0x00ff) >> 0);
+  94              	 .loc 1 102 0
+  95 0006 0170     	 strb r1,[r0,#0]
+ 103:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** }
+  96              	 .loc 1 103 0
+  97 0008 7047     	 bx lr
+  98              	 .cfi_endproc
+  99              	.LFE2:
+ 101 000a 00BF     	 .section .text.write32,"ax",%progbits
+ 102              	 .align 2
+ 103              	 .global write32
+ 104              	 .thumb
+ 105              	 .thumb_func
+ 107              	write32:
+ 108              	.LFB3:
+ 104:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** 
+ 105:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** /**
+ 106:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * Writes a 32-bit integer into memory in little-endian byte order.
+ 107:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  *
+ 108:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] p Pointer where to write the integer to.
+ 109:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  * \param[in] i The 32-bit integer to write.
+ 110:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****  */
+ 111:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** void write32(uint8_t* p, uint32_t i)
+ 112:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** {
+ 109              	 .loc 1 112 0
+ 110              	 .cfi_startproc
+ 111              	 
+ 112              	 
+ 113              	 
+ 114              	.LVL5:
+ 113:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     p[3] = (uint8_t) ((i & 0xff000000) >> 24);
+ 115              	 .loc 1 113 0
+ 116 0000 4FEA1163 	 lsr r3,r1,#24
+ 117 0004 C370     	 strb r3,[r0,#3]
+ 114:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     p[2] = (uint8_t) ((i & 0x00ff0000) >> 16);
+ 118              	 .loc 1 114 0
+ 119 0006 C1F30743 	 ubfx r3,r1,#16,#8
+ 120 000a 8370     	 strb r3,[r0,#2]
+ 115:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     p[1] = (uint8_t) ((i & 0x0000ff00) >>  8);
+ 121              	 .loc 1 115 0
+ 122 000c C1F30723 	 ubfx r3,r1,#8,#8
+ 123 0010 4370     	 strb r3,[r0,#1]
+ 116:src/MightyBoard/Motherboard/lib_sd/byteordering.c ****     p[0] = (uint8_t) ((i & 0x000000ff) >>  0);
+ 124              	 .loc 1 116 0
+ 125 0012 0170     	 strb r1,[r0,#0]
+ 117:src/MightyBoard/Motherboard/lib_sd/byteordering.c **** }
+ 126              	 .loc 1 117 0
+ 127 0014 7047     	 bx lr
+ 128              	 .cfi_endproc
+ 129              	.LFE3:
+ 131 0016 00BF     	 .text
+ 132              	.Letext0:
+ 133              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 byteordering.c
+    {standard input}:19     .text.read16:00000000 $t
+    {standard input}:24     .text.read16:00000000 read16
+    {standard input}:44     .text.read32:00000000 $t
+    {standard input}:49     .text.read32:00000000 read32
+    {standard input}:78     .text.write16:00000000 $t
+    {standard input}:83     .text.write16:00000000 write16
+    {standard input}:102    .text.write32:00000000 $t
+    {standard input}:107    .text.write32:00000000 write32
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

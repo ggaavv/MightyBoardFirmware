@@ -1,0 +1,781 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "usbuser.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.USB_EndPoint2,"ax",%progbits
+  19              	 .align 2
+  20              	 .global USB_EndPoint2
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	USB_EndPoint2:
+  25              	.LFB3:
+  26              	 .file 1 "src/MightyBoard/Motherboard/USBCDC/usbuser.c"
+   1:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*----------------------------------------------------------------------------
+   2:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      U S B  -  K e r n e l
+   3:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *----------------------------------------------------------------------------
+   4:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  * Name:    usbuser.c
+   5:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  * Purpose: USB Custom User Module
+   6:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  * Version: V1.20
+   7:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *----------------------------------------------------------------------------
+   8:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      This software is supplied "AS IS" without any warranties, express,
+   9:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      implied or statutory, including but not limited to the implied
+  10:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      warranties of fitness for purpose, satisfactory quality and
+  11:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      noninfringement. Keil extends you a royalty-free right to reproduce
+  12:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      and distribute executable files created using this software for use
+  13:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      on NXP Semiconductors LPC family microcontroller devices only. Nothing
+  14:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *      else gives you the right to use this software.
+  15:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *
+  16:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  * Copyright (c) 2009 Keil - An ARM Company. All rights reserved.
+  17:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *---------------------------------------------------------------------------*/
+  18:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #include "lpc_types.h"
+  19:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  20:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #include "usb.h"
+  21:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #include "usbcfg.h"
+  22:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #include "usbhw.h"
+  23:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #include "usbcore.h"
+  24:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #include "usbuser.h"
+  25:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #include "cdcuser.h"
+  26:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  27:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  28:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+  29:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Power Event Callback
+  30:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Power Event
+  31:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       power: On(TRUE)/Off(FALSE)
+  32:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+  33:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  34:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_POWER_EVENT
+  35:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Power_Event (uint32_t  power) {
+  36:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+  37:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+  38:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  39:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  40:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+  41:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Reset Event Callback
+  42:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Reset Event
+  43:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+  44:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  45:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_RESET_EVENT
+  46:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Reset_Event (void) {
+  47:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   USB_ResetCore();
+  48:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+  49:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+  50:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  51:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  52:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+  53:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Suspend Event Callback
+  54:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Suspend Event
+  55:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+  56:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  57:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_SUSPEND_EVENT
+  58:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Suspend_Event (void) {
+  59:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+  60:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+  61:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  62:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  63:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+  64:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Resume Event Callback
+  65:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Resume Event
+  66:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+  67:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  68:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_RESUME_EVENT
+  69:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Resume_Event (void) {
+  70:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+  71:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+  72:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  73:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  74:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+  75:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Remote Wakeup Event Callback
+  76:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Remote Wakeup Event
+  77:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+  78:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  79:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_WAKEUP_EVENT
+  80:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_WakeUp_Event (void) {
+  81:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+  82:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+  83:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  84:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  85:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+  86:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Start of Frame Event Callback
+  87:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Start of Frame Event
+  88:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+  89:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  90:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_SOF_EVENT
+  91:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_SOF_Event (void) {
+  92:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+  93:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+  94:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  95:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+  96:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+  97:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Error Event Callback
+  98:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Error Event
+  99:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       error: Error Code
+ 100:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 101:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 102:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_ERROR_EVENT
+ 103:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Error_Event (uint32_t error) {
+ 104:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 105:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+ 106:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 107:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 108:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 109:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Set Configuration Event Callback
+ 110:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Set Configuration Request
+ 111:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 112:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 113:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_CONFIGURE_EVENT
+ 114:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Configure_Event (void) {
+ 115:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 116:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   if (USB_Configuration) {                  /* Check if USB is configured */
+ 117:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****     /* add your code here */
+ 118:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   }
+ 119:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 120:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+ 121:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 122:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 123:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 124:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Set Interface Event Callback
+ 125:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Set Interface Request
+ 126:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 127:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 128:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_INTERFACE_EVENT
+ 129:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Interface_Event (void) {
+ 130:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 131:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+ 132:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 133:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 134:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 135:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Set/Clear Feature Event Callback
+ 136:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Set/Clear Feature Request
+ 137:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 138:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 139:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #if USB_FEATURE_EVENT
+ 140:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Feature_Event (void) {
+ 141:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 142:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #endif
+ 143:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 144:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 145:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** #define P_EP(n) ((USB_EP_EVENT & (1 << (n))) ? USB_EndPoint##n : NULL)
+ 146:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 147:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /* USB Endpoint Events Callback Pointers */
+ 148:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void (* const USB_P_EP[16]) (uint32_t event) = {
+ 149:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(0),
+ 150:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(1),
+ 151:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(2),
+ 152:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(3),
+ 153:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(4),
+ 154:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(5),
+ 155:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(6),
+ 156:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(7),
+ 157:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(8),
+ 158:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(9),
+ 159:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(10),
+ 160:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(11),
+ 161:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(12),
+ 162:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(13),
+ 163:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(14),
+ 164:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   P_EP(15),
+ 165:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** };
+ 166:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 167:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 168:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 169:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 1 Event Callback
+ 170:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 1 Event
+ 171:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 172:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 173:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 174:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint1 (uint32_t event) {
+ 175:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   uint16_t temp;
+ 176:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   static uint16_t serialState;
+ 177:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 178:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   switch (event) {
+ 179:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****     case USB_EVT_IN:
+ 180:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       temp = CDC_GetSerialState();
+ 181:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       if (serialState != temp) {
+ 182:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****          serialState = temp;
+ 183:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****          CDC_NotificationIn();            /* send SERIAL_STATE notification */
+ 184:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       }
+ 185:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       break;
+ 186:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   }
+ 187:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 188:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 189:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 190:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 191:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 2 Event Callback
+ 192:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 2 Event
+ 193:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 194:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 195:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 196:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint2 (uint32_t event) {
+  27              	 .loc 1 196 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 08B5     	 push {r3,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 8
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 3,-8
+ 197:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 198:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   switch (event) {
+  37              	 .loc 1 198 0
+  38 0002 0228     	 cmp r0,#2
+  39 0004 02D0     	 beq .L3
+  40 0006 0328     	 cmp r0,#3
+  41 0008 05D1     	 bne .L1
+  42 000a 02E0     	 b .L5
+  43              	.L3:
+ 199:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****     case USB_EVT_OUT:
+ 200:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       CDC_BulkOut ();                /* data received from Host */
+  44              	 .loc 1 200 0
+  45 000c FFF7FEFF 	 bl CDC_BulkOut
+  46              	.LVL1:
+ 201:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       break;
+  47              	 .loc 1 201 0
+  48 0010 08BD     	 pop {r3,pc}
+  49              	.LVL2:
+  50              	.L5:
+ 202:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****     case USB_EVT_IN:
+ 203:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       CDC_BulkIn ();                 /* data expected from Host */
+  51              	 .loc 1 203 0
+  52 0012 FFF7FEFF 	 bl CDC_BulkIn
+  53              	.LVL3:
+  54              	.L1:
+  55 0016 08BD     	 pop {r3,pc}
+  56              	 .cfi_endproc
+  57              	.LFE3:
+  59              	 .section .text.USB_EndPoint1,"ax",%progbits
+  60              	 .align 2
+  61              	 .global USB_EndPoint1
+  62              	 .thumb
+  63              	 .thumb_func
+  65              	USB_EndPoint1:
+  66              	.LFB2:
+ 174:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint1 (uint32_t event) {
+  67              	 .loc 1 174 0
+  68              	 .cfi_startproc
+  69              	 
+  70              	 
+  71              	.LVL4:
+  72 0000 08B5     	 push {r3,lr}
+  73              	.LCFI1:
+  74              	 .cfi_def_cfa_offset 8
+  75              	 .cfi_offset 14,-4
+  76              	 .cfi_offset 3,-8
+ 178:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   switch (event) {
+  77              	 .loc 1 178 0
+  78 0002 0328     	 cmp r0,#3
+  79 0004 0FD1     	 bne .L6
+ 180:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       temp = CDC_GetSerialState();
+  80              	 .loc 1 180 0
+  81 0006 FFF7FEFF 	 bl CDC_GetSerialState
+  82              	.LVL5:
+ 181:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       if (serialState != temp) {
+  83              	 .loc 1 181 0
+  84 000a 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  85 000e C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  86 0012 1B88     	 ldrh r3,[r3,#0]
+  87 0014 8342     	 cmp r3,r0
+  88 0016 06D0     	 beq .L6
+ 182:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****          serialState = temp;
+  89              	 .loc 1 182 0
+  90 0018 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  91 001c C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  92 0020 1880     	 strh r0,[r3,#0]
+ 183:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****          CDC_NotificationIn();            /* send SERIAL_STATE notification */
+  93              	 .loc 1 183 0
+  94 0022 FFF7FEFF 	 bl CDC_NotificationIn
+  95              	.LVL6:
+  96              	.L6:
+  97 0026 08BD     	 pop {r3,pc}
+  98              	 .cfi_endproc
+  99              	.LFE2:
+ 101              	 .section .text.USB_Reset_Event,"ax",%progbits
+ 102              	 .align 2
+ 103              	 .global USB_Reset_Event
+ 104              	 .thumb
+ 105              	 .thumb_func
+ 107              	USB_Reset_Event:
+ 108              	.LFB0:
+  46:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Reset_Event (void) {
+ 109              	 .loc 1 46 0
+ 110              	 .cfi_startproc
+ 111              	 
+ 112              	 
+ 113 0000 08B5     	 push {r3,lr}
+ 114              	.LCFI2:
+ 115              	 .cfi_def_cfa_offset 8
+ 116              	 .cfi_offset 14,-4
+ 117              	 .cfi_offset 3,-8
+  47:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   USB_ResetCore();
+ 118              	 .loc 1 47 0
+ 119 0002 FFF7FEFF 	 bl USB_ResetCore
+  48:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 120              	 .loc 1 48 0
+ 121 0006 08BD     	 pop {r3,pc}
+ 122              	 .cfi_endproc
+ 123              	.LFE0:
+ 125              	 .section .text.USB_Configure_Event,"ax",%progbits
+ 126              	 .align 2
+ 127              	 .global USB_Configure_Event
+ 128              	 .thumb
+ 129              	 .thumb_func
+ 131              	USB_Configure_Event:
+ 132              	.LFB1:
+ 114:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_Configure_Event (void) {
+ 133              	 .loc 1 114 0
+ 134              	 .cfi_startproc
+ 135              	 
+ 136              	 
+ 137              	 
+ 119:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 138              	 .loc 1 119 0
+ 139 0000 7047     	 bx lr
+ 140              	 .cfi_endproc
+ 141              	.LFE1:
+ 143 0002 00BF     	 .section .text.USB_EndPoint3,"ax",%progbits
+ 144              	 .align 2
+ 145              	 .global USB_EndPoint3
+ 146              	 .thumb
+ 147              	 .thumb_func
+ 149              	USB_EndPoint3:
+ 150              	.LFB4:
+ 204:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****       break;
+ 205:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****   }
+ 206:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 207:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 208:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 209:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 210:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 3 Event Callback
+ 211:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 3 Event
+ 212:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 213:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 214:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 215:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint3 (uint32_t event) {
+ 151              	 .loc 1 215 0
+ 152              	 .cfi_startproc
+ 153              	 
+ 154              	 
+ 155              	 
+ 156              	.LVL7:
+ 216:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 157              	 .loc 1 216 0
+ 158 0000 7047     	 bx lr
+ 159              	 .cfi_endproc
+ 160              	.LFE4:
+ 162 0002 00BF     	 .section .text.USB_EndPoint4,"ax",%progbits
+ 163              	 .align 2
+ 164              	 .global USB_EndPoint4
+ 165              	 .thumb
+ 166              	 .thumb_func
+ 168              	USB_EndPoint4:
+ 169              	.LFB5:
+ 217:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 218:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 219:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 220:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 4 Event Callback
+ 221:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 4 Event
+ 222:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 223:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 224:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 225:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint4 (uint32_t event) {
+ 170              	 .loc 1 225 0
+ 171              	 .cfi_startproc
+ 172              	 
+ 173              	 
+ 174              	 
+ 175              	.LVL8:
+ 226:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 176              	 .loc 1 226 0
+ 177 0000 7047     	 bx lr
+ 178              	 .cfi_endproc
+ 179              	.LFE5:
+ 181 0002 00BF     	 .section .text.USB_EndPoint5,"ax",%progbits
+ 182              	 .align 2
+ 183              	 .global USB_EndPoint5
+ 184              	 .thumb
+ 185              	 .thumb_func
+ 187              	USB_EndPoint5:
+ 188              	.LFB6:
+ 227:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 228:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 229:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 230:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 5 Event Callback
+ 231:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 5 Event
+ 232:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 233:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 234:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 235:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint5 (uint32_t event) {
+ 189              	 .loc 1 235 0
+ 190              	 .cfi_startproc
+ 191              	 
+ 192              	 
+ 193              	 
+ 194              	.LVL9:
+ 236:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 195              	 .loc 1 236 0
+ 196 0000 7047     	 bx lr
+ 197              	 .cfi_endproc
+ 198              	.LFE6:
+ 200 0002 00BF     	 .section .text.USB_EndPoint6,"ax",%progbits
+ 201              	 .align 2
+ 202              	 .global USB_EndPoint6
+ 203              	 .thumb
+ 204              	 .thumb_func
+ 206              	USB_EndPoint6:
+ 207              	.LFB7:
+ 237:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 238:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 239:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 240:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 6 Event Callback
+ 241:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 6 Event
+ 242:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 243:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 244:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 245:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint6 (uint32_t event) {
+ 208              	 .loc 1 245 0
+ 209              	 .cfi_startproc
+ 210              	 
+ 211              	 
+ 212              	 
+ 213              	.LVL10:
+ 246:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 214              	 .loc 1 246 0
+ 215 0000 7047     	 bx lr
+ 216              	 .cfi_endproc
+ 217              	.LFE7:
+ 219 0002 00BF     	 .section .text.USB_EndPoint7,"ax",%progbits
+ 220              	 .align 2
+ 221              	 .global USB_EndPoint7
+ 222              	 .thumb
+ 223              	 .thumb_func
+ 225              	USB_EndPoint7:
+ 226              	.LFB8:
+ 247:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 248:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 249:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 250:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 7 Event Callback
+ 251:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 7 Event
+ 252:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 253:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 254:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 255:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint7 (uint32_t event) {
+ 227              	 .loc 1 255 0
+ 228              	 .cfi_startproc
+ 229              	 
+ 230              	 
+ 231              	 
+ 232              	.LVL11:
+ 256:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 233              	 .loc 1 256 0
+ 234 0000 7047     	 bx lr
+ 235              	 .cfi_endproc
+ 236              	.LFE8:
+ 238 0002 00BF     	 .section .text.USB_EndPoint8,"ax",%progbits
+ 239              	 .align 2
+ 240              	 .global USB_EndPoint8
+ 241              	 .thumb
+ 242              	 .thumb_func
+ 244              	USB_EndPoint8:
+ 245              	.LFB9:
+ 257:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 258:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 259:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 260:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 8 Event Callback
+ 261:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 8 Event
+ 262:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 263:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 264:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 265:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint8 (uint32_t event) {
+ 246              	 .loc 1 265 0
+ 247              	 .cfi_startproc
+ 248              	 
+ 249              	 
+ 250              	 
+ 251              	.LVL12:
+ 266:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 252              	 .loc 1 266 0
+ 253 0000 7047     	 bx lr
+ 254              	 .cfi_endproc
+ 255              	.LFE9:
+ 257 0002 00BF     	 .section .text.USB_EndPoint9,"ax",%progbits
+ 258              	 .align 2
+ 259              	 .global USB_EndPoint9
+ 260              	 .thumb
+ 261              	 .thumb_func
+ 263              	USB_EndPoint9:
+ 264              	.LFB10:
+ 267:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 268:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 269:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 270:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 9 Event Callback
+ 271:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 9 Event
+ 272:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 273:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 274:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 275:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint9 (uint32_t event) {
+ 265              	 .loc 1 275 0
+ 266              	 .cfi_startproc
+ 267              	 
+ 268              	 
+ 269              	 
+ 270              	.LVL13:
+ 276:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 271              	 .loc 1 276 0
+ 272 0000 7047     	 bx lr
+ 273              	 .cfi_endproc
+ 274              	.LFE10:
+ 276 0002 00BF     	 .section .text.USB_EndPoint10,"ax",%progbits
+ 277              	 .align 2
+ 278              	 .global USB_EndPoint10
+ 279              	 .thumb
+ 280              	 .thumb_func
+ 282              	USB_EndPoint10:
+ 283              	.LFB11:
+ 277:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 278:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 279:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 280:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 10 Event Callback
+ 281:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 10 Event
+ 282:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 283:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 284:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 285:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint10 (uint32_t event) {
+ 284              	 .loc 1 285 0
+ 285              	 .cfi_startproc
+ 286              	 
+ 287              	 
+ 288              	 
+ 289              	.LVL14:
+ 286:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 290              	 .loc 1 286 0
+ 291 0000 7047     	 bx lr
+ 292              	 .cfi_endproc
+ 293              	.LFE11:
+ 295 0002 00BF     	 .section .text.USB_EndPoint11,"ax",%progbits
+ 296              	 .align 2
+ 297              	 .global USB_EndPoint11
+ 298              	 .thumb
+ 299              	 .thumb_func
+ 301              	USB_EndPoint11:
+ 302              	.LFB12:
+ 287:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 288:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 289:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 290:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 11 Event Callback
+ 291:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 11 Event
+ 292:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 293:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 294:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 295:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint11 (uint32_t event) {
+ 303              	 .loc 1 295 0
+ 304              	 .cfi_startproc
+ 305              	 
+ 306              	 
+ 307              	 
+ 308              	.LVL15:
+ 296:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 309              	 .loc 1 296 0
+ 310 0000 7047     	 bx lr
+ 311              	 .cfi_endproc
+ 312              	.LFE12:
+ 314 0002 00BF     	 .section .text.USB_EndPoint12,"ax",%progbits
+ 315              	 .align 2
+ 316              	 .global USB_EndPoint12
+ 317              	 .thumb
+ 318              	 .thumb_func
+ 320              	USB_EndPoint12:
+ 321              	.LFB13:
+ 297:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 298:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 299:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 300:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 12 Event Callback
+ 301:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 12 Event
+ 302:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 303:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 304:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 305:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint12 (uint32_t event) {
+ 322              	 .loc 1 305 0
+ 323              	 .cfi_startproc
+ 324              	 
+ 325              	 
+ 326              	 
+ 327              	.LVL16:
+ 306:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 328              	 .loc 1 306 0
+ 329 0000 7047     	 bx lr
+ 330              	 .cfi_endproc
+ 331              	.LFE13:
+ 333 0002 00BF     	 .section .text.USB_EndPoint13,"ax",%progbits
+ 334              	 .align 2
+ 335              	 .global USB_EndPoint13
+ 336              	 .thumb
+ 337              	 .thumb_func
+ 339              	USB_EndPoint13:
+ 340              	.LFB14:
+ 307:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 308:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 309:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 310:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 13 Event Callback
+ 311:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 13 Event
+ 312:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 313:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 314:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 315:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint13 (uint32_t event) {
+ 341              	 .loc 1 315 0
+ 342              	 .cfi_startproc
+ 343              	 
+ 344              	 
+ 345              	 
+ 346              	.LVL17:
+ 316:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 347              	 .loc 1 316 0
+ 348 0000 7047     	 bx lr
+ 349              	 .cfi_endproc
+ 350              	.LFE14:
+ 352 0002 00BF     	 .section .text.USB_EndPoint14,"ax",%progbits
+ 353              	 .align 2
+ 354              	 .global USB_EndPoint14
+ 355              	 .thumb
+ 356              	 .thumb_func
+ 358              	USB_EndPoint14:
+ 359              	.LFB15:
+ 317:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 318:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 319:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 320:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 14 Event Callback
+ 321:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 14 Event
+ 322:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 323:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 324:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 325:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint14 (uint32_t event) {
+ 360              	 .loc 1 325 0
+ 361              	 .cfi_startproc
+ 362              	 
+ 363              	 
+ 364              	 
+ 365              	.LVL18:
+ 326:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 366              	 .loc 1 326 0
+ 367 0000 7047     	 bx lr
+ 368              	 .cfi_endproc
+ 369              	.LFE15:
+ 371 0002 00BF     	 .section .text.USB_EndPoint15,"ax",%progbits
+ 372              	 .align 2
+ 373              	 .global USB_EndPoint15
+ 374              	 .thumb
+ 375              	 .thumb_func
+ 377              	USB_EndPoint15:
+ 378              	.LFB16:
+ 327:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 328:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 329:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** /*
+ 330:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *  USB Endpoint 15 Event Callback
+ 331:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *   Called automatically on USB Endpoint 15 Event
+ 332:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  *    Parameter:       event
+ 333:src/MightyBoard/Motherboard/USBCDC/usbuser.c ****  */
+ 334:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** 
+ 335:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** void USB_EndPoint15 (uint32_t event) {
+ 379              	 .loc 1 335 0
+ 380              	 .cfi_startproc
+ 381              	 
+ 382              	 
+ 383              	 
+ 384              	.LVL19:
+ 336:src/MightyBoard/Motherboard/USBCDC/usbuser.c **** }
+ 385              	 .loc 1 336 0
+ 386 0000 7047     	 bx lr
+ 387              	 .cfi_endproc
+ 388              	.LFE16:
+ 390              	 .global USB_P_EP
+ 391 0002 00BF     	 .section .bss.serialState.4860,"aw",%nobits
+ 392              	 .align 1
+ 393              	 .set .LANCHOR0,.+0
+ 396              	serialState.4860:
+ 397 0000 0000     	 .space 2
+ 398              	 .section .rodata.USB_P_EP,"a",%progbits
+ 399              	 .align 2
+ 402              	USB_P_EP:
+ 403 0000 00000000 	 .word USB_EndPoint0
+ 404 0004 00000000 	 .word USB_EndPoint1
+ 405 0008 00000000 	 .word USB_EndPoint2
+ 406 000c 00000000 	 .word 0
+ 407 0010 00000000 	 .word 0
+ 408 0014 00000000 	 .word 0
+ 409 0018 00000000 	 .word 0
+ 410 001c 00000000 	 .word 0
+ 411 0020 00000000 	 .word 0
+ 412 0024 00000000 	 .word 0
+ 413 0028 00000000 	 .word 0
+ 414 002c 00000000 	 .word 0
+ 415 0030 00000000 	 .word 0
+ 416 0034 00000000 	 .word 0
+ 417 0038 00000000 	 .word 0
+ 418 003c 00000000 	 .word 0
+ 419              	 .text
+ 420              	.Letext0:
+ 421              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 422              	 .file 3 "src/MightyBoard/Motherboard/USBCDC/usbcore.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 usbuser.c
+    {standard input}:19     .text.USB_EndPoint2:00000000 $t
+    {standard input}:24     .text.USB_EndPoint2:00000000 USB_EndPoint2
+    {standard input}:60     .text.USB_EndPoint1:00000000 $t
+    {standard input}:65     .text.USB_EndPoint1:00000000 USB_EndPoint1
+    {standard input}:393    .bss.serialState.4860:00000000 .LANCHOR0
+    {standard input}:102    .text.USB_Reset_Event:00000000 $t
+    {standard input}:107    .text.USB_Reset_Event:00000000 USB_Reset_Event
+    {standard input}:126    .text.USB_Configure_Event:00000000 $t
+    {standard input}:131    .text.USB_Configure_Event:00000000 USB_Configure_Event
+    {standard input}:144    .text.USB_EndPoint3:00000000 $t
+    {standard input}:149    .text.USB_EndPoint3:00000000 USB_EndPoint3
+    {standard input}:163    .text.USB_EndPoint4:00000000 $t
+    {standard input}:168    .text.USB_EndPoint4:00000000 USB_EndPoint4
+    {standard input}:182    .text.USB_EndPoint5:00000000 $t
+    {standard input}:187    .text.USB_EndPoint5:00000000 USB_EndPoint5
+    {standard input}:201    .text.USB_EndPoint6:00000000 $t
+    {standard input}:206    .text.USB_EndPoint6:00000000 USB_EndPoint6
+    {standard input}:220    .text.USB_EndPoint7:00000000 $t
+    {standard input}:225    .text.USB_EndPoint7:00000000 USB_EndPoint7
+    {standard input}:239    .text.USB_EndPoint8:00000000 $t
+    {standard input}:244    .text.USB_EndPoint8:00000000 USB_EndPoint8
+    {standard input}:258    .text.USB_EndPoint9:00000000 $t
+    {standard input}:263    .text.USB_EndPoint9:00000000 USB_EndPoint9
+    {standard input}:277    .text.USB_EndPoint10:00000000 $t
+    {standard input}:282    .text.USB_EndPoint10:00000000 USB_EndPoint10
+    {standard input}:296    .text.USB_EndPoint11:00000000 $t
+    {standard input}:301    .text.USB_EndPoint11:00000000 USB_EndPoint11
+    {standard input}:315    .text.USB_EndPoint12:00000000 $t
+    {standard input}:320    .text.USB_EndPoint12:00000000 USB_EndPoint12
+    {standard input}:334    .text.USB_EndPoint13:00000000 $t
+    {standard input}:339    .text.USB_EndPoint13:00000000 USB_EndPoint13
+    {standard input}:353    .text.USB_EndPoint14:00000000 $t
+    {standard input}:358    .text.USB_EndPoint14:00000000 USB_EndPoint14
+    {standard input}:372    .text.USB_EndPoint15:00000000 $t
+    {standard input}:377    .text.USB_EndPoint15:00000000 USB_EndPoint15
+    {standard input}:402    .rodata.USB_P_EP:00000000 USB_P_EP
+    {standard input}:392    .bss.serialState.4860:00000000 $d
+    {standard input}:396    .bss.serialState.4860:00000000 serialState.4860
+    {standard input}:399    .rodata.USB_P_EP:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+CDC_BulkOut
+CDC_BulkIn
+CDC_GetSerialState
+CDC_NotificationIn
+USB_ResetCore
+USB_EndPoint0

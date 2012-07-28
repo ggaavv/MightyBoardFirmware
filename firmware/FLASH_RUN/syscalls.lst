@@ -1,0 +1,1602 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "syscalls.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._execve,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _execve
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_execve:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/system/syscalls.c"
+   1:src/MightyBoard/Motherboard/system/syscalls.c **** /*
+   2:src/MightyBoard/Motherboard/system/syscalls.c ****  * syscalls.c
+   3:src/MightyBoard/Motherboard/system/syscalls.c ****  *
+   4:src/MightyBoard/Motherboard/system/syscalls.c ****  *  Created on: 03.12.2009
+   5:src/MightyBoard/Motherboard/system/syscalls.c ****  *      Author: Martin Thomas, 3BSD license
+   6:src/MightyBoard/Motherboard/system/syscalls.c ****  */
+   7:src/MightyBoard/Motherboard/system/syscalls.c **** 
+   8:src/MightyBoard/Motherboard/system/syscalls.c **** #include <reent.h>
+   9:src/MightyBoard/Motherboard/system/syscalls.c **** #include <errno.h>
+  10:src/MightyBoard/Motherboard/system/syscalls.c **** #include <stdlib.h> /* abort */
+  11:src/MightyBoard/Motherboard/system/syscalls.c **** #include <sys/types.h>
+  12:src/MightyBoard/Motherboard/system/syscalls.c **** #include <sys/stat.h>
+  13:src/MightyBoard/Motherboard/system/syscalls.c **** #include <sys/time.h>
+  14:src/MightyBoard/Motherboard/system/syscalls.c **** #include <time.h>
+  15:src/MightyBoard/Motherboard/system/syscalls.c **** 
+  16:src/MightyBoard/Motherboard/system/syscalls.c **** #include "term_io.h"
+  17:src/MightyBoard/Motherboard/system/syscalls.c **** #include "LPC17xx.h" /* for _get_PSP() from core_cm3.h*/
+  18:src/MightyBoard/Motherboard/system/syscalls.c **** 
+  19:src/MightyBoard/Motherboard/system/syscalls.c **** extern UNIX;
+  20:src/MightyBoard/Motherboard/system/syscalls.c **** 
+  21:src/MightyBoard/Motherboard/system/syscalls.c **** #undef errno
+  22:src/MightyBoard/Motherboard/system/syscalls.c **** extern int errno;
+  23:src/MightyBoard/Motherboard/system/syscalls.c **** 
+  24:src/MightyBoard/Motherboard/system/syscalls.c **** char *__env[1] = { 0 };
+  25:src/MightyBoard/Motherboard/system/syscalls.c **** char **environ = __env;
+  26:src/MightyBoard/Motherboard/system/syscalls.c **** 
+  27:src/MightyBoard/Motherboard/system/syscalls.c **** int _execve(char *name, char **argv, char **env) {
+  27              	 .loc 1 27 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  28:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+  29:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)name; /* avoid warning */
+  30:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)argv; /* avoid warning */
+  31:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)env; /* avoid warning */
+  32:src/MightyBoard/Motherboard/system/syscalls.c **** 	errno = ENOMEM;
+  33              	 .loc 1 32 0
+  34 0000 40F20003 	 movw r3,#:lower16:errno
+  35 0004 C0F20003 	 movt r3,#:upper16:errno
+  36 0008 4FF00C02 	 mov r2,#12
+  37              	.LVL1:
+  38 000c 1A60     	 str r2,[r3,#0]
+  33:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+  34:src/MightyBoard/Motherboard/system/syscalls.c **** }
+  39              	 .loc 1 34 0
+  40 000e 4FF0FF30 	 mov r0,#-1
+  41              	.LVL2:
+  42 0012 7047     	 bx lr
+  43              	 .cfi_endproc
+  44              	.LFE55:
+  46              	 .section .text._fork,"ax",%progbits
+  47              	 .align 2
+  48              	 .global _fork
+  49              	 .thumb
+  50              	 .thumb_func
+  52              	_fork:
+  53              	.LFB56:
+  35:src/MightyBoard/Motherboard/system/syscalls.c **** int _fork(void) {
+  54              	 .loc 1 35 0
+  55              	 .cfi_startproc
+  56              	 
+  57              	 
+  58              	 
+  36:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+  37:src/MightyBoard/Motherboard/system/syscalls.c **** 	errno = EAGAIN;
+  59              	 .loc 1 37 0
+  60 0000 40F20003 	 movw r3,#:lower16:errno
+  61 0004 C0F20003 	 movt r3,#:upper16:errno
+  62 0008 4FF00B02 	 mov r2,#11
+  63 000c 1A60     	 str r2,[r3,#0]
+  38:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+  39:src/MightyBoard/Motherboard/system/syscalls.c **** }
+  64              	 .loc 1 39 0
+  65 000e 4FF0FF30 	 mov r0,#-1
+  66 0012 7047     	 bx lr
+  67              	 .cfi_endproc
+  68              	.LFE56:
+  70              	 .section .text._link,"ax",%progbits
+  71              	 .align 2
+  72              	 .global _link
+  73              	 .thumb
+  74              	 .thumb_func
+  76              	_link:
+  77              	.LFB57:
+  40:src/MightyBoard/Motherboard/system/syscalls.c **** int _link(char *old, char *new) {
+  78              	 .loc 1 40 0
+  79              	 .cfi_startproc
+  80              	 
+  81              	 
+  82              	 
+  83              	.LVL3:
+  41:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+  42:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)old; /* avoid warning */
+  43:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)new; /* avoid warning */
+  44:src/MightyBoard/Motherboard/system/syscalls.c **** 	errno = EMLINK;
+  84              	 .loc 1 44 0
+  85 0000 40F20003 	 movw r3,#:lower16:errno
+  86 0004 C0F20003 	 movt r3,#:upper16:errno
+  87 0008 4FF01F02 	 mov r2,#31
+  88 000c 1A60     	 str r2,[r3,#0]
+  45:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+  46:src/MightyBoard/Motherboard/system/syscalls.c **** }
+  89              	 .loc 1 46 0
+  90 000e 4FF0FF30 	 mov r0,#-1
+  91              	.LVL4:
+  92 0012 7047     	 bx lr
+  93              	 .cfi_endproc
+  94              	.LFE57:
+  96              	 .section .text._times,"ax",%progbits
+  97              	 .align 2
+  98              	 .global _times
+  99              	 .thumb
+ 100              	 .thumb_func
+ 102              	_times:
+ 103              	.LFB58:
+  47:src/MightyBoard/Motherboard/system/syscalls.c **** int _times(struct tms *buf) {
+ 104              	 .loc 1 47 0
+ 105              	 .cfi_startproc
+ 106              	 
+ 107              	 
+ 108              	 
+ 109              	.LVL5:
+  48:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+  49:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)buf; /* avoid warning */
+  50:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+  51:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 110              	 .loc 1 51 0
+ 111 0000 4FF0FF30 	 mov r0,#-1
+ 112              	.LVL6:
+ 113 0004 7047     	 bx lr
+ 114              	 .cfi_endproc
+ 115              	.LFE58:
+ 117 0006 00BF     	 .section .text._unlink,"ax",%progbits
+ 118              	 .align 2
+ 119              	 .global _unlink
+ 120              	 .thumb
+ 121              	 .thumb_func
+ 123              	_unlink:
+ 124              	.LFB59:
+  52:src/MightyBoard/Motherboard/system/syscalls.c **** int _unlink(char *name) {
+ 125              	 .loc 1 52 0
+ 126              	 .cfi_startproc
+ 127              	 
+ 128              	 
+ 129              	 
+ 130              	.LVL7:
+  53:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+  54:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)name; /* avoid warning */
+  55:src/MightyBoard/Motherboard/system/syscalls.c **** 	errno = ENOENT;
+ 131              	 .loc 1 55 0
+ 132 0000 40F20003 	 movw r3,#:lower16:errno
+ 133 0004 C0F20003 	 movt r3,#:upper16:errno
+ 134 0008 4FF00202 	 mov r2,#2
+ 135 000c 1A60     	 str r2,[r3,#0]
+  56:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+  57:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 136              	 .loc 1 57 0
+ 137 000e 4FF0FF30 	 mov r0,#-1
+ 138              	.LVL8:
+ 139 0012 7047     	 bx lr
+ 140              	 .cfi_endproc
+ 141              	.LFE59:
+ 143              	 .section .text._wait,"ax",%progbits
+ 144              	 .align 2
+ 145              	 .global _wait
+ 146              	 .thumb
+ 147              	 .thumb_func
+ 149              	_wait:
+ 150              	.LFB60:
+  58:src/MightyBoard/Motherboard/system/syscalls.c **** int _wait(int *status) {
+ 151              	 .loc 1 58 0
+ 152              	 .cfi_startproc
+ 153              	 
+ 154              	 
+ 155              	 
+ 156              	.LVL9:
+  59:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+  60:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)status; /* avoid warning */
+  61:src/MightyBoard/Motherboard/system/syscalls.c **** 	errno = ECHILD;
+ 157              	 .loc 1 61 0
+ 158 0000 40F20003 	 movw r3,#:lower16:errno
+ 159 0004 C0F20003 	 movt r3,#:upper16:errno
+ 160 0008 4FF00A02 	 mov r2,#10
+ 161 000c 1A60     	 str r2,[r3,#0]
+  62:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+  63:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 162              	 .loc 1 63 0
+ 163 000e 4FF0FF30 	 mov r0,#-1
+ 164              	.LVL10:
+ 165 0012 7047     	 bx lr
+ 166              	 .cfi_endproc
+ 167              	.LFE60:
+ 169              	 .section .text._gettimeofday,"ax",%progbits
+ 170              	 .align 2
+ 171              	 .global _gettimeofday
+ 172              	 .thumb
+ 173              	 .thumb_func
+ 175              	_gettimeofday:
+ 176              	.LFB61:
+  64:src/MightyBoard/Motherboard/system/syscalls.c **** #if 1
+  65:src/MightyBoard/Motherboard/system/syscalls.c **** int _gettimeofday (struct timeval * tp, void * tzvp){
+ 177              	 .loc 1 65 0
+ 178              	 .cfi_startproc
+ 179              	 
+ 180              	 
+ 181              	 
+ 182              	.LVL11:
+  66:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+  67:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)tp; /* avoid warning */
+  68:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)tzvp; /* avoid warning */
+  69:src/MightyBoard/Motherboard/system/syscalls.c **** //	return sys_millis();
+  70:src/MightyBoard/Motherboard/system/syscalls.c **** //	return Getunix();
+  71:src/MightyBoard/Motherboard/system/syscalls.c **** //	return time2.unix;
+  72:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%d\n",UNIX);
+  73:src/MightyBoard/Motherboard/system/syscalls.c **** 	tp->tv_sec=UNIX;
+ 183              	 .loc 1 73 0
+ 184 0000 40F20003 	 movw r3,#:lower16:UNIX
+ 185 0004 C0F20003 	 movt r3,#:upper16:UNIX
+ 186 0008 1B68     	 ldr r3,[r3,#0]
+ 187 000a 0360     	 str r3,[r0,#0]
+  74:src/MightyBoard/Motherboard/system/syscalls.c **** 	return 0;
+  75:src/MightyBoard/Motherboard/system/syscalls.c **** //	return -1;
+  76:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 188              	 .loc 1 76 0
+ 189 000c 4FF00000 	 mov r0,#0
+ 190              	.LVL12:
+ 191 0010 7047     	 bx lr
+ 192              	 .cfi_endproc
+ 193              	.LFE61:
+ 195 0012 00BF     	 .section .text._kill,"ax",%progbits
+ 196              	 .align 2
+ 197              	 .global _kill
+ 198              	 .thumb
+ 199              	 .thumb_func
+ 201              	_kill:
+ 202              	.LFB62:
+  77:src/MightyBoard/Motherboard/system/syscalls.c **** #else
+  78:src/MightyBoard/Motherboard/system/syscalls.c **** int
+  79:src/MightyBoard/Motherboard/system/syscalls.c **** _gettimeofday (struct timeval * tp, void * tzvp)
+  80:src/MightyBoard/Motherboard/system/syscalls.c **** {
+  81:src/MightyBoard/Motherboard/system/syscalls.c ****   struct timezone *tzp = tzvp;
+  82:src/MightyBoard/Motherboard/system/syscalls.c ****   if (tp)
+  83:src/MightyBoard/Motherboard/system/syscalls.c ****     {
+  84:src/MightyBoard/Motherboard/system/syscalls.c ****     /* Ask the host for the seconds since the Unix epoch.  */
+  85:src/MightyBoard/Motherboard/system/syscalls.c **** #ifdef ARM_RDI_MONITOR
+  86:src/MightyBoard/Motherboard/system/syscalls.c ****       tp->tv_sec = do_AngelSWI (AngelSWI_Reason_Time,NULL);
+  87:src/MightyBoard/Motherboard/system/syscalls.c **** #else
+  88:src/MightyBoard/Motherboard/system/syscalls.c ****       {
+  89:src/MightyBoard/Motherboard/system/syscalls.c ****         int value;
+  90:src/MightyBoard/Motherboard/system/syscalls.c ****         asm ("swi %a1; mov %0, r0" : "=r" (value): "i" (SWI_Time) : "r0");
+  91:src/MightyBoard/Motherboard/system/syscalls.c ****         tp->tv_sec = value;
+  92:src/MightyBoard/Motherboard/system/syscalls.c ****       }
+  93:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+  94:src/MightyBoard/Motherboard/system/syscalls.c ****       tp->tv_usec = 0;
+  95:src/MightyBoard/Motherboard/system/syscalls.c ****     }
+  96:src/MightyBoard/Motherboard/system/syscalls.c **** 
+  97:src/MightyBoard/Motherboard/system/syscalls.c ****   /* Return fixed data for the timezone.  */
+  98:src/MightyBoard/Motherboard/system/syscalls.c ****   if (tzp)
+  99:src/MightyBoard/Motherboard/system/syscalls.c ****     {
+ 100:src/MightyBoard/Motherboard/system/syscalls.c ****       tzp->tz_minuteswest = 0;
+ 101:src/MightyBoard/Motherboard/system/syscalls.c ****       tzp->tz_dsttime = 0;
+ 102:src/MightyBoard/Motherboard/system/syscalls.c ****     }
+ 103:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 104:src/MightyBoard/Motherboard/system/syscalls.c ****   return 0;
+ 105:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 106:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+ 107:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 108:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 109:src/MightyBoard/Motherboard/system/syscalls.c **** #if 0
+ 110:src/MightyBoard/Motherboard/system/syscalls.c **** /* Return a clock that ticks at 100Hz.  */
+ 111:src/MightyBoard/Motherboard/system/syscalls.c **** clock_t
+ 112:src/MightyBoard/Motherboard/system/syscalls.c **** _clock (void)
+ 113:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 114:src/MightyBoard/Motherboard/system/syscalls.c ****   clock_t timeval;
+ 115:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 116:src/MightyBoard/Motherboard/system/syscalls.c **** #ifdef ARM_RDI_MONITOR
+ 117:src/MightyBoard/Motherboard/system/syscalls.c ****   timeval = do_AngelSWI (AngelSWI_Reason_Clock,NULL);
+ 118:src/MightyBoard/Motherboard/system/syscalls.c **** #else
+ 119:src/MightyBoard/Motherboard/system/syscalls.c ****   asm ("swi %a1; mov %0, r0" : "=r" (timeval): "i" (SWI_Clock) : "r0");
+ 120:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+ 121:src/MightyBoard/Motherboard/system/syscalls.c ****   return timeval;
+ 122:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 123:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+ 124:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 125:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 126:src/MightyBoard/Motherboard/system/syscalls.c **** #if 0
+ 127:src/MightyBoard/Motherboard/system/syscalls.c **** /* Return a clock that ticks at 100Hz.  */
+ 128:src/MightyBoard/Motherboard/system/syscalls.c **** clock_t
+ 129:src/MightyBoard/Motherboard/system/syscalls.c **** _times (struct tms * tp)
+ 130:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 131:src/MightyBoard/Motherboard/system/syscalls.c ****   clock_t timeval = _clock();
+ 132:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 133:src/MightyBoard/Motherboard/system/syscalls.c ****   if (tp)
+ 134:src/MightyBoard/Motherboard/system/syscalls.c ****     {
+ 135:src/MightyBoard/Motherboard/system/syscalls.c ****       tp->tms_utime  = timeval;	/* user time */
+ 136:src/MightyBoard/Motherboard/system/syscalls.c ****       tp->tms_stime  = 0;	/* system time */
+ 137:src/MightyBoard/Motherboard/system/syscalls.c ****       tp->tms_cutime = 0;	/* user time, children */
+ 138:src/MightyBoard/Motherboard/system/syscalls.c ****       tp->tms_cstime = 0;	/* system time, children */
+ 139:src/MightyBoard/Motherboard/system/syscalls.c ****     }
+ 140:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 141:src/MightyBoard/Motherboard/system/syscalls.c ****   return timeval;
+ 142:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 143:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+ 144:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 145:src/MightyBoard/Motherboard/system/syscalls.c **** #if 0
+ 146:src/MightyBoard/Motherboard/system/syscalls.c **** /* Return a clock that ticks at 100Hz.  */
+ 147:src/MightyBoard/Motherboard/system/syscalls.c **** clock_t _times (struct tms * tp){
+ 148:src/MightyBoard/Motherboard/system/syscalls.c **** 	clock_t timeval = _clock();
+ 149:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 150:src/MightyBoard/Motherboard/system/syscalls.c **** 	if (tp){
+ 151:src/MightyBoard/Motherboard/system/syscalls.c **** 		tp->tms_utime  = timeval;	/* user time */
+ 152:src/MightyBoard/Motherboard/system/syscalls.c **** 		tp->tms_stime  = 0;	/* system time */
+ 153:src/MightyBoard/Motherboard/system/syscalls.c **** 		tp->tms_cutime = 0;	/* user time, children */
+ 154:src/MightyBoard/Motherboard/system/syscalls.c **** 		tp->tms_cstime = 0;	/* system time, children */
+ 155:src/MightyBoard/Motherboard/system/syscalls.c ****     }
+ 156:src/MightyBoard/Motherboard/system/syscalls.c **** 	return timeval;
+ 157:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 158:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+ 159:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 160:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 161:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 162:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 163:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 164:src/MightyBoard/Motherboard/system/syscalls.c **** int _kill(int pid, int sig)
+ 165:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 203              	 .loc 1 165 0
+ 204              	 .cfi_startproc
+ 205              	 
+ 206              	 
+ 207              	 
+ 208              	.LVL13:
+ 166:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 167:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)pid;
+ 168:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)sig; /* avoid warnings */
+ 169:src/MightyBoard/Motherboard/system/syscalls.c **** 	errno = EINVAL;
+ 209              	 .loc 1 169 0
+ 210 0000 40F20003 	 movw r3,#:lower16:errno
+ 211 0004 C0F20003 	 movt r3,#:upper16:errno
+ 212 0008 4FF01602 	 mov r2,#22
+ 213 000c 1A60     	 str r2,[r3,#0]
+ 170:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+ 171:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 214              	 .loc 1 171 0
+ 215 000e 4FF0FF30 	 mov r0,#-1
+ 216              	.LVL14:
+ 217 0012 7047     	 bx lr
+ 218              	 .cfi_endproc
+ 219              	.LFE62:
+ 221              	 .section .text._exit,"ax",%progbits
+ 222              	 .align 2
+ 223              	 .global _exit
+ 224              	 .thumb
+ 225              	 .thumb_func
+ 227              	_exit:
+ 228              	.LFB63:
+ 172:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 173:src/MightyBoard/Motherboard/system/syscalls.c **** void _exit(int status)
+ 174:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 229              	 .loc 1 174 0
+ 230              	 .cfi_startproc
+ 231              	 
+ 232              	 
+ 233              	 
+ 234              	.LVL15:
+ 235 0000 08B5     	 push {r3,lr}
+ 236              	.LCFI0:
+ 237              	 .cfi_def_cfa_offset 8
+ 238              	 .cfi_offset 14,-4
+ 239              	 .cfi_offset 3,-8
+ 240 0002 0146     	 mov r1,r0
+ 175:src/MightyBoard/Motherboard/system/syscalls.c **** 	xprintf("_exit called with parameter %d\n", status);
+ 241              	 .loc 1 175 0
+ 242 0004 40F20000 	 movw r0,#:lower16:.LC0
+ 243              	.LVL16:
+ 244 0008 C0F20000 	 movt r0,#:upper16:.LC0
+ 245 000c FFF7FEFF 	 bl xprintf
+ 246              	.LVL17:
+ 247              	.L10:
+ 248 0010 FEE7     	 b .L10
+ 249              	 .cfi_endproc
+ 250              	.LFE63:
+ 252 0012 00BF     	 .section .text._getpid,"ax",%progbits
+ 253              	 .align 2
+ 254              	 .global _getpid
+ 255              	 .thumb
+ 256              	 .thumb_func
+ 258              	_getpid:
+ 259              	.LFB64:
+ 176:src/MightyBoard/Motherboard/system/syscalls.c **** 	while(1) {;}
+ 177:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 178:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 179:src/MightyBoard/Motherboard/system/syscalls.c **** int _getpid(void)
+ 180:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 260              	 .loc 1 180 0
+ 261              	 .cfi_startproc
+ 262              	 
+ 263              	 
+ 264              	 
+ 181:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 182:src/MightyBoard/Motherboard/system/syscalls.c **** 	return 1;
+ 183:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 265              	 .loc 1 183 0
+ 266 0000 4FF00100 	 mov r0,#1
+ 267 0004 7047     	 bx lr
+ 268              	 .cfi_endproc
+ 269              	.LFE64:
+ 271 0006 00BF     	 .section .text.get_heap_end,"ax",%progbits
+ 272              	 .align 2
+ 273              	 .global get_heap_end
+ 274              	 .thumb
+ 275              	 .thumb_func
+ 277              	get_heap_end:
+ 278              	.LFB65:
+ 184:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 185:src/MightyBoard/Motherboard/system/syscalls.c **** extern char _end; /* Defined by the linker */
+ 186:src/MightyBoard/Motherboard/system/syscalls.c **** static char *heap_end;
+ 187:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 188:src/MightyBoard/Motherboard/system/syscalls.c **** char* get_heap_end(void)
+ 189:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 279              	 .loc 1 189 0
+ 280              	 .cfi_startproc
+ 281              	 
+ 282              	 
+ 283              	 
+ 190:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 191:src/MightyBoard/Motherboard/system/syscalls.c **** 	return (char*) heap_end;
+ 284              	 .loc 1 191 0
+ 285 0000 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 286 0004 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 192:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 287              	 .loc 1 192 0
+ 288 0008 1868     	 ldr r0,[r3,#0]
+ 289 000a 7047     	 bx lr
+ 290              	 .cfi_endproc
+ 291              	.LFE65:
+ 293              	 .section .text.get_stack_top,"ax",%progbits
+ 294              	 .align 2
+ 295              	 .global get_stack_top
+ 296              	 .thumb
+ 297              	 .thumb_func
+ 299              	get_stack_top:
+ 300              	.LFB66:
+ 193:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 194:src/MightyBoard/Motherboard/system/syscalls.c **** char* get_stack_top(void)
+ 195:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 301              	 .loc 1 195 0
+ 302              	 .cfi_startproc
+ 303              	 
+ 304              	 
+ 305              	 
+ 306              	.LBB4:
+ 307              	.LBB5:
+ 308              	 .file 2 "src/MightyBoard/Motherboard/system/core_cmFunc.h"
+   1:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /**************************************************************************//**
+   2:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @file     core_cmFunc.h
+   3:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @brief    CMSIS Cortex-M Core Function Access Header File
+   4:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @version  V2.01
+   5:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @date     06. December 2010
+   6:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+   7:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @note
+   8:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * Copyright (C) 2009-2010 ARM Limited. All rights reserved.
+   9:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+  10:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @par
+  11:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * ARM Limited (ARM) is supplying this software for use with Cortex-M 
+  12:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * processor based microcontrollers.  This file can be freely distributed 
+  13:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * within development tools that are supporting such ARM based processors. 
+  14:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+  15:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @par
+  16:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
+  17:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+  18:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
+  19:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
+  20:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+  21:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+  22:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  ******************************************************************************/
+  23:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  24:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #ifndef __CORE_CMFUNC_H__
+  25:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __CORE_CMFUNC_H__
+  26:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  27:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* ###########################  Core Function Access  ########################### */
+  28:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \ingroup  CMSIS_Core_FunctionInterface   
+  29:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+  30:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   @{
+  31:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  32:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  33:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if defined ( __CC_ARM   ) /*------------------ RealView Compiler ----------------*/
+  34:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* ARM armcc specific functions */
+  35:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  36:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __enable_irq();     */
+  37:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __disable_irq();    */
+  38:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  39:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Control Register
+  40:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  41:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the Control Register.
+  42:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  43:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Control Register value
+  44:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  45:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  46:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_CONTROL(void);
+  47:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  48:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_CONTROL(void)
+  49:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+  50:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regControl         __ASM("control");
+  51:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regControl);
+  52:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+  53:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+  54:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  55:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  56:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Control Register
+  57:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  58:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function writes the given value to the Control Register.
+  59:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  60:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    control  Control Register value to set
+  61:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  62:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  63:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_CONTROL(uint32_t control);
+  64:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  65:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_CONTROL(uint32_t control)
+  66:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+  67:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regControl         __ASM("control");
+  68:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regControl = control;
+  69:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+  70:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+  71:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  72:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  73:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get ISPR Register
+  74:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  75:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the ISPR Register.
+  76:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  77:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               ISPR Register value
+  78:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  79:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  80:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_IPSR(void);
+  81:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  82:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_IPSR(void)
+  83:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+  84:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regIPSR          __ASM("ipsr");
+  85:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regIPSR);
+  86:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+  87:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+  88:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  89:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  90:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get APSR Register
+  91:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  92:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the APSR Register.
+  93:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  94:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               APSR Register value
+  95:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  96:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  97:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_APSR(void);
+  98:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  99:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_APSR(void)
+ 100:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 101:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regAPSR          __ASM("apsr");
+ 102:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regAPSR);
+ 103:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 104:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 105:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 106:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 107:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get xPSR Register
+ 108:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 109:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the xPSR Register.
+ 110:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 111:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               xPSR Register value
+ 112:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 113:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 114:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_xPSR(void);
+ 115:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 116:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_xPSR(void)
+ 117:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 118:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regXPSR          __ASM("xpsr");
+ 119:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regXPSR);
+ 120:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 121:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 122:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 123:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 124:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Process Stack Pointer
+ 125:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 126:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Process Stack Pointer (PSP).
+ 127:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 128:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               PSP Register value
+ 129:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 130:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 131:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_PSP(void);
+ 132:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 133:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_PSP(void)
+ 134:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 135:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regProcessStackPointer  __ASM("psp");
+ 136:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regProcessStackPointer);
+ 137:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 138:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 139:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 140:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 141:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Process Stack Pointer
+ 142:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 143:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Process Stack Pointer (PSP).
+ 144:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 145:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfProcStack  Process Stack Pointer value to set
+ 146:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 147:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 148:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_PSP(uint32_t topOfProcStack);
+ 149:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 150:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_PSP(uint32_t topOfProcStack)
+ 151:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 152:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regProcessStackPointer  __ASM("psp");
+ 153:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regProcessStackPointer = topOfProcStack;
+ 154:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 155:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 156:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 157:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 158:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Main Stack Pointer
+ 159:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 160:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Main Stack Pointer (MSP).
+ 161:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 162:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               MSP Register value
+ 163:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 164:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 165:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_MSP(void);
+ 166:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 167:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_MSP(void)
+ 168:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 169:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regMainStackPointer     __ASM("msp");
+ 170:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regMainStackPointer);
+ 171:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 172:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 173:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 174:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 175:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Main Stack Pointer
+ 176:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 177:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Main Stack Pointer (MSP).
+ 178:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 179:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfMainStack  Main Stack Pointer value to set
+ 180:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 181:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 182:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_MSP(uint32_t topOfMainStack);
+ 183:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 184:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_MSP(uint32_t topOfMainStack)
+ 185:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 186:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regMainStackPointer     __ASM("msp");
+ 187:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regMainStackPointer = topOfMainStack;
+ 188:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 189:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 190:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 191:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 192:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Priority Mask
+ 193:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 194:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current state of the priority mask bit from the Priority Mask Registe
+ 195:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 196:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Priority Mask value
+ 197:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 198:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 199:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_PRIMASK(void);
+ 200:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 201:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_PRIMASK(void)
+ 202:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 203:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regPriMask         __ASM("primask");
+ 204:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regPriMask);
+ 205:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 206:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 207:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 208:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 209:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Priority Mask
+ 210:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 211:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Priority Mask Register.
+ 212:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 213:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    priMask  Priority Mask
+ 214:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 215:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 216:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_PRIMASK(uint32_t priMask);
+ 217:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 218:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_PRIMASK(uint32_t priMask)
+ 219:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 220:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regPriMask         __ASM("primask");
+ 221:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regPriMask = (priMask);
+ 222:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 223:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 224:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 225:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 226:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M >= 0x03)
+ 227:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 228:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable FIQ
+ 229:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 230:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function enables FIQ interrupts by clearing the F-bit in the CPSR.
+ 231:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 232:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 233:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __enable_fault_irq                __enable_fiq
+ 234:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 235:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 236:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable FIQ
+ 237:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 238:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function disables FIQ interrupts by setting the F-bit in the CPSR.
+ 239:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 240:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 241:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __disable_fault_irq               __disable_fiq
+ 242:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 243:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 244:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Base Priority
+ 245:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 246:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Base Priority register.
+ 247:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 248:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Base Priority register value
+ 249:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 250:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 251:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_BASEPRI(void);
+ 252:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 253:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t  __get_BASEPRI(void)
+ 254:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 255:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regBasePri         __ASM("basepri");
+ 256:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regBasePri);
+ 257:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 258:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 259:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 260:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 261:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Base Priority
+ 262:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 263:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Base Priority register.
+ 264:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 265:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    basePri  Base Priority value to set
+ 266:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 267:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 268:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_BASEPRI(uint32_t basePri);
+ 269:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 270:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_BASEPRI(uint32_t basePri)
+ 271:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 272:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regBasePri         __ASM("basepri");
+ 273:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regBasePri = (basePri & 0xff);
+ 274:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 275:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 276:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 277:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 278:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Fault Mask
+ 279:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 280:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Fault Mask register.
+ 281:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 282:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Fault Mask register value
+ 283:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 284:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 285:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_FAULTMASK(void);
+ 286:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 287:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_FAULTMASK(void)
+ 288:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 289:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regFaultMask       __ASM("faultmask");
+ 290:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regFaultMask);
+ 291:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 292:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 293:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 294:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 295:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Fault Mask
+ 296:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 297:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Fault Mask register.
+ 298:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 299:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    faultMask  Fault Mask value to set
+ 300:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 301:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 302:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_FAULTMASK(uint32_t faultMask);
+ 303:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 304:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_FAULTMASK(uint32_t faultMask)
+ 305:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 306:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regFaultMask       __ASM("faultmask");
+ 307:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regFaultMask = (faultMask & 1);
+ 308:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 309:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 310:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 311:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M >= 0x03) */
+ 312:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 313:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 314:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M == 0x04)
+ 315:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 316:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get FPSCR
+ 317:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 318:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Floating Point Status/Control register.
+ 319:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 320:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Floating Point Status/Control register value
+ 321:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 322:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_FPSCR(void)
+ 323:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 324:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 325:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regfpscr         __ASM("fpscr");
+ 326:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regfpscr);
+ 327:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else
+ 328:src/MightyBoard/Motherboard/system/core_cmFunc.h ****    return(0);
+ 329:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 330:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 331:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 332:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 333:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set FPSCR
+ 334:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 335:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Floating Point Status/Control register.
+ 336:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 337:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    fpscr  Floating Point Status/Control value to set
+ 338:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 339:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_FPSCR(uint32_t fpscr)
+ 340:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 341:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 342:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regfpscr         __ASM("fpscr");
+ 343:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regfpscr = (fpscr);
+ 344:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 345:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 346:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 347:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M == 0x04) */
+ 348:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 349:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 350:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  #elif (defined (__ICCARM__)) /*---------------- ICC Compiler ---------------------*/
+ 351:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* IAR iccarm specific functions */
+ 352:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 353:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if defined (__ICCARM__)
+ 354:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   #include <intrinsics.h>                     /* IAR Intrinsics   */
+ 355:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 356:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 357:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #pragma diag_suppress=Pe940
+ 358:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 359:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable IRQ Interrupts
+ 360:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 361:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 362:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 363:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 364:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __enable_irq                              __enable_interrupt
+ 365:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 366:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 367:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable IRQ Interrupts
+ 368:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 369:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function disables IRQ interrupts by setting the I-bit in the CPSR.
+ 370:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 371:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 372:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __disable_irq                             __disable_interrupt
+ 373:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 374:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 375:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_CONTROL( void ); (see intrinsic.h) */
+ 376:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_CONTROL( unsigned long ); (see intrinsic.h) */
+ 377:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 378:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 379:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get ISPR Register
+ 380:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 381:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the ISPR Register.
+ 382:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 383:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               ISPR Register value
+ 384:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 385:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_IPSR(void)
+ 386:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 387:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, ipsr");
+ 388:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 389:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 390:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 391:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get APSR Register
+ 392:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 393:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the APSR Register.
+ 394:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 395:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               APSR Register value
+ 396:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 397:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_APSR(void)
+ 398:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 399:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, apsr");
+ 400:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 401:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 402:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 403:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get xPSR Register
+ 404:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 405:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the xPSR Register.
+ 406:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 407:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               xPSR Register value
+ 408:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 409:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_xPSR(void)
+ 410:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 411:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, psr");           // assembler does not know "xpsr"
+ 412:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 413:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 414:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 415:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Process Stack Pointer
+ 416:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 417:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Process Stack Pointer (PSP).
+ 418:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 419:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               PSP Register value
+ 420:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 421:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_PSP(void)
+ 422:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 423:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, psp");
+ 424:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 425:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 426:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 427:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Process Stack Pointer
+ 428:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 429:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Process Stack Pointer (PSP).
+ 430:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 431:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfProcStack  Process Stack Pointer value to set
+ 432:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 433:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static void __set_PSP(uint32_t topOfProcStack)
+ 434:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 435:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("msr psp, r0");
+ 436:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 437:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 438:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 439:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Main Stack Pointer
+ 440:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 441:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Main Stack Pointer (MSP).
+ 442:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 443:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               MSP Register value
+ 444:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 445:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_MSP(void)
+ 446:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 447:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, msp");
+ 448:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 449:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 450:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 451:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Main Stack Pointer
+ 452:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 453:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Main Stack Pointer (MSP).
+ 454:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 455:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfMainStack  Main Stack Pointer value to set
+ 456:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 457:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static void __set_MSP(uint32_t topOfMainStack)
+ 458:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 459:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("msr msp, r0");
+ 460:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 461:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 462:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 463:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_PRIMASK( void ); (see intrinsic.h) */
+ 464:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_PRIMASK( unsigned long ); (see intrinsic.h) */
+ 465:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 466:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 467:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M >= 0x03)
+ 468:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 469:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable FIQ
+ 470:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 471:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function enables FIQ interrupts by clearing the F-bit in the CPSR.
+ 472:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 473:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 474:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __enable_fault_irq(void)
+ 475:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 476:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM ("cpsie f");
+ 477:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 478:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 479:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 480:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable FIQ
+ 481:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 482:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function disables FIQ interrupts by setting the F-bit in the CPSR.
+ 483:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 484:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 485:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __disable_fault_irq(void)
+ 486:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 487:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM ("cpsid f");
+ 488:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 489:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 490:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 491:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_BASEPRI( void );   (see intrinsic.h) */
+ 492:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_BASEPRI( unsigned long );   (see intrinsic.h) */
+ 493:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_FAULTMASK( void ); (see intrinsic.h) */
+ 494:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_FAULTMASK(unsigned long);   (see intrinsic.h) */
+ 495:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 496:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M >= 0x03) */
+ 497:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 498:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 499:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M == 0x04)
+ 500:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 501:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get FPSCR
+ 502:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 503:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Floating Point Status/Control register.
+ 504:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 505:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Floating Point Status/Control register value
+ 506:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 507:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_FPSCR(void)
+ 508:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 509:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 510:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("vmrs r0, fpscr"); 
+ 511:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else
+ 512:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(0);
+ 513:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 514:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 515:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 516:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 517:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set FPSCR
+ 518:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 519:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Floating Point Status/Control register.
+ 520:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 521:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    fpscr  Floating Point Status/Control value to set
+ 522:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 523:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static void __set_FPSCR(uint32_t fpscr)
+ 524:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 525:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 526:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("vmsr fpscr, r0");
+ 527:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 528:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 529:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 530:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M == 0x04) */
+ 531:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 532:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #pragma diag_default=Pe940
+ 533:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 534:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 535:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #elif (defined (__GNUC__)) /*------------------ GNU Compiler ---------------------*/
+ 536:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* GNU gcc specific functions */
+ 537:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 538:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable IRQ Interrupts
+ 539:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 540:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 541:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 542:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 543:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE void __enable_irq(void)
+ 544:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 545:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsie i");
+ 546:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 547:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 548:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 549:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable IRQ Interrupts
+ 550:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 551:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function disables IRQ interrupts by setting the I-bit in the CPSR.
+ 552:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 553:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 554:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE void __disable_irq(void)
+ 555:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 556:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsid i");
+ 557:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 558:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 559:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 560:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Control Register
+ 561:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 562:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the Control Register.
+ 563:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 564:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Control Register value
+ 565:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 566:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE uint32_t __get_CONTROL(void)
+ 567:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 568:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   uint32_t result;
+ 569:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 570:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MRS %0, control" : "=r" (result) );
+ 571:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(result);
+ 572:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 573:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 574:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 575:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Control Register
+ 576:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 577:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function writes the given value to the Control Register.
+ 578:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 579:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    control  Control Register value to set
+ 580:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 581:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE void __set_CONTROL(uint32_t control)
+ 582:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 583:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MSR control, %0" : : "r" (control) );
+ 584:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 585:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 586:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 587:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get ISPR Register
+ 588:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 589:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the ISPR Register.
+ 590:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 591:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               ISPR Register value
+ 592:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 593:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE uint32_t __get_IPSR(void)
+ 594:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 595:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   uint32_t result;
+ 596:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 597:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MRS %0, ipsr" : "=r" (result) );
+ 598:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(result);
+ 599:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 600:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 601:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 602:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get APSR Register
+ 603:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 604:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the APSR Register.
+ 605:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 606:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               APSR Register value
+ 607:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 608:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE uint32_t __get_APSR(void)
+ 609:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 610:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   uint32_t result;
+ 611:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 612:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MRS %0, apsr" : "=r" (result) );
+ 613:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(result);
+ 614:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 615:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 616:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 617:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get xPSR Register
+ 618:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 619:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the xPSR Register.
+ 620:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 621:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               xPSR Register value
+ 622:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 623:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE uint32_t __get_xPSR(void)
+ 624:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 625:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   uint32_t result;
+ 626:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 627:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MRS %0, xpsr" : "=r" (result) );
+ 628:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(result);
+ 629:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 630:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 631:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 632:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Process Stack Pointer
+ 633:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 634:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Process Stack Pointer (PSP).
+ 635:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 636:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               PSP Register value
+ 637:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 638:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE uint32_t __get_PSP(void)
+ 639:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 640:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t result;
+ 641:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 642:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MRS %0, psp\n"  : "=r" (result) );
+ 643:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(result);
+ 644:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 645:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 646:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 647:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Process Stack Pointer
+ 648:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 649:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Process Stack Pointer (PSP).
+ 650:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 651:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfProcStack  Process Stack Pointer value to set
+ 652:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 653:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE void __set_PSP(uint32_t topOfProcStack)
+ 654:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 655:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MSR psp, %0\n" : : "r" (topOfProcStack) );
+ 656:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 657:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 658:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 659:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Main Stack Pointer
+ 660:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 661:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Main Stack Pointer (MSP).
+ 662:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 663:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               MSP Register value
+ 664:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 665:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE uint32_t __get_MSP(void)
+ 666:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 667:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t result;
+ 668:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 669:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("MRS %0, msp\n" : "=r" (result) );
+ 309              	 .loc 2 669 0
+ 310              	
+ 311 0000 EFF30880 	 MRS r0,msp
+ 312              	
+ 313              	
+ 314              	.LVL18:
+ 315              	 .thumb
+ 316              	.LBE5:
+ 317              	.LBE4:
+ 196:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 197:src/MightyBoard/Motherboard/system/syscalls.c **** 	return (char*) __get_MSP();
+ 198:src/MightyBoard/Motherboard/system/syscalls.c **** 	// return (char*) __get_PSP();
+ 199:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 318              	 .loc 1 199 0
+ 319 0004 7047     	 bx lr
+ 320              	 .cfi_endproc
+ 321              	.LFE66:
+ 323 0006 00BF     	 .section .text._sbrk,"ax",%progbits
+ 324              	 .align 2
+ 325              	 .global _sbrk
+ 326              	 .thumb
+ 327              	 .thumb_func
+ 329              	_sbrk:
+ 330              	.LFB67:
+ 200:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 201:src/MightyBoard/Motherboard/system/syscalls.c **** caddr_t _sbrk(int incr)
+ 202:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 331              	 .loc 1 202 0
+ 332              	 .cfi_startproc
+ 333              	 
+ 334              	 
+ 335              	.LVL19:
+ 336 0000 38B5     	 push {r3,r4,r5,lr}
+ 337              	.LCFI1:
+ 338              	 .cfi_def_cfa_offset 16
+ 339              	 .cfi_offset 14,-4
+ 340              	 .cfi_offset 5,-8
+ 341              	 .cfi_offset 4,-12
+ 342              	 .cfi_offset 3,-16
+ 203:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 204:src/MightyBoard/Motherboard/system/syscalls.c **** 	char *prev_heap_end;
+ 205:src/MightyBoard/Motherboard/system/syscalls.c **** 	if (heap_end == 0) {
+ 343              	 .loc 1 205 0
+ 344 0002 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 345 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 346 000a 1B68     	 ldr r3,[r3,#0]
+ 347 000c 43B9     	 cbnz r3,.L15
+ 206:src/MightyBoard/Motherboard/system/syscalls.c **** 		heap_end = &_end;
+ 348              	 .loc 1 206 0
+ 349 000e 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 350 0012 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 351 0016 40F20002 	 movw r2,#:lower16:_end
+ 352 001a C0F20002 	 movt r2,#:upper16:_end
+ 353 001e 1A60     	 str r2,[r3,#0]
+ 354              	.L15:
+ 207:src/MightyBoard/Motherboard/system/syscalls.c **** 	}
+ 208:src/MightyBoard/Motherboard/system/syscalls.c **** 	prev_heap_end = heap_end;
+ 355              	 .loc 1 208 0
+ 356 0020 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 357 0024 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 358 0028 1C68     	 ldr r4,[r3,#0]
+ 359              	.LVL20:
+ 209:src/MightyBoard/Motherboard/system/syscalls.c **** #if 1
+ 210:src/MightyBoard/Motherboard/system/syscalls.c **** 	if (heap_end + incr > get_stack_top()) {
+ 360              	 .loc 1 210 0
+ 361 002a 2518     	 adds r5,r4,r0
+ 362 002c FFF7FEFF 	 bl get_stack_top
+ 363              	.LVL21:
+ 364 0030 8542     	 cmp r5,r0
+ 365 0032 07D9     	 bls .L16
+ 211:src/MightyBoard/Motherboard/system/syscalls.c **** 		xprintf("Heap and stack collision\n");
+ 366              	 .loc 1 211 0
+ 367 0034 40F20000 	 movw r0,#:lower16:.LC1
+ 368 0038 C0F20000 	 movt r0,#:upper16:.LC1
+ 369 003c FFF7FEFF 	 bl xprintf
+ 212:src/MightyBoard/Motherboard/system/syscalls.c **** 		abort();
+ 370              	 .loc 1 212 0
+ 371 0040 FFF7FEFF 	 bl abort
+ 372              	.L16:
+ 213:src/MightyBoard/Motherboard/system/syscalls.c **** 	}
+ 214:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+ 215:src/MightyBoard/Motherboard/system/syscalls.c **** 	heap_end += incr;
+ 373              	 .loc 1 215 0
+ 374 0044 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 375 0048 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 376 004c 1D60     	 str r5,[r3,#0]
+ 216:src/MightyBoard/Motherboard/system/syscalls.c **** 	return (caddr_t) prev_heap_end;
+ 217:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 377              	 .loc 1 217 0
+ 378 004e 2046     	 mov r0,r4
+ 379 0050 38BD     	 pop {r3,r4,r5,pc}
+ 380              	 .cfi_endproc
+ 381              	.LFE67:
+ 383 0052 00BF     	 .section .text._close,"ax",%progbits
+ 384              	 .align 2
+ 385              	 .global _close
+ 386              	 .thumb
+ 387              	 .thumb_func
+ 389              	_close:
+ 390              	.LFB68:
+ 218:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 219:src/MightyBoard/Motherboard/system/syscalls.c **** int _close(int file)
+ 220:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 391              	 .loc 1 220 0
+ 392              	 .cfi_startproc
+ 393              	 
+ 394              	 
+ 395              	 
+ 396              	.LVL22:
+ 221:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 222:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)file; /* avoid warning */
+ 223:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+ 224:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 397              	 .loc 1 224 0
+ 398 0000 4FF0FF30 	 mov r0,#-1
+ 399              	.LVL23:
+ 400 0004 7047     	 bx lr
+ 401              	 .cfi_endproc
+ 402              	.LFE68:
+ 404 0006 00BF     	 .section .text._open,"ax",%progbits
+ 405              	 .align 2
+ 406              	 .global _open
+ 407              	 .thumb
+ 408              	 .thumb_func
+ 410              	_open:
+ 411              	.LFB69:
+ 225:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 226:src/MightyBoard/Motherboard/system/syscalls.c **** int _open(int file)
+ 227:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 412              	 .loc 1 227 0
+ 413              	 .cfi_startproc
+ 414              	 
+ 415              	 
+ 416              	 
+ 417              	.LVL24:
+ 228:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 229:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)file; /* avoid warning */
+ 230:src/MightyBoard/Motherboard/system/syscalls.c **** 	return -1;
+ 231:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 418              	 .loc 1 231 0
+ 419 0000 4FF0FF30 	 mov r0,#-1
+ 420              	.LVL25:
+ 421 0004 7047     	 bx lr
+ 422              	 .cfi_endproc
+ 423              	.LFE69:
+ 425 0006 00BF     	 .section .text._fstat,"ax",%progbits
+ 426              	 .align 2
+ 427              	 .global _fstat
+ 428              	 .thumb
+ 429              	 .thumb_func
+ 431              	_fstat:
+ 432              	.LFB70:
+ 232:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 233:src/MightyBoard/Motherboard/system/syscalls.c **** int _fstat(int file, struct stat *st)
+ 234:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 433              	 .loc 1 234 0
+ 434              	 .cfi_startproc
+ 435              	 
+ 436              	 
+ 437              	 
+ 438              	.LVL26:
+ 235:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 236:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)file; /* avoid warning */
+ 237:src/MightyBoard/Motherboard/system/syscalls.c **** 	st->st_mode = S_IFCHR;
+ 439              	 .loc 1 237 0
+ 440 0000 4FF40053 	 mov r3,#8192
+ 441 0004 4B60     	 str r3,[r1,#4]
+ 238:src/MightyBoard/Motherboard/system/syscalls.c **** 	return 0;
+ 239:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 442              	 .loc 1 239 0
+ 443 0006 4FF00000 	 mov r0,#0
+ 444              	.LVL27:
+ 445 000a 7047     	 bx lr
+ 446              	 .cfi_endproc
+ 447              	.LFE70:
+ 449              	 .section .text._isatty,"ax",%progbits
+ 450              	 .align 2
+ 451              	 .global _isatty
+ 452              	 .thumb
+ 453              	 .thumb_func
+ 455              	_isatty:
+ 456              	.LFB71:
+ 240:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 241:src/MightyBoard/Motherboard/system/syscalls.c **** int _isatty(int file)
+ 242:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 457              	 .loc 1 242 0
+ 458              	 .cfi_startproc
+ 459              	 
+ 460              	 
+ 461              	 
+ 462              	.LVL28:
+ 243:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 244:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)file; /* avoid warning */
+ 245:src/MightyBoard/Motherboard/system/syscalls.c **** 	return 1;
+ 246:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 463              	 .loc 1 246 0
+ 464 0000 4FF00100 	 mov r0,#1
+ 465              	.LVL29:
+ 466 0004 7047     	 bx lr
+ 467              	 .cfi_endproc
+ 468              	.LFE71:
+ 470 0006 00BF     	 .section .text._lseek,"ax",%progbits
+ 471              	 .align 2
+ 472              	 .global _lseek
+ 473              	 .thumb
+ 474              	 .thumb_func
+ 476              	_lseek:
+ 477              	.LFB72:
+ 247:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 248:src/MightyBoard/Motherboard/system/syscalls.c **** int _lseek(int file, int ptr, int dir) {
+ 478              	 .loc 1 248 0
+ 479              	 .cfi_startproc
+ 480              	 
+ 481              	 
+ 482              	 
+ 483              	.LVL30:
+ 249:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("%s{\n",__func__);
+ 250:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)file; /* avoid warning */
+ 251:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)ptr;  /* avoid warning */
+ 252:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)dir;  /* avoid warning */
+ 253:src/MightyBoard/Motherboard/system/syscalls.c **** 	return 0;
+ 254:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 484              	 .loc 1 254 0
+ 485 0000 4FF00000 	 mov r0,#0
+ 486              	.LVL31:
+ 487 0004 7047     	 bx lr
+ 488              	 .cfi_endproc
+ 489              	.LFE72:
+ 491 0006 00BF     	 .section .text._read,"ax",%progbits
+ 492              	 .align 2
+ 493              	 .global _read
+ 494              	 .thumb
+ 495              	 .thumb_func
+ 497              	_read:
+ 498              	.LFB73:
+ 255:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 256:src/MightyBoard/Motherboard/system/syscalls.c **** int _read(int file, char *ptr, int len)
+ 257:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 499              	 .loc 1 257 0
+ 500              	 .cfi_startproc
+ 501              	 
+ 502              	 
+ 503              	.LVL32:
+ 504 0000 08B5     	 push {r3,lr}
+ 505              	.LCFI2:
+ 506              	 .cfi_def_cfa_offset 8
+ 507              	 .cfi_offset 14,-4
+ 508              	 .cfi_offset 3,-8
+ 258:src/MightyBoard/Motherboard/system/syscalls.c **** //	(void)file; /* avoid warning */
+ 259:src/MightyBoard/Motherboard/system/syscalls.c **** //	(void)ptr;  /* avoid warning */
+ 260:src/MightyBoard/Motherboard/system/syscalls.c **** //	(void)len;  /* avoid warning */
+ 261:src/MightyBoard/Motherboard/system/syscalls.c **** //	xprintf("len=%d,func=%s{\n",len,__func__);
+ 262:src/MightyBoard/Motherboard/system/syscalls.c **** //	printf("len=%d,ptr=%s,func=%s{\n",len,ptr,__func__);
+ 263:src/MightyBoard/Motherboard/system/syscalls.c **** //	switch (file) {
+ 264:src/MightyBoard/Motherboard/system/syscalls.c **** //		case STDIN_FILENO:
+ 265:src/MightyBoard/Motherboard/system/syscalls.c **** //			UART_Receive(LPC_UART0, ptr, len, BLOCKING);
+ 266:src/MightyBoard/Motherboard/system/syscalls.c **** 			len = UART_Receive(LPC_UART0, ptr, 1, BLOCKING);
+ 509              	 .loc 1 266 0
+ 510 0002 4FF44040 	 mov r0,#49152
+ 511              	.LVL33:
+ 512 0006 C4F20000 	 movt r0,16384
+ 513 000a 4FF00102 	 mov r2,#1
+ 514              	.LVL34:
+ 515 000e 1346     	 mov r3,r2
+ 516 0010 FFF7FEFF 	 bl UART_Receive
+ 517              	.LVL35:
+ 267:src/MightyBoard/Motherboard/system/syscalls.c **** //			xprintf("%s}\n",__func__);
+ 268:src/MightyBoard/Motherboard/system/syscalls.c **** //			break;
+ 269:src/MightyBoard/Motherboard/system/syscalls.c **** //		default:
+ 270:src/MightyBoard/Motherboard/system/syscalls.c **** //			errno = EBADF;
+ 271:src/MightyBoard/Motherboard/system/syscalls.c **** //			return -1;
+ 272:src/MightyBoard/Motherboard/system/syscalls.c **** //	}
+ 273:src/MightyBoard/Motherboard/system/syscalls.c **** 	return len;
+ 274:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 275:src/MightyBoard/Motherboard/system/syscalls.c **** #if 0
+ 276:src/MightyBoard/Motherboard/system/syscalls.c **** 	int n;
+ 277:src/MightyBoard/Motherboard/system/syscalls.c **** 	int num = 0;
+ 278:src/MightyBoard/Motherboard/system/syscalls.c **** 	switch (file) {
+ 279:src/MightyBoard/Motherboard/system/syscalls.c **** 		case STDIN_FILENO:
+ 280:src/MightyBoard/Motherboard/system/syscalls.c **** 			for (n = 0; n < len; n++) {
+ 281:src/MightyBoard/Motherboard/system/syscalls.c **** 				while ((USART1->SR & USART_FLAG_RXNE) == (uint16_t)RESET) {}
+ 282:src/MightyBoard/Motherboard/system/syscalls.c **** 				char c = (char)(USART1->DR & (uint16_t)0x01FF);
+ 283:src/MightyBoard/Motherboard/system/syscalls.c **** 				*ptr++ = c;
+ 284:src/MightyBoard/Motherboard/system/syscalls.c **** 				num++;
+ 285:src/MightyBoard/Motherboard/system/syscalls.c **** 			}
+ 286:src/MightyBoard/Motherboard/system/syscalls.c **** 			break;
+ 287:src/MightyBoard/Motherboard/system/syscalls.c **** 		default:
+ 288:src/MightyBoard/Motherboard/system/syscalls.c **** 			errno = EBADF;
+ 289:src/MightyBoard/Motherboard/system/syscalls.c **** 			return -1;
+ 290:src/MightyBoard/Motherboard/system/syscalls.c **** 	}
+ 291:src/MightyBoard/Motherboard/system/syscalls.c **** 	return num;
+ 292:src/MightyBoard/Motherboard/system/syscalls.c **** #endif
+ 293:src/MightyBoard/Motherboard/system/syscalls.c **** //	return 0;
+ 294:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 518              	 .loc 1 294 0
+ 519 0014 08BD     	 pop {r3,pc}
+ 520              	 .cfi_endproc
+ 521              	.LFE73:
+ 523 0016 00BF     	 .section .text._write,"ax",%progbits
+ 524              	 .align 2
+ 525              	 .global _write
+ 526              	 .thumb
+ 527              	 .thumb_func
+ 529              	_write:
+ 530              	.LFB74:
+ 295:src/MightyBoard/Motherboard/system/syscalls.c **** 
+ 296:src/MightyBoard/Motherboard/system/syscalls.c **** int _write(int file, char *ptr, int len)
+ 297:src/MightyBoard/Motherboard/system/syscalls.c **** {
+ 531              	 .loc 1 297 0
+ 532              	 .cfi_startproc
+ 533              	 
+ 534              	 
+ 535              	.LVL36:
+ 536 0000 70B5     	 push {r4,r5,r6,lr}
+ 537              	.LCFI3:
+ 538              	 .cfi_def_cfa_offset 16
+ 539              	 .cfi_offset 14,-4
+ 540              	 .cfi_offset 6,-8
+ 541              	 .cfi_offset 5,-12
+ 542              	 .cfi_offset 4,-16
+ 543 0002 0C46     	 mov r4,r1
+ 544              	.LVL37:
+ 298:src/MightyBoard/Motherboard/system/syscalls.c **** 	int todo;
+ 299:src/MightyBoard/Motherboard/system/syscalls.c **** 	(void)file; /* avoid warning */
+ 300:src/MightyBoard/Motherboard/system/syscalls.c **** 	for (todo = 0; todo < len; todo++) {
+ 545              	 .loc 1 300 0
+ 546 0004 161E     	 subs r6,r2,#0
+ 547 0006 06DD     	 ble .L24
+ 296:src/MightyBoard/Motherboard/system/syscalls.c **** int _write(int file, char *ptr, int len)
+ 548              	 .loc 1 296 0
+ 549 0008 8D19     	 adds r5,r1,r6
+ 550              	.LVL38:
+ 551              	.L25:
+ 301:src/MightyBoard/Motherboard/system/syscalls.c **** 		xputc(*ptr++);
+ 552              	 .loc 1 301 0 discriminator 2
+ 553 000a 14F8010B 	 ldrb r0,[r4],#1
+ 554              	.LVL39:
+ 555 000e FFF7FEFF 	 bl xputc
+ 556              	.LVL40:
+ 300:src/MightyBoard/Motherboard/system/syscalls.c **** 	for (todo = 0; todo < len; todo++) {
+ 557              	 .loc 1 300 0 discriminator 2
+ 558 0012 AC42     	 cmp r4,r5
+ 559 0014 F9D1     	 bne .L25
+ 560              	.L24:
+ 302:src/MightyBoard/Motherboard/system/syscalls.c **** 	}
+ 303:src/MightyBoard/Motherboard/system/syscalls.c **** 	return len;
+ 304:src/MightyBoard/Motherboard/system/syscalls.c **** }
+ 561              	 .loc 1 304 0
+ 562 0016 3046     	 mov r0,r6
+ 563 0018 70BD     	 pop {r4,r5,r6,pc}
+ 564              	 .cfi_endproc
+ 565              	.LFE74:
+ 567              	 .global environ
+ 568              	 .global __env
+ 569 001a 00BF     	 .section .data.environ,"aw",%progbits
+ 570              	 .align 2
+ 573              	environ:
+ 574 0000 00000000 	 .word __env
+ 575              	 .section .bss.__env,"aw",%nobits
+ 576              	 .align 2
+ 579              	__env:
+ 580 0000 00000000 	 .space 4
+ 581              	 .section .bss.heap_end,"aw",%nobits
+ 582              	 .align 2
+ 583              	 .set .LANCHOR0,.+0
+ 586              	heap_end:
+ 587 0000 00000000 	 .space 4
+ 588              	 .section .rodata.str1.4,"aMS",%progbits,1
+ 589              	 .align 2
+ 590              	.LC0:
+ 591 0000 5F657869 	 .ascii "_exit called with parameter %d\012\000"
+ 591      74206361 
+ 591      6C6C6564 
+ 591      20776974 
+ 591      68207061 
+ 592              	.LC1:
+ 593 0020 48656170 	 .ascii "Heap and stack collision\012\000"
+ 593      20616E64 
+ 593      20737461 
+ 593      636B2063 
+ 593      6F6C6C69 
+ 594 003a 0000     	 .text
+ 595              	.Letext0:
+ 596              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/sys/_types.h"
+ 597              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/sys/types.h"
+ 598              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/sys/stat.h"
+ 599              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/sys/time.h"
+ 600              	 .file 7 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 601              	 .file 8 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 602              	 .file 9 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 603              	 .file 10 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 syscalls.c
+    {standard input}:19     .text._execve:00000000 $t
+    {standard input}:24     .text._execve:00000000 _execve
+    {standard input}:47     .text._fork:00000000 $t
+    {standard input}:52     .text._fork:00000000 _fork
+    {standard input}:71     .text._link:00000000 $t
+    {standard input}:76     .text._link:00000000 _link
+    {standard input}:97     .text._times:00000000 $t
+    {standard input}:102    .text._times:00000000 _times
+    {standard input}:118    .text._unlink:00000000 $t
+    {standard input}:123    .text._unlink:00000000 _unlink
+    {standard input}:144    .text._wait:00000000 $t
+    {standard input}:149    .text._wait:00000000 _wait
+    {standard input}:170    .text._gettimeofday:00000000 $t
+    {standard input}:175    .text._gettimeofday:00000000 _gettimeofday
+    {standard input}:196    .text._kill:00000000 $t
+    {standard input}:201    .text._kill:00000000 _kill
+    {standard input}:222    .text._exit:00000000 $t
+    {standard input}:227    .text._exit:00000000 _exit
+    {standard input}:590    .rodata.str1.4:00000000 .LC0
+    {standard input}:253    .text._getpid:00000000 $t
+    {standard input}:258    .text._getpid:00000000 _getpid
+    {standard input}:272    .text.get_heap_end:00000000 $t
+    {standard input}:277    .text.get_heap_end:00000000 get_heap_end
+    {standard input}:583    .bss.heap_end:00000000 .LANCHOR0
+    {standard input}:294    .text.get_stack_top:00000000 $t
+    {standard input}:299    .text.get_stack_top:00000000 get_stack_top
+    {standard input}:324    .text._sbrk:00000000 $t
+    {standard input}:329    .text._sbrk:00000000 _sbrk
+    {standard input}:592    .rodata.str1.4:00000020 .LC1
+    {standard input}:384    .text._close:00000000 $t
+    {standard input}:389    .text._close:00000000 _close
+    {standard input}:405    .text._open:00000000 $t
+    {standard input}:410    .text._open:00000000 _open
+    {standard input}:426    .text._fstat:00000000 $t
+    {standard input}:431    .text._fstat:00000000 _fstat
+    {standard input}:450    .text._isatty:00000000 $t
+    {standard input}:455    .text._isatty:00000000 _isatty
+    {standard input}:471    .text._lseek:00000000 $t
+    {standard input}:476    .text._lseek:00000000 _lseek
+    {standard input}:492    .text._read:00000000 $t
+    {standard input}:497    .text._read:00000000 _read
+    {standard input}:524    .text._write:00000000 $t
+    {standard input}:529    .text._write:00000000 _write
+    {standard input}:573    .data.environ:00000000 environ
+    {standard input}:579    .bss.__env:00000000 __env
+    {standard input}:570    .data.environ:00000000 $d
+    {standard input}:576    .bss.__env:00000000 $d
+    {standard input}:582    .bss.heap_end:00000000 $d
+    {standard input}:586    .bss.heap_end:00000000 heap_end
+    {standard input}:589    .rodata.str1.4:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+errno
+UNIX
+xprintf
+_end
+abort
+UART_Receive
+xputc

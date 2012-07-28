@@ -1,0 +1,2073 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "cdcuser.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.CDC_RdOutBuf,"ax",%progbits
+  19              	 .align 2
+  20              	 .global CDC_RdOutBuf
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	CDC_RdOutBuf:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/USBCDC/cdcuser.c"
+   1:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+   2:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      U S B  -  K e r n e l
+   3:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *----------------------------------------------------------------------------
+   4:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      Name:    cdcuser.c
+   5:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      Purpose: USB Communication Device Class User module
+   6:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      Version: V1.10
+   7:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *----------------------------------------------------------------------------
+   8:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** *      This software is supplied "AS IS" without any warranties, express,
+   9:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      implied or statutory, including but not limited to the implied
+  10:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      warranties of fitness for purpose, satisfactory quality and
+  11:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      noninfringement. Keil extends you a royalty-free right to reproduce
+  12:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      and distribute executable files created using this software for use
+  13:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      on NXP Semiconductors LPC microcontroller devices only. Nothing else
+  14:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *      gives you the right to use this software.
+  15:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *
+  16:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  * Copyright (c) 2009 Keil - An ARM Company. All rights reserved.
+  17:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+  18:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  19:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "lpc_types.h"
+  20:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "LPC17xx.h"
+  21:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  22:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "usb.h"
+  23:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "usbhw.h"
+  24:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "usbcfg.h"
+  25:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "usbcore.h"
+  26:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "cdc.h"
+  27:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "cdcuser.h"
+  28:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #include "serial.h"
+  29:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  30:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  31:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** unsigned char BulkBufIn  [USB_CDC_BUFSIZE];            // Buffer to store USB IN  packet
+  32:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** unsigned char BulkBufOut [USB_CDC_BUFSIZE];            // Buffer to store USB OUT packet
+  33:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** unsigned char NotificationBuf [10];
+  34:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  35:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** CDC_LINE_CODING CDC_LineCoding  = {9600, 0, 0, 8};
+  36:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** unsigned short  CDC_SerialState = 0x0000;
+  37:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** unsigned short  CDC_DepInEmpty  = 1;                   // Data IN EP is empty
+  38:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  39:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+  40:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   We need a buffer for incomming data on USB port because USB receives
+  41:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   much faster than  UART transmits
+  42:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+  43:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /* Buffer masks */
+  44:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_SIZE               (64)               // Output buffer in bytes (power 2)
+  45:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                                                        // large enough for file transfer
+  46:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_MASK               (CDC_BUF_SIZE-1ul)
+  47:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  48:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /* Buffer read / write macros */
+  49:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_RESET(cdcBuf)      (cdcBuf.rdIdx = cdcBuf.wrIdx = 0)
+  50:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_WR(cdcBuf, dataIn) (cdcBuf.data[CDC_BUF_MASK & cdcBuf.wrIdx++] = (dataIn))
+  51:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_RD(cdcBuf)         (cdcBuf.data[CDC_BUF_MASK & cdcBuf.rdIdx++])
+  52:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_EMPTY(cdcBuf)      (cdcBuf.rdIdx == cdcBuf.wrIdx)
+  53:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_FULL(cdcBuf)       (cdcBuf.rdIdx == cdcBuf.wrIdx+1)
+  54:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #define CDC_BUF_COUNT(cdcBuf)      (CDC_BUF_MASK & (cdcBuf.wrIdx - cdcBuf.rdIdx))
+  55:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  56:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  57:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** // CDC output buffer
+  58:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** typedef struct __CDC_BUF_T {
+  59:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   unsigned char data[CDC_BUF_SIZE];
+  60:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   unsigned int wrIdx;
+  61:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   unsigned int rdIdx;
+  62:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** } CDC_BUF_T;
+  63:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  64:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** CDC_BUF_T  CDC_OutBuf;                                 // buffer for all CDC Out data
+  65:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  66:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+  67:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   read data from CDC_OutBuf
+  68:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+  69:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** int CDC_RdOutBuf (char *buffer, const int *length) {
+  27              	 .loc 1 69 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33 0000 30B4     	 push {r4,r5}
+  34              	.LCFI0:
+  35              	 .cfi_def_cfa_offset 8
+  36              	 .cfi_offset 5,-4
+  37              	 .cfi_offset 4,-8
+  38 0002 0346     	 mov r3,r0
+  70:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   int bytesToRead, bytesRead;
+  71:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  72:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   /* Read *length bytes, block if *bytes are not avaialable	*/
+  73:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   bytesToRead = *length;
+  39              	 .loc 1 73 0
+  40 0004 0868     	 ldr r0,[r1,#0]
+  41              	.LVL1:
+  74:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   bytesToRead = (bytesToRead < (*length)) ? bytesToRead : (*length);
+  75:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   bytesRead = bytesToRead;
+  76:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  77:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  78:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // ... add code to check for underrun
+  79:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  80:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   while (bytesToRead--) {
+  42              	 .loc 1 80 0
+  43 0006 78B1     	 cbz r0,.L2
+  69:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** int CDC_RdOutBuf (char *buffer, const int *length) {
+  44              	 .loc 1 69 0
+  45 0008 1D18     	 adds r5,r3,r0
+  81:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****     *buffer++ = CDC_BUF_RD(CDC_OutBuf);
+  46              	 .loc 1 81 0
+  47 000a 40F20002 	 movw r2,#:lower16:CDC_OutBuf
+  48 000e C0F20002 	 movt r2,#:upper16:CDC_OutBuf
+  49              	.LVL2:
+  50              	.L3:
+  51 0012 516C     	 ldr r1,[r2,#68]
+  52 0014 01F03F04 	 and r4,r1,#63
+  53 0018 145D     	 ldrb r4,[r2,r4]
+  54 001a 03F8014B 	 strb r4,[r3],#1
+  55              	.LVL3:
+  56 001e 01F10101 	 add r1,r1,#1
+  57 0022 5164     	 str r1,[r2,#68]
+  80:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   while (bytesToRead--) {
+  58              	 .loc 1 80 0
+  59 0024 AB42     	 cmp r3,r5
+  60 0026 F4D1     	 bne .L3
+  61              	.L2:
+  82:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   }
+  83:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (bytesRead);
+  84:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+  62              	 .loc 1 84 0
+  63 0028 30BC     	 pop {r4,r5}
+  64 002a 7047     	 bx lr
+  65              	 .cfi_endproc
+  66              	.LFE55:
+  68              	 .section .text.CDC_WrOutBuf,"ax",%progbits
+  69              	 .align 2
+  70              	 .global CDC_WrOutBuf
+  71              	 .thumb
+  72              	 .thumb_func
+  74              	CDC_WrOutBuf:
+  75              	.LFB56:
+  85:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  86:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+  87:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   write data to CDC_OutBuf
+  88:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+  89:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** int CDC_WrOutBuf (const char *buffer, int *length) {
+  76              	 .loc 1 89 0
+  77              	 .cfi_startproc
+  78              	 
+  79              	 
+  80              	 
+  81              	.LVL4:
+  82 0000 70B4     	 push {r4,r5,r6}
+  83              	.LCFI1:
+  84              	 .cfi_def_cfa_offset 12
+  85              	 .cfi_offset 6,-4
+  86              	 .cfi_offset 5,-8
+  87              	 .cfi_offset 4,-12
+  88 0002 0346     	 mov r3,r0
+  90:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   int bytesToWrite, bytesWritten;
+  91:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  92:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // Write *length bytes
+  93:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   bytesToWrite = *length;
+  89              	 .loc 1 93 0
+  90 0004 0868     	 ldr r0,[r1,#0]
+  91              	.LVL5:
+  94:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   bytesWritten = bytesToWrite;
+  95:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  96:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  97:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // ... add code to check for overwrite
+  98:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+  99:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   while (bytesToWrite) {
+  92              	 .loc 1 99 0
+  93 0006 78B1     	 cbz r0,.L6
+  94              	.LVL6:
+  89:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** int CDC_WrOutBuf (const char *buffer, int *length) {
+  95              	 .loc 1 89 0
+  96 0008 1E18     	 adds r6,r3,r0
+ 100:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****       CDC_BUF_WR(CDC_OutBuf, *buffer++);           // Copy Data to buffer
+  97              	 .loc 1 100 0
+  98 000a 40F20002 	 movw r2,#:lower16:CDC_OutBuf
+  99 000e C0F20002 	 movt r2,#:upper16:CDC_OutBuf
+ 100              	.LVL7:
+ 101              	.L7:
+ 102 0012 116C     	 ldr r1,[r2,#64]
+ 103 0014 13F8015B 	 ldrb r5,[r3],#1
+ 104              	.LVL8:
+ 105 0018 01F03F04 	 and r4,r1,#63
+ 106 001c 1555     	 strb r5,[r2,r4]
+ 107 001e 01F10101 	 add r1,r1,#1
+ 108 0022 1164     	 str r1,[r2,#64]
+ 109              	.LVL9:
+  99:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   while (bytesToWrite) {
+ 110              	 .loc 1 99 0
+ 111 0024 B342     	 cmp r3,r6
+ 112 0026 F4D1     	 bne .L7
+ 113              	.L6:
+ 101:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****       bytesToWrite--;
+ 102:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   }
+ 103:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 104:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (bytesWritten);
+ 105:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 114              	 .loc 1 105 0
+ 115 0028 70BC     	 pop {r4,r5,r6}
+ 116 002a 7047     	 bx lr
+ 117              	 .cfi_endproc
+ 118              	.LFE56:
+ 120              	 .section .text.CDC_OutBufAvailChar,"ax",%progbits
+ 121              	 .align 2
+ 122              	 .global CDC_OutBufAvailChar
+ 123              	 .thumb
+ 124              	 .thumb_func
+ 126              	CDC_OutBufAvailChar:
+ 127              	.LFB57:
+ 106:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 107:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 108:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   check if character(s) are available at CDC_OutBuf
+ 109:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 110:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** int CDC_OutBufAvailChar (int *availChar) {
+ 128              	 .loc 1 110 0
+ 129              	 .cfi_startproc
+ 130              	 
+ 131              	 
+ 132              	 
+ 133              	.LVL10:
+ 111:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 112:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   *availChar = CDC_BUF_COUNT(CDC_OutBuf);
+ 134              	 .loc 1 112 0
+ 135 0000 40F20003 	 movw r3,#:lower16:CDC_OutBuf
+ 136 0004 C0F20003 	 movt r3,#:upper16:CDC_OutBuf
+ 137 0008 1A6C     	 ldr r2,[r3,#64]
+ 138 000a 5B6C     	 ldr r3,[r3,#68]
+ 139 000c D31A     	 subs r3,r2,r3
+ 140 000e 03F03F03 	 and r3,r3,#63
+ 141 0012 0360     	 str r3,[r0,#0]
+ 113:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 114:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (0);
+ 115:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 142              	 .loc 1 115 0
+ 143 0014 4FF00000 	 mov r0,#0
+ 144              	.LVL11:
+ 145 0018 7047     	 bx lr
+ 146              	 .cfi_endproc
+ 147              	.LFE57:
+ 149 001a 00BF     	 .section .text.CDC_Init,"ax",%progbits
+ 150              	 .align 2
+ 151              	 .global CDC_Init
+ 152              	 .thumb
+ 153              	 .thumb_func
+ 155              	CDC_Init:
+ 156              	.LFB58:
+ 116:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /* end Buffer handling */
+ 117:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 118:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 119:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 120:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC Initialisation
+ 121:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Initializes the data structures and serial port
+ 122:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   None
+ 123:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: None
+ 124:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 125:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** void CDC_Init (char portNum ) {
+ 157              	 .loc 1 125 0
+ 158              	 .cfi_startproc
+ 159              	 
+ 160              	 
+ 161              	 
+ 162              	.LVL12:
+ 126:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 127:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*
+ 128:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if ( portNum == 0 )
+ 129:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   {
+ 130:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 	ser_OpenPort (0);
+ 131:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 	ser_InitPort0 (CDC_LineCoding.dwDTERate,
+ 132:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bDataBits,
+ 133:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bParityType,
+ 134:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bCharFormat);
+ 135:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   }
+ 136:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   else
+ 137:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   {
+ 138:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 	ser_OpenPort (1);
+ 139:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 	ser_InitPort1 (CDC_LineCoding.dwDTERate,
+ 140:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bDataBits,
+ 141:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bParityType,
+ 142:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bCharFormat);
+ 143:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   }
+ 144:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_DepInEmpty  = 1;
+ 145:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_SerialState = CDC_GetSerialState();
+ 146:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** */
+ 147:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 148:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_BUF_RESET(CDC_OutBuf);
+ 163              	 .loc 1 148 0
+ 164 0000 40F20003 	 movw r3,#:lower16:CDC_OutBuf
+ 165 0004 C0F20003 	 movt r3,#:upper16:CDC_OutBuf
+ 166 0008 4FF00002 	 mov r2,#0
+ 167 000c 1A64     	 str r2,[r3,#64]
+ 168 000e 5A64     	 str r2,[r3,#68]
+ 149:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 169              	 .loc 1 149 0
+ 170 0010 7047     	 bx lr
+ 171              	 .cfi_endproc
+ 172              	.LFE58:
+ 174 0012 00BF     	 .section .text.CDC_SendEncapsulatedCommand,"ax",%progbits
+ 175              	 .align 2
+ 176              	 .global CDC_SendEncapsulatedCommand
+ 177              	 .thumb
+ 178              	 .thumb_func
+ 180              	CDC_SendEncapsulatedCommand:
+ 181              	.LFB59:
+ 150:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 151:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 152:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 153:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC SendEncapsulatedCommand Request Callback
+ 154:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC SEND_ENCAPSULATED_COMMAND Request
+ 155:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   None                          (global SetupPacket and EP0Buf)
+ 156:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 157:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 158:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_SendEncapsulatedCommand (void) {
+ 182              	 .loc 1 158 0
+ 183              	 .cfi_startproc
+ 184              	 
+ 185              	 
+ 186              	 
+ 159:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 160:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 161:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 187              	 .loc 1 161 0
+ 188 0000 4FF00100 	 mov r0,#1
+ 189 0004 7047     	 bx lr
+ 190              	 .cfi_endproc
+ 191              	.LFE59:
+ 193 0006 00BF     	 .section .text.CDC_GetEncapsulatedResponse,"ax",%progbits
+ 194              	 .align 2
+ 195              	 .global CDC_GetEncapsulatedResponse
+ 196              	 .thumb
+ 197              	 .thumb_func
+ 199              	CDC_GetEncapsulatedResponse:
+ 200              	.LFB60:
+ 162:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 163:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 164:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 165:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC GetEncapsulatedResponse Request Callback
+ 166:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC Get_ENCAPSULATED_RESPONSE Request
+ 167:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   None                          (global SetupPacket and EP0Buf)
+ 168:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 169:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 170:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_GetEncapsulatedResponse (void) {
+ 201              	 .loc 1 170 0
+ 202              	 .cfi_startproc
+ 203              	 
+ 204              	 
+ 205              	 
+ 171:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 172:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   /* ... add code to handle request */
+ 173:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 174:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 206              	 .loc 1 174 0
+ 207 0000 4FF00100 	 mov r0,#1
+ 208 0004 7047     	 bx lr
+ 209              	 .cfi_endproc
+ 210              	.LFE60:
+ 212 0006 00BF     	 .section .text.CDC_SetCommFeature,"ax",%progbits
+ 213              	 .align 2
+ 214              	 .global CDC_SetCommFeature
+ 215              	 .thumb
+ 216              	 .thumb_func
+ 218              	CDC_SetCommFeature:
+ 219              	.LFB61:
+ 175:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 176:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 177:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 178:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC SetCommFeature Request Callback
+ 179:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC Set_COMM_FATURE Request
+ 180:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   FeatureSelector
+ 181:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 182:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 183:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_SetCommFeature (unsigned short wFeatureSelector) {
+ 220              	 .loc 1 183 0
+ 221              	 .cfi_startproc
+ 222              	 
+ 223              	 
+ 224              	 
+ 225              	.LVL13:
+ 184:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 185:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   /* ... add code to handle request */
+ 186:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 187:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 226              	 .loc 1 187 0
+ 227 0000 4FF00100 	 mov r0,#1
+ 228              	.LVL14:
+ 229 0004 7047     	 bx lr
+ 230              	 .cfi_endproc
+ 231              	.LFE61:
+ 233 0006 00BF     	 .section .text.CDC_GetCommFeature,"ax",%progbits
+ 234              	 .align 2
+ 235              	 .global CDC_GetCommFeature
+ 236              	 .thumb
+ 237              	 .thumb_func
+ 239              	CDC_GetCommFeature:
+ 240              	.LFB62:
+ 188:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 189:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 190:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 191:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC GetCommFeature Request Callback
+ 192:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC Get_COMM_FATURE Request
+ 193:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   FeatureSelector
+ 194:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 195:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 196:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_GetCommFeature (unsigned short wFeatureSelector) {
+ 241              	 .loc 1 196 0
+ 242              	 .cfi_startproc
+ 243              	 
+ 244              	 
+ 245              	 
+ 246              	.LVL15:
+ 197:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 198:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   /* ... add code to handle request */
+ 199:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 200:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 247              	 .loc 1 200 0
+ 248 0000 4FF00100 	 mov r0,#1
+ 249              	.LVL16:
+ 250 0004 7047     	 bx lr
+ 251              	 .cfi_endproc
+ 252              	.LFE62:
+ 254 0006 00BF     	 .section .text.CDC_ClearCommFeature,"ax",%progbits
+ 255              	 .align 2
+ 256              	 .global CDC_ClearCommFeature
+ 257              	 .thumb
+ 258              	 .thumb_func
+ 260              	CDC_ClearCommFeature:
+ 261              	.LFB63:
+ 201:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 202:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 203:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 204:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC ClearCommFeature Request Callback
+ 205:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC CLEAR_COMM_FATURE Request
+ 206:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   FeatureSelector
+ 207:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 208:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 209:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_ClearCommFeature (unsigned short wFeatureSelector) {
+ 262              	 .loc 1 209 0
+ 263              	 .cfi_startproc
+ 264              	 
+ 265              	 
+ 266              	 
+ 267              	.LVL17:
+ 210:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 211:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   /* ... add code to handle request */
+ 212:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 213:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 268              	 .loc 1 213 0
+ 269 0000 4FF00100 	 mov r0,#1
+ 270              	.LVL18:
+ 271 0004 7047     	 bx lr
+ 272              	 .cfi_endproc
+ 273              	.LFE63:
+ 275 0006 00BF     	 .section .text.CDC_SetLineCoding,"ax",%progbits
+ 276              	 .align 2
+ 277              	 .global CDC_SetLineCoding
+ 278              	 .thumb
+ 279              	 .thumb_func
+ 281              	CDC_SetLineCoding:
+ 282              	.LFB64:
+ 214:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 215:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 216:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 217:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC SetLineCoding Request Callback
+ 218:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC SET_LINE_CODING Request
+ 219:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   none                    (global SetupPacket and EP0Buf)
+ 220:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 221:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 222:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_SetLineCoding (void) {
+ 283              	 .loc 1 222 0
+ 284              	 .cfi_startproc
+ 285              	 
+ 286              	 
+ 287              	 
+ 223:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 224:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_LineCoding.dwDTERate   =   (EP0Buf[0] <<  0)
+ 288              	 .loc 1 224 0
+ 289 0000 40F20002 	 movw r2,#:lower16:.LANCHOR0
+ 290 0004 C0F20002 	 movt r2,#:upper16:.LANCHOR0
+ 225:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                                | (EP0Buf[1] <<  8)
+ 291              	 .loc 1 225 0
+ 292 0008 40F20003 	 movw r3,#:lower16:EP0Buf
+ 293 000c C0F20003 	 movt r3,#:upper16:EP0Buf
+ 294 0010 5878     	 ldrb r0,[r3,#1]
+ 226:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                                | (EP0Buf[2] << 16)
+ 295              	 .loc 1 226 0
+ 296 0012 9978     	 ldrb r1,[r3,#2]
+ 297 0014 4FEA0141 	 lsl r1,r1,#16
+ 225:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                                | (EP0Buf[1] <<  8)
+ 298              	 .loc 1 225 0
+ 299 0018 41EA0021 	 orr r1,r1,r0,lsl#8
+ 224:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_LineCoding.dwDTERate   =   (EP0Buf[0] <<  0)
+ 300              	 .loc 1 224 0
+ 301 001c 1878     	 ldrb r0,[r3,#0]
+ 302              	 .loc 1 226 0
+ 303 001e 0143     	 orrs r1,r1,r0
+ 227:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                                | (EP0Buf[3] << 24);
+ 304              	 .loc 1 227 0
+ 305 0020 D878     	 ldrb r0,[r3,#3]
+ 306 0022 41EA0061 	 orr r1,r1,r0,lsl#24
+ 224:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_LineCoding.dwDTERate   =   (EP0Buf[0] <<  0)
+ 307              	 .loc 1 224 0
+ 308 0026 1160     	 str r1,[r2,#0]
+ 228:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_LineCoding.bCharFormat =  EP0Buf[4];
+ 309              	 .loc 1 228 0
+ 310 0028 1979     	 ldrb r1,[r3,#4]
+ 311 002a 1171     	 strb r1,[r2,#4]
+ 229:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_LineCoding.bParityType =  EP0Buf[5];
+ 312              	 .loc 1 229 0
+ 313 002c 5979     	 ldrb r1,[r3,#5]
+ 314 002e 5171     	 strb r1,[r2,#5]
+ 230:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_LineCoding.bDataBits   =  EP0Buf[6];
+ 315              	 .loc 1 230 0
+ 316 0030 9B79     	 ldrb r3,[r3,#6]
+ 317 0032 9371     	 strb r3,[r2,#6]
+ 231:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*
+ 232:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #if PORT_NUM
+ 233:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_ClosePort(1);
+ 234:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_OpenPort (1);
+ 235:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_InitPort1 (CDC_LineCoding.dwDTERate,
+ 236:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bDataBits,
+ 237:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bParityType,
+ 238:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bCharFormat);
+ 239:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #else
+ 240:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_ClosePort(0);
+ 241:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_OpenPort (0);
+ 242:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_InitPort0 (CDC_LineCoding.dwDTERate,
+ 243:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bDataBits,
+ 244:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bParityType,
+ 245:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 CDC_LineCoding.bCharFormat);
+ 246:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** #endif*/
+ 247:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 248:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 249:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 318              	 .loc 1 249 0
+ 319 0034 4FF00100 	 mov r0,#1
+ 320 0038 7047     	 bx lr
+ 321              	 .cfi_endproc
+ 322              	.LFE64:
+ 324 003a 00BF     	 .section .text.CDC_GetLineCoding,"ax",%progbits
+ 325              	 .align 2
+ 326              	 .global CDC_GetLineCoding
+ 327              	 .thumb
+ 328              	 .thumb_func
+ 330              	CDC_GetLineCoding:
+ 331              	.LFB65:
+ 250:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 251:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 252:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 253:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC GetLineCoding Request Callback
+ 254:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC GET_LINE_CODING Request
+ 255:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   None                         (global SetupPacket and EP0Buf)
+ 256:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 257:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 258:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_GetLineCoding (void) {
+ 332              	 .loc 1 258 0
+ 333              	 .cfi_startproc
+ 334              	 
+ 335              	 
+ 336              	 
+ 259:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 260:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   EP0Buf[0] = (CDC_LineCoding.dwDTERate >>  0) & 0xFF;
+ 337              	 .loc 1 260 0
+ 338 0000 40F20002 	 movw r2,#:lower16:.LANCHOR0
+ 339 0004 C0F20002 	 movt r2,#:upper16:.LANCHOR0
+ 340 0008 1168     	 ldr r1,[r2,#0]
+ 341 000a 40F20003 	 movw r3,#:lower16:EP0Buf
+ 342 000e C0F20003 	 movt r3,#:upper16:EP0Buf
+ 343 0012 1970     	 strb r1,[r3,#0]
+ 261:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   EP0Buf[1] = (CDC_LineCoding.dwDTERate >>  8) & 0xFF;
+ 344              	 .loc 1 261 0
+ 345 0014 4FEA1120 	 lsr r0,r1,#8
+ 346 0018 5870     	 strb r0,[r3,#1]
+ 262:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   EP0Buf[2] = (CDC_LineCoding.dwDTERate >> 16) & 0xFF;
+ 347              	 .loc 1 262 0
+ 348 001a 4FEA1140 	 lsr r0,r1,#16
+ 349 001e 9870     	 strb r0,[r3,#2]
+ 263:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   EP0Buf[3] = (CDC_LineCoding.dwDTERate >> 24) & 0xFF;
+ 350              	 .loc 1 263 0
+ 351 0020 4FEA1161 	 lsr r1,r1,#24
+ 352 0024 D970     	 strb r1,[r3,#3]
+ 264:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   EP0Buf[4] =  CDC_LineCoding.bCharFormat;
+ 353              	 .loc 1 264 0
+ 354 0026 1179     	 ldrb r1,[r2,#4]
+ 355 0028 1971     	 strb r1,[r3,#4]
+ 265:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   EP0Buf[5] =  CDC_LineCoding.bParityType;
+ 356              	 .loc 1 265 0
+ 357 002a 5179     	 ldrb r1,[r2,#5]
+ 358 002c 5971     	 strb r1,[r3,#5]
+ 266:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   EP0Buf[6] =  CDC_LineCoding.bDataBits;
+ 359              	 .loc 1 266 0
+ 360 002e 9279     	 ldrb r2,[r2,#6]
+ 361 0030 9A71     	 strb r2,[r3,#6]
+ 267:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 268:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 269:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 362              	 .loc 1 269 0
+ 363 0032 4FF00100 	 mov r0,#1
+ 364 0036 7047     	 bx lr
+ 365              	 .cfi_endproc
+ 366              	.LFE65:
+ 368              	 .section .text.CDC_SetControlLineState,"ax",%progbits
+ 369              	 .align 2
+ 370              	 .global CDC_SetControlLineState
+ 371              	 .thumb
+ 372              	 .thumb_func
+ 374              	CDC_SetControlLineState:
+ 375              	.LFB66:
+ 270:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 271:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 272:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 273:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC SetControlLineState Request Callback
+ 274:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC SET_CONTROL_LINE_STATE Request
+ 275:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   ControlSignalBitmap
+ 276:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 277:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 278:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_SetControlLineState (unsigned short wControlSignalBitmap) {
+ 376              	 .loc 1 278 0
+ 377              	 .cfi_startproc
+ 378              	 
+ 379              	 
+ 380              	 
+ 381              	.LVL19:
+ 279:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 280:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   /* ... add code to handle request */
+ 281:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 282:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 382              	 .loc 1 282 0
+ 383 0000 4FF00100 	 mov r0,#1
+ 384              	.LVL20:
+ 385 0004 7047     	 bx lr
+ 386              	 .cfi_endproc
+ 387              	.LFE66:
+ 389 0006 00BF     	 .section .text.CDC_SendBreak,"ax",%progbits
+ 390              	 .align 2
+ 391              	 .global CDC_SendBreak
+ 392              	 .thumb
+ 393              	 .thumb_func
+ 395              	CDC_SendBreak:
+ 396              	.LFB67:
+ 283:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 284:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 285:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 286:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC SendBreak Request Callback
+ 287:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Called automatically on CDC Set_COMM_FATURE Request
+ 288:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   0xFFFF  start of Break
+ 289:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 0x0000  stop  of Break
+ 290:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****                 0x####  Duration of Break
+ 291:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: TRUE - Success, FALSE - Error
+ 292:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 293:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** uint32_t CDC_SendBreak (unsigned short wDurationOfBreak) {
+ 397              	 .loc 1 293 0
+ 398              	 .cfi_startproc
+ 399              	 
+ 400              	 
+ 401              	 
+ 402              	.LVL21:
+ 294:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 295:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   /* ... add code to handle request */
+ 296:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (TRUE);
+ 297:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 403              	 .loc 1 297 0
+ 404 0000 4FF00100 	 mov r0,#1
+ 405              	.LVL22:
+ 406 0004 7047     	 bx lr
+ 407              	 .cfi_endproc
+ 408              	.LFE67:
+ 410 0006 00BF     	 .section .text.CDC_BulkIn,"ax",%progbits
+ 411              	 .align 2
+ 412              	 .global CDC_BulkIn
+ 413              	 .thumb
+ 414              	 .thumb_func
+ 416              	CDC_BulkIn:
+ 417              	.LFB68:
+ 298:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 299:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 300:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 301:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_BulkIn call on DataIn Request
+ 302:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   none
+ 303:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: none
+ 304:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 305:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** void CDC_BulkIn(void) {
+ 418              	 .loc 1 305 0
+ 419              	 .cfi_startproc
+ 420              	 
+ 421              	 
+ 422 0000 00B5     	 push {lr}
+ 423              	.LCFI2:
+ 424              	 .cfi_def_cfa_offset 4
+ 425              	 .cfi_offset 14,-4
+ 426 0002 83B0     	 sub sp,sp,#12
+ 427              	.LCFI3:
+ 428              	 .cfi_def_cfa_offset 16
+ 306:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   int numBytesRead, numBytesAvail;
+ 307:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 308:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_AvailChar (&numBytesAvail);
+ 429              	 .loc 1 308 0
+ 430 0004 01A8     	 add r0,sp,#4
+ 431 0006 FFF7FEFF 	 bl ser_AvailChar
+ 309:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 310:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // ... add code to check for overwrite
+ 311:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 312:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   numBytesRead = ser_Read ((char *)&BulkBufIn[0], &numBytesAvail);
+ 432              	 .loc 1 312 0
+ 433 000a 40F20000 	 movw r0,#:lower16:BulkBufIn
+ 434 000e C0F20000 	 movt r0,#:upper16:BulkBufIn
+ 435 0012 01A9     	 add r1,sp,#4
+ 436 0014 FFF7FEFF 	 bl ser_Read
+ 437              	.LVL23:
+ 313:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 314:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // send over USB
+ 315:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (numBytesRead > 0) {
+ 438              	 .loc 1 315 0
+ 439 0018 021E     	 subs r2,r0,#0
+ 440 001a 08DD     	 ble .L21
+ 316:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 	USB_WriteEP (CDC_DEP_IN, &BulkBufIn[0], numBytesRead);
+ 441              	 .loc 1 316 0
+ 442 001c 4FF08200 	 mov r0,#130
+ 443              	.LVL24:
+ 444 0020 40F20001 	 movw r1,#:lower16:BulkBufIn
+ 445 0024 C0F20001 	 movt r1,#:upper16:BulkBufIn
+ 446 0028 FFF7FEFF 	 bl USB_WriteEP
+ 447              	.LVL25:
+ 448 002c 06E0     	 b .L20
+ 449              	.LVL26:
+ 450              	.L21:
+ 317:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   }
+ 318:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   else {
+ 319:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****     CDC_DepInEmpty = 1;
+ 451              	 .loc 1 319 0
+ 452 002e 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 453 0032 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 454 0036 4FF00102 	 mov r2,#1
+ 455 003a 1A80     	 strh r2,[r3,#0]
+ 456              	.LVL27:
+ 457              	.L20:
+ 320:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   }
+ 321:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 458              	 .loc 1 321 0
+ 459 003c 03B0     	 add sp,sp,#12
+ 460 003e 00BD     	 pop {pc}
+ 461              	 .cfi_endproc
+ 462              	.LFE68:
+ 464              	 .section .text.CDC_BulkOut,"ax",%progbits
+ 465              	 .align 2
+ 466              	 .global CDC_BulkOut
+ 467              	 .thumb
+ 468              	 .thumb_func
+ 470              	CDC_BulkOut:
+ 471              	.LFB69:
+ 322:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 323:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 324:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 325:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_BulkOut call on DataOut Request
+ 326:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   none
+ 327:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: none
+ 328:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 329:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** void CDC_BulkOut(void) {
+ 472              	 .loc 1 329 0
+ 473              	 .cfi_startproc
+ 474              	 
+ 475              	 
+ 476              	 
+ 477              	.LVL28:
+ 478              	.LBB4:
+ 479              	.LBB5:
+ 480              	 .file 2 "src/MightyBoard/Motherboard/system/core_cm3.h"
+   1:src/MightyBoard/Motherboard/system/core_cm3.h **** /**************************************************************************//**
+   2:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @file     core_cm3.h
+   3:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @brief    CMSIS Cortex-M3 Core Peripheral Access Layer Header File
+   4:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @version  V2.01
+   5:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @date     06. December 2010
+   6:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+   7:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @note
+   8:src/MightyBoard/Motherboard/system/core_cm3.h ****  * Copyright (C) 2009-2010 ARM Limited. All rights reserved.
+   9:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+  10:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @par
+  11:src/MightyBoard/Motherboard/system/core_cm3.h ****  * ARM Limited (ARM) is supplying this software for use with Cortex-M
+  12:src/MightyBoard/Motherboard/system/core_cm3.h ****  * processor based microcontrollers.  This file can be freely distributed
+  13:src/MightyBoard/Motherboard/system/core_cm3.h ****  * within development tools that are supporting such ARM based processors.
+  14:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+  15:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @par
+  16:src/MightyBoard/Motherboard/system/core_cm3.h ****  * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
+  17:src/MightyBoard/Motherboard/system/core_cm3.h ****  * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+  18:src/MightyBoard/Motherboard/system/core_cm3.h ****  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
+  19:src/MightyBoard/Motherboard/system/core_cm3.h ****  * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
+  20:src/MightyBoard/Motherboard/system/core_cm3.h ****  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+  21:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+  22:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+  23:src/MightyBoard/Motherboard/system/core_cm3.h **** #if defined ( __ICCARM__ )
+  24:src/MightyBoard/Motherboard/system/core_cm3.h ****  #pragma system_include  /* treat file as system include file for MISRA check */
+  25:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+  26:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  27:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifdef __cplusplus
+  28:src/MightyBoard/Motherboard/system/core_cm3.h ****  extern "C" {
+  29:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+  30:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  31:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifndef __CORE_CM3_H_GENERIC
+  32:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CORE_CM3_H_GENERIC
+  33:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  34:src/MightyBoard/Motherboard/system/core_cm3.h **** /**  @ingroup  CMSIS
+  35:src/MightyBoard/Motherboard/system/core_cm3.h ****  @addtogroup CMSIS_core_LintCinfiguration CMSIS Core Lint Configuration
+  36:src/MightyBoard/Motherboard/system/core_cm3.h ****   List of Lint messages which will be suppressed and not shown:
+  37:src/MightyBoard/Motherboard/system/core_cm3.h ****     - not yet checked
+  38:src/MightyBoard/Motherboard/system/core_cm3.h ****   .
+  39:src/MightyBoard/Motherboard/system/core_cm3.h ****   Note:  To re-enable a Message, insert a space before 'lint' *
+  40:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  41:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+  42:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  43:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  44:src/MightyBoard/Motherboard/system/core_cm3.h **** /*******************************************************************************
+  45:src/MightyBoard/Motherboard/system/core_cm3.h ****  *                 CMSIS definitions
+  46:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+  47:src/MightyBoard/Motherboard/system/core_cm3.h **** /** @ingroup  CMSIS
+  48:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @addtogroup CMSIS_core_definitions CMSIS Core Definitions
+  49:src/MightyBoard/Motherboard/system/core_cm3.h ****   This file defines all structures and symbols for CMSIS core:
+  50:src/MightyBoard/Motherboard/system/core_cm3.h ****    - CMSIS version number
+  51:src/MightyBoard/Motherboard/system/core_cm3.h ****    - Cortex-M core
+  52:src/MightyBoard/Motherboard/system/core_cm3.h ****    - Cortex-M core Revision Number
+  53:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+  54:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+  55:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  56:src/MightyBoard/Motherboard/system/core_cm3.h **** /*  CMSIS CM3 definitions */
+  57:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CM3_CMSIS_VERSION_MAIN  (0x02)                                                       /*!<
+  58:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CM3_CMSIS_VERSION_SUB   (0x00)                                                       /*!<
+  59:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CM3_CMSIS_VERSION       ((__CM3_CMSIS_VERSION_MAIN << 16) | __CM3_CMSIS_VERSION_SUB) /*!<
+  60:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  61:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CORTEX_M                (0x03)                                                       /*!<
+  62:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  63:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  64:src/MightyBoard/Motherboard/system/core_cm3.h **** #if defined ( __CC_ARM   )
+  65:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM            __asm                                      /*!< asm keyword for ARM Comp
+  66:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE         __inline                                   /*!< inline keyword for ARM C
+  67:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  68:src/MightyBoard/Motherboard/system/core_cm3.h **** #elif defined ( __ICCARM__ )
+  69:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM           __asm                                       /*!< asm keyword for IAR Comp
+  70:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE        inline                                      /*!< inline keyword for IAR C
+  71:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  72:src/MightyBoard/Motherboard/system/core_cm3.h **** #elif defined   (  __GNUC__  )
+  73:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM            __asm                                      /*!< asm keyword for GNU Comp
+  74:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE         inline                                     /*!< inline keyword for GNU C
+  75:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  76:src/MightyBoard/Motherboard/system/core_cm3.h **** #elif defined   (  __TASKING__  )
+  77:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM            __asm                                      /*!< asm keyword for TASKING 
+  78:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE         inline                                     /*!< inline keyword for TASKI
+  79:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  80:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+  81:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  82:src/MightyBoard/Motherboard/system/core_cm3.h **** #include <stdint.h>                      /*!< standard types definitions                      */
+  83:src/MightyBoard/Motherboard/system/core_cm3.h **** #include "core_cmInstr.h"                /*!< Core Instruction Access                         */
+  84:src/MightyBoard/Motherboard/system/core_cm3.h **** #include "core_cmFunc.h"                 /*!< Core Function Access                            */
+  85:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  86:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif /* __CORE_CM3_H_GENERIC */
+  87:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  88:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  89:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifndef __CMSIS_GENERIC
+  90:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  91:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifndef __CORE_CM3_H_DEPENDANT
+  92:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CORE_CM3_H_DEPENDANT
+  93:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  94:src/MightyBoard/Motherboard/system/core_cm3.h **** /* IO definitions (access restrictions to peripheral registers) */
+  95:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifdef __cplusplus
+  96:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define     __I     volatile           /*!< defines 'read only' permissions                 */
+  97:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+  98:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define     __I     volatile const     /*!< defines 'read only' permissions                 */
+  99:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 100:src/MightyBoard/Motherboard/system/core_cm3.h **** #define     __O     volatile             /*!< defines 'write only' permissions                */
+ 101:src/MightyBoard/Motherboard/system/core_cm3.h **** #define     __IO    volatile             /*!< defines 'read / write' permissions              */
+ 102:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 103:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_core_definitions */
+ 104:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 105:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 106:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 107:src/MightyBoard/Motherboard/system/core_cm3.h **** /*******************************************************************************
+ 108:src/MightyBoard/Motherboard/system/core_cm3.h ****  *                 Register Abstraction
+ 109:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+ 110:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 111:src/MightyBoard/Motherboard/system/core_cm3.h **** /** @ingroup  CMSIS
+ 112:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @addtogroup CMSIS_core_register CMSIS Core Register
+ 113:src/MightyBoard/Motherboard/system/core_cm3.h ****   Core Register contain:
+ 114:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Register
+ 115:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core NVIC Register
+ 116:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core SCB Register
+ 117:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core SysTick Register
+ 118:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Debug Register
+ 119:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core MPU Register
+ 120:src/MightyBoard/Motherboard/system/core_cm3.h **** */
+ 121:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 122:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 123:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_CORE CMSIS Core
+ 124:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Core Registers
+ 125:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 126:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 127:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 128:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Application Program Status Register (APSR).
+ 129:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 130:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 131:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 132:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 133:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 134:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__CORTEX_M != 0x04)
+ 135:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:27;              /*!< bit:  0..26  Reserved                           */
+ 136:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+ 137:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:16;              /*!< bit:  0..15  Reserved                           */
+ 138:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t GE:4;                       /*!< bit: 16..19  Greater than or Equal flags        */
+ 139:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved1:7;               /*!< bit: 20..26  Reserved                           */
+ 140:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 141:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Q:1;                        /*!< bit:     27  Saturation condition flag          */
+ 142:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t V:1;                        /*!< bit:     28  Overflow condition code flag       */
+ 143:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t C:1;                        /*!< bit:     29  Carry condition code flag          */
+ 144:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Z:1;                        /*!< bit:     30  Zero condition code flag           */
+ 145:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t N:1;                        /*!< bit:     31  Negative condition code flag       */
+ 146:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 147:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 148:src/MightyBoard/Motherboard/system/core_cm3.h **** } APSR_Type;
+ 149:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 150:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 151:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Interrupt Program Status Register (IPSR).
+ 152:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 153:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 154:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 155:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 156:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 157:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t ISR:9;                      /*!< bit:  0.. 8  Exception number                   */
+ 158:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:23;              /*!< bit:  9..31  Reserved                           */
+ 159:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 160:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 161:src/MightyBoard/Motherboard/system/core_cm3.h **** } IPSR_Type;
+ 162:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 163:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 164:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Special-Purpose Program Status Registers (xPSR).
+ 165:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 166:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 167:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 168:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 169:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 170:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t ISR:9;                      /*!< bit:  0.. 8  Exception number                   */
+ 171:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__CORTEX_M != 0x04)
+ 172:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:15;              /*!< bit:  9..23  Reserved                           */
+ 173:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+ 174:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:7;               /*!< bit:  9..15  Reserved                           */
+ 175:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t GE:4;                       /*!< bit: 16..19  Greater than or Equal flags        */
+ 176:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved1:4;               /*!< bit: 20..23  Reserved                           */
+ 177:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 178:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t T:1;                        /*!< bit:     24  Thumb bit        (read 0)          */
+ 179:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t IT:2;                       /*!< bit: 25..26  saved IT state   (read 0)          */
+ 180:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Q:1;                        /*!< bit:     27  Saturation condition flag          */
+ 181:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t V:1;                        /*!< bit:     28  Overflow condition code flag       */
+ 182:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t C:1;                        /*!< bit:     29  Carry condition code flag          */
+ 183:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Z:1;                        /*!< bit:     30  Zero condition code flag           */
+ 184:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t N:1;                        /*!< bit:     31  Negative condition code flag       */
+ 185:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 186:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 187:src/MightyBoard/Motherboard/system/core_cm3.h **** } xPSR_Type;
+ 188:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 189:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 190:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Control Registers (CONTROL).
+ 191:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 192:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 193:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 194:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 195:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 196:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t nPRIV:1;                    /*!< bit:      0  Execution privilege in Thread mode */
+ 197:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t SPSEL:1;                    /*!< bit:      1  Stack to be used                   */
+ 198:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t FPCA:1;                     /*!< bit:      2  FP extension active flag           */
+ 199:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:29;              /*!< bit:  3..31  Reserved                           */
+ 200:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 201:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 202:src/MightyBoard/Motherboard/system/core_cm3.h **** } CONTROL_Type;
+ 203:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 204:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_CORE */
+ 205:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 206:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 207:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 208:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_NVIC CMSIS NVIC
+ 209:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M NVIC Registers
+ 210:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 211:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 212:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 213:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Nested Vectored Interrupt Controller (NVIC).
+ 214:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 215:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 216:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 217:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ISER[8];                 /*!< Offset: 0x000 (R/W)  Interrupt Set Enable Register   
+ 218:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED0[24];
+ 219:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ICER[8];                 /*!< Offset: 0x080 (R/W)  Interrupt Clear Enable Register 
+ 220:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RSERVED1[24];
+ 221:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ISPR[8];                 /*!< Offset: 0x100 (R/W)  Interrupt Set Pending Register  
+ 222:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED2[24];
+ 223:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ICPR[8];                 /*!< Offset: 0x180 (R/W)  Interrupt Clear Pending Register
+ 224:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED3[24];
+ 225:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IABR[8];                 /*!< Offset: 0x200 (R/W)  Interrupt Active bit Register   
+ 226:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED4[56];
+ 227:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint8_t  IP[240];                 /*!< Offset: 0x300 (R/W)  Interrupt Priority Register (8Bi
+ 228:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED5[644];
+ 229:src/MightyBoard/Motherboard/system/core_cm3.h ****   __O  uint32_t STIR;                    /*!< Offset: 0xE00 ( /W)  Software Trigger Interrupt Regis
+ 230:src/MightyBoard/Motherboard/system/core_cm3.h **** }  NVIC_Type;
+ 231:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 232:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_NVIC */
+ 233:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 234:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 235:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 236:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_SCB CMSIS SCB
+ 237:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M System Control Block Registers
+ 238:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 239:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 240:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 241:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the System Control Block (SCB).
+ 242:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 243:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 244:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 245:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CPUID;                   /*!< Offset: 0x000 (R/ )  CPU ID Base Register            
+ 246:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ICSR;                    /*!< Offset: 0x004 (R/W)  Interrupt Control State Register
+ 247:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t VTOR;                    /*!< Offset: 0x008 (R/W)  Vector Table Offset Register    
+ 248:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t AIRCR;                   /*!< Offset: 0x00C (R/W)  Application Interrupt / Reset Co
+ 249:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t SCR;                     /*!< Offset: 0x010 (R/W)  System Control Register         
+ 250:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CCR;                     /*!< Offset: 0x014 (R/W)  Configuration Control Register  
+ 251:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint8_t  SHP[12];                 /*!< Offset: 0x018 (R/W)  System Handlers Priority Registe
+ 252:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t SHCSR;                   /*!< Offset: 0x024 (R/W)  System Handler Control and State
+ 253:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CFSR;                    /*!< Offset: 0x028 (R/W)  Configurable Fault Status Regist
+ 254:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t HFSR;                    /*!< Offset: 0x02C (R/W)  Hard Fault Status Register      
+ 255:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DFSR;                    /*!< Offset: 0x030 (R/W)  Debug Fault Status Register     
+ 256:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t MMFAR;                   /*!< Offset: 0x034 (R/W)  Mem Manage Address Register     
+ 257:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t BFAR;                    /*!< Offset: 0x038 (R/W)  Bus Fault Address Register      
+ 258:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t AFSR;                    /*!< Offset: 0x03C (R/W)  Auxiliary Fault Status Register 
+ 259:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PFR[2];                  /*!< Offset: 0x040 (R/ )  Processor Feature Register      
+ 260:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t DFR;                     /*!< Offset: 0x048 (R/ )  Debug Feature Register          
+ 261:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t ADR;                     /*!< Offset: 0x04C (R/ )  Auxiliary Feature Register      
+ 262:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t MMFR[4];                 /*!< Offset: 0x050 (R/ )  Memory Model Feature Register   
+ 263:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t ISAR[5];                 /*!< Offset: 0x060 (R/ )  ISA Feature Register            
+ 264:src/MightyBoard/Motherboard/system/core_cm3.h **** } SCB_Type;
+ 265:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 266:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB CPUID Register Definitions */
+ 267:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_IMPLEMENTER_Pos          24                                             /*!< SCB 
+ 268:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_IMPLEMENTER_Msk          (0xFFUL << SCB_CPUID_IMPLEMENTER_Pos)          /*!< SCB 
+ 269:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 270:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_VARIANT_Pos              20                                             /*!< SCB 
+ 271:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_VARIANT_Msk              (0xFUL << SCB_CPUID_VARIANT_Pos)               /*!< SCB 
+ 272:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 273:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_PARTNO_Pos                4                                             /*!< SCB 
+ 274:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_PARTNO_Msk               (0xFFFUL << SCB_CPUID_PARTNO_Pos)              /*!< SCB 
+ 275:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 276:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_REVISION_Pos              0                                             /*!< SCB 
+ 277:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_REVISION_Msk             (0xFUL << SCB_CPUID_REVISION_Pos)              /*!< SCB 
+ 278:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 279:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Interrupt Control State Register Definitions */
+ 280:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_NMIPENDSET_Pos            31                                             /*!< SCB 
+ 281:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_NMIPENDSET_Msk            (1UL << SCB_ICSR_NMIPENDSET_Pos)               /*!< SCB 
+ 282:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 283:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVSET_Pos             28                                             /*!< SCB 
+ 284:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVSET_Msk             (1UL << SCB_ICSR_PENDSVSET_Pos)                /*!< SCB 
+ 285:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 286:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVCLR_Pos             27                                             /*!< SCB 
+ 287:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVCLR_Msk             (1UL << SCB_ICSR_PENDSVCLR_Pos)                /*!< SCB 
+ 288:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 289:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTSET_Pos             26                                             /*!< SCB 
+ 290:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTSET_Msk             (1UL << SCB_ICSR_PENDSTSET_Pos)                /*!< SCB 
+ 291:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 292:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTCLR_Pos             25                                             /*!< SCB 
+ 293:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTCLR_Msk             (1UL << SCB_ICSR_PENDSTCLR_Pos)                /*!< SCB 
+ 294:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 295:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPREEMPT_Pos            23                                             /*!< SCB 
+ 296:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPREEMPT_Msk            (1UL << SCB_ICSR_ISRPREEMPT_Pos)               /*!< SCB 
+ 297:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 298:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPENDING_Pos            22                                             /*!< SCB 
+ 299:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPENDING_Msk            (1UL << SCB_ICSR_ISRPENDING_Pos)               /*!< SCB 
+ 300:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 301:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTPENDING_Pos           12                                             /*!< SCB 
+ 302:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTPENDING_Msk           (0x1FFUL << SCB_ICSR_VECTPENDING_Pos)          /*!< SCB 
+ 303:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 304:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_RETTOBASE_Pos             11                                             /*!< SCB 
+ 305:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_RETTOBASE_Msk             (1UL << SCB_ICSR_RETTOBASE_Pos)                /*!< SCB 
+ 306:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 307:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTACTIVE_Pos             0                                             /*!< SCB 
+ 308:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTACTIVE_Msk            (0x1FFUL << SCB_ICSR_VECTACTIVE_Pos)           /*!< SCB 
+ 309:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 310:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Interrupt Control State Register Definitions */
+ 311:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLBASE_Pos               29                                             /*!< SCB 
+ 312:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLBASE_Msk               (1UL << SCB_VTOR_TBLBASE_Pos)                  /*!< SCB 
+ 313:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 314:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLOFF_Pos                 7                                             /*!< SCB 
+ 315:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLOFF_Msk                (0x3FFFFFUL << SCB_VTOR_TBLOFF_Pos)            /*!< SCB 
+ 316:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 317:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Application Interrupt and Reset Control Register Definitions */
+ 318:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEY_Pos              16                                             /*!< SCB 
+ 319:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEY_Msk              (0xFFFFUL << SCB_AIRCR_VECTKEY_Pos)            /*!< SCB 
+ 320:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 321:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEYSTAT_Pos          16                                             /*!< SCB 
+ 322:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEYSTAT_Msk          (0xFFFFUL << SCB_AIRCR_VECTKEYSTAT_Pos)        /*!< SCB 
+ 323:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 324:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_ENDIANESS_Pos            15                                             /*!< SCB 
+ 325:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_ENDIANESS_Msk            (1UL << SCB_AIRCR_ENDIANESS_Pos)               /*!< SCB 
+ 326:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 327:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_PRIGROUP_Pos              8                                             /*!< SCB 
+ 328:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_PRIGROUP_Msk             (7UL << SCB_AIRCR_PRIGROUP_Pos)                /*!< SCB 
+ 329:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 330:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_SYSRESETREQ_Pos           2                                             /*!< SCB 
+ 331:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_SYSRESETREQ_Msk          (1UL << SCB_AIRCR_SYSRESETREQ_Pos)             /*!< SCB 
+ 332:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 333:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTCLRACTIVE_Pos         1                                             /*!< SCB 
+ 334:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTCLRACTIVE_Msk        (1UL << SCB_AIRCR_VECTCLRACTIVE_Pos)           /*!< SCB 
+ 335:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 336:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTRESET_Pos             0                                             /*!< SCB 
+ 337:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTRESET_Msk            (1UL << SCB_AIRCR_VECTRESET_Pos)               /*!< SCB 
+ 338:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 339:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB System Control Register Definitions */
+ 340:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SEVONPEND_Pos               4                                             /*!< SCB 
+ 341:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SEVONPEND_Msk              (1UL << SCB_SCR_SEVONPEND_Pos)                 /*!< SCB 
+ 342:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 343:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPDEEP_Pos               2                                             /*!< SCB 
+ 344:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPDEEP_Msk              (1UL << SCB_SCR_SLEEPDEEP_Pos)                 /*!< SCB 
+ 345:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 346:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPONEXIT_Pos             1                                             /*!< SCB 
+ 347:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPONEXIT_Msk            (1UL << SCB_SCR_SLEEPONEXIT_Pos)               /*!< SCB 
+ 348:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 349:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Configuration Control Register Definitions */
+ 350:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_STKALIGN_Pos                9                                             /*!< SCB 
+ 351:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_STKALIGN_Msk               (1UL << SCB_CCR_STKALIGN_Pos)                  /*!< SCB 
+ 352:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 353:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_BFHFNMIGN_Pos               8                                             /*!< SCB 
+ 354:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_BFHFNMIGN_Msk              (1UL << SCB_CCR_BFHFNMIGN_Pos)                 /*!< SCB 
+ 355:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 356:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_DIV_0_TRP_Pos               4                                             /*!< SCB 
+ 357:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_DIV_0_TRP_Msk              (1UL << SCB_CCR_DIV_0_TRP_Pos)                 /*!< SCB 
+ 358:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 359:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_UNALIGN_TRP_Pos             3                                             /*!< SCB 
+ 360:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_UNALIGN_TRP_Msk            (1UL << SCB_CCR_UNALIGN_TRP_Pos)               /*!< SCB 
+ 361:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 362:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_USERSETMPEND_Pos            1                                             /*!< SCB 
+ 363:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_USERSETMPEND_Msk           (1UL << SCB_CCR_USERSETMPEND_Pos)              /*!< SCB 
+ 364:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 365:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_NONBASETHRDENA_Pos          0                                             /*!< SCB 
+ 366:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_NONBASETHRDENA_Msk         (1UL << SCB_CCR_NONBASETHRDENA_Pos)            /*!< SCB 
+ 367:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 368:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB System Handler Control and State Register Definitions */
+ 369:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTENA_Pos          18                                             /*!< SCB 
+ 370:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTENA_Msk          (1UL << SCB_SHCSR_USGFAULTENA_Pos)             /*!< SCB 
+ 371:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 372:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTENA_Pos          17                                             /*!< SCB 
+ 373:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTENA_Msk          (1UL << SCB_SHCSR_BUSFAULTENA_Pos)             /*!< SCB 
+ 374:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 375:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTENA_Pos          16                                             /*!< SCB 
+ 376:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTENA_Msk          (1UL << SCB_SHCSR_MEMFAULTENA_Pos)             /*!< SCB 
+ 377:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 378:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLPENDED_Pos         15                                             /*!< SCB 
+ 379:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLPENDED_Msk         (1UL << SCB_SHCSR_SVCALLPENDED_Pos)            /*!< SCB 
+ 380:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 381:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTPENDED_Pos       14                                             /*!< SCB 
+ 382:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTPENDED_Msk       (1UL << SCB_SHCSR_BUSFAULTPENDED_Pos)          /*!< SCB 
+ 383:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 384:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTPENDED_Pos       13                                             /*!< SCB 
+ 385:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTPENDED_Msk       (1UL << SCB_SHCSR_MEMFAULTPENDED_Pos)          /*!< SCB 
+ 386:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 387:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTPENDED_Pos       12                                             /*!< SCB 
+ 388:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTPENDED_Msk       (1UL << SCB_SHCSR_USGFAULTPENDED_Pos)          /*!< SCB 
+ 389:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 390:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SYSTICKACT_Pos           11                                             /*!< SCB 
+ 391:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SYSTICKACT_Msk           (1UL << SCB_SHCSR_SYSTICKACT_Pos)              /*!< SCB 
+ 392:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 393:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_PENDSVACT_Pos            10                                             /*!< SCB 
+ 394:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_PENDSVACT_Msk            (1UL << SCB_SHCSR_PENDSVACT_Pos)               /*!< SCB 
+ 395:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 396:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MONITORACT_Pos            8                                             /*!< SCB 
+ 397:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MONITORACT_Msk           (1UL << SCB_SHCSR_MONITORACT_Pos)              /*!< SCB 
+ 398:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 399:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLACT_Pos             7                                             /*!< SCB 
+ 400:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLACT_Msk            (1UL << SCB_SHCSR_SVCALLACT_Pos)               /*!< SCB 
+ 401:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 402:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTACT_Pos           3                                             /*!< SCB 
+ 403:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTACT_Msk          (1UL << SCB_SHCSR_USGFAULTACT_Pos)             /*!< SCB 
+ 404:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 405:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTACT_Pos           1                                             /*!< SCB 
+ 406:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTACT_Msk          (1UL << SCB_SHCSR_BUSFAULTACT_Pos)             /*!< SCB 
+ 407:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 408:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTACT_Pos           0                                             /*!< SCB 
+ 409:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTACT_Msk          (1UL << SCB_SHCSR_MEMFAULTACT_Pos)             /*!< SCB 
+ 410:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 411:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Configurable Fault Status Registers Definitions */
+ 412:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_USGFAULTSR_Pos            16                                             /*!< SCB 
+ 413:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_USGFAULTSR_Msk            (0xFFFFUL << SCB_CFSR_USGFAULTSR_Pos)          /*!< SCB 
+ 414:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 415:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_BUSFAULTSR_Pos             8                                             /*!< SCB 
+ 416:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_BUSFAULTSR_Msk            (0xFFUL << SCB_CFSR_BUSFAULTSR_Pos)            /*!< SCB 
+ 417:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 418:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_MEMFAULTSR_Pos             0                                             /*!< SCB 
+ 419:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_MEMFAULTSR_Msk            (0xFFUL << SCB_CFSR_MEMFAULTSR_Pos)            /*!< SCB 
+ 420:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 421:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Hard Fault Status Registers Definitions */
+ 422:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_DEBUGEVT_Pos              31                                             /*!< SCB 
+ 423:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_DEBUGEVT_Msk              (1UL << SCB_HFSR_DEBUGEVT_Pos)                 /*!< SCB 
+ 424:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 425:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_FORCED_Pos                30                                             /*!< SCB 
+ 426:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_FORCED_Msk                (1UL << SCB_HFSR_FORCED_Pos)                   /*!< SCB 
+ 427:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 428:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_VECTTBL_Pos                1                                             /*!< SCB 
+ 429:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_VECTTBL_Msk               (1UL << SCB_HFSR_VECTTBL_Pos)                  /*!< SCB 
+ 430:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 431:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Debug Fault Status Register Definitions */
+ 432:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_EXTERNAL_Pos               4                                             /*!< SCB 
+ 433:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_EXTERNAL_Msk              (1UL << SCB_DFSR_EXTERNAL_Pos)                 /*!< SCB 
+ 434:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 435:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_VCATCH_Pos                 3                                             /*!< SCB 
+ 436:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_VCATCH_Msk                (1UL << SCB_DFSR_VCATCH_Pos)                   /*!< SCB 
+ 437:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 438:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_DWTTRAP_Pos                2                                             /*!< SCB 
+ 439:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_DWTTRAP_Msk               (1UL << SCB_DFSR_DWTTRAP_Pos)                  /*!< SCB 
+ 440:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 441:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_BKPT_Pos                   1                                             /*!< SCB 
+ 442:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_BKPT_Msk                  (1UL << SCB_DFSR_BKPT_Pos)                     /*!< SCB 
+ 443:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 444:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_HALTED_Pos                 0                                             /*!< SCB 
+ 445:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_HALTED_Msk                (1UL << SCB_DFSR_HALTED_Pos)                   /*!< SCB 
+ 446:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 447:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_SCB */
+ 448:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 449:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 450:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 451:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_SysTick CMSIS SysTick
+ 452:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M System Timer Registers
+ 453:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 454:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 455:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 456:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the System Timer (SysTick).
+ 457:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 458:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 459:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 460:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CTRL;                    /*!< Offset: 0x000 (R/W)  SysTick Control and Status Regis
+ 461:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t LOAD;                    /*!< Offset: 0x004 (R/W)  SysTick Reload Value Register   
+ 462:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t VAL;                     /*!< Offset: 0x008 (R/W)  SysTick Current Value Register  
+ 463:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CALIB;                   /*!< Offset: 0x00C (R/ )  SysTick Calibration Register    
+ 464:src/MightyBoard/Motherboard/system/core_cm3.h **** } SysTick_Type;
+ 465:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 466:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Control / Status Register Definitions */
+ 467:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_COUNTFLAG_Pos         16                                             /*!< SysT
+ 468:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_COUNTFLAG_Msk         (1UL << SysTick_CTRL_COUNTFLAG_Pos)            /*!< SysT
+ 469:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 470:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_CLKSOURCE_Pos          2                                             /*!< SysT
+ 471:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_CLKSOURCE_Msk         (1UL << SysTick_CTRL_CLKSOURCE_Pos)            /*!< SysT
+ 472:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 473:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_TICKINT_Pos            1                                             /*!< SysT
+ 474:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_TICKINT_Msk           (1UL << SysTick_CTRL_TICKINT_Pos)              /*!< SysT
+ 475:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 476:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_ENABLE_Pos             0                                             /*!< SysT
+ 477:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_ENABLE_Msk            (1UL << SysTick_CTRL_ENABLE_Pos)               /*!< SysT
+ 478:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 479:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Reload Register Definitions */
+ 480:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_LOAD_RELOAD_Pos             0                                             /*!< SysT
+ 481:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_LOAD_RELOAD_Msk            (0xFFFFFFUL << SysTick_LOAD_RELOAD_Pos)        /*!< SysT
+ 482:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 483:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Current Register Definitions */
+ 484:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_VAL_CURRENT_Pos             0                                             /*!< SysT
+ 485:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_VAL_CURRENT_Msk            (0xFFFFFFUL << SysTick_VAL_CURRENT_Pos)        /*!< SysT
+ 486:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 487:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Calibration Register Definitions */
+ 488:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_NOREF_Pos            31                                             /*!< SysT
+ 489:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_NOREF_Msk            (1UL << SysTick_CALIB_NOREF_Pos)               /*!< SysT
+ 490:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 491:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_SKEW_Pos             30                                             /*!< SysT
+ 492:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_SKEW_Msk             (1UL << SysTick_CALIB_SKEW_Pos)                /*!< SysT
+ 493:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 494:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_TENMS_Pos             0                                             /*!< SysT
+ 495:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_TENMS_Msk            (0xFFFFFFUL << SysTick_VAL_CURRENT_Pos)        /*!< SysT
+ 496:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 497:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_SysTick */
+ 498:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 499:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 500:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 501:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_ITM CMSIS ITM
+ 502:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Instrumentation Trace Macrocell (ITM)
+ 503:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 504:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 505:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 506:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Instrumentation Trace Macrocell Register (ITM).
+ 507:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 508:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 509:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 510:src/MightyBoard/Motherboard/system/core_cm3.h ****   __O  union
+ 511:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 512:src/MightyBoard/Motherboard/system/core_cm3.h ****     __O  uint8_t    u8;                  /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 8-bit         
+ 513:src/MightyBoard/Motherboard/system/core_cm3.h ****     __O  uint16_t   u16;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 16-bit        
+ 514:src/MightyBoard/Motherboard/system/core_cm3.h ****     __O  uint32_t   u32;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 32-bit        
+ 515:src/MightyBoard/Motherboard/system/core_cm3.h ****   }  PORT [32];                          /*!< Offset: 0x000 ( /W)  ITM Stimulus Port Registers     
+ 516:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED0[864];
+ 517:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t TER;                     /*!< Offset:       (R/W)  ITM Trace Enable Register       
+ 518:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED1[15];
+ 519:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t TPR;                     /*!< Offset:       (R/W)  ITM Trace Privilege Register    
+ 520:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED2[15];
+ 521:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t TCR;                     /*!< Offset:       (R/W)  ITM Trace Control Register      
+ 522:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED3[29];
+ 523:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IWR;                     /*!< Offset:       (R/W)  ITM Integration Write Register  
+ 524:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IRR;                     /*!< Offset:       (R/W)  ITM Integration Read Register   
+ 525:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IMCR;                    /*!< Offset:       (R/W)  ITM Integration Mode Control Reg
+ 526:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED4[43];
+ 527:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t LAR;                     /*!< Offset:       (R/W)  ITM Lock Access Register        
+ 528:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t LSR;                     /*!< Offset:       (R/W)  ITM Lock Status Register        
+ 529:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED5[6];
+ 530:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID4;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 531:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID5;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 532:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID6;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 533:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID7;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 534:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID0;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 535:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID1;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 536:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID2;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 537:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID3;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 538:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID0;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 539:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID1;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 540:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID2;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 541:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID3;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 542:src/MightyBoard/Motherboard/system/core_cm3.h **** } ITM_Type;
+ 543:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 544:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Trace Privilege Register Definitions */
+ 545:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TPR_PRIVMASK_Pos                0                                             /*!< ITM 
+ 546:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TPR_PRIVMASK_Msk               (0xFUL << ITM_TPR_PRIVMASK_Pos)                /*!< ITM 
+ 547:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 548:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Trace Control Register Definitions */
+ 549:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_BUSY_Pos                   23                                             /*!< ITM 
+ 550:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_BUSY_Msk                   (1UL << ITM_TCR_BUSY_Pos)                      /*!< ITM 
+ 551:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 552:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ATBID_Pos                  16                                             /*!< ITM 
+ 553:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ATBID_Msk                  (0x7FUL << ITM_TCR_ATBID_Pos)                  /*!< ITM 
+ 554:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 555:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSPrescale_Pos              8                                             /*!< ITM 
+ 556:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSPrescale_Msk             (3UL << ITM_TCR_TSPrescale_Pos)                /*!< ITM 
+ 557:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 558:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SWOENA_Pos                  4                                             /*!< ITM 
+ 559:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SWOENA_Msk                 (1UL << ITM_TCR_SWOENA_Pos)                    /*!< ITM 
+ 560:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 561:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_DWTENA_Pos                  3                                             /*!< ITM 
+ 562:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_DWTENA_Msk                 (1UL << ITM_TCR_DWTENA_Pos)                    /*!< ITM 
+ 563:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 564:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SYNCENA_Pos                 2                                             /*!< ITM 
+ 565:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SYNCENA_Msk                (1UL << ITM_TCR_SYNCENA_Pos)                   /*!< ITM 
+ 566:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 567:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSENA_Pos                   1                                             /*!< ITM 
+ 568:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSENA_Msk                  (1UL << ITM_TCR_TSENA_Pos)                     /*!< ITM 
+ 569:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 570:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ITMENA_Pos                  0                                             /*!< ITM 
+ 571:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ITMENA_Msk                 (1UL << ITM_TCR_ITMENA_Pos)                    /*!< ITM 
+ 572:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 573:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Integration Write Register Definitions */
+ 574:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IWR_ATVALIDM_Pos                0                                             /*!< ITM 
+ 575:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IWR_ATVALIDM_Msk               (1UL << ITM_IWR_ATVALIDM_Pos)                  /*!< ITM 
+ 576:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 577:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Integration Read Register Definitions */
+ 578:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IRR_ATREADYM_Pos                0                                             /*!< ITM 
+ 579:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IRR_ATREADYM_Msk               (1UL << ITM_IRR_ATREADYM_Pos)                  /*!< ITM 
+ 580:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 581:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Integration Mode Control Register Definitions */
+ 582:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IMCR_INTEGRATION_Pos            0                                             /*!< ITM 
+ 583:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IMCR_INTEGRATION_Msk           (1UL << ITM_IMCR_INTEGRATION_Pos)              /*!< ITM 
+ 584:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 585:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Lock Status Register Definitions */
+ 586:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_ByteAcc_Pos                 2                                             /*!< ITM 
+ 587:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_ByteAcc_Msk                (1UL << ITM_LSR_ByteAcc_Pos)                   /*!< ITM 
+ 588:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 589:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Access_Pos                  1                                             /*!< ITM 
+ 590:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Access_Msk                 (1UL << ITM_LSR_Access_Pos)                    /*!< ITM 
+ 591:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 592:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Present_Pos                 0                                             /*!< ITM 
+ 593:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Present_Msk                (1UL << ITM_LSR_Present_Pos)                   /*!< ITM 
+ 594:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 595:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@}*/ /* end of group CMSIS_ITM */
+ 596:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 597:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 598:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 599:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_InterruptType CMSIS Interrupt Type
+ 600:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Interrupt Type Register
+ 601:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 602:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 603:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 604:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Interrupt Type Register.
+ 605:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 606:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 607:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 608:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED0;
+ 609:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t ICTR;                    /*!< Offset: 0x004 (R/ )  Interrupt Control Type Register 
+ 610:src/MightyBoard/Motherboard/system/core_cm3.h **** #if ((defined __CM3_REV) && (__CM3_REV >= 0x200))
+ 611:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ACTLR;                   /*!< Offset: 0x008 (R/W)  Auxiliary Control Register      
+ 612:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+ 613:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED1;
+ 614:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 615:src/MightyBoard/Motherboard/system/core_cm3.h **** } InterruptType_Type;
+ 616:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 617:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Interrupt Controller Type Register Definitions */
+ 618:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ICTR_INTLINESNUM_Pos  0                                                   /*!< Inte
+ 619:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ICTR_INTLINESNUM_Msk (0x1FUL << IntType_ICTR_INTLINESNUM_Pos)             /*!< Inte
+ 620:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 621:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Auxiliary Control Register Definitions */
+ 622:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISFOLD_Pos     2                                                   /*!< Inte
+ 623:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISFOLD_Msk    (1UL << IntType_ACTLR_DISFOLD_Pos)                   /*!< Inte
+ 624:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 625:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISDEFWBUF_Pos  1                                                   /*!< Inte
+ 626:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISDEFWBUF_Msk (1UL << IntType_ACTLR_DISDEFWBUF_Pos)                /*!< Inte
+ 627:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 628:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISMCYCINT_Pos  0                                                   /*!< Inte
+ 629:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISMCYCINT_Msk (1UL << IntType_ACTLR_DISMCYCINT_Pos)                /*!< Inte
+ 630:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 631:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@}*/ /* end of group CMSIS_InterruptType */
+ 632:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 633:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 634:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__MPU_PRESENT == 1)
+ 635:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 636:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_MPU CMSIS MPU
+ 637:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Memory Protection Unit (MPU)
+ 638:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 639:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 640:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 641:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Memory Protection Unit (MPU).
+ 642:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 643:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 644:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 645:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t TYPE;                    /*!< Offset: 0x000 (R/ )  MPU Type Register               
+ 646:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CTRL;                    /*!< Offset: 0x004 (R/W)  MPU Control Register            
+ 647:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RNR;                     /*!< Offset: 0x008 (R/W)  MPU Region RNRber Register      
+ 648:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR;                    /*!< Offset: 0x00C (R/W)  MPU Region Base Address Register
+ 649:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR;                    /*!< Offset: 0x010 (R/W)  MPU Region Attribute and Size Re
+ 650:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR_A1;                 /*!< Offset: 0x014 (R/W)  MPU Alias 1 Region Base Address 
+ 651:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR_A1;                 /*!< Offset: 0x018 (R/W)  MPU Alias 1 Region Attribute and
+ 652:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR_A2;                 /*!< Offset: 0x01C (R/W)  MPU Alias 2 Region Base Address 
+ 653:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR_A2;                 /*!< Offset: 0x020 (R/W)  MPU Alias 2 Region Attribute and
+ 654:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR_A3;                 /*!< Offset: 0x024 (R/W)  MPU Alias 3 Region Base Address 
+ 655:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR_A3;                 /*!< Offset: 0x028 (R/W)  MPU Alias 3 Region Attribute and
+ 656:src/MightyBoard/Motherboard/system/core_cm3.h **** } MPU_Type;
+ 657:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 658:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Type Register */
+ 659:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_IREGION_Pos               16                                             /*!< MPU 
+ 660:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_IREGION_Msk               (0xFFUL << MPU_TYPE_IREGION_Pos)               /*!< MPU 
+ 661:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 662:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_DREGION_Pos                8                                             /*!< MPU 
+ 663:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_DREGION_Msk               (0xFFUL << MPU_TYPE_DREGION_Pos)               /*!< MPU 
+ 664:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 665:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_SEPARATE_Pos               0                                             /*!< MPU 
+ 666:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_SEPARATE_Msk              (1UL << MPU_TYPE_SEPARATE_Pos)                 /*!< MPU 
+ 667:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 668:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Control Register */
+ 669:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_PRIVDEFENA_Pos             2                                             /*!< MPU 
+ 670:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_PRIVDEFENA_Msk            (1UL << MPU_CTRL_PRIVDEFENA_Pos)               /*!< MPU 
+ 671:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 672:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_HFNMIENA_Pos               1                                             /*!< MPU 
+ 673:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_HFNMIENA_Msk              (1UL << MPU_CTRL_HFNMIENA_Pos)                 /*!< MPU 
+ 674:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 675:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_ENABLE_Pos                 0                                             /*!< MPU 
+ 676:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_ENABLE_Msk                (1UL << MPU_CTRL_ENABLE_Pos)                   /*!< MPU 
+ 677:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 678:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Region Number Register */
+ 679:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RNR_REGION_Pos                  0                                             /*!< MPU 
+ 680:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RNR_REGION_Msk                 (0xFFUL << MPU_RNR_REGION_Pos)                 /*!< MPU 
+ 681:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 682:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Region Base Address Register */
+ 683:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_ADDR_Pos                   5                                             /*!< MPU 
+ 684:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_ADDR_Msk                  (0x7FFFFFFUL << MPU_RBAR_ADDR_Pos)             /*!< MPU 
+ 685:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 686:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_VALID_Pos                  4                                             /*!< MPU 
+ 687:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_VALID_Msk                 (1UL << MPU_RBAR_VALID_Pos)                    /*!< MPU 
+ 688:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 689:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_REGION_Pos                 0                                             /*!< MPU 
+ 690:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_REGION_Msk                (0xFUL << MPU_RBAR_REGION_Pos)                 /*!< MPU 
+ 691:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 692:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Region Attribute and Size Register */
+ 693:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_XN_Pos                    28                                             /*!< MPU 
+ 694:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_XN_Msk                    (1UL << MPU_RASR_XN_Pos)                       /*!< MPU 
+ 695:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 696:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_AP_Pos                    24                                             /*!< MPU 
+ 697:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_AP_Msk                    (7UL << MPU_RASR_AP_Pos)                       /*!< MPU 
+ 698:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 699:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_TEX_Pos                   19                                             /*!< MPU 
+ 700:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_TEX_Msk                   (7UL << MPU_RASR_TEX_Pos)                      /*!< MPU 
+ 701:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 702:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_S_Pos                     18                                             /*!< MPU 
+ 703:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_S_Msk                     (1UL << MPU_RASR_S_Pos)                        /*!< MPU 
+ 704:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 705:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_C_Pos                     17                                             /*!< MPU 
+ 706:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_C_Msk                     (1UL << MPU_RASR_C_Pos)                        /*!< MPU 
+ 707:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 708:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_B_Pos                     16                                             /*!< MPU 
+ 709:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_B_Msk                     (1UL << MPU_RASR_B_Pos)                        /*!< MPU 
+ 710:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 711:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SRD_Pos                    8                                             /*!< MPU 
+ 712:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SRD_Msk                   (0xFFUL << MPU_RASR_SRD_Pos)                   /*!< MPU 
+ 713:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 714:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SIZE_Pos                   1                                             /*!< MPU 
+ 715:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SIZE_Msk                  (0x1FUL << MPU_RASR_SIZE_Pos)                  /*!< MPU 
+ 716:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 717:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_ENA_Pos                     0                                            /*!< MPU 
+ 718:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_ENA_Msk                    (0x1UL << MPU_RASR_ENA_Pos)                   /*!< MPU 
+ 719:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 720:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_MPU */
+ 721:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 722:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 723:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 724:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 725:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_CoreDebug CMSIS Core Debug
+ 726:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Core Debug Registers
+ 727:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 728:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 729:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 730:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Core Debug Register (CoreDebug).
+ 731:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 732:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 733:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 734:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DHCSR;                   /*!< Offset: 0x000 (R/W)  Debug Halting Control and Status
+ 735:src/MightyBoard/Motherboard/system/core_cm3.h ****   __O  uint32_t DCRSR;                   /*!< Offset: 0x004 ( /W)  Debug Core Register Selector Reg
+ 736:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DCRDR;                   /*!< Offset: 0x008 (R/W)  Debug Core Register Data Registe
+ 737:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DEMCR;                   /*!< Offset: 0x00C (R/W)  Debug Exception and Monitor Cont
+ 738:src/MightyBoard/Motherboard/system/core_cm3.h **** } CoreDebug_Type;
+ 739:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 740:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Debug Halting Control and Status Register */
+ 741:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_DBGKEY_Pos         16                                             /*!< Core
+ 742:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_DBGKEY_Msk         (0xFFFFUL << CoreDebug_DHCSR_DBGKEY_Pos)       /*!< Core
+ 743:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 744:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RESET_ST_Pos     25                                             /*!< Core
+ 745:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RESET_ST_Msk     (1UL << CoreDebug_DHCSR_S_RESET_ST_Pos)        /*!< Core
+ 746:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 747:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RETIRE_ST_Pos    24                                             /*!< Core
+ 748:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RETIRE_ST_Msk    (1UL << CoreDebug_DHCSR_S_RETIRE_ST_Pos)       /*!< Core
+ 749:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 750:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_LOCKUP_Pos       19                                             /*!< Core
+ 751:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_LOCKUP_Msk       (1UL << CoreDebug_DHCSR_S_LOCKUP_Pos)          /*!< Core
+ 752:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 753:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_SLEEP_Pos        18                                             /*!< Core
+ 754:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_SLEEP_Msk        (1UL << CoreDebug_DHCSR_S_SLEEP_Pos)           /*!< Core
+ 755:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 756:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_HALT_Pos         17                                             /*!< Core
+ 757:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_HALT_Msk         (1UL << CoreDebug_DHCSR_S_HALT_Pos)            /*!< Core
+ 758:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 759:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_REGRDY_Pos       16                                             /*!< Core
+ 760:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_REGRDY_Msk       (1UL << CoreDebug_DHCSR_S_REGRDY_Pos)          /*!< Core
+ 761:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 762:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_SNAPSTALL_Pos     5                                             /*!< Core
+ 763:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_SNAPSTALL_Msk    (1UL << CoreDebug_DHCSR_C_SNAPSTALL_Pos)       /*!< Core
+ 764:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 765:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_MASKINTS_Pos      3                                             /*!< Core
+ 766:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_MASKINTS_Msk     (1UL << CoreDebug_DHCSR_C_MASKINTS_Pos)        /*!< Core
+ 767:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 768:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_STEP_Pos          2                                             /*!< Core
+ 769:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_STEP_Msk         (1UL << CoreDebug_DHCSR_C_STEP_Pos)            /*!< Core
+ 770:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 771:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_HALT_Pos          1                                             /*!< Core
+ 772:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_HALT_Msk         (1UL << CoreDebug_DHCSR_C_HALT_Pos)            /*!< Core
+ 773:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 774:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_DEBUGEN_Pos       0                                             /*!< Core
+ 775:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_DEBUGEN_Msk      (1UL << CoreDebug_DHCSR_C_DEBUGEN_Pos)         /*!< Core
+ 776:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 777:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Debug Core Register Selector Register */
+ 778:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGWnR_Pos         16                                             /*!< Core
+ 779:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGWnR_Msk         (1UL << CoreDebug_DCRSR_REGWnR_Pos)            /*!< Core
+ 780:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 781:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGSEL_Pos          0                                             /*!< Core
+ 782:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGSEL_Msk         (0x1FUL << CoreDebug_DCRSR_REGSEL_Pos)         /*!< Core
+ 783:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 784:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Debug Exception and Monitor Control Register */
+ 785:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_TRCENA_Pos         24                                             /*!< Core
+ 786:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_TRCENA_Msk         (1UL << CoreDebug_DEMCR_TRCENA_Pos)            /*!< Core
+ 787:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 788:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_REQ_Pos        19                                             /*!< Core
+ 789:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_REQ_Msk        (1UL << CoreDebug_DEMCR_MON_REQ_Pos)           /*!< Core
+ 790:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 791:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_STEP_Pos       18                                             /*!< Core
+ 792:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_STEP_Msk       (1UL << CoreDebug_DEMCR_MON_STEP_Pos)          /*!< Core
+ 793:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 794:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_PEND_Pos       17                                             /*!< Core
+ 795:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_PEND_Msk       (1UL << CoreDebug_DEMCR_MON_PEND_Pos)          /*!< Core
+ 796:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 797:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_EN_Pos         16                                             /*!< Core
+ 798:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_EN_Msk         (1UL << CoreDebug_DEMCR_MON_EN_Pos)            /*!< Core
+ 799:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 800:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_HARDERR_Pos     10                                             /*!< Core
+ 801:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_HARDERR_Msk     (1UL << CoreDebug_DEMCR_VC_HARDERR_Pos)        /*!< Core
+ 802:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 803:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_INTERR_Pos       9                                             /*!< Core
+ 804:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_INTERR_Msk      (1UL << CoreDebug_DEMCR_VC_INTERR_Pos)         /*!< Core
+ 805:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 806:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_BUSERR_Pos       8                                             /*!< Core
+ 807:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_BUSERR_Msk      (1UL << CoreDebug_DEMCR_VC_BUSERR_Pos)         /*!< Core
+ 808:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 809:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_STATERR_Pos      7                                             /*!< Core
+ 810:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_STATERR_Msk     (1UL << CoreDebug_DEMCR_VC_STATERR_Pos)        /*!< Core
+ 811:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 812:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CHKERR_Pos       6                                             /*!< Core
+ 813:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CHKERR_Msk      (1UL << CoreDebug_DEMCR_VC_CHKERR_Pos)         /*!< Core
+ 814:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 815:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_NOCPERR_Pos      5                                             /*!< Core
+ 816:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_NOCPERR_Msk     (1UL << CoreDebug_DEMCR_VC_NOCPERR_Pos)        /*!< Core
+ 817:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 818:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_MMERR_Pos        4                                             /*!< Core
+ 819:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_MMERR_Msk       (1UL << CoreDebug_DEMCR_VC_MMERR_Pos)          /*!< Core
+ 820:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 821:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CORERESET_Pos    0                                             /*!< Core
+ 822:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CORERESET_Msk   (1UL << CoreDebug_DEMCR_VC_CORERESET_Pos)      /*!< Core
+ 823:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 824:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_CoreDebug */
+ 825:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 826:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 827:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 828:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 829:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 830:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 831:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Memory mapping of Cortex-M3 Hardware */
+ 832:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCS_BASE            (0xE000E000UL)                            /*!< System Control Space Bas
+ 833:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_BASE            (0xE0000000UL)                            /*!< ITM Base Address        
+ 834:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_BASE      (0xE000EDF0UL)                            /*!< Core Debug Base Address 
+ 835:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_BASE        (SCS_BASE +  0x0010UL)                    /*!< SysTick Base Address    
+ 836:src/MightyBoard/Motherboard/system/core_cm3.h **** #define NVIC_BASE           (SCS_BASE +  0x0100UL)                    /*!< NVIC Base Address       
+ 837:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_BASE            (SCS_BASE +  0x0D00UL)                    /*!< System Control Block Bas
+ 838:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 839:src/MightyBoard/Motherboard/system/core_cm3.h **** #define InterruptType       ((InterruptType_Type *) SCS_BASE)         /*!< Interrupt Type Register 
+ 840:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB                 ((SCB_Type *)           SCB_BASE)         /*!< SCB configuration struct
+ 841:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick             ((SysTick_Type *)       SysTick_BASE)     /*!< SysTick configuration st
+ 842:src/MightyBoard/Motherboard/system/core_cm3.h **** #define NVIC                ((NVIC_Type *)          NVIC_BASE)        /*!< NVIC configuration struc
+ 843:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM                 ((ITM_Type *)           ITM_BASE)         /*!< ITM configuration struct
+ 844:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug           ((CoreDebug_Type *)     CoreDebug_BASE)   /*!< Core Debug configuration
+ 845:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 846:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__MPU_PRESENT == 1)
+ 847:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define MPU_BASE          (SCS_BASE +  0x0D90UL)                    /*!< Memory Protection Unit  
+ 848:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define MPU               ((MPU_Type*)            MPU_BASE)         /*!< Memory Protection Unit  
+ 849:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 850:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 851:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} */
+ 852:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 853:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 854:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 855:src/MightyBoard/Motherboard/system/core_cm3.h **** /*******************************************************************************
+ 856:src/MightyBoard/Motherboard/system/core_cm3.h ****  *                Hardware Abstraction Layer
+ 857:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+ 858:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS
+ 859:src/MightyBoard/Motherboard/system/core_cm3.h ****   \addtogroup CMSIS_Core_FunctionInterface CMSIS Core Function Interface
+ 860:src/MightyBoard/Motherboard/system/core_cm3.h ****   Core Function Interface contains:
+ 861:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core NVIC Functions
+ 862:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core SysTick Functions
+ 863:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Debug Functions
+ 864:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Register Access Functions
+ 865:src/MightyBoard/Motherboard/system/core_cm3.h **** */
+ 866:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 867:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 868:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 869:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ##########################   NVIC functions  #################################### */
+ 870:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 871:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_Core_NVICFunctions CMSIS Core NVIC Functions
+ 872:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 873:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 874:src/MightyBoard/Motherboard/system/core_cm3.h **** /** @addtogroup CMSIS_Core_NVICFunctions
+ 875:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @{
+ 876:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 877:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Set Priority Grouping
+ 878:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 879:src/MightyBoard/Motherboard/system/core_cm3.h ****   This function sets the priority grouping field using the required unlock sequence.
+ 880:src/MightyBoard/Motherboard/system/core_cm3.h ****   The parameter PriorityGroup is assigned to the field SCB->AIRCR [10:8] PRIGROUP field.
+ 881:src/MightyBoard/Motherboard/system/core_cm3.h ****   Only values from 0..7 are used.
+ 882:src/MightyBoard/Motherboard/system/core_cm3.h ****   In case of a conflict between priority grouping and available
+ 883:src/MightyBoard/Motherboard/system/core_cm3.h ****   priority bits (__NVIC_PRIO_BITS) the smallest possible priority group is set.
+ 884:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 885:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      PriorityGroup  Priority grouping field
+ 886:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 887:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_SetPriorityGrouping(uint32_t PriorityGroup)
+ 888:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 889:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t reg_value;
+ 890:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t PriorityGroupTmp = (PriorityGroup & 0x07);                         /* only values 0..7 a
+ 891:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 892:src/MightyBoard/Motherboard/system/core_cm3.h ****   reg_value  =  SCB->AIRCR;                                                   /* read old register 
+ 893:src/MightyBoard/Motherboard/system/core_cm3.h ****   reg_value &= ~(SCB_AIRCR_VECTKEY_Msk | SCB_AIRCR_PRIGROUP_Msk);             /* clear bits to chan
+ 894:src/MightyBoard/Motherboard/system/core_cm3.h ****   reg_value  =  (reg_value                       |
+ 895:src/MightyBoard/Motherboard/system/core_cm3.h ****                 (0x5FA << SCB_AIRCR_VECTKEY_Pos) |
+ 896:src/MightyBoard/Motherboard/system/core_cm3.h ****                 (PriorityGroupTmp << 8));                                     /* Insert write key a
+ 897:src/MightyBoard/Motherboard/system/core_cm3.h ****   SCB->AIRCR =  reg_value;
+ 898:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 899:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 900:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 901:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Get Priority Grouping
+ 902:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 903:src/MightyBoard/Motherboard/system/core_cm3.h ****   This function gets the priority grouping from NVIC Interrupt Controller.
+ 904:src/MightyBoard/Motherboard/system/core_cm3.h ****   Priority grouping is SCB->AIRCR [10:8] PRIGROUP field.
+ 905:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 906:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return                Priority grouping field
+ 907:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 908:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE uint32_t NVIC_GetPriorityGrouping(void)
+ 909:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 910:src/MightyBoard/Motherboard/system/core_cm3.h ****   return ((SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) >> SCB_AIRCR_PRIGROUP_Pos);   /* read priority grou
+ 911:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 912:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 913:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 914:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Enable External Interrupt
+ 915:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 916:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function enables a device specific interupt in the NVIC interrupt controller.
+ 917:src/MightyBoard/Motherboard/system/core_cm3.h ****     The interrupt number cannot be a negative value.
+ 918:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 919:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the external interrupt to enable
+ 920:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 921:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
+ 922:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
+ 924:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 925:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 926:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 927:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Disable External Interrupt
+ 928:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 929:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function disables a device specific interupt in the NVIC interrupt controller.
+ 930:src/MightyBoard/Motherboard/system/core_cm3.h ****     The interrupt number cannot be a negative value.
+ 931:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 932:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the external interrupt to disable
+ 933:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 934:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_DisableIRQ(IRQn_Type IRQn)
+ 935:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 936:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ICER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* disable interrupt */
+ 937:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 938:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 939:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 940:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Get Pending Interrupt
+ 941:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 942:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function reads the pending register in the NVIC and returns the pending bit
+ 943:src/MightyBoard/Motherboard/system/core_cm3.h ****     for the specified interrupt.
+ 944:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 945:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the interrupt for get pending
+ 946:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return             0  Interrupt status is not pending
+ 947:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return             1  Interrupt status is pending
+ 948:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 949:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn)
+ 950:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 951:src/MightyBoard/Motherboard/system/core_cm3.h ****   return((uint32_t) ((NVIC->ISPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0)); 
+ 952:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 953:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 954:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 955:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Set Pending Interrupt
+ 956:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 957:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function sets the pending bit for the specified interrupt.
+ 958:src/MightyBoard/Motherboard/system/core_cm3.h ****     The interrupt number cannot be a negative value.
+ 959:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 960:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the interrupt for set pending
+ 961:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 962:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_SetPendingIRQ(IRQn_Type IRQn)
+ 963:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 964:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISPR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* set interrupt pending 
+ 481              	 .loc 2 964 0
+ 482 0000 4FF46143 	 mov r3,#57600
+ 483 0004 CEF20003 	 movt r3,57344
+ 484 0008 4FF00402 	 mov r2,#4
+ 485 000c C3F80421 	 str r2,[r3,#260]
+ 486              	.LBE5:
+ 487              	.LBE4:
+ 330:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** //  int numBytesRead;
+ 331:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 332:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // get data from USB into intermediate buffer
+ 333:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** //  numBytesRead = USB_ReadEP(CDC_DEP_OUT, &BulkBufOut[0]);
+ 334:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 335:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // ... add code to check for overwrite
+ 336:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 337:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   // store data in a buffer to transmit it over serial interface
+ 338:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** //  CDC_WrOutBuf ((char *)&BulkBufOut[0], &numBytesRead);
+ 339:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 	NVIC_SetPendingIRQ(CANActivity_IRQn); // Software interrupt
+ 340:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 341:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 488              	 .loc 1 341 0
+ 489 0010 7047     	 bx lr
+ 490              	 .cfi_endproc
+ 491              	.LFE69:
+ 493 0012 00BF     	 .section .text.CDC_GetSerialState,"ax",%progbits
+ 494              	 .align 2
+ 495              	 .global CDC_GetSerialState
+ 496              	 .thumb
+ 497              	 .thumb_func
+ 499              	CDC_GetSerialState:
+ 500              	.LFB70:
+ 342:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 343:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 344:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 345:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Get the SERIAL_STATE as defined in usbcdc11.pdf, 6.3.5, Table 69.
+ 346:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Parameters:   none
+ 347:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Return Value: SerialState as defined in usbcdc11.pdf
+ 348:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 349:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** unsigned short CDC_GetSerialState (void) {
+ 501              	 .loc 1 349 0
+ 502              	 .cfi_startproc
+ 503              	 
+ 504              	 
+ 505 0000 00B5     	 push {lr}
+ 506              	.LCFI4:
+ 507              	 .cfi_def_cfa_offset 4
+ 508              	 .cfi_offset 14,-4
+ 509 0002 83B0     	 sub sp,sp,#12
+ 510              	.LCFI5:
+ 511              	 .cfi_def_cfa_offset 16
+ 350:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   unsigned short temp;
+ 351:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 352:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   CDC_SerialState = 0;
+ 512              	 .loc 1 352 0
+ 513 0004 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 514 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 515 000c 4FF00002 	 mov r2,#0
+ 516 0010 1A80     	 strh r2,[r3,#0]
+ 353:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   ser_LineState (&temp);
+ 517              	 .loc 1 353 0
+ 518 0012 0DF10600 	 add r0,sp,#6
+ 519 0016 FFF7FEFF 	 bl ser_LineState
+ 520              	.LVL29:
+ 354:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 355:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (temp & 0x8000)  CDC_SerialState |= CDC_SERIAL_STATE_RX_CARRIER;
+ 521              	 .loc 1 355 0
+ 522 001a BDF80630 	 ldrh r3,[sp,#6]
+ 523 001e 13F4004F 	 tst r3,#32768
+ 524 0022 1FBF     	 itttt ne
+ 525 0024 40F20002 	 movwne r2,#:lower16:.LANCHOR2
+ 526 0028 C0F20002 	 movtne r2,#:upper16:.LANCHOR2
+ 527 002c 1188     	 ldrhne r1,[r2,#0]
+ 528 002e 41F00101 	 orrne r1,r1,#1
+ 529 0032 18BF     	 it ne
+ 530 0034 1180     	 strhne r1,[r2,#0]
+ 356:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (temp & 0x2000)  CDC_SerialState |= CDC_SERIAL_STATE_TX_CARRIER;
+ 531              	 .loc 1 356 0
+ 532 0036 13F4005F 	 tst r3,#8192
+ 533 003a 1FBF     	 itttt ne
+ 534 003c 40F20002 	 movwne r2,#:lower16:.LANCHOR2
+ 535 0040 C0F20002 	 movtne r2,#:upper16:.LANCHOR2
+ 536 0044 1188     	 ldrhne r1,[r2,#0]
+ 537 0046 41F00201 	 orrne r1,r1,#2
+ 538 004a 18BF     	 it ne
+ 539 004c 1180     	 strhne r1,[r2,#0]
+ 357:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (temp & 0x0010)  CDC_SerialState |= CDC_SERIAL_STATE_BREAK;
+ 540              	 .loc 1 357 0
+ 541 004e 13F0100F 	 tst r3,#16
+ 542 0052 1FBF     	 itttt ne
+ 543 0054 40F20002 	 movwne r2,#:lower16:.LANCHOR2
+ 544 0058 C0F20002 	 movtne r2,#:upper16:.LANCHOR2
+ 545 005c 1188     	 ldrhne r1,[r2,#0]
+ 546 005e 41F00401 	 orrne r1,r1,#4
+ 547 0062 18BF     	 it ne
+ 548 0064 1180     	 strhne r1,[r2,#0]
+ 358:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (temp & 0x4000)  CDC_SerialState |= CDC_SERIAL_STATE_RING;
+ 549              	 .loc 1 358 0
+ 550 0066 13F4804F 	 tst r3,#16384
+ 551 006a 1FBF     	 itttt ne
+ 552 006c 40F20002 	 movwne r2,#:lower16:.LANCHOR2
+ 553 0070 C0F20002 	 movtne r2,#:upper16:.LANCHOR2
+ 554 0074 1188     	 ldrhne r1,[r2,#0]
+ 555 0076 41F00801 	 orrne r1,r1,#8
+ 556 007a 18BF     	 it ne
+ 557 007c 1180     	 strhne r1,[r2,#0]
+ 359:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (temp & 0x0008)  CDC_SerialState |= CDC_SERIAL_STATE_FRAMING;
+ 558              	 .loc 1 359 0
+ 559 007e 13F0080F 	 tst r3,#8
+ 560 0082 1FBF     	 itttt ne
+ 561 0084 40F20002 	 movwne r2,#:lower16:.LANCHOR2
+ 562 0088 C0F20002 	 movtne r2,#:upper16:.LANCHOR2
+ 563 008c 1188     	 ldrhne r1,[r2,#0]
+ 564 008e 41F01001 	 orrne r1,r1,#16
+ 565 0092 18BF     	 it ne
+ 566 0094 1180     	 strhne r1,[r2,#0]
+ 360:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (temp & 0x0004)  CDC_SerialState |= CDC_SERIAL_STATE_PARITY;
+ 567              	 .loc 1 360 0
+ 568 0096 13F0040F 	 tst r3,#4
+ 569 009a 1FBF     	 itttt ne
+ 570 009c 40F20002 	 movwne r2,#:lower16:.LANCHOR2
+ 571 00a0 C0F20002 	 movtne r2,#:upper16:.LANCHOR2
+ 572 00a4 1188     	 ldrhne r1,[r2,#0]
+ 573 00a6 41F02001 	 orrne r1,r1,#32
+ 574 00aa 18BF     	 it ne
+ 575 00ac 1180     	 strhne r1,[r2,#0]
+ 361:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   if (temp & 0x0002)  CDC_SerialState |= CDC_SERIAL_STATE_OVERRUN;
+ 576              	 .loc 1 361 0
+ 577 00ae 13F0020F 	 tst r3,#2
+ 578 00b2 1FBF     	 itttt ne
+ 579 00b4 40F20003 	 movwne r3,#:lower16:.LANCHOR2
+ 580 00b8 C0F20003 	 movtne r3,#:upper16:.LANCHOR2
+ 581 00bc 1A88     	 ldrhne r2,[r3,#0]
+ 582 00be 42F04002 	 orrne r2,r2,#64
+ 583 00c2 18BF     	 it ne
+ 584 00c4 1A80     	 strhne r2,[r3,#0]
+ 362:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 363:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   return (CDC_SerialState);
+ 585              	 .loc 1 363 0
+ 586 00c6 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 587 00ca C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 364:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 588              	 .loc 1 364 0
+ 589 00ce 1888     	 ldrh r0,[r3,#0]
+ 590 00d0 03B0     	 add sp,sp,#12
+ 591 00d2 00BD     	 pop {pc}
+ 592              	 .cfi_endproc
+ 593              	.LFE70:
+ 595              	 .section .text.CDC_NotificationIn,"ax",%progbits
+ 596              	 .align 2
+ 597              	 .global CDC_NotificationIn
+ 598              	 .thumb
+ 599              	 .thumb_func
+ 601              	CDC_NotificationIn:
+ 602              	.LFB71:
+ 365:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 366:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 367:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** /*----------------------------------------------------------------------------
+ 368:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   Send the SERIAL_STATE notification as defined in usbcdc11.pdf, 6.3.5.
+ 369:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****  *---------------------------------------------------------------------------*/
+ 370:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** void CDC_NotificationIn (void) {
+ 603              	 .loc 1 370 0
+ 604              	 .cfi_startproc
+ 605              	 
+ 606              	 
+ 607 0000 08B5     	 push {r3,lr}
+ 608              	.LCFI6:
+ 609              	 .cfi_def_cfa_offset 8
+ 610              	 .cfi_offset 14,-4
+ 611              	 .cfi_offset 3,-8
+ 371:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 372:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[0] = 0xA1;                           // bmRequestType
+ 612              	 .loc 1 372 0
+ 613 0002 40F20001 	 movw r1,#:lower16:NotificationBuf
+ 614 0006 C0F20001 	 movt r1,#:upper16:NotificationBuf
+ 615 000a 4FF0A103 	 mov r3,#161
+ 616 000e 0B70     	 strb r3,[r1,#0]
+ 373:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[1] = CDC_NOTIFICATION_SERIAL_STATE;  // bNotification (SERIAL_STATE)
+ 617              	 .loc 1 373 0
+ 618 0010 4FF02003 	 mov r3,#32
+ 619 0014 4B70     	 strb r3,[r1,#1]
+ 374:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[2] = 0x00;                           // wValue
+ 620              	 .loc 1 374 0
+ 621 0016 4FF00003 	 mov r3,#0
+ 622 001a 8B70     	 strb r3,[r1,#2]
+ 375:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[3] = 0x00;
+ 623              	 .loc 1 375 0
+ 624 001c CB70     	 strb r3,[r1,#3]
+ 376:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[4] = 0x00;                           // wIndex (Interface #, LSB first)
+ 625              	 .loc 1 376 0
+ 626 001e 0B71     	 strb r3,[r1,#4]
+ 377:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[5] = 0x00;
+ 627              	 .loc 1 377 0
+ 628 0020 4B71     	 strb r3,[r1,#5]
+ 378:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[6] = 0x02;                           // wLength (Data length = 2 bytes, LSB first
+ 629              	 .loc 1 378 0
+ 630 0022 4FF00202 	 mov r2,#2
+ 631 0026 8A71     	 strb r2,[r1,#6]
+ 379:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[7] = 0x00;
+ 632              	 .loc 1 379 0
+ 633 0028 CB71     	 strb r3,[r1,#7]
+ 380:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[8] = (CDC_SerialState >>  0) & 0xFF; // UART State Bitmap (16bits, LSB first)
+ 634              	 .loc 1 380 0
+ 635 002a 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 636 002e C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 637 0032 1B88     	 ldrh r3,[r3,#0]
+ 638 0034 0B72     	 strb r3,[r1,#8]
+ 381:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   NotificationBuf[9] = (CDC_SerialState >>  8) & 0xFF;
+ 639              	 .loc 1 381 0
+ 640 0036 4FEA1323 	 lsr r3,r3,#8
+ 641 003a 4B72     	 strb r3,[r1,#9]
+ 382:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** 
+ 383:src/MightyBoard/Motherboard/USBCDC/cdcuser.c ****   USB_WriteEP (CDC_CEP_IN, &NotificationBuf[0], 10);   // send notification
+ 642              	 .loc 1 383 0
+ 643 003c 4FF08100 	 mov r0,#129
+ 644 0040 4FF00A02 	 mov r2,#10
+ 645 0044 FFF7FEFF 	 bl USB_WriteEP
+ 384:src/MightyBoard/Motherboard/USBCDC/cdcuser.c **** }
+ 646              	 .loc 1 384 0
+ 647 0048 08BD     	 pop {r3,pc}
+ 648              	 .cfi_endproc
+ 649              	.LFE71:
+ 651              	 .comm CDC_OutBuf,72,4
+ 652              	 .global CDC_DepInEmpty
+ 653              	 .global CDC_SerialState
+ 654              	 .global CDC_LineCoding
+ 655              	 .comm NotificationBuf,10,4
+ 656              	 .comm BulkBufOut,64,4
+ 657              	 .comm BulkBufIn,64,4
+ 658              	 .comm FCR_0,1,1
+ 659              	 .comm IER_0,1,1
+ 660              	 .comm DLM_0,1,1
+ 661              	 .comm DLL_0,1,1
+ 662              	 .comm LCR_0,1,1
+ 663              	 .comm FDR_0,1,1
+ 664 004a 00BF     	 .section .data.CDC_DepInEmpty,"aw",%progbits
+ 665              	 .align 1
+ 666              	 .set .LANCHOR1,.+0
+ 669              	CDC_DepInEmpty:
+ 670 0000 0100     	 .short 1
+ 671              	 .section .bss.CDC_SerialState,"aw",%nobits
+ 672              	 .align 1
+ 673              	 .set .LANCHOR2,.+0
+ 676              	CDC_SerialState:
+ 677 0000 0000     	 .space 2
+ 678              	 .section .data.CDC_LineCoding,"aw",%progbits
+ 679              	 .align 2
+ 680              	 .set .LANCHOR0,.+0
+ 683              	CDC_LineCoding:
+ 684 0000 80250000 	 .word 9600
+ 685 0004 00       	 .byte 0
+ 686 0005 00       	 .byte 0
+ 687 0006 08       	 .byte 8
+ 688 0007 00       	 .text
+ 689              	.Letext0:
+ 690              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 691              	 .file 4 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 692              	 .file 5 "src/MightyBoard/Motherboard/USBCDC/cdc.h"
+ 693              	 .file 6 "src/MightyBoard/Motherboard/USBCDC/usbcore.h"
+ 694              	 .file 7 "src/MightyBoard/Motherboard/USBCDC/serial.h"
+ 695              	 .file 8 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 cdcuser.c
+    {standard input}:19     .text.CDC_RdOutBuf:00000000 $t
+    {standard input}:24     .text.CDC_RdOutBuf:00000000 CDC_RdOutBuf
+                            *COM*:00000048 CDC_OutBuf
+    {standard input}:69     .text.CDC_WrOutBuf:00000000 $t
+    {standard input}:74     .text.CDC_WrOutBuf:00000000 CDC_WrOutBuf
+    {standard input}:121    .text.CDC_OutBufAvailChar:00000000 $t
+    {standard input}:126    .text.CDC_OutBufAvailChar:00000000 CDC_OutBufAvailChar
+    {standard input}:150    .text.CDC_Init:00000000 $t
+    {standard input}:155    .text.CDC_Init:00000000 CDC_Init
+    {standard input}:175    .text.CDC_SendEncapsulatedCommand:00000000 $t
+    {standard input}:180    .text.CDC_SendEncapsulatedCommand:00000000 CDC_SendEncapsulatedCommand
+    {standard input}:194    .text.CDC_GetEncapsulatedResponse:00000000 $t
+    {standard input}:199    .text.CDC_GetEncapsulatedResponse:00000000 CDC_GetEncapsulatedResponse
+    {standard input}:213    .text.CDC_SetCommFeature:00000000 $t
+    {standard input}:218    .text.CDC_SetCommFeature:00000000 CDC_SetCommFeature
+    {standard input}:234    .text.CDC_GetCommFeature:00000000 $t
+    {standard input}:239    .text.CDC_GetCommFeature:00000000 CDC_GetCommFeature
+    {standard input}:255    .text.CDC_ClearCommFeature:00000000 $t
+    {standard input}:260    .text.CDC_ClearCommFeature:00000000 CDC_ClearCommFeature
+    {standard input}:276    .text.CDC_SetLineCoding:00000000 $t
+    {standard input}:281    .text.CDC_SetLineCoding:00000000 CDC_SetLineCoding
+    {standard input}:680    .data.CDC_LineCoding:00000000 .LANCHOR0
+    {standard input}:325    .text.CDC_GetLineCoding:00000000 $t
+    {standard input}:330    .text.CDC_GetLineCoding:00000000 CDC_GetLineCoding
+    {standard input}:369    .text.CDC_SetControlLineState:00000000 $t
+    {standard input}:374    .text.CDC_SetControlLineState:00000000 CDC_SetControlLineState
+    {standard input}:390    .text.CDC_SendBreak:00000000 $t
+    {standard input}:395    .text.CDC_SendBreak:00000000 CDC_SendBreak
+    {standard input}:411    .text.CDC_BulkIn:00000000 $t
+    {standard input}:416    .text.CDC_BulkIn:00000000 CDC_BulkIn
+                            *COM*:00000040 BulkBufIn
+    {standard input}:666    .data.CDC_DepInEmpty:00000000 .LANCHOR1
+    {standard input}:465    .text.CDC_BulkOut:00000000 $t
+    {standard input}:470    .text.CDC_BulkOut:00000000 CDC_BulkOut
+    {standard input}:494    .text.CDC_GetSerialState:00000000 $t
+    {standard input}:499    .text.CDC_GetSerialState:00000000 CDC_GetSerialState
+    {standard input}:673    .bss.CDC_SerialState:00000000 .LANCHOR2
+    {standard input}:596    .text.CDC_NotificationIn:00000000 $t
+    {standard input}:601    .text.CDC_NotificationIn:00000000 CDC_NotificationIn
+                            *COM*:0000000a NotificationBuf
+    {standard input}:669    .data.CDC_DepInEmpty:00000000 CDC_DepInEmpty
+    {standard input}:676    .bss.CDC_SerialState:00000000 CDC_SerialState
+    {standard input}:683    .data.CDC_LineCoding:00000000 CDC_LineCoding
+                            *COM*:00000040 BulkBufOut
+                            *COM*:00000001 FCR_0
+                            *COM*:00000001 IER_0
+                            *COM*:00000001 DLM_0
+                            *COM*:00000001 DLL_0
+                            *COM*:00000001 LCR_0
+                            *COM*:00000001 FDR_0
+    {standard input}:665    .data.CDC_DepInEmpty:00000000 $d
+    {standard input}:672    .bss.CDC_SerialState:00000000 $d
+    {standard input}:679    .data.CDC_LineCoding:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+EP0Buf
+ser_AvailChar
+ser_Read
+USB_WriteEP
+ser_LineState

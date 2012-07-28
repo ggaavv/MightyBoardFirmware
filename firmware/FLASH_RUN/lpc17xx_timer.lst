@@ -1,0 +1,1976 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_timer.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.TIM_GetIntStatus,"ax",%progbits
+  19              	 .align 2
+  20              	 .global TIM_GetIntStatus
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	TIM_GetIntStatus:
+  25              	.LFB58:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * $Id$		lpc17xx_timer.c				2011-03-10
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * @file		lpc17xx_timer.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * @brief	Contains all functions support for Timer firmware library
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * 			on LPC17xx
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * @version	3.1
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * @date		10. March. 2011
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * @author	NXP MCU SW Application Team
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** *
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * Copyright(C) 2011, NXP Semiconductor
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * All rights reserved.
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** *
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** ***********************************************************************
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * Software that is described herein is for illustrative purposes only
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * which provides customers with programming information regarding the
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * products. This software is supplied "AS IS" without any warranties.
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * use of the software, conveys no license or title under any patent,
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * reserves the right to make changes in the software without
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * notification. NXP Semiconductors also make no representation or
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * warranty that such application will be suitable for the specified
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** * use without further testing or modification.
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** **********************************************************************/
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /* Peripheral group ----------------------------------------------------------- */
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /** @addtogroup TIM
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @{
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  */
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /* Includes ------------------------------------------------------------------- */
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #include "lpc17xx_timer.h"
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #include "lpc17xx_clkpwr.h"
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #include "lpc17xx_pinsel.h"
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /* If this source file built with example, the LPC17xx FW library configuration
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * file in each example directory ("lpc17xx_libcfg.h") must be included,
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * otherwise the default FW library configuration file must be included instead
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  */
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #ifdef __BUILD_WITH_EXAMPLE__
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #include "lpc17xx_libcfg.h"
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #else
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #include "lpc17xx_libcfg_default.h"
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #endif /* __BUILD_WITH_EXAMPLE__ */
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** #ifdef _TIM
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /* Private Functions ---------------------------------------------------------- */
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** static uint32_t getPClock (uint32_t timernum);
+  52:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** static uint32_t converUSecToVal (uint32_t timernum, uint32_t usec);
+  53:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** static uint32_t converPtrToTimeNum (LPC_TIM_TypeDef *TIMx);
+  54:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  55:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  56:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+  57:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Get peripheral clock of each timer controller
+  58:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	timernum Timer number
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		Peripheral clock of timer
+  60:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+  61:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** static uint32_t getPClock (uint32_t timernum)
+  62:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+  63:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	uint32_t clkdlycnt;
+  64:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	switch (timernum)
+  65:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+  66:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 0:
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER0);
+  68:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+  69:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  70:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 1:
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER1);
+  72:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+  73:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  74:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 2:
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER2);
+  76:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+  77:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  78:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 3:
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER3);
+  80:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+  81:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+  82:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	return clkdlycnt;
+  83:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  86:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+  87:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Convert a time to a timer count value
+  88:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	timernum Timer number
+  89:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	usec Time in microseconds
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		The number of required clock ticks to give the time delay
+  91:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+  92:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** uint32_t converUSecToVal (uint32_t timernum, uint32_t usec)
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+  94:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	uint64_t clkdlycnt;
+  95:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	// Get Pclock of timer
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	clkdlycnt = (uint64_t) getPClock(timernum);
+  98:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	clkdlycnt = (clkdlycnt * usec) / 1000000;
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	return (uint32_t) clkdlycnt;
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 103:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Convert a timer register pointer to a timer number
+ 106:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Pointer to LPC_TIM_TypeDef, should be:
+ 107:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM0: TIMER0 peripheral
+ 108:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 109:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 110:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 111:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		The timer number (0 to 3) or -1 if register pointer is bad
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 113:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** uint32_t converPtrToTimeNum (LPC_TIM_TypeDef *TIMx)
+ 114:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 115:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	uint32_t tnum = -1;
+ 116:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIMx == LPC_TIM0)
+ 118:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 119:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		tnum = 0;
+ 120:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx == LPC_TIM1)
+ 122:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 123:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		tnum = 1;
+ 124:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx == LPC_TIM2)
+ 126:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 127:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		tnum = 2;
+ 128:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx == LPC_TIM3)
+ 130:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 131:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		tnum = 3;
+ 132:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 133:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 134:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	return tnum;
+ 135:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 136:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 137:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /* End of Private Functions ---------------------------------------------------- */
+ 138:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 139:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 140:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /* Public Functions ----------------------------------------------------------- */
+ 141:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /** @addtogroup TIM_Public_Functions
+ 142:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @{
+ 143:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  */
+ 144:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 145:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 146:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Get Interrupt Status
+ 147:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Timer selection, should be:
+ 148:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *   			- LPC_TIM0: TIMER0 peripheral
+ 149:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 150:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 151:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 152:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	IntFlag: interrupt type, should be:
+ 153:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR0_INT: Interrupt for Match channel 0
+ 154:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR1_INT: Interrupt for Match channel 1
+ 155:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR2_INT: Interrupt for Match channel 2
+ 156:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR3_INT: Interrupt for Match channel 3
+ 157:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR0_INT: Interrupt for Capture channel 0
+ 158:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR1_INT: Interrupt for Capture channel 1
+ 159:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		FlagStatus
+ 160:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- SET : interrupt
+ 161:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- RESET : no interrupt
+ 162:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 163:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** FlagStatus TIM_GetIntStatus(LPC_TIM_TypeDef *TIMx, TIM_INT_TYPE IntFlag)
+ 164:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+  27              	 .loc 1 164 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 38B5     	 push {r3,r4,r5,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 16
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 5,-8
+  37              	 .cfi_offset 4,-12
+  38              	 .cfi_offset 3,-16
+  39 0002 0446     	 mov r4,r0
+  40 0004 0D46     	 mov r5,r1
+ 165:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	uint8_t temp;
+ 166:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+  41              	 .loc 1 166 0
+  42 0006 4FF40043 	 mov r3,#32768
+  43 000a C4F20003 	 movt r3,16384
+  44 000e C31A     	 subs r3,r0,r3
+  45 0010 18BF     	 it ne
+  46 0012 0123     	 movne r3,#1
+  47 0014 B0F1402F 	 cmp r0,#1073758208
+  48 0018 0CBF     	 ite eq
+  49 001a 0023     	 moveq r3,#0
+  50 001c 03F00103 	 andne r3,r3,#1
+  51 0020 C3B1     	 cbz r3,.L2
+  52              	 .loc 1 166 0 is_stmt 0 discriminator 1
+  53 0022 4FF00003 	 mov r3,#0
+  54 0026 C4F20903 	 movt r3,16393
+  55 002a 4FF48042 	 mov r2,#16384
+  56 002e C4F20902 	 movt r2,16393
+  57 0032 821A     	 subs r2,r0,r2
+  58 0034 18BF     	 it ne
+  59 0036 0122     	 movne r2,#1
+  60 0038 9842     	 cmp r0,r3
+  61 003a 0CBF     	 ite eq
+  62 003c 0023     	 moveq r3,#0
+  63 003e 02F00103 	 andne r3,r2,#1
+  64 0042 3BB1     	 cbz r3,.L2
+  65              	 .loc 1 166 0 discriminator 2
+  66 0044 40F20000 	 movw r0,#:lower16:.LC0
+  67              	.LVL1:
+  68 0048 C0F20000 	 movt r0,#:upper16:.LC0
+  69 004c 4FF0A601 	 mov r1,#166
+  70              	.LVL2:
+  71 0050 FFF7FEFF 	 bl check_failed
+  72              	.L2:
+ 167:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIM_INT_TYPE(IntFlag));
+  73              	 .loc 1 167 0 is_stmt 1
+  74 0054 052D     	 cmp r5,#5
+  75 0056 07D9     	 bls .L3
+  76              	 .loc 1 167 0 is_stmt 0 discriminator 1
+  77 0058 40F20000 	 movw r0,#:lower16:.LC0
+  78 005c C0F20000 	 movt r0,#:upper16:.LC0
+  79 0060 4FF0A701 	 mov r1,#167
+  80 0064 FFF7FEFF 	 bl check_failed
+  81              	.L3:
+ 168:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	temp = (TIMx->IR)& TIM_IR_CLR(IntFlag);
+  82              	 .loc 1 168 0 is_stmt 1
+  83 0068 2368     	 ldr r3,[r4,#0]
+  84              	.LVL3:
+  85 006a 4FF00102 	 mov r2,#1
+  86 006e 02FA05F5 	 lsl r5,r2,r5
+  87              	.LVL4:
+ 169:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (temp)
+ 170:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		return SET;
+  88              	 .loc 1 170 0
+  89 0072 1D40     	 ands r5,r5,r3
+  90 0074 15F0FF0F 	 tst r5,#255
+ 171:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 172:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	return RESET;
+ 173:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 174:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+  91              	 .loc 1 174 0
+  92 0078 0CBF     	 ite eq
+  93 007a 0020     	 moveq r0,#0
+  94 007c 0120     	 movne r0,#1
+  95 007e 38BD     	 pop {r3,r4,r5,pc}
+  96              	 .cfi_endproc
+  97              	.LFE58:
+  99              	 .section .text.TIM_GetIntCaptureStatus,"ax",%progbits
+ 100              	 .align 2
+ 101              	 .global TIM_GetIntCaptureStatus
+ 102              	 .thumb
+ 103              	 .thumb_func
+ 105              	TIM_GetIntCaptureStatus:
+ 106              	.LFB59:
+ 175:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 176:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Get Capture Interrupt Status
+ 177:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Timer selection, should be:
+ 178:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *  	   		- LPC_TIM0: TIMER0 peripheral
+ 179:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 180:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 181:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 182:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	IntFlag: interrupt type, should be:
+ 183:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR0_INT: Interrupt for Match channel 0
+ 184:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR1_INT: Interrupt for Match channel 1
+ 185:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR2_INT: Interrupt for Match channel 2
+ 186:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR3_INT: Interrupt for Match channel 3
+ 187:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR0_INT: Interrupt for Capture channel 0
+ 188:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR1_INT: Interrupt for Capture channel 1
+ 189:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		FlagStatus
+ 190:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- SET : interrupt
+ 191:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- RESET : no interrupt
+ 192:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 193:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** FlagStatus TIM_GetIntCaptureStatus(LPC_TIM_TypeDef *TIMx, TIM_INT_TYPE IntFlag)
+ 194:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 107              	 .loc 1 194 0
+ 108              	 .cfi_startproc
+ 109              	 
+ 110              	 
+ 111              	.LVL5:
+ 112 0000 38B5     	 push {r3,r4,r5,lr}
+ 113              	.LCFI1:
+ 114              	 .cfi_def_cfa_offset 16
+ 115              	 .cfi_offset 14,-4
+ 116              	 .cfi_offset 5,-8
+ 117              	 .cfi_offset 4,-12
+ 118              	 .cfi_offset 3,-16
+ 119 0002 0446     	 mov r4,r0
+ 120 0004 0D46     	 mov r5,r1
+ 195:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	uint8_t temp;
+ 196:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 121              	 .loc 1 196 0
+ 122 0006 4FF40043 	 mov r3,#32768
+ 123 000a C4F20003 	 movt r3,16384
+ 124 000e C31A     	 subs r3,r0,r3
+ 125 0010 18BF     	 it ne
+ 126 0012 0123     	 movne r3,#1
+ 127 0014 B0F1402F 	 cmp r0,#1073758208
+ 128 0018 0CBF     	 ite eq
+ 129 001a 0023     	 moveq r3,#0
+ 130 001c 03F00103 	 andne r3,r3,#1
+ 131 0020 C3B1     	 cbz r3,.L5
+ 132              	 .loc 1 196 0 is_stmt 0 discriminator 1
+ 133 0022 4FF00003 	 mov r3,#0
+ 134 0026 C4F20903 	 movt r3,16393
+ 135 002a 4FF48042 	 mov r2,#16384
+ 136 002e C4F20902 	 movt r2,16393
+ 137 0032 821A     	 subs r2,r0,r2
+ 138 0034 18BF     	 it ne
+ 139 0036 0122     	 movne r2,#1
+ 140 0038 9842     	 cmp r0,r3
+ 141 003a 0CBF     	 ite eq
+ 142 003c 0023     	 moveq r3,#0
+ 143 003e 02F00103 	 andne r3,r2,#1
+ 144 0042 3BB1     	 cbz r3,.L5
+ 145              	 .loc 1 196 0 discriminator 2
+ 146 0044 40F20000 	 movw r0,#:lower16:.LC0
+ 147              	.LVL6:
+ 148 0048 C0F20000 	 movt r0,#:upper16:.LC0
+ 149 004c 4FF0C401 	 mov r1,#196
+ 150              	.LVL7:
+ 151 0050 FFF7FEFF 	 bl check_failed
+ 152              	.L5:
+ 197:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIM_INT_TYPE(IntFlag));
+ 153              	 .loc 1 197 0 is_stmt 1
+ 154 0054 052D     	 cmp r5,#5
+ 155 0056 07D9     	 bls .L6
+ 156              	 .loc 1 197 0 is_stmt 0 discriminator 1
+ 157 0058 40F20000 	 movw r0,#:lower16:.LC0
+ 158 005c C0F20000 	 movt r0,#:upper16:.LC0
+ 159 0060 4FF0C501 	 mov r1,#197
+ 160 0064 FFF7FEFF 	 bl check_failed
+ 161              	.L6:
+ 198:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	temp = (TIMx->IR) & (1<<(4+IntFlag));
+ 162              	 .loc 1 198 0 is_stmt 1
+ 163 0068 2368     	 ldr r3,[r4,#0]
+ 164              	.LVL8:
+ 165 006a 05F10405 	 add r5,r5,#4
+ 166              	.LVL9:
+ 167 006e 4FF00102 	 mov r2,#1
+ 168 0072 02FA05F5 	 lsl r5,r2,r5
+ 169              	.LVL10:
+ 199:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if(temp)
+ 200:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		return SET;
+ 170              	 .loc 1 200 0
+ 171 0076 1D40     	 ands r5,r5,r3
+ 172 0078 15F0FF0F 	 tst r5,#255
+ 201:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	return RESET;
+ 202:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 173              	 .loc 1 202 0
+ 174 007c 0CBF     	 ite eq
+ 175 007e 0020     	 moveq r0,#0
+ 176 0080 0120     	 movne r0,#1
+ 177 0082 38BD     	 pop {r3,r4,r5,pc}
+ 178              	 .cfi_endproc
+ 179              	.LFE59:
+ 181              	 .section .text.TIM_ClearIntPending,"ax",%progbits
+ 182              	 .align 2
+ 183              	 .global TIM_ClearIntPending
+ 184              	 .thumb
+ 185              	 .thumb_func
+ 187              	TIM_ClearIntPending:
+ 188              	.LFB60:
+ 203:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 204:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Clear Interrupt pending
+ 205:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Timer selection, should be:
+ 206:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *    			- LPC_TIM0: TIMER0 peripheral
+ 207:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 208:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 209:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 210:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	IntFlag: interrupt type, should be:
+ 211:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR0_INT: Interrupt for Match channel 0
+ 212:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR1_INT: Interrupt for Match channel 1
+ 213:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR2_INT: Interrupt for Match channel 2
+ 214:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR3_INT: Interrupt for Match channel 3
+ 215:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR0_INT: Interrupt for Capture channel 0
+ 216:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR1_INT: Interrupt for Capture channel 1
+ 217:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 218:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 219:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_ClearIntPending(LPC_TIM_TypeDef *TIMx, TIM_INT_TYPE IntFlag)
+ 220:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 189              	 .loc 1 220 0
+ 190              	 .cfi_startproc
+ 191              	 
+ 192              	 
+ 193              	.LVL11:
+ 194 0000 38B5     	 push {r3,r4,r5,lr}
+ 195              	.LCFI2:
+ 196              	 .cfi_def_cfa_offset 16
+ 197              	 .cfi_offset 14,-4
+ 198              	 .cfi_offset 5,-8
+ 199              	 .cfi_offset 4,-12
+ 200              	 .cfi_offset 3,-16
+ 201 0002 0446     	 mov r4,r0
+ 202 0004 0D46     	 mov r5,r1
+ 221:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 203              	 .loc 1 221 0
+ 204 0006 4FF40043 	 mov r3,#32768
+ 205 000a C4F20003 	 movt r3,16384
+ 206 000e C31A     	 subs r3,r0,r3
+ 207 0010 18BF     	 it ne
+ 208 0012 0123     	 movne r3,#1
+ 209 0014 B0F1402F 	 cmp r0,#1073758208
+ 210 0018 0CBF     	 ite eq
+ 211 001a 0023     	 moveq r3,#0
+ 212 001c 03F00103 	 andne r3,r3,#1
+ 213 0020 C3B1     	 cbz r3,.L8
+ 214              	 .loc 1 221 0 is_stmt 0 discriminator 1
+ 215 0022 4FF00003 	 mov r3,#0
+ 216 0026 C4F20903 	 movt r3,16393
+ 217 002a 4FF48042 	 mov r2,#16384
+ 218 002e C4F20902 	 movt r2,16393
+ 219 0032 821A     	 subs r2,r0,r2
+ 220 0034 18BF     	 it ne
+ 221 0036 0122     	 movne r2,#1
+ 222 0038 9842     	 cmp r0,r3
+ 223 003a 0CBF     	 ite eq
+ 224 003c 0023     	 moveq r3,#0
+ 225 003e 02F00103 	 andne r3,r2,#1
+ 226 0042 3BB1     	 cbz r3,.L8
+ 227              	 .loc 1 221 0 discriminator 2
+ 228 0044 40F20000 	 movw r0,#:lower16:.LC0
+ 229              	.LVL12:
+ 230 0048 C0F20000 	 movt r0,#:upper16:.LC0
+ 231 004c 4FF0DD01 	 mov r1,#221
+ 232              	.LVL13:
+ 233 0050 FFF7FEFF 	 bl check_failed
+ 234              	.L8:
+ 222:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIM_INT_TYPE(IntFlag));
+ 235              	 .loc 1 222 0 is_stmt 1
+ 236 0054 052D     	 cmp r5,#5
+ 237 0056 07D9     	 bls .L9
+ 238              	 .loc 1 222 0 is_stmt 0 discriminator 1
+ 239 0058 40F20000 	 movw r0,#:lower16:.LC0
+ 240 005c C0F20000 	 movt r0,#:upper16:.LC0
+ 241 0060 4FF0DE01 	 mov r1,#222
+ 242 0064 FFF7FEFF 	 bl check_failed
+ 243              	.L9:
+ 223:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->IR = TIM_IR_CLR(IntFlag);
+ 244              	 .loc 1 223 0 is_stmt 1
+ 245 0068 4FF00103 	 mov r3,#1
+ 246 006c 03FA05F5 	 lsl r5,r3,r5
+ 247 0070 2560     	 str r5,[r4,#0]
+ 224:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 248              	 .loc 1 224 0
+ 249 0072 38BD     	 pop {r3,r4,r5,pc}
+ 250              	 .cfi_endproc
+ 251              	.LFE60:
+ 253              	 .section .text.TIM_ClearIntCapturePending,"ax",%progbits
+ 254              	 .align 2
+ 255              	 .global TIM_ClearIntCapturePending
+ 256              	 .thumb
+ 257              	 .thumb_func
+ 259              	TIM_ClearIntCapturePending:
+ 260              	.LFB61:
+ 225:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 226:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 227:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Clear Capture Interrupt pending
+ 228:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Timer selection, should be
+ 229:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *    			- LPC_TIM0: TIMER0 peripheral
+ 230:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 231:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 232:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 233:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	IntFlag interrupt type, should be:
+ 234:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *				- TIM_MR0_INT: Interrupt for Match channel 0
+ 235:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR1_INT: Interrupt for Match channel 1
+ 236:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR2_INT: Interrupt for Match channel 2
+ 237:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_MR3_INT: Interrupt for Match channel 3
+ 238:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR0_INT: Interrupt for Capture channel 0
+ 239:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_CR1_INT: Interrupt for Capture channel 1
+ 240:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 241:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 242:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_ClearIntCapturePending(LPC_TIM_TypeDef *TIMx, TIM_INT_TYPE IntFlag)
+ 243:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 261              	 .loc 1 243 0
+ 262              	 .cfi_startproc
+ 263              	 
+ 264              	 
+ 265              	.LVL14:
+ 266 0000 38B5     	 push {r3,r4,r5,lr}
+ 267              	.LCFI3:
+ 268              	 .cfi_def_cfa_offset 16
+ 269              	 .cfi_offset 14,-4
+ 270              	 .cfi_offset 5,-8
+ 271              	 .cfi_offset 4,-12
+ 272              	 .cfi_offset 3,-16
+ 273 0002 0446     	 mov r4,r0
+ 274 0004 0D46     	 mov r5,r1
+ 244:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 275              	 .loc 1 244 0
+ 276 0006 4FF40043 	 mov r3,#32768
+ 277 000a C4F20003 	 movt r3,16384
+ 278 000e C31A     	 subs r3,r0,r3
+ 279 0010 18BF     	 it ne
+ 280 0012 0123     	 movne r3,#1
+ 281 0014 B0F1402F 	 cmp r0,#1073758208
+ 282 0018 0CBF     	 ite eq
+ 283 001a 0023     	 moveq r3,#0
+ 284 001c 03F00103 	 andne r3,r3,#1
+ 285 0020 C3B1     	 cbz r3,.L11
+ 286              	 .loc 1 244 0 is_stmt 0 discriminator 1
+ 287 0022 4FF00003 	 mov r3,#0
+ 288 0026 C4F20903 	 movt r3,16393
+ 289 002a 4FF48042 	 mov r2,#16384
+ 290 002e C4F20902 	 movt r2,16393
+ 291 0032 821A     	 subs r2,r0,r2
+ 292 0034 18BF     	 it ne
+ 293 0036 0122     	 movne r2,#1
+ 294 0038 9842     	 cmp r0,r3
+ 295 003a 0CBF     	 ite eq
+ 296 003c 0023     	 moveq r3,#0
+ 297 003e 02F00103 	 andne r3,r2,#1
+ 298 0042 3BB1     	 cbz r3,.L11
+ 299              	 .loc 1 244 0 discriminator 2
+ 300 0044 40F20000 	 movw r0,#:lower16:.LC0
+ 301              	.LVL15:
+ 302 0048 C0F20000 	 movt r0,#:upper16:.LC0
+ 303 004c 4FF0F401 	 mov r1,#244
+ 304              	.LVL16:
+ 305 0050 FFF7FEFF 	 bl check_failed
+ 306              	.L11:
+ 245:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIM_INT_TYPE(IntFlag));
+ 307              	 .loc 1 245 0 is_stmt 1
+ 308 0054 052D     	 cmp r5,#5
+ 309 0056 07D9     	 bls .L12
+ 310              	 .loc 1 245 0 is_stmt 0 discriminator 1
+ 311 0058 40F20000 	 movw r0,#:lower16:.LC0
+ 312 005c C0F20000 	 movt r0,#:upper16:.LC0
+ 313 0060 4FF0F501 	 mov r1,#245
+ 314 0064 FFF7FEFF 	 bl check_failed
+ 315              	.L12:
+ 246:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->IR = (1<<(4+IntFlag));
+ 316              	 .loc 1 246 0 is_stmt 1
+ 317 0068 05F10405 	 add r5,r5,#4
+ 318 006c 4FF00103 	 mov r3,#1
+ 319 0070 03FA05F5 	 lsl r5,r3,r5
+ 320 0074 2560     	 str r5,[r4,#0]
+ 247:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 321              	 .loc 1 247 0
+ 322 0076 38BD     	 pop {r3,r4,r5,pc}
+ 323              	 .cfi_endproc
+ 324              	.LFE61:
+ 326              	 .section .text.TIM_ConfigStructInit,"ax",%progbits
+ 327              	 .align 2
+ 328              	 .global TIM_ConfigStructInit
+ 329              	 .thumb
+ 330              	 .thumb_func
+ 332              	TIM_ConfigStructInit:
+ 333              	.LFB62:
+ 248:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 249:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 250:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Configuration for Timer at initial time
+ 251:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in] 	TimerCounterMode timer counter mode, should be:
+ 252:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_TIMER_MODE: Timer mode
+ 253:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_RISING_MODE: Counter rising mode
+ 254:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_FALLING_MODE: Counter falling mode
+ 255:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_ANY_MODE:Counter on both edges
+ 256:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in] 	TIM_ConfigStruct pointer to TIM_TIMERCFG_Type or
+ 257:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				TIM_COUNTERCFG_Type
+ 258:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 259:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 260:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_ConfigStructInit(TIM_MODE_OPT TimerCounterMode, void *TIM_ConfigStruct)
+ 261:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 334              	 .loc 1 261 0
+ 335              	 .cfi_startproc
+ 336              	 
+ 337              	 
+ 338              	 
+ 339              	.LVL17:
+ 262:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TimerCounterMode == TIM_TIMER_MODE )
+ 340              	 .loc 1 262 0
+ 341 0000 20B9     	 cbnz r0,.L14
+ 342              	.LVL18:
+ 343              	.LBB2:
+ 263:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 264:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIM_TIMERCFG_Type * pTimeCfg = (TIM_TIMERCFG_Type *)TIM_ConfigStruct;
+ 265:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		pTimeCfg->PrescaleOption = TIM_PRESCALE_USVAL;
+ 344              	 .loc 1 265 0
+ 345 0002 4FF00103 	 mov r3,#1
+ 346 0006 0B70     	 strb r3,[r1,#0]
+ 266:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		pTimeCfg->PrescaleValue = 1;
+ 347              	 .loc 1 266 0
+ 348 0008 4B60     	 str r3,[r1,#4]
+ 349 000a 7047     	 bx lr
+ 350              	.LVL19:
+ 351              	.L14:
+ 352              	.LBE2:
+ 353              	.LBB3:
+ 267:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 268:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else
+ 269:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 270:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIM_COUNTERCFG_Type * pCounterCfg = (TIM_COUNTERCFG_Type *)TIM_ConfigStruct;
+ 271:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		pCounterCfg->CountInputSelect = TIM_COUNTER_INCAP0;
+ 354              	 .loc 1 271 0
+ 355 000c 4FF00003 	 mov r3,#0
+ 356 0010 4B70     	 strb r3,[r1,#1]
+ 357 0012 7047     	 bx lr
+ 358              	.LBE3:
+ 359              	 .cfi_endproc
+ 360              	.LFE62:
+ 362              	 .global __aeabi_uldivmod
+ 363              	 .section .text.TIM_Init,"ax",%progbits
+ 364              	 .align 2
+ 365              	 .global TIM_Init
+ 366              	 .thumb
+ 367              	 .thumb_func
+ 369              	TIM_Init:
+ 370              	.LFB63:
+ 272:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 273:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 274:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 275:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 276:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Initial Timer/Counter device
+ 277:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				 	Set Clock frequency for Timer
+ 278:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					Set initial configuration for Timer
+ 279:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx  Timer selection, should be:
+ 280:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM0: TIMER0 peripheral
+ 281:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 282:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 283:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 284:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TimerCounterMode Timer counter mode, should be:
+ 285:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_TIMER_MODE: Timer mode
+ 286:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_RISING_MODE: Counter rising mode
+ 287:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_FALLING_MODE: Counter falling mode
+ 288:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_ANY_MODE:Counter on both edges
+ 289:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIM_ConfigStruct pointer to TIM_TIMERCFG_Type
+ 290:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				that contains the configuration information for the
+ 291:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *                    specified Timer peripheral.
+ 292:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 293:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 294:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_Init(LPC_TIM_TypeDef *TIMx, TIM_MODE_OPT TimerCounterMode, void *TIM_ConfigStruct)
+ 295:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 371              	 .loc 1 295 0
+ 372              	 .cfi_startproc
+ 373              	 
+ 374              	 
+ 375              	.LVL20:
+ 376 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+ 377              	.LCFI4:
+ 378              	 .cfi_def_cfa_offset 24
+ 379              	 .cfi_offset 14,-4
+ 380              	 .cfi_offset 7,-8
+ 381              	 .cfi_offset 6,-12
+ 382              	 .cfi_offset 5,-16
+ 383              	 .cfi_offset 4,-20
+ 384              	 .cfi_offset 3,-24
+ 385 0002 0446     	 mov r4,r0
+ 386 0004 0D46     	 mov r5,r1
+ 387 0006 1646     	 mov r6,r2
+ 296:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIM_TIMERCFG_Type *pTimeCfg;
+ 297:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIM_COUNTERCFG_Type *pCounterCfg;
+ 298:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 299:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 388              	 .loc 1 299 0
+ 389 0008 4FF40043 	 mov r3,#32768
+ 390 000c C4F20003 	 movt r3,16384
+ 391 0010 C31A     	 subs r3,r0,r3
+ 392 0012 18BF     	 it ne
+ 393 0014 0123     	 movne r3,#1
+ 394 0016 B0F1402F 	 cmp r0,#1073758208
+ 395 001a 0CBF     	 ite eq
+ 396 001c 0023     	 moveq r3,#0
+ 397 001e 03F00103 	 andne r3,r3,#1
+ 398 0022 C3B1     	 cbz r3,.L17
+ 399              	 .loc 1 299 0 is_stmt 0 discriminator 1
+ 400 0024 4FF00003 	 mov r3,#0
+ 401 0028 C4F20903 	 movt r3,16393
+ 402 002c 4FF48042 	 mov r2,#16384
+ 403              	.LVL21:
+ 404 0030 C4F20902 	 movt r2,16393
+ 405 0034 821A     	 subs r2,r0,r2
+ 406 0036 18BF     	 it ne
+ 407 0038 0122     	 movne r2,#1
+ 408 003a 9842     	 cmp r0,r3
+ 409 003c 0CBF     	 ite eq
+ 410 003e 0023     	 moveq r3,#0
+ 411 0040 02F00103 	 andne r3,r2,#1
+ 412 0044 3BB1     	 cbz r3,.L17
+ 413              	 .loc 1 299 0 discriminator 2
+ 414 0046 40F20000 	 movw r0,#:lower16:.LC0
+ 415              	.LVL22:
+ 416 004a C0F20000 	 movt r0,#:upper16:.LC0
+ 417 004e 40F22B11 	 movw r1,#299
+ 418              	.LVL23:
+ 419 0052 FFF7FEFF 	 bl check_failed
+ 420              	.L17:
+ 300:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIM_MODE_OPT(TimerCounterMode));
+ 421              	 .loc 1 300 0 is_stmt 1
+ 422 0056 012D     	 cmp r5,#1
+ 423 0058 07D9     	 bls .L18
+ 424              	 .loc 1 300 0 is_stmt 0 discriminator 1
+ 425 005a 40F20000 	 movw r0,#:lower16:.LC0
+ 426 005e C0F20000 	 movt r0,#:upper16:.LC0
+ 427 0062 4FF49671 	 mov r1,#300
+ 428 0066 FFF7FEFF 	 bl check_failed
+ 429              	.L18:
+ 301:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 302:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	//set power
+ 303:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 304:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIMx== LPC_TIM0)
+ 430              	 .loc 1 304 0 is_stmt 1
+ 431 006a B4F1402F 	 cmp r4,#1073758208
+ 432 006e 0CD1     	 bne .L19
+ 305:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 306:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM0, ENABLE);
+ 433              	 .loc 1 306 0
+ 434 0070 4FF00200 	 mov r0,#2
+ 435 0074 4FF00101 	 mov r1,#1
+ 436 0078 FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 307:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		//PCLK_Timer0 = CCLK/4
+ 308:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_TIMER0, CLKPWR_PCLKSEL_CCLK_DIV_4);
+ 437              	 .loc 1 308 0
+ 438 007c 4FF00200 	 mov r0,#2
+ 439 0080 4FF00001 	 mov r1,#0
+ 440 0084 FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+ 441 0088 37E0     	 b .L20
+ 442              	.L19:
+ 309:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 310:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx== LPC_TIM1)
+ 443              	 .loc 1 310 0
+ 444 008a 4FF40043 	 mov r3,#32768
+ 445 008e C4F20003 	 movt r3,16384
+ 446 0092 9C42     	 cmp r4,r3
+ 447 0094 0CD1     	 bne .L21
+ 311:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 312:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM1, ENABLE);
+ 448              	 .loc 1 312 0
+ 449 0096 4FF00400 	 mov r0,#4
+ 450 009a 4FF00101 	 mov r1,#1
+ 451 009e FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 313:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		//PCLK_Timer1 = CCLK/4
+ 314:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_TIMER1, CLKPWR_PCLKSEL_CCLK_DIV_4);
+ 452              	 .loc 1 314 0
+ 453 00a2 4FF00400 	 mov r0,#4
+ 454 00a6 4FF00001 	 mov r1,#0
+ 455 00aa FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+ 456 00ae 24E0     	 b .L20
+ 457              	.L21:
+ 315:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 316:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 317:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 318:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx== LPC_TIM2)
+ 458              	 .loc 1 318 0
+ 459 00b0 4FF00003 	 mov r3,#0
+ 460 00b4 C4F20903 	 movt r3,16393
+ 461 00b8 9C42     	 cmp r4,r3
+ 462 00ba 0CD1     	 bne .L22
+ 319:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 320:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM2, ENABLE);
+ 463              	 .loc 1 320 0
+ 464 00bc 4FF48000 	 mov r0,#4194304
+ 465 00c0 4FF00101 	 mov r1,#1
+ 466 00c4 FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 321:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		//PCLK_Timer2= CCLK/4
+ 322:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_TIMER2, CLKPWR_PCLKSEL_CCLK_DIV_4);
+ 467              	 .loc 1 322 0
+ 468 00c8 4FF02C00 	 mov r0,#44
+ 469 00cc 4FF00001 	 mov r1,#0
+ 470 00d0 FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+ 471 00d4 11E0     	 b .L20
+ 472              	.L22:
+ 323:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 324:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx== LPC_TIM3)
+ 473              	 .loc 1 324 0
+ 474 00d6 4FF48043 	 mov r3,#16384
+ 475 00da C4F20903 	 movt r3,16393
+ 476 00de 9C42     	 cmp r4,r3
+ 477 00e0 0BD1     	 bne .L20
+ 325:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 326:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM3, ENABLE);
+ 478              	 .loc 1 326 0
+ 479 00e2 4FF40000 	 mov r0,#8388608
+ 480 00e6 4FF00101 	 mov r1,#1
+ 481 00ea FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 327:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		//PCLK_Timer3= CCLK/4
+ 328:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_TIMER3, CLKPWR_PCLKSEL_CCLK_DIV_4);
+ 482              	 .loc 1 328 0
+ 483 00ee 4FF02E00 	 mov r0,#46
+ 484 00f2 4FF00001 	 mov r1,#0
+ 485 00f6 FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+ 486              	.L20:
+ 329:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 330:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 331:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 332:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->CCR &= ~TIM_CTCR_MODE_MASK;
+ 487              	 .loc 1 332 0
+ 488 00fa A36A     	 ldr r3,[r4,#40]
+ 489 00fc 23F00303 	 bic r3,r3,#3
+ 490 0100 A362     	 str r3,[r4,#40]
+ 333:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->CCR |= TIM_TIMER_MODE;
+ 491              	 .loc 1 333 0
+ 492 0102 A36A     	 ldr r3,[r4,#40]
+ 493 0104 A362     	 str r3,[r4,#40]
+ 334:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 335:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->TC =0;
+ 494              	 .loc 1 335 0
+ 495 0106 4FF00003 	 mov r3,#0
+ 496 010a A360     	 str r3,[r4,#8]
+ 336:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->PC =0;
+ 497              	 .loc 1 336 0
+ 498 010c 2361     	 str r3,[r4,#16]
+ 337:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->PR =0;
+ 499              	 .loc 1 337 0
+ 500 010e E360     	 str r3,[r4,#12]
+ 338:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->TCR |= (1<<1); //Reset Counter
+ 501              	 .loc 1 338 0
+ 502 0110 6368     	 ldr r3,[r4,#4]
+ 503 0112 43F00203 	 orr r3,r3,#2
+ 504 0116 6360     	 str r3,[r4,#4]
+ 339:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->TCR &= ~(1<<1); //release reset
+ 505              	 .loc 1 339 0
+ 506 0118 6368     	 ldr r3,[r4,#4]
+ 507 011a 23F00203 	 bic r3,r3,#2
+ 508 011e 6360     	 str r3,[r4,#4]
+ 340:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TimerCounterMode == TIM_TIMER_MODE )
+ 509              	 .loc 1 340 0
+ 510 0120 002D     	 cmp r5,#0
+ 511 0122 32D1     	 bne .L23
+ 512              	.LVL24:
+ 341:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 342:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		pTimeCfg = (TIM_TIMERCFG_Type *)TIM_ConfigStruct;
+ 343:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		if (pTimeCfg->PrescaleOption  == TIM_PRESCALE_TICKVAL)
+ 513              	 .loc 1 343 0
+ 514 0124 3378     	 ldrb r3,[r6,#0]
+ 515 0126 23B9     	 cbnz r3,.L24
+ 344:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		{
+ 345:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 			TIMx->PR   = pTimeCfg->PrescaleValue -1  ;
+ 516              	 .loc 1 345 0
+ 517 0128 7368     	 ldr r3,[r6,#4]
+ 518 012a 03F1FF33 	 add r3,r3,#-1
+ 519 012e E360     	 str r3,[r4,#12]
+ 520 0130 36E0     	 b .L25
+ 521              	.L24:
+ 522              	.LVL25:
+ 523              	.LBB10:
+ 524              	.LBB11:
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIMx == LPC_TIM0)
+ 525              	 .loc 1 117 0
+ 526 0132 B4F1402F 	 cmp r4,#1073758208
+ 527 0136 14D0     	 beq .L26
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx == LPC_TIM1)
+ 528              	 .loc 1 121 0
+ 529 0138 4FF40043 	 mov r3,#32768
+ 530 013c C4F20003 	 movt r3,16384
+ 531 0140 9C42     	 cmp r4,r3
+ 532 0142 31D0     	 beq .L27
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx == LPC_TIM2)
+ 533              	 .loc 1 125 0
+ 534 0144 4FF00003 	 mov r3,#0
+ 535 0148 C4F20903 	 movt r3,16393
+ 536 014c 9C42     	 cmp r4,r3
+ 537 014e 32D0     	 beq .L28
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx == LPC_TIM3)
+ 538              	 .loc 1 129 0
+ 539 0150 4FF48043 	 mov r3,#16384
+ 540 0154 C4F20903 	 movt r3,16393
+ 541 0158 9C42     	 cmp r4,r3
+ 542              	.LBE11:
+ 543              	.LBE10:
+ 346:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		}
+ 347:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		else
+ 348:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		{
+ 349:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 			TIMx->PR   = converUSecToVal (converPtrToTimeNum(TIMx),pTimeCfg->PrescaleValue)-1;
+ 544              	 .loc 1 349 0
+ 545 015a 18BF     	 it ne
+ 546 015c 7568     	 ldrne r5,[r6,#4]
+ 547              	.LBB13:
+ 548              	.LBB12:
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx == LPC_TIM3)
+ 549              	 .loc 1 129 0
+ 550 015e 06D1     	 bne .L31
+ 551 0160 30E0     	 b .L33
+ 552              	.L26:
+ 553              	.LVL26:
+ 554              	.LBE12:
+ 555              	.LBE13:
+ 556              	 .loc 1 349 0
+ 557 0162 7568     	 ldr r5,[r6,#4]
+ 558              	.LVL27:
+ 559              	.LBB14:
+ 560              	.LBB15:
+ 561              	.LBB16:
+ 562              	.LBB17:
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER0);
+ 563              	 .loc 1 67 0
+ 564 0164 4FF00200 	 mov r0,#2
+ 565 0168 FFF7FEFF 	 bl CLKPWR_GetPCLK
+ 566              	.LVL28:
+ 567 016c 0746     	 mov r7,r0
+ 568              	.LVL29:
+ 569              	.L31:
+ 570              	.LBE17:
+ 571              	.LBE16:
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	clkdlycnt = (clkdlycnt * usec) / 1000000;
+ 572              	 .loc 1 99 0
+ 573 016e A5FB0701 	 umull r0,r1,r5,r7
+ 574 0172 44F24022 	 movw r2,#16960
+ 575 0176 C0F20F02 	 movt r2,15
+ 576 017a 4FF00003 	 mov r3,#0
+ 577 017e FFF7FEFF 	 bl __aeabi_uldivmod
+ 578              	.LBE15:
+ 579              	.LBE14:
+ 580              	 .loc 1 349 0
+ 581 0182 00F1FF30 	 add r0,r0,#-1
+ 582 0186 E060     	 str r0,[r4,#12]
+ 583 0188 0AE0     	 b .L25
+ 584              	.LVL30:
+ 585              	.L23:
+ 350:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		}
+ 351:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 352:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else
+ 353:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 354:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 355:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		pCounterCfg = (TIM_COUNTERCFG_Type *)TIM_ConfigStruct;
+ 356:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->CCR  &= ~TIM_CTCR_INPUT_MASK;
+ 586              	 .loc 1 356 0
+ 587 018a A36A     	 ldr r3,[r4,#40]
+ 588 018c 23F00C03 	 bic r3,r3,#12
+ 589 0190 A362     	 str r3,[r4,#40]
+ 357:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		if (pCounterCfg->CountInputSelect == TIM_COUNTER_INCAP1)
+ 590              	 .loc 1 357 0
+ 591 0192 7378     	 ldrb r3,[r6,#1]
+ 592 0194 012B     	 cmp r3,#1
+ 358:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 			TIMx->CCR |= _BIT(2);
+ 593              	 .loc 1 358 0
+ 594 0196 02BF     	 ittt eq
+ 595 0198 A36A     	 ldreq r3,[r4,#40]
+ 596 019a 43F00403 	 orreq r3,r3,#4
+ 597 019e A362     	 streq r3,[r4,#40]
+ 598              	.LVL31:
+ 599              	.L25:
+ 359:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 360:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 361:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	// Clear interrupt pending
+ 362:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->IR = 0xFFFFFFFF;
+ 600              	 .loc 1 362 0
+ 601 01a0 4FF0FF33 	 mov r3,#-1
+ 602 01a4 2360     	 str r3,[r4,#0]
+ 363:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 364:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 603              	 .loc 1 364 0
+ 604 01a6 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 605              	.LVL32:
+ 606              	.L27:
+ 349:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 			TIMx->PR   = converUSecToVal (converPtrToTimeNum(TIMx),pTimeCfg->PrescaleValue)-1;
+ 607              	 .loc 1 349 0
+ 608 01a8 7568     	 ldr r5,[r6,#4]
+ 609              	.LVL33:
+ 610              	.LBB27:
+ 611              	.LBB24:
+ 612              	.LBB21:
+ 613              	.LBB18:
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER1);
+ 614              	 .loc 1 71 0
+ 615 01aa 4FF00400 	 mov r0,#4
+ 616 01ae FFF7FEFF 	 bl CLKPWR_GetPCLK
+ 617              	.LVL34:
+ 618 01b2 0746     	 mov r7,r0
+ 619              	.LVL35:
+ 620 01b4 DBE7     	 b .L31
+ 621              	.LVL36:
+ 622              	.L28:
+ 623              	.LBE18:
+ 624              	.LBE21:
+ 625              	.LBE24:
+ 626              	.LBE27:
+ 349:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 			TIMx->PR   = converUSecToVal (converPtrToTimeNum(TIMx),pTimeCfg->PrescaleValue)-1;
+ 627              	 .loc 1 349 0
+ 628 01b6 7568     	 ldr r5,[r6,#4]
+ 629              	.LVL37:
+ 630              	.LBB28:
+ 631              	.LBB25:
+ 632              	.LBB22:
+ 633              	.LBB19:
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER2);
+ 634              	 .loc 1 75 0
+ 635 01b8 4FF02C00 	 mov r0,#44
+ 636 01bc FFF7FEFF 	 bl CLKPWR_GetPCLK
+ 637              	.LVL38:
+ 638 01c0 0746     	 mov r7,r0
+ 639              	.LVL39:
+ 640 01c2 D4E7     	 b .L31
+ 641              	.LVL40:
+ 642              	.L33:
+ 643              	.LBE19:
+ 644              	.LBE22:
+ 645              	.LBE25:
+ 646              	.LBE28:
+ 349:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 			TIMx->PR   = converUSecToVal (converPtrToTimeNum(TIMx),pTimeCfg->PrescaleValue)-1;
+ 647              	 .loc 1 349 0
+ 648 01c4 7568     	 ldr r5,[r6,#4]
+ 649              	.LVL41:
+ 650              	.LBB29:
+ 651              	.LBB26:
+ 652              	.LBB23:
+ 653              	.LBB20:
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		clkdlycnt = CLKPWR_GetPCLK (CLKPWR_PCLKSEL_TIMER3);
+ 654              	 .loc 1 79 0
+ 655 01c6 4FF02E00 	 mov r0,#46
+ 656 01ca FFF7FEFF 	 bl CLKPWR_GetPCLK
+ 657              	.LVL42:
+ 658 01ce 0746     	 mov r7,r0
+ 659              	.LVL43:
+ 660 01d0 CDE7     	 b .L31
+ 661              	.LBE20:
+ 662              	.LBE23:
+ 663              	.LBE26:
+ 664              	.LBE29:
+ 665              	 .cfi_endproc
+ 666              	.LFE63:
+ 668 01d2 00BF     	 .section .text.TIM_DeInit,"ax",%progbits
+ 669              	 .align 2
+ 670              	 .global TIM_DeInit
+ 671              	 .thumb
+ 672              	 .thumb_func
+ 674              	TIM_DeInit:
+ 675              	.LFB64:
+ 365:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 366:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 367:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Close Timer/Counter device
+ 368:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx  Pointer to timer device, should be:
+ 369:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM0: TIMER0 peripheral
+ 370:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 371:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 372:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 373:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 374:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 375:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_DeInit (LPC_TIM_TypeDef *TIMx)
+ 376:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 676              	 .loc 1 376 0
+ 677              	 .cfi_startproc
+ 678              	 
+ 679              	 
+ 680              	.LVL44:
+ 681 0000 10B5     	 push {r4,lr}
+ 682              	.LCFI5:
+ 683              	 .cfi_def_cfa_offset 8
+ 684              	 .cfi_offset 14,-4
+ 685              	 .cfi_offset 4,-8
+ 686 0002 0446     	 mov r4,r0
+ 377:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 687              	 .loc 1 377 0
+ 688 0004 4FF40043 	 mov r3,#32768
+ 689 0008 C4F20003 	 movt r3,16384
+ 690 000c C31A     	 subs r3,r0,r3
+ 691 000e 18BF     	 it ne
+ 692 0010 0123     	 movne r3,#1
+ 693 0012 B0F1402F 	 cmp r0,#1073758208
+ 694 0016 0CBF     	 ite eq
+ 695 0018 0023     	 moveq r3,#0
+ 696 001a 03F00103 	 andne r3,r3,#1
+ 697 001e C3B1     	 cbz r3,.L35
+ 698              	 .loc 1 377 0 is_stmt 0 discriminator 1
+ 699 0020 4FF00003 	 mov r3,#0
+ 700 0024 C4F20903 	 movt r3,16393
+ 701 0028 4FF48042 	 mov r2,#16384
+ 702 002c C4F20902 	 movt r2,16393
+ 703 0030 821A     	 subs r2,r0,r2
+ 704 0032 18BF     	 it ne
+ 705 0034 0122     	 movne r2,#1
+ 706 0036 9842     	 cmp r0,r3
+ 707 0038 0CBF     	 ite eq
+ 708 003a 0023     	 moveq r3,#0
+ 709 003c 02F00103 	 andne r3,r2,#1
+ 710 0040 3BB1     	 cbz r3,.L35
+ 711              	 .loc 1 377 0 discriminator 2
+ 712 0042 40F20000 	 movw r0,#:lower16:.LC0
+ 713              	.LVL45:
+ 714 0046 C0F20000 	 movt r0,#:upper16:.LC0
+ 715 004a 40F27911 	 movw r1,#377
+ 716 004e FFF7FEFF 	 bl check_failed
+ 717              	.L35:
+ 378:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	// Disable timer/counter
+ 379:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->TCR = 0x00;
+ 718              	 .loc 1 379 0 is_stmt 1
+ 719 0052 4FF00003 	 mov r3,#0
+ 720 0056 6360     	 str r3,[r4,#4]
+ 380:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 381:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	// Disable power
+ 382:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIMx== LPC_TIM0)
+ 721              	 .loc 1 382 0
+ 722 0058 B4F1402F 	 cmp r4,#1073758208
+ 723 005c 05D1     	 bne .L36
+ 383:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM0, DISABLE);
+ 724              	 .loc 1 383 0
+ 725 005e 4FF00200 	 mov r0,#2
+ 726 0062 1946     	 mov r1,r3
+ 727 0064 FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 728 0068 10BD     	 pop {r4,pc}
+ 729              	.L36:
+ 384:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 385:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx== LPC_TIM1)
+ 730              	 .loc 1 385 0
+ 731 006a 4FF40043 	 mov r3,#32768
+ 732 006e C4F20003 	 movt r3,16384
+ 733 0072 9C42     	 cmp r4,r3
+ 734 0074 06D1     	 bne .L38
+ 386:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM1, DISABLE);
+ 735              	 .loc 1 386 0
+ 736 0076 4FF00400 	 mov r0,#4
+ 737 007a 4FF00001 	 mov r1,#0
+ 738 007e FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 739 0082 10BD     	 pop {r4,pc}
+ 740              	.L38:
+ 387:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 388:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx== LPC_TIM2)
+ 741              	 .loc 1 388 0
+ 742 0084 4FF00003 	 mov r3,#0
+ 743 0088 C4F20903 	 movt r3,16393
+ 744 008c 9C42     	 cmp r4,r3
+ 745 008e 06D1     	 bne .L39
+ 389:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM2, DISABLE);
+ 746              	 .loc 1 389 0
+ 747 0090 4FF48000 	 mov r0,#4194304
+ 748 0094 4FF00001 	 mov r1,#0
+ 749 0098 FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 750 009c 10BD     	 pop {r4,pc}
+ 751              	.L39:
+ 390:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 391:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else if (TIMx== LPC_TIM3)
+ 752              	 .loc 1 391 0
+ 753 009e 4FF48043 	 mov r3,#16384
+ 754 00a2 C4F20903 	 movt r3,16393
+ 755 00a6 9C42     	 cmp r4,r3
+ 756 00a8 05D1     	 bne .L34
+ 392:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCTIM2, DISABLE);
+ 757              	 .loc 1 392 0
+ 758 00aa 4FF48000 	 mov r0,#4194304
+ 759 00ae 4FF00001 	 mov r1,#0
+ 760 00b2 FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 761              	.L34:
+ 762 00b6 10BD     	 pop {r4,pc}
+ 763              	 .cfi_endproc
+ 764              	.LFE64:
+ 766              	 .section .text.TIM_Cmd,"ax",%progbits
+ 767              	 .align 2
+ 768              	 .global TIM_Cmd
+ 769              	 .thumb
+ 770              	 .thumb_func
+ 772              	TIM_Cmd:
+ 773              	.LFB65:
+ 393:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 394:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 395:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 396:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 397:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief	 	Start/Stop Timer/Counter device
+ 398:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Pointer to timer device, should be:
+ 399:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *  			- LPC_TIM0: TIMER0 peripheral
+ 400:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 401:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 402:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 403:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	NewState
+ 404:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				-	ENABLE  : set timer enable
+ 405:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				-	DISABLE : disable timer
+ 406:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 407:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 408:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_Cmd(LPC_TIM_TypeDef *TIMx, FunctionalState NewState)
+ 409:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 774              	 .loc 1 409 0
+ 775              	 .cfi_startproc
+ 776              	 
+ 777              	 
+ 778              	.LVL46:
+ 779 0000 38B5     	 push {r3,r4,r5,lr}
+ 780              	.LCFI6:
+ 781              	 .cfi_def_cfa_offset 16
+ 782              	 .cfi_offset 14,-4
+ 783              	 .cfi_offset 5,-8
+ 784              	 .cfi_offset 4,-12
+ 785              	 .cfi_offset 3,-16
+ 786 0002 0446     	 mov r4,r0
+ 787 0004 0D46     	 mov r5,r1
+ 410:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 788              	 .loc 1 410 0
+ 789 0006 4FF40043 	 mov r3,#32768
+ 790 000a C4F20003 	 movt r3,16384
+ 791 000e C31A     	 subs r3,r0,r3
+ 792 0010 18BF     	 it ne
+ 793 0012 0123     	 movne r3,#1
+ 794 0014 B0F1402F 	 cmp r0,#1073758208
+ 795 0018 0CBF     	 ite eq
+ 796 001a 0023     	 moveq r3,#0
+ 797 001c 03F00103 	 andne r3,r3,#1
+ 798 0020 C3B1     	 cbz r3,.L41
+ 799              	 .loc 1 410 0 is_stmt 0 discriminator 1
+ 800 0022 4FF00003 	 mov r3,#0
+ 801 0026 C4F20903 	 movt r3,16393
+ 802 002a 4FF48042 	 mov r2,#16384
+ 803 002e C4F20902 	 movt r2,16393
+ 804 0032 821A     	 subs r2,r0,r2
+ 805 0034 18BF     	 it ne
+ 806 0036 0122     	 movne r2,#1
+ 807 0038 9842     	 cmp r0,r3
+ 808 003a 0CBF     	 ite eq
+ 809 003c 0023     	 moveq r3,#0
+ 810 003e 02F00103 	 andne r3,r2,#1
+ 811 0042 3BB1     	 cbz r3,.L41
+ 812              	 .loc 1 410 0 discriminator 2
+ 813 0044 40F20000 	 movw r0,#:lower16:.LC0
+ 814              	.LVL47:
+ 815 0048 C0F20000 	 movt r0,#:upper16:.LC0
+ 816 004c 4FF4CD71 	 mov r1,#410
+ 817              	.LVL48:
+ 818 0050 FFF7FEFF 	 bl check_failed
+ 819              	.L41:
+ 411:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (NewState == ENABLE)
+ 820              	 .loc 1 411 0 is_stmt 1
+ 821 0054 012D     	 cmp r5,#1
+ 412:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 413:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->TCR	|=  TIM_ENABLE;
+ 822              	 .loc 1 413 0
+ 823 0056 6368     	 ldr r3,[r4,#4]
+ 824 0058 0CBF     	 ite eq
+ 825 005a 43F00103 	 orreq r3,r3,#1
+ 414:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 415:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else
+ 416:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 417:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->TCR &= ~TIM_ENABLE;
+ 826              	 .loc 1 417 0
+ 827 005e 23F00103 	 bicne r3,r3,#1
+ 828 0062 6360     	 str r3,[r4,#4]
+ 829 0064 38BD     	 pop {r3,r4,r5,pc}
+ 830              	 .cfi_endproc
+ 831              	.LFE65:
+ 833 0066 00BF     	 .section .text.TIM_ResetCounter,"ax",%progbits
+ 834              	 .align 2
+ 835              	 .global TIM_ResetCounter
+ 836              	 .thumb
+ 837              	 .thumb_func
+ 839              	TIM_ResetCounter:
+ 840              	.LFB66:
+ 418:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 419:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 420:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 421:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 422:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Reset Timer/Counter device,
+ 423:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					Make TC and PC are synchronously reset on the next
+ 424:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					positive edge of PCLK
+ 425:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Pointer to timer device, should be:
+ 426:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *   			- LPC_TIM0: TIMER0 peripheral
+ 427:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 428:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 429:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 430:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 431:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 432:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_ResetCounter(LPC_TIM_TypeDef *TIMx)
+ 433:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 841              	 .loc 1 433 0
+ 842              	 .cfi_startproc
+ 843              	 
+ 844              	 
+ 845              	.LVL49:
+ 846 0000 10B5     	 push {r4,lr}
+ 847              	.LCFI7:
+ 848              	 .cfi_def_cfa_offset 8
+ 849              	 .cfi_offset 14,-4
+ 850              	 .cfi_offset 4,-8
+ 851 0002 0446     	 mov r4,r0
+ 434:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 852              	 .loc 1 434 0
+ 853 0004 4FF40043 	 mov r3,#32768
+ 854 0008 C4F20003 	 movt r3,16384
+ 855 000c C31A     	 subs r3,r0,r3
+ 856 000e 18BF     	 it ne
+ 857 0010 0123     	 movne r3,#1
+ 858 0012 B0F1402F 	 cmp r0,#1073758208
+ 859 0016 0CBF     	 ite eq
+ 860 0018 0023     	 moveq r3,#0
+ 861 001a 03F00103 	 andne r3,r3,#1
+ 862 001e C3B1     	 cbz r3,.L45
+ 863              	 .loc 1 434 0 is_stmt 0 discriminator 1
+ 864 0020 4FF00003 	 mov r3,#0
+ 865 0024 C4F20903 	 movt r3,16393
+ 866 0028 4FF48042 	 mov r2,#16384
+ 867 002c C4F20902 	 movt r2,16393
+ 868 0030 821A     	 subs r2,r0,r2
+ 869 0032 18BF     	 it ne
+ 870 0034 0122     	 movne r2,#1
+ 871 0036 9842     	 cmp r0,r3
+ 872 0038 0CBF     	 ite eq
+ 873 003a 0023     	 moveq r3,#0
+ 874 003c 02F00103 	 andne r3,r2,#1
+ 875 0040 3BB1     	 cbz r3,.L45
+ 876              	 .loc 1 434 0 discriminator 2
+ 877 0042 40F20000 	 movw r0,#:lower16:.LC0
+ 878              	.LVL50:
+ 879 0046 C0F20000 	 movt r0,#:upper16:.LC0
+ 880 004a 4FF4D971 	 mov r1,#434
+ 881 004e FFF7FEFF 	 bl check_failed
+ 882              	.L45:
+ 435:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->TCR |= TIM_RESET;
+ 883              	 .loc 1 435 0 is_stmt 1
+ 884 0052 6368     	 ldr r3,[r4,#4]
+ 885 0054 43F00203 	 orr r3,r3,#2
+ 886 0058 6360     	 str r3,[r4,#4]
+ 436:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->TCR &= ~TIM_RESET;
+ 887              	 .loc 1 436 0
+ 888 005a 6368     	 ldr r3,[r4,#4]
+ 889 005c 23F00203 	 bic r3,r3,#2
+ 890 0060 6360     	 str r3,[r4,#4]
+ 437:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 891              	 .loc 1 437 0
+ 892 0062 10BD     	 pop {r4,pc}
+ 893              	 .cfi_endproc
+ 894              	.LFE66:
+ 896              	 .section .text.TIM_ConfigMatch,"ax",%progbits
+ 897              	 .align 2
+ 898              	 .global TIM_ConfigMatch
+ 899              	 .thumb
+ 900              	 .thumb_func
+ 902              	TIM_ConfigMatch:
+ 903              	.LFB67:
+ 438:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 439:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 440:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Configuration for Match register
+ 441:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Pointer to timer device, should be:
+ 442:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *   			- LPC_TIM0: TIMER0 peripheral
+ 443:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 444:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 445:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 446:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]   TIM_MatchConfigStruct Pointer to TIM_MATCHCFG_Type
+ 447:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- MatchChannel : choose channel 0 or 1
+ 448:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- IntOnMatch	 : if SET, interrupt will be generated when MRxx match
+ 449:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 									the value in TC
+ 450:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- StopOnMatch	 : if SET, TC and PC will be stopped whenM Rxx match
+ 451:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 									the value in TC
+ 452:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- ResetOnMatch : if SET, Reset on MR0 when MRxx match
+ 453:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 									the value in TC
+ 454:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					-ExtMatchOutputType: Select output for external match
+ 455:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 						 +	 0:	Do nothing for external output pin if match
+ 456:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *						 +   1:	Force external output pin to low if match
+ 457:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *						 + 	 2: Force external output pin to high if match
+ 458:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *						 + 	 3: Toggle external output pin if match
+ 459:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *					MatchValue: Set the value to be compared with TC value
+ 460:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 461:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 462:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_ConfigMatch(LPC_TIM_TypeDef *TIMx, TIM_MATCHCFG_Type *TIM_MatchConfigStruct)
+ 463:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 904              	 .loc 1 463 0
+ 905              	 .cfi_startproc
+ 906              	 
+ 907              	 
+ 908              	.LVL51:
+ 909 0000 38B5     	 push {r3,r4,r5,lr}
+ 910              	.LCFI8:
+ 911              	 .cfi_def_cfa_offset 16
+ 912              	 .cfi_offset 14,-4
+ 913              	 .cfi_offset 5,-8
+ 914              	 .cfi_offset 4,-12
+ 915              	 .cfi_offset 3,-16
+ 916 0002 0446     	 mov r4,r0
+ 917 0004 0D46     	 mov r5,r1
+ 464:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 465:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 918              	 .loc 1 465 0
+ 919 0006 4FF40043 	 mov r3,#32768
+ 920 000a C4F20003 	 movt r3,16384
+ 921 000e C31A     	 subs r3,r0,r3
+ 922 0010 18BF     	 it ne
+ 923 0012 0123     	 movne r3,#1
+ 924 0014 B0F1402F 	 cmp r0,#1073758208
+ 925 0018 0CBF     	 ite eq
+ 926 001a 0023     	 moveq r3,#0
+ 927 001c 03F00103 	 andne r3,r3,#1
+ 928 0020 C3B1     	 cbz r3,.L47
+ 929              	 .loc 1 465 0 is_stmt 0 discriminator 1
+ 930 0022 4FF00003 	 mov r3,#0
+ 931 0026 C4F20903 	 movt r3,16393
+ 932 002a 4FF48042 	 mov r2,#16384
+ 933 002e C4F20902 	 movt r2,16393
+ 934 0032 821A     	 subs r2,r0,r2
+ 935 0034 18BF     	 it ne
+ 936 0036 0122     	 movne r2,#1
+ 937 0038 9842     	 cmp r0,r3
+ 938 003a 0CBF     	 ite eq
+ 939 003c 0023     	 moveq r3,#0
+ 940 003e 02F00103 	 andne r3,r2,#1
+ 941 0042 3BB1     	 cbz r3,.L47
+ 942              	 .loc 1 465 0 discriminator 2
+ 943 0044 40F20000 	 movw r0,#:lower16:.LC0
+ 944              	.LVL52:
+ 945 0048 C0F20000 	 movt r0,#:upper16:.LC0
+ 946 004c 40F2D111 	 movw r1,#465
+ 947              	.LVL53:
+ 948 0050 FFF7FEFF 	 bl check_failed
+ 949              	.L47:
+ 466:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIM_EXTMATCH_OPT(TIM_MatchConfigStruct->ExtMatchOutputType));
+ 950              	 .loc 1 466 0 is_stmt 1
+ 951 0054 2B79     	 ldrb r3,[r5,#4]
+ 952 0056 032B     	 cmp r3,#3
+ 953 0058 07D9     	 bls .L48
+ 954              	 .loc 1 466 0 is_stmt 0 discriminator 1
+ 955 005a 40F20000 	 movw r0,#:lower16:.LC0
+ 956 005e C0F20000 	 movt r0,#:upper16:.LC0
+ 957 0062 4FF4E971 	 mov r1,#466
+ 958 0066 FFF7FEFF 	 bl check_failed
+ 959              	.L48:
+ 467:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 468:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	switch(TIM_MatchConfigStruct->MatchChannel)
+ 960              	 .loc 1 468 0 is_stmt 1
+ 961 006a 2B78     	 ldrb r3,[r5,#0]
+ 962 006c 032B     	 cmp r3,#3
+ 963 006e 0FD8     	 bhi .L49
+ 964 0070 DFE803F0 	 tbb [pc,r3]
+ 965              	.L54:
+ 966 0074 02       	 .byte (.L50-.L54)/2
+ 967 0075 05       	 .byte (.L51-.L54)/2
+ 968 0076 08       	 .byte (.L52-.L54)/2
+ 969 0077 0B       	 .byte (.L53-.L54)/2
+ 970              	 .align 1
+ 971              	.L50:
+ 469:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 470:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 0:
+ 471:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR0 = TIM_MatchConfigStruct->MatchValue;
+ 972              	 .loc 1 471 0
+ 973 0078 AB68     	 ldr r3,[r5,#8]
+ 974 007a A361     	 str r3,[r4,#24]
+ 472:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 975              	 .loc 1 472 0
+ 976 007c 09E0     	 b .L55
+ 977              	.L51:
+ 473:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 1:
+ 474:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR1 = TIM_MatchConfigStruct->MatchValue;
+ 978              	 .loc 1 474 0
+ 979 007e AB68     	 ldr r3,[r5,#8]
+ 980 0080 E361     	 str r3,[r4,#28]
+ 475:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 981              	 .loc 1 475 0
+ 982 0082 06E0     	 b .L55
+ 983              	.L52:
+ 476:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 2:
+ 477:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR2 = TIM_MatchConfigStruct->MatchValue;
+ 984              	 .loc 1 477 0
+ 985 0084 AB68     	 ldr r3,[r5,#8]
+ 986 0086 2362     	 str r3,[r4,#32]
+ 478:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 987              	 .loc 1 478 0
+ 988 0088 03E0     	 b .L55
+ 989              	.L53:
+ 479:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 3:
+ 480:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR3 = TIM_MatchConfigStruct->MatchValue;
+ 990              	 .loc 1 480 0
+ 991 008a AB68     	 ldr r3,[r5,#8]
+ 992 008c 6362     	 str r3,[r4,#36]
+ 481:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 993              	 .loc 1 481 0
+ 994 008e 00E0     	 b .L55
+ 995              	.L49:
+ 996              	.L59:
+ 997 0090 FEE7     	 b .L59
+ 998              	.L55:
+ 482:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	default:
+ 483:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		//Error match value
+ 484:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		//Error loop
+ 485:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		while(1);
+ 486:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 487:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	//interrupt on MRn
+ 488:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->MCR &=~TIM_MCR_CHANNEL_MASKBIT(TIM_MatchConfigStruct->MatchChannel);
+ 999              	 .loc 1 488 0
+ 1000 0092 6269     	 ldr r2,[r4,#20]
+ 1001 0094 2B78     	 ldrb r3,[r5,#0]
+ 1002 0096 03EB4303 	 add r3,r3,r3,lsl#1
+ 1003 009a 4FF00701 	 mov r1,#7
+ 1004 009e 01FA03F3 	 lsl r3,r1,r3
+ 1005 00a2 22EA0303 	 bic r3,r2,r3
+ 1006 00a6 6361     	 str r3,[r4,#20]
+ 489:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 490:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIM_MatchConfigStruct->IntOnMatch)
+ 1007              	 .loc 1 490 0
+ 1008 00a8 6B78     	 ldrb r3,[r5,#1]
+ 1009 00aa 4BB1     	 cbz r3,.L56
+ 491:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MCR |= TIM_INT_ON_MATCH(TIM_MatchConfigStruct->MatchChannel);
+ 1010              	 .loc 1 491 0
+ 1011 00ac 6269     	 ldr r2,[r4,#20]
+ 1012 00ae 2B78     	 ldrb r3,[r5,#0]
+ 1013 00b0 03EB4303 	 add r3,r3,r3,lsl#1
+ 1014 00b4 4FF00101 	 mov r1,#1
+ 1015 00b8 01FA03F3 	 lsl r3,r1,r3
+ 1016 00bc 1343     	 orrs r3,r3,r2
+ 1017 00be 6361     	 str r3,[r4,#20]
+ 1018              	.L56:
+ 492:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 493:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	//reset on MRn
+ 494:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIM_MatchConfigStruct->ResetOnMatch)
+ 1019              	 .loc 1 494 0
+ 1020 00c0 EB78     	 ldrb r3,[r5,#3]
+ 1021 00c2 5BB1     	 cbz r3,.L57
+ 495:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MCR |= TIM_RESET_ON_MATCH(TIM_MatchConfigStruct->MatchChannel);
+ 1022              	 .loc 1 495 0
+ 1023 00c4 6269     	 ldr r2,[r4,#20]
+ 1024 00c6 2B78     	 ldrb r3,[r5,#0]
+ 1025 00c8 03EB4303 	 add r3,r3,r3,lsl#1
+ 1026 00cc 03F10103 	 add r3,r3,#1
+ 1027 00d0 4FF00101 	 mov r1,#1
+ 1028 00d4 01FA03F3 	 lsl r3,r1,r3
+ 1029 00d8 1343     	 orrs r3,r3,r2
+ 1030 00da 6361     	 str r3,[r4,#20]
+ 1031              	.L57:
+ 496:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 497:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	//stop on MRn
+ 498:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIM_MatchConfigStruct->StopOnMatch)
+ 1032              	 .loc 1 498 0
+ 1033 00dc AB78     	 ldrb r3,[r5,#2]
+ 1034 00de 5BB1     	 cbz r3,.L58
+ 499:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MCR |= TIM_STOP_ON_MATCH(TIM_MatchConfigStruct->MatchChannel);
+ 1035              	 .loc 1 499 0
+ 1036 00e0 6269     	 ldr r2,[r4,#20]
+ 1037 00e2 2B78     	 ldrb r3,[r5,#0]
+ 1038 00e4 03EB4303 	 add r3,r3,r3,lsl#1
+ 1039 00e8 03F10203 	 add r3,r3,#2
+ 1040 00ec 4FF00101 	 mov r1,#1
+ 1041 00f0 01FA03F3 	 lsl r3,r1,r3
+ 1042 00f4 1343     	 orrs r3,r3,r2
+ 1043 00f6 6361     	 str r3,[r4,#20]
+ 1044              	.L58:
+ 500:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 501:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	// match output type
+ 502:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 503:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->EMR 	&= ~TIM_EM_MASK(TIM_MatchConfigStruct->MatchChannel);
+ 1045              	 .loc 1 503 0
+ 1046 00f8 E36B     	 ldr r3,[r4,#60]
+ 1047 00fa 2A78     	 ldrb r2,[r5,#0]
+ 1048 00fc 4FEA4202 	 lsl r2,r2,#1
+ 1049 0100 02F10402 	 add r2,r2,#4
+ 1050 0104 4FF00301 	 mov r1,#3
+ 1051 0108 01FA02F2 	 lsl r2,r1,r2
+ 1052 010c 23EA0203 	 bic r3,r3,r2
+ 1053 0110 E363     	 str r3,[r4,#60]
+ 504:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->EMR   |= TIM_EM_SET(TIM_MatchConfigStruct->MatchChannel,TIM_MatchConfigStruct->ExtMatchOutpu
+ 1054              	 .loc 1 504 0
+ 1055 0112 E36B     	 ldr r3,[r4,#60]
+ 1056 0114 2979     	 ldrb r1,[r5,#4]
+ 1057 0116 01F00301 	 and r1,r1,#3
+ 1058 011a 2A78     	 ldrb r2,[r5,#0]
+ 1059 011c 4FEA4202 	 lsl r2,r2,#1
+ 1060 0120 02F10402 	 add r2,r2,#4
+ 1061 0124 01FA02F2 	 lsl r2,r1,r2
+ 1062 0128 1343     	 orrs r3,r3,r2
+ 1063 012a E363     	 str r3,[r4,#60]
+ 505:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 1064              	 .loc 1 505 0
+ 1065 012c 38BD     	 pop {r3,r4,r5,pc}
+ 1066              	 .cfi_endproc
+ 1067              	.LFE67:
+ 1069 012e 00BF     	 .section .text.TIM_UpdateMatchValue,"ax",%progbits
+ 1070              	 .align 2
+ 1071              	 .global TIM_UpdateMatchValue
+ 1072              	 .thumb
+ 1073              	 .thumb_func
+ 1075              	TIM_UpdateMatchValue:
+ 1076              	.LFB68:
+ 506:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 507:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Update Match value
+ 508:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Pointer to timer device, should be:
+ 509:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *   			- LPC_TIM0: TIMER0 peripheral
+ 510:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 511:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 512:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 513:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	MatchChannel	Match channel, should be: 0..3
+ 514:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	MatchValue		updated match value
+ 515:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 516:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 517:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_UpdateMatchValue(LPC_TIM_TypeDef *TIMx,uint8_t MatchChannel, uint32_t MatchValue)
+ 518:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 1077              	 .loc 1 518 0
+ 1078              	 .cfi_startproc
+ 1079              	 
+ 1080              	 
+ 1081              	.LVL54:
+ 1082 0000 70B5     	 push {r4,r5,r6,lr}
+ 1083              	.LCFI9:
+ 1084              	 .cfi_def_cfa_offset 16
+ 1085              	 .cfi_offset 14,-4
+ 1086              	 .cfi_offset 6,-8
+ 1087              	 .cfi_offset 5,-12
+ 1088              	 .cfi_offset 4,-16
+ 1089 0002 0446     	 mov r4,r0
+ 1090 0004 0E46     	 mov r6,r1
+ 1091 0006 1546     	 mov r5,r2
+ 519:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 1092              	 .loc 1 519 0
+ 1093 0008 4FF40043 	 mov r3,#32768
+ 1094 000c C4F20003 	 movt r3,16384
+ 1095 0010 C31A     	 subs r3,r0,r3
+ 1096 0012 18BF     	 it ne
+ 1097 0014 0123     	 movne r3,#1
+ 1098 0016 B0F1402F 	 cmp r0,#1073758208
+ 1099 001a 0CBF     	 ite eq
+ 1100 001c 0023     	 moveq r3,#0
+ 1101 001e 03F00103 	 andne r3,r3,#1
+ 1102 0022 C3B1     	 cbz r3,.L61
+ 1103              	 .loc 1 519 0 is_stmt 0 discriminator 1
+ 1104 0024 4FF00003 	 mov r3,#0
+ 1105 0028 C4F20903 	 movt r3,16393
+ 1106 002c 4FF48042 	 mov r2,#16384
+ 1107              	.LVL55:
+ 1108 0030 C4F20902 	 movt r2,16393
+ 1109 0034 821A     	 subs r2,r0,r2
+ 1110 0036 18BF     	 it ne
+ 1111 0038 0122     	 movne r2,#1
+ 1112 003a 9842     	 cmp r0,r3
+ 1113 003c 0CBF     	 ite eq
+ 1114 003e 0023     	 moveq r3,#0
+ 1115 0040 02F00103 	 andne r3,r2,#1
+ 1116 0044 3BB1     	 cbz r3,.L61
+ 1117              	 .loc 1 519 0 discriminator 2
+ 1118 0046 40F20000 	 movw r0,#:lower16:.LC0
+ 1119              	.LVL56:
+ 1120 004a C0F20000 	 movt r0,#:upper16:.LC0
+ 1121 004e 40F20721 	 movw r1,#519
+ 1122              	.LVL57:
+ 1123 0052 FFF7FEFF 	 bl check_failed
+ 1124              	.L61:
+ 520:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	switch(MatchChannel)
+ 1125              	 .loc 1 520 0 is_stmt 1
+ 1126 0056 032E     	 cmp r6,#3
+ 1127 0058 0BD8     	 bhi .L62
+ 1128 005a DFE806F0 	 tbb [pc,r6]
+ 1129              	.L67:
+ 1130 005e 02       	 .byte (.L63-.L67)/2
+ 1131 005f 04       	 .byte (.L64-.L67)/2
+ 1132 0060 06       	 .byte (.L65-.L67)/2
+ 1133 0061 08       	 .byte (.L66-.L67)/2
+ 1134              	 .align 1
+ 1135              	.L63:
+ 521:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	{
+ 522:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 0:
+ 523:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR0 = MatchValue;
+ 1136              	 .loc 1 523 0
+ 1137 0062 A561     	 str r5,[r4,#24]
+ 524:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 1138              	 .loc 1 524 0
+ 1139 0064 70BD     	 pop {r4,r5,r6,pc}
+ 1140              	.L64:
+ 525:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 1:
+ 526:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR1 = MatchValue;
+ 1141              	 .loc 1 526 0
+ 1142 0066 E561     	 str r5,[r4,#28]
+ 527:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 1143              	 .loc 1 527 0
+ 1144 0068 70BD     	 pop {r4,r5,r6,pc}
+ 1145              	.L65:
+ 528:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 2:
+ 529:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR2 = MatchValue;
+ 1146              	 .loc 1 529 0
+ 1147 006a 2562     	 str r5,[r4,#32]
+ 530:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 1148              	 .loc 1 530 0
+ 1149 006c 70BD     	 pop {r4,r5,r6,pc}
+ 1150              	.L66:
+ 531:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	case 3:
+ 532:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->MR3 = MatchValue;
+ 1151              	 .loc 1 532 0
+ 1152 006e 6562     	 str r5,[r4,#36]
+ 533:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		break;
+ 1153              	 .loc 1 533 0
+ 1154 0070 70BD     	 pop {r4,r5,r6,pc}
+ 1155              	.L62:
+ 1156              	.L69:
+ 1157 0072 FEE7     	 b .L69
+ 1158              	 .cfi_endproc
+ 1159              	.LFE68:
+ 1161              	 .section .text.TIM_ConfigCapture,"ax",%progbits
+ 1162              	 .align 2
+ 1163              	 .global TIM_ConfigCapture
+ 1164              	 .thumb
+ 1165              	 .thumb_func
+ 1167              	TIM_ConfigCapture:
+ 1168              	.LFB69:
+ 534:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	default:
+ 535:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		//Error Loop
+ 536:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		while(1);
+ 537:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	}
+ 538:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 539:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 540:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 541:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Configuration for Capture register
+ 542:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Pointer to timer device, should be:
+ 543:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *   			- LPC_TIM0: TIMER0 peripheral
+ 544:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 545:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 546:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 547:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- CaptureChannel: set the channel to capture data
+ 548:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- RisingEdge    : if SET, Capture at rising edge
+ 549:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- FallingEdge	: if SET, Capture at falling edge
+ 550:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 					- IntOnCaption  : if SET, Capture generate interrupt
+ 551:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]   TIM_CaptureConfigStruct	Pointer to TIM_CAPTURECFG_Type
+ 552:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		None
+ 553:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 554:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** void TIM_ConfigCapture(LPC_TIM_TypeDef *TIMx, TIM_CAPTURECFG_Type *TIM_CaptureConfigStruct)
+ 555:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 1169              	 .loc 1 555 0
+ 1170              	 .cfi_startproc
+ 1171              	 
+ 1172              	 
+ 1173              	.LVL58:
+ 1174 0000 38B5     	 push {r3,r4,r5,lr}
+ 1175              	.LCFI10:
+ 1176              	 .cfi_def_cfa_offset 16
+ 1177              	 .cfi_offset 14,-4
+ 1178              	 .cfi_offset 5,-8
+ 1179              	 .cfi_offset 4,-12
+ 1180              	 .cfi_offset 3,-16
+ 1181 0002 0446     	 mov r4,r0
+ 1182 0004 0D46     	 mov r5,r1
+ 556:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 557:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 1183              	 .loc 1 557 0
+ 1184 0006 4FF40043 	 mov r3,#32768
+ 1185 000a C4F20003 	 movt r3,16384
+ 1186 000e C31A     	 subs r3,r0,r3
+ 1187 0010 18BF     	 it ne
+ 1188 0012 0123     	 movne r3,#1
+ 1189 0014 B0F1402F 	 cmp r0,#1073758208
+ 1190 0018 0CBF     	 ite eq
+ 1191 001a 0023     	 moveq r3,#0
+ 1192 001c 03F00103 	 andne r3,r3,#1
+ 1193 0020 C3B1     	 cbz r3,.L71
+ 1194              	 .loc 1 557 0 is_stmt 0 discriminator 1
+ 1195 0022 4FF00003 	 mov r3,#0
+ 1196 0026 C4F20903 	 movt r3,16393
+ 1197 002a 4FF48042 	 mov r2,#16384
+ 1198 002e C4F20902 	 movt r2,16393
+ 1199 0032 821A     	 subs r2,r0,r2
+ 1200 0034 18BF     	 it ne
+ 1201 0036 0122     	 movne r2,#1
+ 1202 0038 9842     	 cmp r0,r3
+ 1203 003a 0CBF     	 ite eq
+ 1204 003c 0023     	 moveq r3,#0
+ 1205 003e 02F00103 	 andne r3,r2,#1
+ 1206 0042 3BB1     	 cbz r3,.L71
+ 1207              	 .loc 1 557 0 discriminator 2
+ 1208 0044 40F20000 	 movw r0,#:lower16:.LC0
+ 1209              	.LVL59:
+ 1210 0048 C0F20000 	 movt r0,#:upper16:.LC0
+ 1211 004c 40F22D21 	 movw r1,#557
+ 1212              	.LVL60:
+ 1213 0050 FFF7FEFF 	 bl check_failed
+ 1214              	.L71:
+ 558:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	TIMx->CCR &= ~TIM_CCR_CHANNEL_MASKBIT(TIM_CaptureConfigStruct->CaptureChannel);
+ 1215              	 .loc 1 558 0 is_stmt 1
+ 1216 0054 A26A     	 ldr r2,[r4,#40]
+ 1217 0056 2B78     	 ldrb r3,[r5,#0]
+ 1218 0058 03EB4303 	 add r3,r3,r3,lsl#1
+ 1219 005c 4FF00701 	 mov r1,#7
+ 1220 0060 01FA03F3 	 lsl r3,r1,r3
+ 1221 0064 22EA0303 	 bic r3,r2,r3
+ 1222 0068 A362     	 str r3,[r4,#40]
+ 559:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 560:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIM_CaptureConfigStruct->RisingEdge)
+ 1223              	 .loc 1 560 0
+ 1224 006a 6B78     	 ldrb r3,[r5,#1]
+ 1225 006c 4BB1     	 cbz r3,.L72
+ 561:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->CCR |= TIM_CAP_RISING(TIM_CaptureConfigStruct->CaptureChannel);
+ 1226              	 .loc 1 561 0
+ 1227 006e A26A     	 ldr r2,[r4,#40]
+ 1228 0070 2B78     	 ldrb r3,[r5,#0]
+ 1229 0072 03EB4303 	 add r3,r3,r3,lsl#1
+ 1230 0076 4FF00101 	 mov r1,#1
+ 1231 007a 01FA03F3 	 lsl r3,r1,r3
+ 1232 007e 1343     	 orrs r3,r3,r2
+ 1233 0080 A362     	 str r3,[r4,#40]
+ 1234              	.L72:
+ 562:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 563:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIM_CaptureConfigStruct->FallingEdge)
+ 1235              	 .loc 1 563 0
+ 1236 0082 AB78     	 ldrb r3,[r5,#2]
+ 1237 0084 5BB1     	 cbz r3,.L73
+ 564:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->CCR |= TIM_CAP_FALLING(TIM_CaptureConfigStruct->CaptureChannel);
+ 1238              	 .loc 1 564 0
+ 1239 0086 A26A     	 ldr r2,[r4,#40]
+ 1240 0088 2B78     	 ldrb r3,[r5,#0]
+ 1241 008a 03EB4303 	 add r3,r3,r3,lsl#1
+ 1242 008e 03F10103 	 add r3,r3,#1
+ 1243 0092 4FF00101 	 mov r1,#1
+ 1244 0096 01FA03F3 	 lsl r3,r1,r3
+ 1245 009a 1343     	 orrs r3,r3,r2
+ 1246 009c A362     	 str r3,[r4,#40]
+ 1247              	.L73:
+ 565:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 566:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if (TIM_CaptureConfigStruct->IntOnCaption)
+ 1248              	 .loc 1 566 0
+ 1249 009e EB78     	 ldrb r3,[r5,#3]
+ 1250 00a0 5BB1     	 cbz r3,.L70
+ 567:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		TIMx->CCR |= TIM_INT_ON_CAP(TIM_CaptureConfigStruct->CaptureChannel);
+ 1251              	 .loc 1 567 0
+ 1252 00a2 A26A     	 ldr r2,[r4,#40]
+ 1253 00a4 2B78     	 ldrb r3,[r5,#0]
+ 1254 00a6 03EB4303 	 add r3,r3,r3,lsl#1
+ 1255 00aa 03F10203 	 add r3,r3,#2
+ 1256 00ae 4FF00101 	 mov r1,#1
+ 1257 00b2 01FA03F3 	 lsl r3,r1,r3
+ 1258 00b6 1343     	 orrs r3,r3,r2
+ 1259 00b8 A362     	 str r3,[r4,#40]
+ 1260              	.L70:
+ 1261 00ba 38BD     	 pop {r3,r4,r5,pc}
+ 1262              	 .cfi_endproc
+ 1263              	.LFE69:
+ 1265              	 .section .text.TIM_GetCaptureValue,"ax",%progbits
+ 1266              	 .align 2
+ 1267              	 .global TIM_GetCaptureValue
+ 1268              	 .thumb
+ 1269              	 .thumb_func
+ 1271              	TIM_GetCaptureValue:
+ 1272              	.LFB70:
+ 568:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 569:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 570:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** /*********************************************************************//**
+ 571:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @brief 		Read value of capture register in timer/counter device
+ 572:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	TIMx Pointer to timer/counter device, should be:
+ 573:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  *  			- LPC_TIM0: TIMER0 peripheral
+ 574:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM1: TIMER1 peripheral
+ 575:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM2: TIMER2 peripheral
+ 576:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- LPC_TIM3: TIMER3 peripheral
+ 577:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @param[in]	CaptureChannel: capture channel number, should be:
+ 578:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_INCAP0: CAPn.0 input pin for TIMERn
+ 579:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * 				- TIM_COUNTER_INCAP1: CAPn.1 input pin for TIMERn
+ 580:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  * @return 		Value of capture register
+ 581:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c ****  **********************************************************************/
+ 582:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** uint32_t TIM_GetCaptureValue(LPC_TIM_TypeDef *TIMx, TIM_COUNTER_INPUT_OPT CaptureChannel)
+ 583:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** {
+ 1273              	 .loc 1 583 0
+ 1274              	 .cfi_startproc
+ 1275              	 
+ 1276              	 
+ 1277              	.LVL61:
+ 1278 0000 38B5     	 push {r3,r4,r5,lr}
+ 1279              	.LCFI11:
+ 1280              	 .cfi_def_cfa_offset 16
+ 1281              	 .cfi_offset 14,-4
+ 1282              	 .cfi_offset 5,-8
+ 1283              	 .cfi_offset 4,-12
+ 1284              	 .cfi_offset 3,-16
+ 1285 0002 0446     	 mov r4,r0
+ 1286 0004 0D46     	 mov r5,r1
+ 584:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIMx(TIMx));
+ 1287              	 .loc 1 584 0
+ 1288 0006 4FF40043 	 mov r3,#32768
+ 1289 000a C4F20003 	 movt r3,16384
+ 1290 000e C31A     	 subs r3,r0,r3
+ 1291 0010 18BF     	 it ne
+ 1292 0012 0123     	 movne r3,#1
+ 1293 0014 B0F1402F 	 cmp r0,#1073758208
+ 1294 0018 0CBF     	 ite eq
+ 1295 001a 0023     	 moveq r3,#0
+ 1296 001c 03F00103 	 andne r3,r3,#1
+ 1297 0020 C3B1     	 cbz r3,.L76
+ 1298              	 .loc 1 584 0 is_stmt 0 discriminator 1
+ 1299 0022 4FF00003 	 mov r3,#0
+ 1300 0026 C4F20903 	 movt r3,16393
+ 1301 002a 4FF48042 	 mov r2,#16384
+ 1302 002e C4F20902 	 movt r2,16393
+ 1303 0032 821A     	 subs r2,r0,r2
+ 1304 0034 18BF     	 it ne
+ 1305 0036 0122     	 movne r2,#1
+ 1306 0038 9842     	 cmp r0,r3
+ 1307 003a 0CBF     	 ite eq
+ 1308 003c 0023     	 moveq r3,#0
+ 1309 003e 02F00103 	 andne r3,r2,#1
+ 1310 0042 3BB1     	 cbz r3,.L76
+ 1311              	 .loc 1 584 0 discriminator 2
+ 1312 0044 40F20000 	 movw r0,#:lower16:.LC0
+ 1313              	.LVL62:
+ 1314 0048 C0F20000 	 movt r0,#:upper16:.LC0
+ 1315 004c 4FF41271 	 mov r1,#584
+ 1316              	.LVL63:
+ 1317 0050 FFF7FEFF 	 bl check_failed
+ 1318              	.L76:
+ 585:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	CHECK_PARAM(PARAM_TIM_COUNTER_INPUT_OPT(CaptureChannel));
+ 1319              	 .loc 1 585 0 is_stmt 1
+ 1320 0054 012D     	 cmp r5,#1
+ 1321 0056 07D9     	 bls .L77
+ 1322              	 .loc 1 585 0 is_stmt 0 discriminator 1
+ 1323 0058 40F20000 	 movw r0,#:lower16:.LC0
+ 1324 005c C0F20000 	 movt r0,#:upper16:.LC0
+ 1325 0060 40F24921 	 movw r1,#585
+ 1326 0064 FFF7FEFF 	 bl check_failed
+ 1327              	.L77:
+ 586:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 
+ 587:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	if(CaptureChannel==0)
+ 1328              	 .loc 1 587 0 is_stmt 1
+ 1329 0068 0DB9     	 cbnz r5,.L78
+ 588:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		return TIMx->CR0;
+ 1330              	 .loc 1 588 0
+ 1331 006a E06A     	 ldr r0,[r4,#44]
+ 1332 006c 38BD     	 pop {r3,r4,r5,pc}
+ 1333              	.L78:
+ 589:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 	else
+ 590:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** 		return TIMx->CR1;
+ 1334              	 .loc 1 590 0
+ 1335 006e 206B     	 ldr r0,[r4,#48]
+ 591:src/MightyBoard/Motherboard/lib/source/lpc17xx_timer.c **** }
+ 1336              	 .loc 1 591 0
+ 1337 0070 38BD     	 pop {r3,r4,r5,pc}
+ 1338              	 .cfi_endproc
+ 1339              	.LFE70:
+ 1341 0072 00BF     	 .section .rodata.str1.4,"aMS",%progbits,1
+ 1342              	 .align 2
+ 1343              	.LC0:
+ 1344 0000 7372632F 	 .ascii "src/MightyBoard/Motherboard/lib/source/lpc17xx_time"
+ 1344      4D696768 
+ 1344      7479426F 
+ 1344      6172642F 
+ 1344      4D6F7468 
+ 1345 0033 722E6300 	 .ascii "r.c\000"
+ 1346 0037 00       	 .text
+ 1347              	.Letext0:
+ 1348              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1349              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 1350              	 .file 4 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 1351              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc17xx_timer.h"
+ 1352              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_timer.c
+    {standard input}:19     .text.TIM_GetIntStatus:00000000 $t
+    {standard input}:24     .text.TIM_GetIntStatus:00000000 TIM_GetIntStatus
+    {standard input}:1343   .rodata.str1.4:00000000 .LC0
+    {standard input}:100    .text.TIM_GetIntCaptureStatus:00000000 $t
+    {standard input}:105    .text.TIM_GetIntCaptureStatus:00000000 TIM_GetIntCaptureStatus
+    {standard input}:182    .text.TIM_ClearIntPending:00000000 $t
+    {standard input}:187    .text.TIM_ClearIntPending:00000000 TIM_ClearIntPending
+    {standard input}:254    .text.TIM_ClearIntCapturePending:00000000 $t
+    {standard input}:259    .text.TIM_ClearIntCapturePending:00000000 TIM_ClearIntCapturePending
+    {standard input}:327    .text.TIM_ConfigStructInit:00000000 $t
+    {standard input}:332    .text.TIM_ConfigStructInit:00000000 TIM_ConfigStructInit
+    {standard input}:364    .text.TIM_Init:00000000 $t
+    {standard input}:369    .text.TIM_Init:00000000 TIM_Init
+    {standard input}:669    .text.TIM_DeInit:00000000 $t
+    {standard input}:674    .text.TIM_DeInit:00000000 TIM_DeInit
+    {standard input}:767    .text.TIM_Cmd:00000000 $t
+    {standard input}:772    .text.TIM_Cmd:00000000 TIM_Cmd
+    {standard input}:834    .text.TIM_ResetCounter:00000000 $t
+    {standard input}:839    .text.TIM_ResetCounter:00000000 TIM_ResetCounter
+    {standard input}:897    .text.TIM_ConfigMatch:00000000 $t
+    {standard input}:902    .text.TIM_ConfigMatch:00000000 TIM_ConfigMatch
+    {standard input}:966    .text.TIM_ConfigMatch:00000074 $d
+    {standard input}:970    .text.TIM_ConfigMatch:00000078 $t
+    {standard input}:1070   .text.TIM_UpdateMatchValue:00000000 $t
+    {standard input}:1075   .text.TIM_UpdateMatchValue:00000000 TIM_UpdateMatchValue
+    {standard input}:1130   .text.TIM_UpdateMatchValue:0000005e $d
+    {standard input}:1134   .text.TIM_UpdateMatchValue:00000062 $t
+    {standard input}:1162   .text.TIM_ConfigCapture:00000000 $t
+    {standard input}:1167   .text.TIM_ConfigCapture:00000000 TIM_ConfigCapture
+    {standard input}:1266   .text.TIM_GetCaptureValue:00000000 $t
+    {standard input}:1271   .text.TIM_GetCaptureValue:00000000 TIM_GetCaptureValue
+    {standard input}:1342   .rodata.str1.4:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+check_failed
+__aeabi_uldivmod
+CLKPWR_ConfigPPWR
+CLKPWR_SetPCLKDiv
+CLKPWR_GetPCLK

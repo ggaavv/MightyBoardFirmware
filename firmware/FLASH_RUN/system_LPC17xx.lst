@@ -1,0 +1,966 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "system_LPC17xx.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .global __aeabi_uldivmod
+  19              	 .section .text.SystemCoreClockUpdate,"ax",%progbits
+  20              	 .align 2
+  21              	 .global SystemCoreClockUpdate
+  22              	 .thumb
+  23              	 .thumb_func
+  25              	SystemCoreClockUpdate:
+  26              	.LFB55:
+  27              	 .file 1 "src/MightyBoard/Motherboard/system/system_LPC17xx.c"
+   1:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /**************************************************************************//**
+   2:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @file     system_LPC17xx.c
+   3:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @brief    CMSIS Cortex-M3 Device Peripheral Access Layer Source File
+   4:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *           for the NXP LPC17xx Device Series
+   5:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @version  V1.08
+   6:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @date     12. May 2010
+   7:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *
+   8:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @note
+   9:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * Copyright (C) 2009 ARM Limited. All rights reserved.
+  10:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *
+  11:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @par
+  12:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * ARM Limited (ARM) is supplying this software for use with Cortex-M 
+  13:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * processor based microcontrollers.  This file can be freely distributed 
+  14:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * within development tools that are supporting such ARM based processors. 
+  15:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *
+  16:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @par
+  17:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
+  18:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+  19:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
+  20:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
+  21:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+  22:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *
+  23:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  ******************************************************************************/
+  24:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+  25:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+  26:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #include <stdint.h>
+  27:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #include "LPC17xx.h"
+  28:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #include "lpc17xx_clkpwr.h"
+  29:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+  30:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*
+  31:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //-------- <<< Use Configuration Wizard in Context Menu >>> ------------------
+  32:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** */
+  33:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+  34:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*--------------------- Clock Configuration ----------------------------------
+  35:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+  36:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** // <e> Clock Configuration
+  37:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> System Controls and Status Register (SCS)
+  38:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o1.4>    OSCRANGE: Main Oscillator Range Select
+  39:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=>  1 MHz to 20 MHz
+  40:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> 15 MHz to 24 MHz
+  41:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <e1.5>       OSCEN: Main Oscillator Enable
+  42:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     </e>
+  43:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+  44:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+  45:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> Clock Source Select Register (CLKSRCSEL)
+  46:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o2.0..1>   CLKSRC: PLL Clock Source Selection
+  47:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Internal RC oscillator
+  48:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Main oscillator
+  49:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> RTC oscillator
+  50:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+  51:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+  52:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <e3> PLL0 Configuration (Main PLL)
+  53:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <h> PLL0 Configuration Register (PLL0CFG)
+  54:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> F_cco0 = (2 * M * F_in) / N
+  55:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> F_in must be in the range of 32 kHz to 50 MHz
+  56:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> F_cco0 must be in the range of 275 MHz to 550 MHz
+  57:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //       <o4.0..14>  MSEL: PLL Multiplier Selection
+  58:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <6-32768><#-1>
+  59:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> M Value
+  60:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //       <o4.16..23> NSEL: PLL Divider Selection
+  61:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1-256><#-1>
+  62:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> N Value
+  63:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     </h>
+  64:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </e>
+  65:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+  66:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <e5> PLL1 Configuration (USB PLL)
+  67:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <h> PLL1 Configuration Register (PLL1CFG)
+  68:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> F_usb = M * F_osc or F_usb = F_cco1 / (2 * P)
+  69:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> F_cco1 = F_osc * M * 2 * P
+  70:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> F_cco1 must be in the range of 156 MHz to 320 MHz
+  71:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //       <o6.0..4>   MSEL: PLL Multiplier Selection
+  72:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1-32><#-1>
+  73:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> M Value (for USB maximum value is 4)
+  74:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //       <o6.5..6>   PSEL: PLL Divider Selection
+  75:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> 1
+  76:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> 2
+  77:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> 4
+  78:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> 8
+  79:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> P Value
+  80:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     </h>
+  81:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </e>
+  82:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+  83:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> CPU Clock Configuration Register (CCLKCFG)
+  84:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o7.0..7>  CCLKSEL: Divide Value for CPU Clock from PLL0
+  85:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1-256><#-1>
+  86:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+  87:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+  88:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> USB Clock Configuration Register (USBCLKCFG)
+  89:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o8.0..3>   USBSEL: Divide Value for USB Clock from PLL0
+  90:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0-15>
+  91:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <i> Divide is USBSEL + 1
+  92:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+  93:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+  94:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> Peripheral Clock Selection Register 0 (PCLKSEL0)
+  95:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.0..1>    PCLK_WDT: Peripheral Clock Selection for WDT
+  96:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+  97:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+  98:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+  99:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 100:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.2..3>    PCLK_TIMER0: Peripheral Clock Selection for TIMER0
+ 101:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 102:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 103:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 104:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 105:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.4..5>    PCLK_TIMER1: Peripheral Clock Selection for TIMER1
+ 106:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 107:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 108:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 109:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 110:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.6..7>    PCLK_UART0: Peripheral Clock Selection for UART0
+ 111:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 112:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 113:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 114:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 115:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.8..9>    PCLK_UART1: Peripheral Clock Selection for UART1
+ 116:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 117:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 118:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 119:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 120:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.12..13>  PCLK_PWM1: Peripheral Clock Selection for PWM1
+ 121:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 122:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 123:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 124:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 125:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.14..15>  PCLK_I2C0: Peripheral Clock Selection for I2C0
+ 126:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 127:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 128:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 129:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 130:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.16..17>  PCLK_SPI: Peripheral Clock Selection for SPI
+ 131:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 132:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 133:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 134:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 135:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.20..21>  PCLK_SSP1: Peripheral Clock Selection for SSP1
+ 136:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 137:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 138:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 139:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 140:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.22..23>  PCLK_DAC: Peripheral Clock Selection for DAC
+ 141:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 142:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 143:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 144:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 145:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.24..25>  PCLK_ADC: Peripheral Clock Selection for ADC
+ 146:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 147:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 148:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 149:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 150:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.26..27>  PCLK_CAN1: Peripheral Clock Selection for CAN1
+ 151:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 152:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 153:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 154:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 6
+ 155:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.28..29>  PCLK_CAN2: Peripheral Clock Selection for CAN2
+ 156:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 157:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 158:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 159:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 6
+ 160:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o9.30..31>  PCLK_ACF: Peripheral Clock Selection for ACF
+ 161:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 162:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 163:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 164:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 6
+ 165:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+ 166:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+ 167:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> Peripheral Clock Selection Register 1 (PCLKSEL1)
+ 168:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.0..1>   PCLK_QEI: Peripheral Clock Selection for the Quadrature Encoder Interface
+ 169:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 170:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 171:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 172:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 173:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.2..3>   PCLK_GPIO: Peripheral Clock Selection for GPIOs
+ 174:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 175:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 176:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 177:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 178:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.4..5>   PCLK_PCB: Peripheral Clock Selection for the Pin Connect Block
+ 179:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 180:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 181:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 182:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 183:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.6..7>   PCLK_I2C1: Peripheral Clock Selection for I2C1
+ 184:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 185:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 186:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 187:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 188:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.10..11> PCLK_SSP0: Peripheral Clock Selection for SSP0
+ 189:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 190:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 191:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 192:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 193:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.12..13> PCLK_TIMER2: Peripheral Clock Selection for TIMER2
+ 194:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 195:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 196:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 197:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 198:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.14..15> PCLK_TIMER3: Peripheral Clock Selection for TIMER3
+ 199:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 200:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 201:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 202:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 203:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.16..17> PCLK_UART2: Peripheral Clock Selection for UART2
+ 204:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 205:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 206:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 207:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 208:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.18..19> PCLK_UART3: Peripheral Clock Selection for UART3
+ 209:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 210:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 211:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 212:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 213:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.20..21> PCLK_I2C2: Peripheral Clock Selection for I2C2
+ 214:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 215:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 216:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 217:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 218:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.22..23> PCLK_I2S: Peripheral Clock Selection for I2S
+ 219:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 220:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 221:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 222:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 223:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.26..27> PCLK_RIT: Peripheral Clock Selection for the Repetitive Interrupt Timer
+ 224:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 225:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 226:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 227:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 228:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.28..29> PCLK_SYSCON: Peripheral Clock Selection for the System Control Block
+ 229:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 230:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 231:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 232:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 233:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o10.30..31> PCLK_MC: Peripheral Clock Selection for the Motor Control PWM
+ 234:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> Pclk = Cclk / 4
+ 235:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Pclk = Cclk
+ 236:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Pclk = Cclk / 2
+ 237:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> Pclk = Hclk / 8
+ 238:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+ 239:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+ 240:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> Power Control for Peripherals Register (PCONP)
+ 241:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.1>      PCTIM0: Timer/Counter 0 power/clock enable
+ 242:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.2>      PCTIM1: Timer/Counter 1 power/clock enable
+ 243:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.3>      PCUART0: UART 0 power/clock enable
+ 244:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.4>      PCUART1: UART 1 power/clock enable
+ 245:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.6>      PCPWM1: PWM 1 power/clock enable
+ 246:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.7>      PCI2C0: I2C interface 0 power/clock enable
+ 247:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.8>      PCSPI: SPI interface power/clock enable
+ 248:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.9>      PCRTC: RTC power/clock enable
+ 249:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.10>     PCSSP1: SSP interface 1 power/clock enable
+ 250:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.12>     PCAD: A/D converter power/clock enable
+ 251:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.13>     PCCAN1: CAN controller 1 power/clock enable
+ 252:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.14>     PCCAN2: CAN controller 2 power/clock enable
+ 253:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.15>     PCGPIO: GPIOs power/clock enable
+ 254:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.16>     PCRIT: Repetitive interrupt timer power/clock enable
+ 255:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.17>     PCMC: Motor control PWM power/clock enable
+ 256:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.18>     PCQEI: Quadrature encoder interface power/clock enable
+ 257:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.19>     PCI2C1: I2C interface 1 power/clock enable
+ 258:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.21>     PCSSP0: SSP interface 0 power/clock enable
+ 259:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.22>     PCTIM2: Timer 2 power/clock enable
+ 260:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.23>     PCTIM3: Timer 3 power/clock enable
+ 261:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.24>     PCUART2: UART 2 power/clock enable
+ 262:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.25>     PCUART3: UART 3 power/clock enable
+ 263:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.26>     PCI2C2: I2C interface 2 power/clock enable
+ 264:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.27>     PCI2S: I2S interface power/clock enable
+ 265:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.29>     PCGPDMA: GP DMA function power/clock enable
+ 266:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.30>     PCENET: Ethernet block power/clock enable
+ 267:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o11.31>     PCUSB: USB interface power/clock enable
+ 268:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+ 269:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+ 270:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <h> Clock Output Configuration Register (CLKOUTCFG)
+ 271:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o12.0..3>   CLKOUTSEL: Selects clock source for CLKOUT
+ 272:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <0=> CPU clock
+ 273:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1=> Main oscillator
+ 274:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <2=> Internal RC oscillator
+ 275:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <3=> USB clock
+ 276:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <4=> RTC oscillator
+ 277:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o12.4..7>   CLKOUTDIV: Selects clock divider for CLKOUT
+ 278:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //                     <1-16><#-1>
+ 279:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //     <o12.8>      CLKOUT_EN: CLKOUT enable control
+ 280:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   </h>
+ 281:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+ 282:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** // </e>
+ 283:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** */
+ 284:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define CLOCK_SETUP           1
+ 285:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define SCS_Val               0x00000020
+ 286:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define CLKSRCSEL_Val         0x00000001
+ 287:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define PLL0_SETUP            1
+ 288:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define PLL0CFG_Val           0x00000008
+ 289:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define PLL1_SETUP            1
+ 290:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define PLL1CFG_Val           0x00000022
+ 291:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define CCLKCFG_Val           0x00000002
+ 292:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define USBCLKCFG_Val         0x00000000
+ 293:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define PCLKSEL0_Val          0x00000000
+ 294:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define PCLKSEL1_Val          0x00000000
+ 295:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define PCONP_Val             0x042887DE
+ 296:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define CLKOUTCFG_Val         0x00000000
+ 297:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 298:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 299:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*--------------------- Flash Accelerator Configuration ----------------------
+ 300:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //
+ 301:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** // <e> Flash Accelerator Configuration
+ 302:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //   <o1.12..15> FLASHTIM: Flash Access Time
+ 303:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //               <0=> 1 CPU clock (for CPU clock up to 20 MHz)
+ 304:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //               <1=> 2 CPU clocks (for CPU clock up to 40 MHz)
+ 305:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //               <2=> 3 CPU clocks (for CPU clock up to 60 MHz)
+ 306:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //               <3=> 4 CPU clocks (for CPU clock up to 80 MHz)
+ 307:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //               <4=> 5 CPU clocks (for CPU clock up to 100 MHz)
+ 308:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //               <5=> 6 CPU clocks (for any CPU clock)
+ 309:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** // </e>
+ 310:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** */
+ 311:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define FLASH_SETUP           1
+ 312:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define FLASHCFG_Val          0x0000503A
+ 313:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 314:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*
+ 315:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** //-------- <<< end of configuration section >>> ------------------------------
+ 316:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** */
+ 317:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 318:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*----------------------------------------------------------------------------
+ 319:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   Check the register settings
+ 320:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *----------------------------------------------------------------------------*/
+ 321:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define CHECK_RANGE(val, min, max)                ((val < min) || (val > max))
+ 322:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define CHECK_RSVD(val, mask)                     (val & mask)
+ 323:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 324:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /* Clock Configuration -------------------------------------------------------*/
+ 325:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((SCS_Val),       ~0x00000030))
+ 326:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "SCS: Invalid values of reserved bits!"
+ 327:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 328:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 329:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RANGE((CLKSRCSEL_Val), 0, 2))
+ 330:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "CLKSRCSEL: Value out of range!"
+ 331:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 332:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 333:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((PLL0CFG_Val),   ~0x00FF7FFF))
+ 334:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "PLL0CFG: Invalid values of reserved bits!"
+ 335:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 336:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 337:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((PLL1CFG_Val),   ~0x0000007F))
+ 338:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "PLL1CFG: Invalid values of reserved bits!"
+ 339:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 340:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 341:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (PLL0_SETUP)            /* if PLL0 is used */
+ 342:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   #if (CCLKCFG_Val < 2)     /* CCLKSEL must be greater then 1 */
+ 343:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #error "CCLKCFG: CCLKSEL must be greater then 1 if PLL0 is used!"
+ 344:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   #endif
+ 345:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 346:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 347:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RANGE((CCLKCFG_Val), 2, 255))
+ 348:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "CCLKCFG: Value out of range!"
+ 349:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 350:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 351:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((USBCLKCFG_Val), ~0x0000000F))
+ 352:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "USBCLKCFG: Invalid values of reserved bits!"
+ 353:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 354:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 355:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((PCLKSEL0_Val),   0x000C0C00))
+ 356:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "PCLKSEL0: Invalid values of reserved bits!"
+ 357:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 358:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 359:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((PCLKSEL1_Val),   0x03000300))
+ 360:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "PCLKSEL1: Invalid values of reserved bits!"
+ 361:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 362:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 363:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((PCONP_Val),      0x10100821))
+ 364:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "PCONP: Invalid values of reserved bits!"
+ 365:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 366:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 367:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((CLKOUTCFG_Val), ~0x000001FF))
+ 368:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "CLKOUTCFG: Invalid values of reserved bits!"
+ 369:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 370:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 371:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /* Flash Accelerator Configuration -------------------------------------------*/
+ 372:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CHECK_RSVD((FLASHCFG_Val), ~0x0000F07F))
+ 373:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****    #error "FLASHCFG: Invalid values of reserved bits!"
+ 374:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 375:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 376:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 377:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*----------------------------------------------------------------------------
+ 378:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   DEFINES
+ 379:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *----------------------------------------------------------------------------*/
+ 380:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     
+ 381:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*----------------------------------------------------------------------------
+ 382:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   Define clocks
+ 383:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *----------------------------------------------------------------------------*/
+ 384:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define XTAL        (16000000UL)        /* Oscillator frequency               */
+ 385:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define OSC_CLK     (      XTAL)        /* Main oscillator frequency          */
+ 386:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define RTC_CLK     (   32768UL)        /* RTC oscillator frequency           */
+ 387:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define IRC_OSC     ( 4000000UL)        /* Internal RC oscillator frequency   */
+ 388:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 389:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 390:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /* F_cco0 = (2 * M * F_in) / N  */
+ 391:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define __M               (((PLL0CFG_Val      ) & 0x7FFF) + 1)
+ 392:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define __N               (((PLL0CFG_Val >> 16) & 0x00FF) + 1)
+ 393:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define __FCCO(__F_IN)    ((2ULL * __M * __F_IN) / __N) 
+ 394:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #define __CCLK_DIV        (((CCLKCFG_Val      ) & 0x00FF) + 1)
+ 395:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 396:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /* Determine core clock frequency according to settings */
+ 397:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  #if (PLL0_SETUP)
+ 398:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #if   ((CLKSRCSEL_Val & 0x03) == 1)
+ 399:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         #define __CORE_CLK (__FCCO(OSC_CLK) / __CCLK_DIV)
+ 400:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #elif ((CLKSRCSEL_Val & 0x03) == 2)
+ 401:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         #define __CORE_CLK (__FCCO(RTC_CLK) / __CCLK_DIV)
+ 402:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #else 
+ 403:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         #define __CORE_CLK (__FCCO(IRC_OSC) / __CCLK_DIV)
+ 404:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #endif
+ 405:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  #else
+ 406:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #if   ((CLKSRCSEL_Val & 0x03) == 1)
+ 407:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         #define __CORE_CLK (OSC_CLK         / __CCLK_DIV)
+ 408:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #elif ((CLKSRCSEL_Val & 0x03) == 2)
+ 409:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         #define __CORE_CLK (RTC_CLK         / __CCLK_DIV)
+ 410:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #else
+ 411:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         #define __CORE_CLK (IRC_OSC         / __CCLK_DIV)
+ 412:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     #endif
+ 413:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  #endif
+ 414:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 415:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 416:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*----------------------------------------------------------------------------
+ 417:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   Clock Variable definitions
+ 418:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *----------------------------------------------------------------------------*/
+ 419:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** uint32_t SystemCoreClock = __CORE_CLK;/*!< System Clock Frequency (Core Clock)*/
+ 420:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 421:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 422:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /*----------------------------------------------------------------------------
+ 423:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   Clock functions
+ 424:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *----------------------------------------------------------------------------*/
+ 425:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** void SystemCoreClockUpdate (void)            /* Get Core Clock Frequency      */
+ 426:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** {
+  28              	 .loc 1 426 0
+  29              	 .cfi_startproc
+  30              	 
+  31              	 
+  32 0000 70B5     	 push {r4,r5,r6,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 16
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 6,-8
+  37              	 .cfi_offset 5,-12
+  38              	 .cfi_offset 4,-16
+ 427:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   /* Determine clock frequency according to clock register values             */
+ 428:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   if (((LPC_SC->PLL0STAT >> 24) & 3) == 3) { /* If PLL0 enabled and connected */
+  39              	 .loc 1 428 0
+  40 0002 4FF44043 	 mov r3,#49152
+  41 0006 C4F20F03 	 movt r3,16399
+  42 000a D3F88830 	 ldr r3,[r3,#136]
+  43 000e C3F30163 	 ubfx r3,r3,#24,#2
+  44 0012 032B     	 cmp r3,#3
+  45 0014 40F08D80 	 bne .L2
+ 429:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     switch (LPC_SC->CLKSRCSEL & 0x03) {
+  46              	 .loc 1 429 0
+  47 0018 4FF44043 	 mov r3,#49152
+  48 001c C4F20F03 	 movt r3,16399
+  49 0020 D3F80C31 	 ldr r3,[r3,#268]
+  50 0024 03F00303 	 and r3,r3,#3
+  51 0028 032B     	 cmp r3,#3
+  52 002a 00F2CC80 	 bhi .L1
+  53 002e DFE803F0 	 tbb [pc,r3]
+  54              	.L7:
+  55 0032 02       	 .byte (.L4-.L7)/2
+  56 0033 2D       	 .byte (.L5-.L7)/2
+  57 0034 58       	 .byte (.L6-.L7)/2
+  58 0035 02       	 .byte (.L4-.L7)/2
+  59              	 .align 1
+  60              	.L4:
+ 430:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 0:                                /* Int. RC oscillator => PLL0    */
+ 431:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 3:                                /* Reserved, default to Int. RC  */
+ 432:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (IRC_OSC * 
+ 433:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+  61              	 .loc 1 433 0
+  62 0036 4FF44043 	 mov r3,#49152
+  63 003a C4F20F03 	 movt r3,16399
+  64 003e D3F88810 	 ldr r1,[r3,#136]
+ 434:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+  65              	 .loc 1 434 0
+  66 0042 D3F88820 	 ldr r2,[r3,#136]
+ 435:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((LPC_SC->CCLKCFG & 0xFF)+ 1));
+  67              	 .loc 1 435 0
+  68 0046 D3F80461 	 ldr r6,[r3,#260]
+ 432:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (IRC_OSC * 
+  69              	 .loc 1 432 0
+  70 004a 40F20004 	 movw r4,#:lower16:.LANCHOR0
+  71 004e C0F20004 	 movt r4,#:upper16:.LANCHOR0
+ 433:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+  72              	 .loc 1 433 0
+  73 0052 4FEA4143 	 lsl r3,r1,#17
+  74 0056 4FEA5343 	 lsr r3,r3,#17
+  75 005a 03F10103 	 add r3,r3,#1
+ 432:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (IRC_OSC * 
+  76              	 .loc 1 432 0
+  77 005e 4FF00005 	 mov r5,#0
+  78 0062 4FF49051 	 mov r1,#4608
+  79 0066 C0F27A01 	 movt r1,122
+ 434:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+  80              	 .loc 1 434 0
+  81 006a C2F30742 	 ubfx r2,r2,#16,#8
+ 433:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+  82              	 .loc 1 433 0
+  83 006e A3FB0101 	 umull r0,r1,r3,r1
+  84 0072 02F10102 	 add r2,r2,#1
+  85 0076 2B46     	 mov r3,r5
+  86 0078 FFF7FEFF 	 bl __aeabi_uldivmod
+  87              	 .loc 1 435 0
+  88 007c F2B2     	 uxtb r2,r6
+ 434:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+  89              	 .loc 1 434 0
+  90 007e 02F10102 	 add r2,r2,#1
+  91 0082 2B46     	 mov r3,r5
+  92 0084 FFF7FEFF 	 bl __aeabi_uldivmod
+ 432:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (IRC_OSC * 
+  93              	 .loc 1 432 0
+  94 0088 2060     	 str r0,[r4,#0]
+ 436:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         break;
+  95              	 .loc 1 436 0
+  96 008a 70BD     	 pop {r4,r5,r6,pc}
+  97              	.L5:
+ 437:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 1:                                /* Main oscillator => PLL0       */
+ 438:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (OSC_CLK * 
+ 439:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+  98              	 .loc 1 439 0
+  99 008c 4FF44043 	 mov r3,#49152
+ 100 0090 C4F20F03 	 movt r3,16399
+ 101 0094 D3F88810 	 ldr r1,[r3,#136]
+ 440:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+ 102              	 .loc 1 440 0
+ 103 0098 D3F88820 	 ldr r2,[r3,#136]
+ 441:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((LPC_SC->CCLKCFG & 0xFF)+ 1));
+ 104              	 .loc 1 441 0
+ 105 009c D3F80461 	 ldr r6,[r3,#260]
+ 438:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (OSC_CLK * 
+ 106              	 .loc 1 438 0
+ 107 00a0 40F20004 	 movw r4,#:lower16:.LANCHOR0
+ 108 00a4 C0F20004 	 movt r4,#:upper16:.LANCHOR0
+ 439:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+ 109              	 .loc 1 439 0
+ 110 00a8 4FEA4143 	 lsl r3,r1,#17
+ 111 00ac 4FEA5343 	 lsr r3,r3,#17
+ 112 00b0 03F10103 	 add r3,r3,#1
+ 438:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (OSC_CLK * 
+ 113              	 .loc 1 438 0
+ 114 00b4 4FF00005 	 mov r5,#0
+ 115 00b8 4FF49041 	 mov r1,#18432
+ 116 00bc C0F2E811 	 movt r1,488
+ 440:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+ 117              	 .loc 1 440 0
+ 118 00c0 C2F30742 	 ubfx r2,r2,#16,#8
+ 439:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+ 119              	 .loc 1 439 0
+ 120 00c4 A3FB0101 	 umull r0,r1,r3,r1
+ 121 00c8 02F10102 	 add r2,r2,#1
+ 122 00cc 2B46     	 mov r3,r5
+ 123 00ce FFF7FEFF 	 bl __aeabi_uldivmod
+ 124              	 .loc 1 441 0
+ 125 00d2 F2B2     	 uxtb r2,r6
+ 440:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+ 126              	 .loc 1 440 0
+ 127 00d4 02F10102 	 add r2,r2,#1
+ 128 00d8 2B46     	 mov r3,r5
+ 129 00da FFF7FEFF 	 bl __aeabi_uldivmod
+ 438:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (OSC_CLK * 
+ 130              	 .loc 1 438 0
+ 131 00de 2060     	 str r0,[r4,#0]
+ 442:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         break;
+ 132              	 .loc 1 442 0
+ 133 00e0 70BD     	 pop {r4,r5,r6,pc}
+ 134              	.L6:
+ 443:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 2:                                /* RTC oscillator => PLL0        */
+ 444:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (RTC_CLK * 
+ 445:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+ 135              	 .loc 1 445 0
+ 136 00e2 4FF44043 	 mov r3,#49152
+ 137 00e6 C4F20F03 	 movt r3,16399
+ 138 00ea D3F88810 	 ldr r1,[r3,#136]
+ 446:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+ 139              	 .loc 1 446 0
+ 140 00ee D3F88820 	 ldr r2,[r3,#136]
+ 447:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((LPC_SC->CCLKCFG & 0xFF)+ 1));
+ 141              	 .loc 1 447 0
+ 142 00f2 D3F80461 	 ldr r6,[r3,#260]
+ 444:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (RTC_CLK * 
+ 143              	 .loc 1 444 0
+ 144 00f6 40F20004 	 movw r4,#:lower16:.LANCHOR0
+ 145 00fa C0F20004 	 movt r4,#:upper16:.LANCHOR0
+ 445:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+ 146              	 .loc 1 445 0
+ 147 00fe 4FEA4143 	 lsl r3,r1,#17
+ 148 0102 4FEA5343 	 lsr r3,r3,#17
+ 149 0106 03F10103 	 add r3,r3,#1
+ 444:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (RTC_CLK * 
+ 150              	 .loc 1 444 0
+ 151 010a 4FF00005 	 mov r5,#0
+ 446:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+ 152              	 .loc 1 446 0
+ 153 010e C2F30742 	 ubfx r2,r2,#16,#8
+ 445:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           ((2ULL * ((LPC_SC->PLL0STAT & 0x7FFF) + 1)))  /
+ 154              	 .loc 1 445 0
+ 155 0112 4FEA0340 	 lsl r0,r3,#16
+ 156 0116 2946     	 mov r1,r5
+ 157 0118 02F10102 	 add r2,r2,#1
+ 158 011c 2B46     	 mov r3,r5
+ 159 011e FFF7FEFF 	 bl __aeabi_uldivmod
+ 160              	 .loc 1 447 0
+ 161 0122 F2B2     	 uxtb r2,r6
+ 446:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****                           (((LPC_SC->PLL0STAT >> 16) & 0xFF) + 1)       /
+ 162              	 .loc 1 446 0
+ 163 0124 02F10102 	 add r2,r2,#1
+ 164 0128 2B46     	 mov r3,r5
+ 165 012a FFF7FEFF 	 bl __aeabi_uldivmod
+ 444:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = (RTC_CLK * 
+ 166              	 .loc 1 444 0
+ 167 012e 2060     	 str r0,[r4,#0]
+ 448:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         break;
+ 168              	 .loc 1 448 0
+ 169 0130 70BD     	 pop {r4,r5,r6,pc}
+ 170              	.L2:
+ 449:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     }
+ 450:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   } else {
+ 451:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     switch (LPC_SC->CLKSRCSEL & 0x03) {
+ 171              	 .loc 1 451 0
+ 172 0132 4FF44043 	 mov r3,#49152
+ 173 0136 C4F20F03 	 movt r3,16399
+ 174 013a D3F80C31 	 ldr r3,[r3,#268]
+ 175 013e 03F00303 	 and r3,r3,#3
+ 176 0142 032B     	 cmp r3,#3
+ 177 0144 3FD8     	 bhi .L1
+ 178 0146 DFE803F0 	 tbb [pc,r3]
+ 179              	.L11:
+ 180 014a 02       	 .byte (.L8-.L11)/2
+ 181 014b 17       	 .byte (.L9-.L11)/2
+ 182 014c 2C       	 .byte (.L10-.L11)/2
+ 183 014d 02       	 .byte (.L8-.L11)/2
+ 184              	 .align 1
+ 185              	.L8:
+ 452:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 0:                                /* Int. RC oscillator => PLL0    */
+ 453:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 3:                                /* Reserved, default to Int. RC  */
+ 454:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = IRC_OSC / ((LPC_SC->CCLKCFG & 0xFF)+ 1);
+ 186              	 .loc 1 454 0
+ 187 014e 4FF44043 	 mov r3,#49152
+ 188 0152 C4F20F03 	 movt r3,16399
+ 189 0156 D3F80411 	 ldr r1,[r3,#260]
+ 190 015a 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 191 015e C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 192 0162 C9B2     	 uxtb r1,r1
+ 193 0164 01F10101 	 add r1,r1,#1
+ 194 0168 4FF41062 	 mov r2,#2304
+ 195 016c C0F23D02 	 movt r2,61
+ 196 0170 B2FBF1F2 	 udiv r2,r2,r1
+ 197 0174 1A60     	 str r2,[r3,#0]
+ 455:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         break;
+ 198              	 .loc 1 455 0
+ 199 0176 70BD     	 pop {r4,r5,r6,pc}
+ 200              	.L9:
+ 456:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 1:                                /* Main oscillator => PLL0       */
+ 457:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = OSC_CLK / ((LPC_SC->CCLKCFG & 0xFF)+ 1);
+ 201              	 .loc 1 457 0
+ 202 0178 4FF44043 	 mov r3,#49152
+ 203 017c C4F20F03 	 movt r3,16399
+ 204 0180 D3F80411 	 ldr r1,[r3,#260]
+ 205 0184 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 206 0188 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 207 018c C9B2     	 uxtb r1,r1
+ 208 018e 01F10101 	 add r1,r1,#1
+ 209 0192 4FF41052 	 mov r2,#9216
+ 210 0196 C0F2F402 	 movt r2,244
+ 211 019a B2FBF1F2 	 udiv r2,r2,r1
+ 212 019e 1A60     	 str r2,[r3,#0]
+ 458:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         break;
+ 213              	 .loc 1 458 0
+ 214 01a0 70BD     	 pop {r4,r5,r6,pc}
+ 215              	.L10:
+ 459:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****       case 2:                                /* RTC oscillator => PLL0        */
+ 460:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         SystemCoreClock = RTC_CLK / ((LPC_SC->CCLKCFG & 0xFF)+ 1);
+ 216              	 .loc 1 460 0
+ 217 01a2 4FF44043 	 mov r3,#49152
+ 218 01a6 C4F20F03 	 movt r3,16399
+ 219 01aa D3F80421 	 ldr r2,[r3,#260]
+ 220 01ae 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 221 01b2 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 222 01b6 D2B2     	 uxtb r2,r2
+ 223 01b8 02F10102 	 add r2,r2,#1
+ 224 01bc 4FF40041 	 mov r1,#32768
+ 225 01c0 B1FBF2F2 	 udiv r2,r1,r2
+ 226 01c4 1A60     	 str r2,[r3,#0]
+ 227              	.L1:
+ 228 01c6 70BD     	 pop {r4,r5,r6,pc}
+ 229              	 .cfi_endproc
+ 230              	.LFE55:
+ 232              	 .section .text.SystemInit,"ax",%progbits
+ 233              	 .align 2
+ 234              	 .global SystemInit
+ 235              	 .thumb
+ 236              	 .thumb_func
+ 238              	SystemInit:
+ 239              	.LFB56:
+ 461:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****         break;
+ 462:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     }
+ 463:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   }
+ 464:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 465:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** }
+ 466:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 467:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** /**
+ 468:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * Initialize the system
+ 469:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *
+ 470:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @param  none
+ 471:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @return none
+ 472:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *
+ 473:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  * @brief  Setup the microcontroller system.
+ 474:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  *         Initialize the System.
+ 475:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****  */
+ 476:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** void SystemInit (void)
+ 477:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** {
+ 240              	 .loc 1 477 0
+ 241              	 .cfi_startproc
+ 242              	 
+ 243              	 
+ 244              	 
+ 478:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (CLOCK_SETUP)                       /* Clock Setup                        */
+ 479:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->SCS       = SCS_Val; /* Main oscillator enable */
+ 245              	 .loc 1 479 0
+ 246 0000 4FF44043 	 mov r3,#49152
+ 247 0004 C4F20F03 	 movt r3,16399
+ 248 0008 4FF02002 	 mov r2,#32
+ 249 000c C3F8A021 	 str r2,[r3,#416]
+ 480:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   if (SCS_Val & (1 << 5)) {             /* If Main Oscillator is enabled      */
+ 481:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****     while ((LPC_SC->SCS & (1<<6)) == 0);/* Wait for Oscillator to be ready    */
+ 250              	 .loc 1 481 0
+ 251 0010 4FF44042 	 mov r2,#49152
+ 252 0014 C4F20F02 	 movt r2,16399
+ 253              	.L13:
+ 254              	 .loc 1 481 0 is_stmt 0 discriminator 1
+ 255 0018 D2F8A031 	 ldr r3,[r2,#416]
+ 256 001c 13F0400F 	 tst r3,#64
+ 257 0020 FAD0     	 beq .L13
+ 482:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   }
+ 483:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 484:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->CCLKCFG   = CCLKCFG_Val;      /* Setup Clock Divider -- PLL0 output is divided by 4 to pr
+ 258              	 .loc 1 484 0 is_stmt 1
+ 259 0022 4FF44043 	 mov r3,#49152
+ 260 0026 C4F20F03 	 movt r3,16399
+ 261 002a 4FF00202 	 mov r2,#2
+ 262 002e C3F80421 	 str r2,[r3,#260]
+ 485:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 486:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PCLKSEL0  = 0;     /* Peripheral Clock Selection -- none!         */
+ 263              	 .loc 1 486 0
+ 264 0032 4FF00002 	 mov r2,#0
+ 265 0036 C3F8A821 	 str r2,[r3,#424]
+ 487:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PCLKSEL1  = 0;
+ 266              	 .loc 1 487 0
+ 267 003a C3F8AC21 	 str r2,[r3,#428]
+ 488:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 489:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->CLKSRCSEL = CLKSRCSEL_Val;    /* Select Clock Source for PLL0 -- Selects the main oscilla
+ 268              	 .loc 1 489 0
+ 269 003e 4FF00100 	 mov r0,#1
+ 270 0042 C3F80C01 	 str r0,[r3,#268]
+ 490:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 491:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (PLL0_SETUP)
+ 492:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0CFG   = PLL0CFG_Val; /* configure PLL0 -- MSEL0 = 99; NSEL0 = 5, for 12MHz xtal: (24*
+ 271              	 .loc 1 492 0
+ 272 0046 4FF00802 	 mov r2,#8
+ 273 004a C3F88420 	 str r2,[r3,#132]
+ 493:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0FEED  = 0xAA;
+ 274              	 .loc 1 493 0
+ 275 004e 4FF0AA01 	 mov r1,#170
+ 276 0052 C3F88C10 	 str r1,[r3,#140]
+ 494:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0FEED  = 0x55;
+ 277              	 .loc 1 494 0
+ 278 0056 4FF05502 	 mov r2,#85
+ 279 005a C3F88C20 	 str r2,[r3,#140]
+ 495:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 496:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0CON   = 0x01;             /* PLL0 Enable                        */
+ 280              	 .loc 1 496 0
+ 281 005e C3F88000 	 str r0,[r3,#128]
+ 497:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0FEED  = 0xAA;
+ 282              	 .loc 1 497 0
+ 283 0062 C3F88C10 	 str r1,[r3,#140]
+ 498:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0FEED  = 0x55;
+ 284              	 .loc 1 498 0
+ 285 0066 C3F88C20 	 str r2,[r3,#140]
+ 499:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   while (!(LPC_SC->PLL0STAT & (1<<26)));/* Wait for PLOCK0                    */
+ 286              	 .loc 1 499 0
+ 287 006a 4FF44042 	 mov r2,#49152
+ 288 006e C4F20F02 	 movt r2,16399
+ 289              	.L14:
+ 290              	 .loc 1 499 0 is_stmt 0 discriminator 1
+ 291 0072 D2F88830 	 ldr r3,[r2,#136]
+ 292 0076 13F0806F 	 tst r3,#67108864
+ 293 007a FAD0     	 beq .L14
+ 500:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 501:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0CON   = 0x03;             /* PLL0 Enable & Connect              */
+ 294              	 .loc 1 501 0 is_stmt 1
+ 295 007c 4FF44043 	 mov r3,#49152
+ 296 0080 C4F20F03 	 movt r3,16399
+ 297 0084 4FF00302 	 mov r2,#3
+ 298 0088 C3F88020 	 str r2,[r3,#128]
+ 502:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0FEED  = 0xAA;
+ 299              	 .loc 1 502 0
+ 300 008c 4FF0AA02 	 mov r2,#170
+ 301 0090 C3F88C20 	 str r2,[r3,#140]
+ 503:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0FEED  = 0x55;
+ 302              	 .loc 1 503 0
+ 303 0094 4FF05502 	 mov r2,#85
+ 304 0098 C3F88C20 	 str r2,[r3,#140]
+ 504:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   while (!(LPC_SC->PLL0STAT & ((1<<25) | (1<<24))));/* Wait for PLLC0_STAT & PLLE0_STAT */
+ 305              	 .loc 1 504 0
+ 306 009c 4FF44042 	 mov r2,#49152
+ 307 00a0 C4F20F02 	 movt r2,16399
+ 308              	.L15:
+ 309              	 .loc 1 504 0 is_stmt 0 discriminator 1
+ 310 00a4 D2F88830 	 ldr r3,[r2,#136]
+ 311 00a8 13F0407F 	 tst r3,#50331648
+ 312 00ac FAD0     	 beq .L15
+ 505:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 506:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 507:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (PLL1_SETUP)
+ 508:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1CFG   = PLL1CFG_Val; /* configure PLL1 -- MSEL1 = 3; PSEL1 = 1, for 12MHz xtal: (2 * 
+ 313              	 .loc 1 508 0 is_stmt 1
+ 314 00ae 4FF44043 	 mov r3,#49152
+ 315 00b2 C4F20F03 	 movt r3,16399
+ 316 00b6 4FF02202 	 mov r2,#34
+ 317 00ba C3F8A420 	 str r2,[r3,#164]
+ 509:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL0FEED  = 0xAA;
+ 318              	 .loc 1 509 0
+ 319 00be 4FF0AA02 	 mov r2,#170
+ 320 00c2 C3F88C20 	 str r2,[r3,#140]
+ 510:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1FEED  = 0xAA;
+ 321              	 .loc 1 510 0
+ 322 00c6 C3F8AC20 	 str r2,[r3,#172]
+ 511:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1FEED  = 0x55;
+ 323              	 .loc 1 511 0
+ 324 00ca 4FF05501 	 mov r1,#85
+ 325 00ce C3F8AC10 	 str r1,[r3,#172]
+ 512:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 513:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1CON   = 0x01;             /* PLL1 Enable                        */
+ 326              	 .loc 1 513 0
+ 327 00d2 4FF00100 	 mov r0,#1
+ 328 00d6 C3F8A000 	 str r0,[r3,#160]
+ 514:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1FEED  = 0xAA;
+ 329              	 .loc 1 514 0
+ 330 00da C3F8AC20 	 str r2,[r3,#172]
+ 515:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1FEED  = 0x55;
+ 331              	 .loc 1 515 0
+ 332 00de C3F8AC10 	 str r1,[r3,#172]
+ 516:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   while (!(LPC_SC->PLL1STAT & (1<<10)));/* Wait for PLOCK1                    */
+ 333              	 .loc 1 516 0
+ 334 00e2 4FF44042 	 mov r2,#49152
+ 335 00e6 C4F20F02 	 movt r2,16399
+ 336              	.L16:
+ 337              	 .loc 1 516 0 is_stmt 0 discriminator 1
+ 338 00ea D2F8A830 	 ldr r3,[r2,#168]
+ 339 00ee 13F4806F 	 tst r3,#1024
+ 340 00f2 FAD0     	 beq .L16
+ 517:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 518:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1CON   = 0x03;             /* PLL1 Enable & Connect              */
+ 341              	 .loc 1 518 0 is_stmt 1
+ 342 00f4 4FF44043 	 mov r3,#49152
+ 343 00f8 C4F20F03 	 movt r3,16399
+ 344 00fc 4FF00302 	 mov r2,#3
+ 345 0100 C3F8A020 	 str r2,[r3,#160]
+ 519:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1FEED  = 0xAA;
+ 346              	 .loc 1 519 0
+ 347 0104 4FF0AA02 	 mov r2,#170
+ 348 0108 C3F8AC20 	 str r2,[r3,#172]
+ 520:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PLL1FEED  = 0x55;
+ 349              	 .loc 1 520 0
+ 350 010c 4FF05502 	 mov r2,#85
+ 351 0110 C3F8AC20 	 str r2,[r3,#172]
+ 521:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   while (!(LPC_SC->PLL1STAT & ((1<< 9) | (1<< 8))));/* Wait for PLLC1_STAT & PLLE1_STAT */
+ 352              	 .loc 1 521 0
+ 353 0114 4FF44042 	 mov r2,#49152
+ 354 0118 C4F20F02 	 movt r2,16399
+ 355              	.L17:
+ 356              	 .loc 1 521 0 is_stmt 0 discriminator 1
+ 357 011c D2F8A830 	 ldr r3,[r2,#168]
+ 358 0120 13F4407F 	 tst r3,#768
+ 359 0124 FAD0     	 beq .L17
+ 522:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #else
+ 523:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->USBCLKCFG = USBCLKCFG_Val;    /* Setup USB Clock Divider            */
+ 524:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 525:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 526:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PCLKSEL0  = PCLKSEL0_Val;     /* Peripheral Clock Selection         */
+ 360              	 .loc 1 526 0 is_stmt 1
+ 361 0126 4FF44043 	 mov r3,#49152
+ 362 012a C4F20F03 	 movt r3,16399
+ 363 012e 4FF00002 	 mov r2,#0
+ 364 0132 C3F8A821 	 str r2,[r3,#424]
+ 527:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PCLKSEL1  = PCLKSEL1_Val;
+ 365              	 .loc 1 527 0
+ 366 0136 C3F8AC21 	 str r2,[r3,#428]
+ 528:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->PCONP     = PCONP_Val;        /* Power Control for Peripherals      */
+ 367              	 .loc 1 528 0
+ 368 013a 48F2DE71 	 movw r1,#34782
+ 369 013e C0F22841 	 movt r1,1064
+ 370 0142 C3F8C410 	 str r1,[r3,#196]
+ 529:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 530:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   /* Use next 2 lines (and comment 3rd) to test on P1.27 the CPU clock signal. Should be 25MHz on p
+ 531:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if 0
+ 532:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_PINCON->PINSEL3 |= 1 << 22; /* Set P1_27 to 01 - CLKOUT */
+ 533:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->CLKOUTCFG = CLKPWR_CLKOUTCFG_BITMASK & (CLKPWR_CLKOUTCFG_CLKOUTSEL_CPU | CLKPWR_CLKOUTCFG
+ 534:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 535:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->CLKOUTCFG = 0;    /* Clock Output Configuration -- disable */
+ 371              	 .loc 1 535 0
+ 372 0146 C3F8C821 	 str r2,[r3,#456]
+ 536:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 537:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** 
+ 538:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #if (FLASH_SETUP == 1)                  /* Flash Accelerator Setup            */
+ 539:src/MightyBoard/Motherboard/system/system_LPC17xx.c ****   LPC_SC->FLASHCFG  = FLASHCFG_Val;
+ 373              	 .loc 1 539 0
+ 374 014a 45F23A02 	 movw r2,#20538
+ 375 014e 1A60     	 str r2,[r3,#0]
+ 540:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** #endif
+ 541:src/MightyBoard/Motherboard/system/system_LPC17xx.c **** }
+ 376              	 .loc 1 541 0
+ 377 0150 7047     	 bx lr
+ 378              	 .cfi_endproc
+ 379              	.LFE56:
+ 381              	 .global SystemCoreClock
+ 382 0152 00BF     	 .section .data.SystemCoreClock,"aw",%progbits
+ 383              	 .align 2
+ 384              	 .set .LANCHOR0,.+0
+ 387              	SystemCoreClock:
+ 388 0000 00D8B805 	 .word 96000000
+ 389              	 .text
+ 390              	.Letext0:
+ 391              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 392              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 393              	 .file 4 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 system_LPC17xx.c
+    {standard input}:20     .text.SystemCoreClockUpdate:00000000 $t
+    {standard input}:25     .text.SystemCoreClockUpdate:00000000 SystemCoreClockUpdate
+    {standard input}:55     .text.SystemCoreClockUpdate:00000032 $d
+    {standard input}:59     .text.SystemCoreClockUpdate:00000036 $t
+    {standard input}:384    .data.SystemCoreClock:00000000 .LANCHOR0
+    {standard input}:180    .text.SystemCoreClockUpdate:0000014a $d
+    {standard input}:184    .text.SystemCoreClockUpdate:0000014e $t
+    {standard input}:233    .text.SystemInit:00000000 $t
+    {standard input}:238    .text.SystemInit:00000000 SystemInit
+    {standard input}:387    .data.SystemCoreClock:00000000 SystemCoreClock
+    {standard input}:383    .data.SystemCoreClock:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+__aeabi_uldivmod

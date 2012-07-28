@@ -1,0 +1,549 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "IAP.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN3IAP7read_IDEv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN3IAP7read_IDEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN3IAP7read_IDEv:
+  25              	.LFB3:
+  26              	 .file 1 "src/MightyBoard/Motherboard/IAP/IAP.cc"
+   1:src/MightyBoard/Motherboard/IAP/IAP.cc **** /**    IAP : internal Flash memory access library
+   2:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+   3:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *        The internal Flash memory access is described in the LPC1768 usermanual. 
+   4:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *            http://www.nxp.com/documents/user_manual/UM10360.pdf
+   5:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+   6:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *            Chapter  2: "LPC17xx Memory map"
+   7:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *            Chapter 32: "LPC17xx Flash memory interface and programming"
+   8:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *                refering Rev. 01 - 4 January 2010
+   9:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+  10:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *        Released under the MIT License: http://mbed.org/license/mit
+  11:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+  12:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *        revision 1.0  09-Mar-2010   1st release
+  13:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *        revision 1.1  12-Mar-2010   chaged: to make possible to reserve flash area for user
+  14:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *                                            it can be set by USER_FLASH_AREA_START and USER_FLASH
+  15:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+  16:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  17:src/MightyBoard/Motherboard/IAP/IAP.cc **** //#include    "mbed.h"
+  18:src/MightyBoard/Motherboard/IAP/IAP.cc **** #include    "IAP.hh"
+  19:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  20:src/MightyBoard/Motherboard/IAP/IAP.cc **** #define     USER_FLASH_AREA_START_STR( x )      STR( x )
+  21:src/MightyBoard/Motherboard/IAP/IAP.cc **** #define     STR( x )                            #x
+  22:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  23:src/MightyBoard/Motherboard/IAP/IAP.cc **** //unsigned char user_area[ USER_FLASH_AREA_SIZE ] __attribute__((section( ".ARM.__at_" USER_FLASH_A
+  24:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  25:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  26:src/MightyBoard/Motherboard/IAP/IAP.cc **** /*
+  27:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  Reserve of flash area is explained by Igor. Please refer next URL
+  28:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *    http://mbed.org/users/okano/notebook/iap-in-application-programming-internal-flash-eras/?page
+  29:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+  30:src/MightyBoard/Motherboard/IAP/IAP.cc ****  
+  31:src/MightyBoard/Motherboard/IAP/IAP.cc **** //unsigned char user_area[ size ] __attribute__((section(".ARM.__at_0x78000"), zero_init));
+  32:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  33:src/MightyBoard/Motherboard/IAP/IAP.cc **** /*
+  34:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  IAP command codes
+  35:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  Table 589. "IAP Command Summary", Chapter 8. "IAP commands", usermanual
+  36:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+  37:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  38:src/MightyBoard/Motherboard/IAP/IAP.cc **** enum command_code
+  39:src/MightyBoard/Motherboard/IAP/IAP.cc ****         {
+  40:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Prepare_sector_for_write_operation    = 50,
+  41:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Copy_RAM_to_Flash,
+  42:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Erase_sector,
+  43:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Blank_check_sector,
+  44:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Read_part_ID,
+  45:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Read_Boot_Code_version,
+  46:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Compare,
+  47:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Reinvoke_ISP,
+  48:src/MightyBoard/Motherboard/IAP/IAP.cc ****             IAPCommand_Read_device_serial_number
+  49:src/MightyBoard/Motherboard/IAP/IAP.cc ****         };
+  50:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  51:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  52:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Read part identification number
+  53:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+  54:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return    device ID
+  55:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @see       read_serial()
+  56:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+  57:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  58:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::read_ID( void ) {
+  27              	 .loc 1 58 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 10B5     	 push {r4,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 8
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 4,-8
+  37 0002 0446     	 mov r4,r0
+  59:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 0 ]    = IAPCommand_Read_part_ID;
+  38              	 .loc 1 59 0
+  39 0004 4FF03603 	 mov r3,#54
+  40 0008 40F8043F 	 str r3,[r0,#4]!
+  41              	.LVL1:
+  60:src/MightyBoard/Motherboard/IAP/IAP.cc ****     
+  61:src/MightyBoard/Motherboard/IAP/IAP.cc ****     iap_entry( IAP_command, IAP_result );
+  42              	 .loc 1 61 0
+  43 000c 2368     	 ldr r3,[r4,#0]
+  44 000e 04F11801 	 add r1,r4,#24
+  45 0012 9847     	 blx r3
+  62:src/MightyBoard/Motherboard/IAP/IAP.cc ****     
+  63:src/MightyBoard/Motherboard/IAP/IAP.cc ****     //  return ( (int)IAP_result[ 0 ] );
+  64:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (int)IAP_result[ 1 ] );    //  to return the number itself (this command always return
+  65:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+  46              	 .loc 1 65 0
+  47 0014 E069     	 ldr r0,[r4,#28]
+  48 0016 10BD     	 pop {r4,pc}
+  49              	 .cfi_endproc
+  50              	.LFE3:
+  52              	 .section .text._ZN3IAP11read_serialEv,"ax",%progbits
+  53              	 .align 2
+  54              	 .global _ZN3IAP11read_serialEv
+  55              	 .thumb
+  56              	 .thumb_func
+  58              	_ZN3IAP11read_serialEv:
+  59              	.LFB4:
+  66:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  67:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  68:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Read device serial number
+  69:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+  70:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return    device serial number
+  71:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @see       read_ID()
+  72:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+  73:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  74:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::read_serial( void ) {
+  60              	 .loc 1 74 0
+  61              	 .cfi_startproc
+  62              	 
+  63              	 
+  64              	.LVL2:
+  65 0000 10B5     	 push {r4,lr}
+  66              	.LCFI1:
+  67              	 .cfi_def_cfa_offset 8
+  68              	 .cfi_offset 14,-4
+  69              	 .cfi_offset 4,-8
+  70 0002 0446     	 mov r4,r0
+  75:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 0 ]    = IAPCommand_Read_device_serial_number;
+  71              	 .loc 1 75 0
+  72 0004 4FF03A03 	 mov r3,#58
+  73 0008 40F8043F 	 str r3,[r0,#4]!
+  74              	.LVL3:
+  76:src/MightyBoard/Motherboard/IAP/IAP.cc ****     
+  77:src/MightyBoard/Motherboard/IAP/IAP.cc ****     iap_entry( IAP_command, IAP_result );
+  75              	 .loc 1 77 0
+  76 000c 2368     	 ldr r3,[r4,#0]
+  77 000e 04F11801 	 add r1,r4,#24
+  78 0012 9847     	 blx r3
+  78:src/MightyBoard/Motherboard/IAP/IAP.cc ****     
+  79:src/MightyBoard/Motherboard/IAP/IAP.cc ****     //  return ( (int)IAP_result[ 0 ] );
+  80:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (int)IAP_result[ 1 ] );    //  to return the number itself (this command always return
+  81:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+  79              	 .loc 1 81 0
+  80 0014 E069     	 ldr r0,[r4,#28]
+  81 0016 10BD     	 pop {r4,pc}
+  82              	 .cfi_endproc
+  83              	.LFE4:
+  85              	 .section .text._ZN3IAP11blank_checkEii,"ax",%progbits
+  86              	 .align 2
+  87              	 .global _ZN3IAP11blank_checkEii
+  88              	 .thumb
+  89              	 .thumb_func
+  91              	_ZN3IAP11blank_checkEii:
+  92              	.LFB5:
+  82:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  83:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  84:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Blank check sector(s)
+  85:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  
+  86:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    start    a Start Sector Number
+  87:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    end      an End Sector Number (should be greater than or equal to start sector number
+  88:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return error code: CMD_SUCCESS | BUSY | SECTOR_NOT_BLANK | INVALID_SECTOR
+  89:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+  90:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  91:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::blank_check( int start, int end ) {
+  93              	 .loc 1 91 0
+  94              	 .cfi_startproc
+  95              	 
+  96              	 
+  97              	.LVL4:
+  98 0000 10B5     	 push {r4,lr}
+  99              	.LCFI2:
+ 100              	 .cfi_def_cfa_offset 8
+ 101              	 .cfi_offset 14,-4
+ 102              	 .cfi_offset 4,-8
+ 103 0002 0446     	 mov r4,r0
+  92:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 0 ]    = IAPCommand_Blank_check_sector;
+ 104              	 .loc 1 92 0
+ 105 0004 4FF03503 	 mov r3,#53
+ 106 0008 4360     	 str r3,[r0,#4]
+  93:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 1 ]    = (unsigned int)start;  //  Start Sector Number
+ 107              	 .loc 1 93 0
+ 108 000a 8160     	 str r1,[r0,#8]
+  94:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 2 ]    = (unsigned int)end;    //  End Sector Number (should be greater than or eq
+ 109              	 .loc 1 94 0
+ 110 000c C260     	 str r2,[r0,#12]
+  95:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  96:src/MightyBoard/Motherboard/IAP/IAP.cc ****     iap_entry( IAP_command, IAP_result );
+ 111              	 .loc 1 96 0
+ 112 000e 0368     	 ldr r3,[r0,#0]
+ 113 0010 00F10400 	 add r0,r0,#4
+ 114              	.LVL5:
+ 115 0014 04F11801 	 add r1,r4,#24
+ 116              	.LVL6:
+ 117 0018 9847     	 blx r3
+ 118              	.LVL7:
+  97:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+  98:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (int)IAP_result[ 0 ] );
+  99:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+ 119              	 .loc 1 99 0
+ 120 001a A069     	 ldr r0,[r4,#24]
+ 121 001c 10BD     	 pop {r4,pc}
+ 122              	 .cfi_endproc
+ 123              	.LFE5:
+ 125 001e 00BF     	 .section .text._ZN3IAP5eraseEii,"ax",%progbits
+ 126              	 .align 2
+ 127              	 .global _ZN3IAP5eraseEii
+ 128              	 .thumb
+ 129              	 .thumb_func
+ 131              	_ZN3IAP5eraseEii:
+ 132              	.LFB6:
+ 100:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 101:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 102:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Erase Sector(s)
+ 103:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  
+ 104:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    start    a Start Sector Number
+ 105:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    end      an End Sector Number (should be greater than or equal to start sector number
+ 106:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return   error code: CMD_SUCCESS | BUSY | SECTOR_NOT_PREPARED_FOR_WRITE_OPERATION | INVALID_SE
+ 107:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+ 108:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 109:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::erase( int start, int end ) {
+ 133              	 .loc 1 109 0
+ 134              	 .cfi_startproc
+ 135              	 
+ 136              	 
+ 137              	.LVL8:
+ 138 0000 10B5     	 push {r4,lr}
+ 139              	.LCFI3:
+ 140              	 .cfi_def_cfa_offset 8
+ 141              	 .cfi_offset 14,-4
+ 142              	 .cfi_offset 4,-8
+ 143 0002 0446     	 mov r4,r0
+ 110:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 0 ]    = IAPCommand_Erase_sector;
+ 144              	 .loc 1 110 0
+ 145 0004 4FF03403 	 mov r3,#52
+ 146 0008 4360     	 str r3,[r0,#4]
+ 111:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 1 ]    = (unsigned int)start;  //  Start Sector Number
+ 147              	 .loc 1 111 0
+ 148 000a 8160     	 str r1,[r0,#8]
+ 112:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 2 ]    = (unsigned int)end;    //  End Sector Number (should be greater than or eq
+ 149              	 .loc 1 112 0
+ 150 000c C260     	 str r2,[r0,#12]
+ 113:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 3 ]    = cclk_kHz;             //  CPU Clock Frequency (CCLK) in kHz
+ 151              	 .loc 1 113 0
+ 152 000e C36A     	 ldr r3,[r0,#44]
+ 153 0010 0361     	 str r3,[r0,#16]
+ 114:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 115:src/MightyBoard/Motherboard/IAP/IAP.cc ****     iap_entry( IAP_command, IAP_result );
+ 154              	 .loc 1 115 0
+ 155 0012 0368     	 ldr r3,[r0,#0]
+ 156 0014 00F10400 	 add r0,r0,#4
+ 157              	.LVL9:
+ 158 0018 04F11801 	 add r1,r4,#24
+ 159              	.LVL10:
+ 160 001c 9847     	 blx r3
+ 161              	.LVL11:
+ 116:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 117:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (int)IAP_result[ 0 ] );
+ 118:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+ 162              	 .loc 1 118 0
+ 163 001e A069     	 ldr r0,[r4,#24]
+ 164 0020 10BD     	 pop {r4,pc}
+ 165              	 .cfi_endproc
+ 166              	.LFE6:
+ 168 0022 00BF     	 .section .text._ZN3IAP7prepareEii,"ax",%progbits
+ 169              	 .align 2
+ 170              	 .global _ZN3IAP7prepareEii
+ 171              	 .thumb
+ 172              	 .thumb_func
+ 174              	_ZN3IAP7prepareEii:
+ 175              	.LFB7:
+ 119:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 120:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 121:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Prepare sector(s) for write operation
+ 122:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  
+ 123:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    start    a Start Sector Number
+ 124:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    end      an End Sector Number (should be greater than or equal to start sector number
+ 125:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return   error code: CMD_SUCCESS | BUSY | INVALID_SECTOR
+ 126:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+ 127:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 128:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::prepare( int start, int end ) {
+ 176              	 .loc 1 128 0
+ 177              	 .cfi_startproc
+ 178              	 
+ 179              	 
+ 180              	.LVL12:
+ 181 0000 10B5     	 push {r4,lr}
+ 182              	.LCFI4:
+ 183              	 .cfi_def_cfa_offset 8
+ 184              	 .cfi_offset 14,-4
+ 185              	 .cfi_offset 4,-8
+ 186 0002 0446     	 mov r4,r0
+ 129:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 0 ]    = IAPCommand_Prepare_sector_for_write_operation;
+ 187              	 .loc 1 129 0
+ 188 0004 4FF03203 	 mov r3,#50
+ 189 0008 4360     	 str r3,[r0,#4]
+ 130:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 1 ]    = (unsigned int)start;  //  Start Sector Number
+ 190              	 .loc 1 130 0
+ 191 000a 8160     	 str r1,[r0,#8]
+ 131:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 2 ]    = (unsigned int)end;    //  End Sector Number (should be greater than or eq
+ 192              	 .loc 1 131 0
+ 193 000c C260     	 str r2,[r0,#12]
+ 132:src/MightyBoard/Motherboard/IAP/IAP.cc ****     
+ 133:src/MightyBoard/Motherboard/IAP/IAP.cc ****     iap_entry( IAP_command, IAP_result );
+ 194              	 .loc 1 133 0
+ 195 000e 0368     	 ldr r3,[r0,#0]
+ 196 0010 00F10400 	 add r0,r0,#4
+ 197              	.LVL13:
+ 198 0014 04F11801 	 add r1,r4,#24
+ 199              	.LVL14:
+ 200 0018 9847     	 blx r3
+ 201              	.LVL15:
+ 134:src/MightyBoard/Motherboard/IAP/IAP.cc ****     
+ 135:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (int)IAP_result[ 0 ] );
+ 136:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+ 202              	 .loc 1 136 0
+ 203 001a A069     	 ldr r0,[r4,#24]
+ 204 001c 10BD     	 pop {r4,pc}
+ 205              	 .cfi_endproc
+ 206              	.LFE7:
+ 208 001e 00BF     	 .section .text._ZN3IAP5writeEPcS0_i,"ax",%progbits
+ 209              	 .align 2
+ 210              	 .global _ZN3IAP5writeEPcS0_i
+ 211              	 .thumb
+ 212              	 .thumb_func
+ 214              	_ZN3IAP5writeEPcS0_i:
+ 215              	.LFB8:
+ 137:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 138:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 139:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Copy RAM to Flash
+ 140:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  
+ 141:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    source_addr    Source RAM address from which data bytes are to be read. This address 
+ 142:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    target_addr    Destination flash address where data bytes are to be written. This add
+ 143:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    size           Number of bytes to be written. Should be 256 | 512 | 1024 | 4096.
+ 144:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return   error code: CMD_SUCCESS | SRC_ADDR_ERROR (Address not a word boundary) | DST_ADDR_ERR
+ 145:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+ 146:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 147:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::write( char *source_addr, char *target_addr, int size ) {
+ 216              	 .loc 1 147 0
+ 217              	 .cfi_startproc
+ 218              	 
+ 219              	 
+ 220              	.LVL16:
+ 221 0000 10B5     	 push {r4,lr}
+ 222              	.LCFI5:
+ 223              	 .cfi_def_cfa_offset 8
+ 224              	 .cfi_offset 14,-4
+ 225              	 .cfi_offset 4,-8
+ 226 0002 0446     	 mov r4,r0
+ 148:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 0 ]    = IAPCommand_Copy_RAM_to_Flash;
+ 227              	 .loc 1 148 0
+ 228 0004 4FF03300 	 mov r0,#51
+ 229              	.LVL17:
+ 230 0008 6060     	 str r0,[r4,#4]
+ 149:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 1 ]    = (unsigned int)target_addr;    //  Destination flash address where data by
+ 231              	 .loc 1 149 0
+ 232 000a A260     	 str r2,[r4,#8]
+ 150:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 2 ]    = (unsigned int)source_addr;    //  Source RAM address from which data byte
+ 233              	 .loc 1 150 0
+ 234 000c E160     	 str r1,[r4,#12]
+ 151:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 3 ]    = size;                         //  Number of bytes to be written. Should b
+ 235              	 .loc 1 151 0
+ 236 000e 2361     	 str r3,[r4,#16]
+ 152:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 4 ]    = cclk_kHz;                     //  CPU Clock Frequency (CCLK) in kHz.
+ 237              	 .loc 1 152 0
+ 238 0010 E36A     	 ldr r3,[r4,#44]
+ 239              	.LVL18:
+ 240 0012 6361     	 str r3,[r4,#20]
+ 153:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 154:src/MightyBoard/Motherboard/IAP/IAP.cc ****     iap_entry( IAP_command, IAP_result );
+ 241              	 .loc 1 154 0
+ 242 0014 2368     	 ldr r3,[r4,#0]
+ 243 0016 04F10400 	 add r0,r4,#4
+ 244 001a 04F11801 	 add r1,r4,#24
+ 245              	.LVL19:
+ 246 001e 9847     	 blx r3
+ 247              	.LVL20:
+ 155:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 156:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (int)IAP_result[ 0 ] );
+ 157:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+ 248              	 .loc 1 157 0
+ 249 0020 A069     	 ldr r0,[r4,#24]
+ 250 0022 10BD     	 pop {r4,pc}
+ 251              	 .cfi_endproc
+ 252              	.LFE8:
+ 254              	 .section .text._ZN3IAP7compareEPcS0_i,"ax",%progbits
+ 255              	 .align 2
+ 256              	 .global _ZN3IAP7compareEPcS0_i
+ 257              	 .thumb
+ 258              	 .thumb_func
+ 260              	_ZN3IAP7compareEPcS0_i:
+ 261              	.LFB9:
+ 158:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 159:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 160:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Compare <address1> <address2> <no of bytes>
+ 161:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  
+ 162:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    source_addr Starting flash or RAM address of data bytes to be compared. This address 
+ 163:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    target_addr Starting flash or RAM address of data bytes to be compared. This address 
+ 164:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @param    size         Number of bytes to be compared; should be a multiple of 4.
+ 165:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return   error code: CMD_SUCCESS | COMPARE_ERROR | COUNT_ERROR (Byte count is not a multiple o
+ 166:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+ 167:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 168:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::compare( char *source_addr, char *target_addr, int size ) {
+ 262              	 .loc 1 168 0
+ 263              	 .cfi_startproc
+ 264              	 
+ 265              	 
+ 266              	.LVL21:
+ 267 0000 10B5     	 push {r4,lr}
+ 268              	.LCFI6:
+ 269              	 .cfi_def_cfa_offset 8
+ 270              	 .cfi_offset 14,-4
+ 271              	 .cfi_offset 4,-8
+ 272 0002 0446     	 mov r4,r0
+ 169:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 0 ]    = IAPCommand_Compare;
+ 273              	 .loc 1 169 0
+ 274 0004 4FF03800 	 mov r0,#56
+ 275              	.LVL22:
+ 276 0008 6060     	 str r0,[r4,#4]
+ 170:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 1 ]    = (unsigned int)target_addr;    //  Starting flash or RAM address of data b
+ 277              	 .loc 1 170 0
+ 278 000a A260     	 str r2,[r4,#8]
+ 171:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 2 ]    = (unsigned int)source_addr;    //  Starting flash or RAM address of data b
+ 279              	 .loc 1 171 0
+ 280 000c E160     	 str r1,[r4,#12]
+ 172:src/MightyBoard/Motherboard/IAP/IAP.cc ****     IAP_command[ 3 ]    = size;                         //  Number of bytes to be compared; should 
+ 281              	 .loc 1 172 0
+ 282 000e 2361     	 str r3,[r4,#16]
+ 173:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 174:src/MightyBoard/Motherboard/IAP/IAP.cc ****     iap_entry( IAP_command, IAP_result );
+ 283              	 .loc 1 174 0
+ 284 0010 2368     	 ldr r3,[r4,#0]
+ 285              	.LVL23:
+ 286 0012 04F10400 	 add r0,r4,#4
+ 287 0016 04F11801 	 add r1,r4,#24
+ 288              	.LVL24:
+ 289 001a 9847     	 blx r3
+ 290              	.LVL25:
+ 175:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 176:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (int)IAP_result[ 0 ] );
+ 177:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+ 291              	 .loc 1 177 0
+ 292 001c A069     	 ldr r0,[r4,#24]
+ 293 001e 10BD     	 pop {r4,pc}
+ 294              	 .cfi_endproc
+ 295              	.LFE9:
+ 297              	 .section .text._ZN3IAP25reserved_flash_area_startEv,"ax",%progbits
+ 298              	 .align 2
+ 299              	 .global _ZN3IAP25reserved_flash_area_startEv
+ 300              	 .thumb
+ 301              	 .thumb_func
+ 303              	_ZN3IAP25reserved_flash_area_startEv:
+ 304              	.LFB10:
+ 178:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 179:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 180:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Get user reserved flash start address
+ 181:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+ 182:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return    start address of user reserved flash memory
+ 183:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @see       reserved_flash_area_size()
+ 184:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+ 185:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 186:src/MightyBoard/Motherboard/IAP/IAP.cc **** char * IAP::reserved_flash_area_start( void )
+ 187:src/MightyBoard/Motherboard/IAP/IAP.cc **** {
+ 305              	 .loc 1 187 0
+ 306              	 .cfi_startproc
+ 307              	 
+ 308              	 
+ 309              	 
+ 310              	.LVL26:
+ 188:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( (char *)USER_FLASH_AREA_START );
+ 189:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+ 311              	 .loc 1 189 0
+ 312 0000 4FF40050 	 mov r0,#8192
+ 313              	.LVL27:
+ 314 0004 7047     	 bx lr
+ 315              	 .cfi_endproc
+ 316              	.LFE10:
+ 318 0006 00BF     	 .section .text._ZN3IAP24reserved_flash_area_sizeEv,"ax",%progbits
+ 319              	 .align 2
+ 320              	 .global _ZN3IAP24reserved_flash_area_sizeEv
+ 321              	 .thumb
+ 322              	 .thumb_func
+ 324              	_ZN3IAP24reserved_flash_area_sizeEv:
+ 325              	.LFB11:
+ 190:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 191:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 192:src/MightyBoard/Motherboard/IAP/IAP.cc **** /** Get user reserved flash size
+ 193:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *
+ 194:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @return    size of user reserved flash memory
+ 195:src/MightyBoard/Motherboard/IAP/IAP.cc ****  *  @see       reserved_flash_area_start()
+ 196:src/MightyBoard/Motherboard/IAP/IAP.cc ****  */
+ 197:src/MightyBoard/Motherboard/IAP/IAP.cc **** 
+ 198:src/MightyBoard/Motherboard/IAP/IAP.cc **** int IAP::reserved_flash_area_size( void )
+ 199:src/MightyBoard/Motherboard/IAP/IAP.cc **** {
+ 326              	 .loc 1 199 0
+ 327              	 .cfi_startproc
+ 328              	 
+ 329              	 
+ 330              	 
+ 331              	.LVL28:
+ 200:src/MightyBoard/Motherboard/IAP/IAP.cc ****     return ( USER_FLASH_AREA_SIZE );
+ 201:src/MightyBoard/Motherboard/IAP/IAP.cc **** }
+ 332              	 .loc 1 201 0
+ 333 0000 4FF48050 	 mov r0,#4096
+ 334              	.LVL29:
+ 335 0004 7047     	 bx lr
+ 336              	 .cfi_endproc
+ 337              	.LFE11:
+ 339 0006 00BF     	 .text
+ 340              	.Letext0:
+ 341              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 342              	 .file 3 "src/MightyBoard/Motherboard/IAP/IAP.hh"
+ 343              	 .file 4 "src/MightyBoard/Motherboard/system/system_LPC17xx.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 IAP.cc
+    {standard input}:19     .text._ZN3IAP7read_IDEv:00000000 $t
+    {standard input}:24     .text._ZN3IAP7read_IDEv:00000000 _ZN3IAP7read_IDEv
+    {standard input}:53     .text._ZN3IAP11read_serialEv:00000000 $t
+    {standard input}:58     .text._ZN3IAP11read_serialEv:00000000 _ZN3IAP11read_serialEv
+    {standard input}:86     .text._ZN3IAP11blank_checkEii:00000000 $t
+    {standard input}:91     .text._ZN3IAP11blank_checkEii:00000000 _ZN3IAP11blank_checkEii
+    {standard input}:126    .text._ZN3IAP5eraseEii:00000000 $t
+    {standard input}:131    .text._ZN3IAP5eraseEii:00000000 _ZN3IAP5eraseEii
+    {standard input}:169    .text._ZN3IAP7prepareEii:00000000 $t
+    {standard input}:174    .text._ZN3IAP7prepareEii:00000000 _ZN3IAP7prepareEii
+    {standard input}:209    .text._ZN3IAP5writeEPcS0_i:00000000 $t
+    {standard input}:214    .text._ZN3IAP5writeEPcS0_i:00000000 _ZN3IAP5writeEPcS0_i
+    {standard input}:255    .text._ZN3IAP7compareEPcS0_i:00000000 $t
+    {standard input}:260    .text._ZN3IAP7compareEPcS0_i:00000000 _ZN3IAP7compareEPcS0_i
+    {standard input}:298    .text._ZN3IAP25reserved_flash_area_startEv:00000000 $t
+    {standard input}:303    .text._ZN3IAP25reserved_flash_area_startEv:00000000 _ZN3IAP25reserved_flash_area_startEv
+    {standard input}:319    .text._ZN3IAP24reserved_flash_area_sizeEv:00000000 $t
+    {standard input}:324    .text._ZN3IAP24reserved_flash_area_sizeEv:00000000 _ZN3IAP24reserved_flash_area_sizeEv
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

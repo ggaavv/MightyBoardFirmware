@@ -278,7 +278,7 @@ struct fat_fs_struct* fat_open(struct partition_struct* partition)
 #endif
         return 0;
     }
-    
+
     return fs;
 }
 
@@ -2353,6 +2353,10 @@ void fat_set_file_modification_time(struct fat_dir_entry_struct* dir_entry, uint
         ((uint16_t) sec >> 1) ;
 }
 #endif
+
+offset_t fat_get_file_size(const struct fat_file_struct* fd){
+	return fd->dir_entry.file_size;
+}
 
 /**
  * \ingroup fat_fs

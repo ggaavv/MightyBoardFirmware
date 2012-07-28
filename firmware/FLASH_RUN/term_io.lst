@@ -1,0 +1,1339 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "term_io.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.xatoi,"ax",%progbits
+  19              	 .align 2
+  20              	 .global xatoi
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	xatoi:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/term_io.c"
+   1:src/MightyBoard/Motherboard/term_io.c **** // Basic code from ChaN, minor modifications by Martin Thomas
+   2:src/MightyBoard/Motherboard/term_io.c **** 
+   3:src/MightyBoard/Motherboard/term_io.c **** #include <stdarg.h>
+   4:src/MightyBoard/Motherboard/term_io.c **** #include "term_io.h"
+   5:src/MightyBoard/Motherboard/term_io.c **** 
+   6:src/MightyBoard/Motherboard/term_io.c **** int xatoi (char **str, long *res)
+   7:src/MightyBoard/Motherboard/term_io.c **** {
+  27              	 .loc 1 7 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33 0000 70B4     	 push {r4,r5,r6}
+  34              	.LCFI0:
+  35              	 .cfi_def_cfa_offset 12
+  36              	 .cfi_offset 6,-4
+  37              	 .cfi_offset 5,-8
+  38              	 .cfi_offset 4,-12
+  39              	.LVL1:
+   8:src/MightyBoard/Motherboard/term_io.c **** 	uint32_t val;
+   9:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t c, radix, s = 0;
+  10:src/MightyBoard/Motherboard/term_io.c **** 
+  11:src/MightyBoard/Motherboard/term_io.c **** 
+  12:src/MightyBoard/Motherboard/term_io.c **** 	while ((c = **str) == ' ') (*str)++;
+  40              	 .loc 1 12 0
+  41 0002 0268     	 ldr r2,[r0,#0]
+  42 0004 1378     	 ldrb r3,[r2,#0]
+  43              	.LVL2:
+  44 0006 202B     	 cmp r3,#32
+  45 0008 07D1     	 bne .L2
+  46 000a 1446     	 mov r4,r2
+  47              	.LVL3:
+  48              	.L3:
+  49              	 .loc 1 12 0 is_stmt 0 discriminator 2
+  50 000c 02F10102 	 add r2,r2,#1
+  51 0010 0260     	 str r2,[r0,#0]
+  52 0012 14F8013F 	 ldrb r3,[r4,#1]!
+  53              	.LVL4:
+  54 0016 202B     	 cmp r3,#32
+  55 0018 F8D0     	 beq .L3
+  56              	.LVL5:
+  57              	.L2:
+  13:src/MightyBoard/Motherboard/term_io.c **** 	if (c == '-') {
+  58              	 .loc 1 13 0 is_stmt 1
+  59 001a 2D2B     	 cmp r3,#45
+  60              	.LVL6:
+  14:src/MightyBoard/Motherboard/term_io.c **** 		s = 1;
+  15:src/MightyBoard/Motherboard/term_io.c **** 		c = *(++(*str));
+  61              	 .loc 1 15 0
+  62 001c 01BF     	 itttt eq
+  63 001e 531C     	 addeq r3,r2,#1
+  64 0020 0360     	 streq r3,[r0,#0]
+  65 0022 5378     	 ldrbeq r3,[r2,#1]
+  66              	.LVL7:
+  14:src/MightyBoard/Motherboard/term_io.c **** 		s = 1;
+  67              	 .loc 1 14 0
+  68 0024 0126     	 moveq r6,#1
+   9:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t c, radix, s = 0;
+  69              	 .loc 1 9 0
+  70 0026 18BF     	 it ne
+  71 0028 0026     	 movne r6,#0
+  72              	.LVL8:
+  16:src/MightyBoard/Motherboard/term_io.c **** 	}
+  17:src/MightyBoard/Motherboard/term_io.c **** 	if (c == '0') {
+  73              	 .loc 1 17 0
+  74 002a 302B     	 cmp r3,#48
+  75 002c 28D1     	 bne .L5
+  18:src/MightyBoard/Motherboard/term_io.c **** 		c = *(++(*str));
+  76              	 .loc 1 18 0
+  77 002e 0268     	 ldr r2,[r0,#0]
+  78 0030 02F10103 	 add r3,r2,#1
+  79              	.LVL9:
+  80 0034 0360     	 str r3,[r0,#0]
+  81 0036 5378     	 ldrb r3,[r2,#1]
+  82              	.LVL10:
+  19:src/MightyBoard/Motherboard/term_io.c **** 		if (c <= ' ') {
+  83              	 .loc 1 19 0
+  84 0038 202B     	 cmp r3,#32
+  20:src/MightyBoard/Motherboard/term_io.c **** 			*res = 0; return 1;
+  85              	 .loc 1 20 0
+  86 003a 9EBF     	 ittt ls
+  87 003c 0023     	 movls r3,#0
+  88              	.LVL11:
+  89 003e 0B60     	 strls r3,[r1,#0]
+  90 0040 0120     	 movls r0,#1
+  91              	.LVL12:
+  19:src/MightyBoard/Motherboard/term_io.c **** 		if (c <= ' ') {
+  92              	 .loc 1 19 0
+  93 0042 50D9     	 bls .L7
+  21:src/MightyBoard/Motherboard/term_io.c **** 		}
+  22:src/MightyBoard/Motherboard/term_io.c **** 		if (c == 'x') {
+  94              	 .loc 1 22 0
+  95 0044 782B     	 cmp r3,#120
+  96 0046 06D1     	 bne .L8
+  97              	.LVL13:
+  23:src/MightyBoard/Motherboard/term_io.c **** 			radix = 16;
+  24:src/MightyBoard/Motherboard/term_io.c **** 			c = *(++(*str));
+  98              	 .loc 1 24 0
+  99 0048 02F10203 	 add r3,r2,#2
+ 100 004c 0360     	 str r3,[r0,#0]
+ 101 004e 9378     	 ldrb r3,[r2,#2]
+ 102              	.LVL14:
+  23:src/MightyBoard/Motherboard/term_io.c **** 			radix = 16;
+ 103              	 .loc 1 23 0
+ 104 0050 4FF01005 	 mov r5,#16
+ 105 0054 1DE0     	 b .L9
+ 106              	.LVL15:
+ 107              	.L8:
+  25:src/MightyBoard/Motherboard/term_io.c **** 		} else {
+  26:src/MightyBoard/Motherboard/term_io.c **** 			if (c == 'b') {
+ 108              	 .loc 1 26 0
+ 109 0056 622B     	 cmp r3,#98
+ 110 0058 06D1     	 bne .L10
+ 111              	.LVL16:
+  27:src/MightyBoard/Motherboard/term_io.c **** 				radix = 2;
+  28:src/MightyBoard/Motherboard/term_io.c **** 				c = *(++(*str));
+ 112              	 .loc 1 28 0
+ 113 005a 02F10203 	 add r3,r2,#2
+ 114 005e 0360     	 str r3,[r0,#0]
+ 115 0060 9378     	 ldrb r3,[r2,#2]
+ 116              	.LVL17:
+  27:src/MightyBoard/Motherboard/term_io.c **** 				radix = 2;
+ 117              	 .loc 1 27 0
+ 118 0062 4FF00205 	 mov r5,#2
+ 119 0066 14E0     	 b .L9
+ 120              	.LVL18:
+ 121              	.L10:
+  29:src/MightyBoard/Motherboard/term_io.c **** 			} else {
+  30:src/MightyBoard/Motherboard/term_io.c **** 				if ((c >= '0')&&(c <= '9'))
+ 122              	 .loc 1 30 0
+ 123 0068 A3F13002 	 sub r2,r3,#48
+ 124 006c D2B2     	 uxtb r2,r2
+ 125 006e 092A     	 cmp r2,#9
+  31:src/MightyBoard/Motherboard/term_io.c **** 					radix = 8;
+  32:src/MightyBoard/Motherboard/term_io.c **** 				else
+  33:src/MightyBoard/Motherboard/term_io.c **** 					return 0;
+ 126              	 .loc 1 33 0
+ 127 0070 88BF     	 it hi
+ 128 0072 0020     	 movhi r0,#0
+  30:src/MightyBoard/Motherboard/term_io.c **** 				if ((c >= '0')&&(c <= '9'))
+ 129              	 .loc 1 30 0
+ 130 0074 37D8     	 bhi .L7
+  31:src/MightyBoard/Motherboard/term_io.c **** 					radix = 8;
+ 131              	 .loc 1 31 0
+ 132 0076 4FF00805 	 mov r5,#8
+ 133              	.L12:
+  23:src/MightyBoard/Motherboard/term_io.c **** 			radix = 16;
+ 134              	 .loc 1 23 0
+ 135 007a 4FF00004 	 mov r4,#0
+ 136 007e 0DE0     	 b .L11
+ 137              	.LVL19:
+ 138              	.L5:
+  34:src/MightyBoard/Motherboard/term_io.c **** 			}
+  35:src/MightyBoard/Motherboard/term_io.c **** 		}
+  36:src/MightyBoard/Motherboard/term_io.c **** 	} else {
+  37:src/MightyBoard/Motherboard/term_io.c **** 		if ((c < '1')||(c > '9'))
+ 139              	 .loc 1 37 0
+ 140 0080 A3F13102 	 sub r2,r3,#49
+ 141 0084 D2B2     	 uxtb r2,r2
+ 142 0086 082A     	 cmp r2,#8
+  38:src/MightyBoard/Motherboard/term_io.c **** 			return 0;
+ 143              	 .loc 1 38 0
+ 144 0088 88BF     	 it hi
+ 145 008a 0020     	 movhi r0,#0
+ 146              	.LVL20:
+  37:src/MightyBoard/Motherboard/term_io.c **** 		if ((c < '1')||(c > '9'))
+ 147              	 .loc 1 37 0
+ 148 008c 2BD8     	 bhi .L7
+  39:src/MightyBoard/Motherboard/term_io.c **** 		radix = 10;
+ 149              	 .loc 1 39 0
+ 150 008e 4FF00A05 	 mov r5,#10
+ 151              	.LVL21:
+ 152              	.L9:
+  40:src/MightyBoard/Motherboard/term_io.c **** 	}
+  41:src/MightyBoard/Motherboard/term_io.c **** 	val = 0;
+  42:src/MightyBoard/Motherboard/term_io.c **** 	while (c > ' ') {
+ 153              	 .loc 1 42 0
+ 154 0092 202B     	 cmp r3,#32
+  41:src/MightyBoard/Motherboard/term_io.c **** 	val = 0;
+ 155              	 .loc 1 41 0
+ 156 0094 98BF     	 it ls
+ 157 0096 0024     	 movls r4,#0
+ 158              	 .loc 1 42 0
+ 159 0098 EFD8     	 bhi .L12
+ 160 009a 18E0     	 b .L13
+ 161              	.LVL22:
+ 162              	.L11:
+  43:src/MightyBoard/Motherboard/term_io.c **** 		if (c >= 'a') c -= 0x20;
+ 163              	 .loc 1 43 0
+ 164 009c 602B     	 cmp r3,#96
+ 165 009e 84BF     	 itt hi
+ 166 00a0 203B     	 subhi r3,r3,#32
+ 167 00a2 DBB2     	 uxtbhi r3,r3
+ 168              	.LVL23:
+  44:src/MightyBoard/Motherboard/term_io.c **** 		c -= '0';
+ 169              	 .loc 1 44 0
+ 170 00a4 A3F13002 	 sub r2,r3,#48
+ 171 00a8 D2B2     	 uxtb r2,r2
+ 172              	.LVL24:
+  45:src/MightyBoard/Motherboard/term_io.c **** 		if (c >= 17) {
+ 173              	 .loc 1 45 0
+ 174 00aa 102A     	 cmp r2,#16
+ 175 00ac 04D9     	 bls .L15
+  46:src/MightyBoard/Motherboard/term_io.c **** 			c -= 7;
+ 176              	 .loc 1 46 0
+ 177 00ae A3F13703 	 sub r3,r3,#55
+ 178 00b2 DAB2     	 uxtb r2,r3
+ 179              	.LVL25:
+  47:src/MightyBoard/Motherboard/term_io.c **** 			if (c <= 9) return 0;
+ 180              	 .loc 1 47 0
+ 181 00b4 092A     	 cmp r2,#9
+ 182 00b6 11D9     	 bls .L20
+ 183              	.LVL26:
+ 184              	.L15:
+  48:src/MightyBoard/Motherboard/term_io.c **** 		}
+  49:src/MightyBoard/Motherboard/term_io.c **** 		if (c >= radix) return 0;
+ 185              	 .loc 1 49 0
+ 186 00b8 AA42     	 cmp r2,r5
+ 187 00ba 12D2     	 bcs .L21
+  50:src/MightyBoard/Motherboard/term_io.c **** 		val = val * radix + c;
+ 188              	 .loc 1 50 0
+ 189 00bc 05FB0424 	 mla r4,r5,r4,r2
+ 190              	.LVL27:
+  51:src/MightyBoard/Motherboard/term_io.c **** 		c = *(++(*str));
+ 191              	 .loc 1 51 0
+ 192 00c0 0368     	 ldr r3,[r0,#0]
+ 193 00c2 03F10102 	 add r2,r3,#1
+ 194              	.LVL28:
+ 195 00c6 0260     	 str r2,[r0,#0]
+ 196 00c8 5B78     	 ldrb r3,[r3,#1]
+ 197              	.LVL29:
+  42:src/MightyBoard/Motherboard/term_io.c **** 	while (c > ' ') {
+ 198              	 .loc 1 42 0
+ 199 00ca 202B     	 cmp r3,#32
+ 200 00cc E6D8     	 bhi .L11
+ 201              	.LVL30:
+ 202              	.L13:
+  52:src/MightyBoard/Motherboard/term_io.c **** 	}
+  53:src/MightyBoard/Motherboard/term_io.c **** 	if (s) val = -val;
+ 203              	 .loc 1 53 0
+ 204 00ce 0EB1     	 cbz r6,.L16
+ 205              	 .loc 1 53 0 is_stmt 0 discriminator 1
+ 206 00d0 C4F10004 	 rsb r4,r4,#0
+ 207              	.LVL31:
+ 208              	.L16:
+  54:src/MightyBoard/Motherboard/term_io.c **** 	*res = val;
+ 209              	 .loc 1 54 0 is_stmt 1
+ 210 00d4 0C60     	 str r4,[r1,#0]
+  55:src/MightyBoard/Motherboard/term_io.c **** 	return 1;
+ 211              	 .loc 1 55 0
+ 212 00d6 4FF00100 	 mov r0,#1
+ 213 00da 04E0     	 b .L7
+ 214              	.LVL32:
+ 215              	.L20:
+  47:src/MightyBoard/Motherboard/term_io.c **** 			if (c <= 9) return 0;
+ 216              	 .loc 1 47 0
+ 217 00dc 4FF00000 	 mov r0,#0
+ 218 00e0 01E0     	 b .L7
+ 219              	.L21:
+  49:src/MightyBoard/Motherboard/term_io.c **** 		if (c >= radix) return 0;
+ 220              	 .loc 1 49 0
+ 221 00e2 4FF00000 	 mov r0,#0
+ 222              	.LVL33:
+ 223              	.L7:
+  56:src/MightyBoard/Motherboard/term_io.c **** }
+ 224              	 .loc 1 56 0
+ 225 00e6 70BC     	 pop {r4,r5,r6}
+ 226 00e8 7047     	 bx lr
+ 227              	 .cfi_endproc
+ 228              	.LFE55:
+ 230 00ea 00BF     	 .section .text.xputc,"ax",%progbits
+ 231              	 .align 2
+ 232              	 .global xputc
+ 233              	 .thumb
+ 234              	 .thumb_func
+ 236              	xputc:
+ 237              	.LFB56:
+  57:src/MightyBoard/Motherboard/term_io.c **** 
+  58:src/MightyBoard/Motherboard/term_io.c **** 
+  59:src/MightyBoard/Motherboard/term_io.c **** void xputc (char c)
+  60:src/MightyBoard/Motherboard/term_io.c **** {
+ 238              	 .loc 1 60 0
+ 239              	 .cfi_startproc
+ 240              	 
+ 241              	 
+ 242              	.LVL34:
+ 243 0000 10B5     	 push {r4,lr}
+ 244              	.LCFI1:
+ 245              	 .cfi_def_cfa_offset 8
+ 246              	 .cfi_offset 14,-4
+ 247              	 .cfi_offset 4,-8
+ 248 0002 0446     	 mov r4,r0
+  61:src/MightyBoard/Motherboard/term_io.c **** 	if (c == '\n') comm_put('\r');
+ 249              	 .loc 1 61 0
+ 250 0004 0A28     	 cmp r0,#10
+ 251 0006 03D1     	 bne .L25
+ 252              	 .loc 1 61 0 is_stmt 0 discriminator 1
+ 253 0008 4FF00D00 	 mov r0,#13
+ 254              	.LVL35:
+ 255 000c FFF7FEFF 	 bl comm_put
+ 256              	.L25:
+  62:src/MightyBoard/Motherboard/term_io.c **** 	comm_put(c);
+ 257              	 .loc 1 62 0 is_stmt 1
+ 258 0010 2046     	 mov r0,r4
+ 259 0012 FFF7FEFF 	 bl comm_put
+  63:src/MightyBoard/Motherboard/term_io.c **** }
+ 260              	 .loc 1 63 0
+ 261 0016 10BD     	 pop {r4,pc}
+ 262              	 .cfi_endproc
+ 263              	.LFE56:
+ 265              	 .section .text.xputs,"ax",%progbits
+ 266              	 .align 2
+ 267              	 .global xputs
+ 268              	 .thumb
+ 269              	 .thumb_func
+ 271              	xputs:
+ 272              	.LFB57:
+  64:src/MightyBoard/Motherboard/term_io.c **** 
+  65:src/MightyBoard/Motherboard/term_io.c **** 
+  66:src/MightyBoard/Motherboard/term_io.c **** void xputs (const char* str)
+  67:src/MightyBoard/Motherboard/term_io.c **** {
+ 273              	 .loc 1 67 0
+ 274              	 .cfi_startproc
+ 275              	 
+ 276              	 
+ 277              	.LVL36:
+ 278 0000 10B5     	 push {r4,lr}
+ 279              	.LCFI2:
+ 280              	 .cfi_def_cfa_offset 8
+ 281              	 .cfi_offset 14,-4
+ 282              	 .cfi_offset 4,-8
+ 283 0002 0446     	 mov r4,r0
+  68:src/MightyBoard/Motherboard/term_io.c **** 	while (*str)
+ 284              	 .loc 1 68 0
+ 285 0004 0078     	 ldrb r0,[r0,#0]
+ 286              	.LVL37:
+ 287 0006 28B1     	 cbz r0,.L26
+ 288              	.LVL38:
+ 289              	.L28:
+  69:src/MightyBoard/Motherboard/term_io.c **** 		xputc(*str++);
+ 290              	 .loc 1 69 0
+ 291 0008 FFF7FEFF 	 bl xputc
+  68:src/MightyBoard/Motherboard/term_io.c **** 	while (*str)
+ 292              	 .loc 1 68 0
+ 293 000c 14F8010F 	 ldrb r0,[r4,#1]!
+ 294 0010 0028     	 cmp r0,#0
+ 295 0012 F9D1     	 bne .L28
+ 296              	.L26:
+ 297 0014 10BD     	 pop {r4,pc}
+ 298              	 .cfi_endproc
+ 299              	.LFE57:
+ 301 0016 00BF     	 .section .text.xitoa,"ax",%progbits
+ 302              	 .align 2
+ 303              	 .global xitoa
+ 304              	 .thumb
+ 305              	 .thumb_func
+ 307              	xitoa:
+ 308              	.LFB58:
+  70:src/MightyBoard/Motherboard/term_io.c **** }
+  71:src/MightyBoard/Motherboard/term_io.c **** 
+  72:src/MightyBoard/Motherboard/term_io.c **** 
+  73:src/MightyBoard/Motherboard/term_io.c **** void xitoa (long val, int radix, int len)
+  74:src/MightyBoard/Motherboard/term_io.c **** {
+ 309              	 .loc 1 74 0
+ 310              	 .cfi_startproc
+ 311              	 
+ 312              	 
+ 313              	.LVL39:
+ 314 0000 F0B5     	 push {r4,r5,r6,r7,lr}
+ 315              	.LCFI3:
+ 316              	 .cfi_def_cfa_offset 20
+ 317              	 .cfi_offset 14,-4
+ 318              	 .cfi_offset 7,-8
+ 319              	 .cfi_offset 6,-12
+ 320              	 .cfi_offset 5,-16
+ 321              	 .cfi_offset 4,-20
+ 322 0002 87B0     	 sub sp,sp,#28
+ 323              	.LCFI4:
+ 324              	 .cfi_def_cfa_offset 48
+ 325              	.LVL40:
+  75:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t c, r, sgn = 0, pad = ' ';
+  76:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t s[20], i = 0;
+  77:src/MightyBoard/Motherboard/term_io.c **** 	uint32_t v;
+  78:src/MightyBoard/Motherboard/term_io.c **** 
+  79:src/MightyBoard/Motherboard/term_io.c **** 	if (radix < 0) {
+ 326              	 .loc 1 79 0
+ 327 0004 0B1E     	 subs r3,r1,#0
+  75:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t c, r, sgn = 0, pad = ' ';
+ 328              	 .loc 1 75 0
+ 329 0006 A8BF     	 it ge
+ 330 0008 0025     	 movge r5,#0
+ 331              	 .loc 1 79 0
+ 332 000a 06DA     	 bge .L31
+  80:src/MightyBoard/Motherboard/term_io.c **** 		radix = -radix;
+ 333              	 .loc 1 80 0
+ 334 000c C3F10003 	 rsb r3,r3,#0
+ 335              	.LVL41:
+  81:src/MightyBoard/Motherboard/term_io.c **** 		if (val < 0) {
+ 336              	 .loc 1 81 0
+ 337 0010 0028     	 cmp r0,#0
+  82:src/MightyBoard/Motherboard/term_io.c **** 			val = -val;
+ 338              	 .loc 1 82 0
+ 339 0012 BABF     	 itte lt
+ 340 0014 4042     	 rsblt r0,r0,#0
+ 341              	.LVL42:
+  83:src/MightyBoard/Motherboard/term_io.c **** 			sgn = '-';
+ 342              	 .loc 1 83 0
+ 343 0016 2D25     	 movlt r5,#45
+  75:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t c, r, sgn = 0, pad = ' ';
+ 344              	 .loc 1 75 0
+ 345 0018 0025     	 movge r5,#0
+ 346              	.LVL43:
+ 347              	.L31:
+  84:src/MightyBoard/Motherboard/term_io.c **** 		}
+  85:src/MightyBoard/Motherboard/term_io.c **** 	}
+  86:src/MightyBoard/Motherboard/term_io.c **** 	v = val;
+  87:src/MightyBoard/Motherboard/term_io.c **** 	r = radix;
+ 348              	 .loc 1 87 0
+ 349 001a DBB2     	 uxtb r3,r3
+ 350              	.LVL44:
+  88:src/MightyBoard/Motherboard/term_io.c **** 	if (len < 0) {
+ 351              	 .loc 1 88 0
+ 352 001c 002A     	 cmp r2,#0
+  89:src/MightyBoard/Motherboard/term_io.c **** 		len = -len;
+ 353              	 .loc 1 89 0
+ 354 001e BABF     	 itte lt
+ 355 0020 5242     	 rsblt r2,r2,#0
+ 356              	.LVL45:
+  90:src/MightyBoard/Motherboard/term_io.c **** 		pad = '0';
+ 357              	 .loc 1 90 0
+ 358 0022 3021     	 movlt r1,#48
+  75:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t c, r, sgn = 0, pad = ' ';
+ 359              	 .loc 1 75 0
+ 360 0024 2021     	 movge r1,#32
+ 361              	.LVL46:
+  91:src/MightyBoard/Motherboard/term_io.c **** 	}
+  92:src/MightyBoard/Motherboard/term_io.c **** 	if (len > 20) return;
+ 362              	 .loc 1 92 0
+ 363 0026 142A     	 cmp r2,#20
+  86:src/MightyBoard/Motherboard/term_io.c **** 	v = val;
+ 364              	 .loc 1 86 0
+ 365 0028 D8BF     	 it le
+ 366 002a 0027     	 movle r7,#0
+ 367              	 .loc 1 92 0
+ 368 002c 01DD     	 ble .L35
+ 369 002e 37E0     	 b .L30
+ 370              	.LVL47:
+ 371              	.L43:
+  93:src/MightyBoard/Motherboard/term_io.c **** 	do {
+  94:src/MightyBoard/Motherboard/term_io.c **** 		c = (uint8_t)(v % r);
+  95:src/MightyBoard/Motherboard/term_io.c **** 		if (c >= 10) c += 7;
+  96:src/MightyBoard/Motherboard/term_io.c **** 		c += '0';
+  97:src/MightyBoard/Motherboard/term_io.c **** 		s[i++] = c;
+ 372              	 .loc 1 97 0
+ 373 0030 2746     	 mov r7,r4
+ 374              	.LVL48:
+ 375              	.L35:
+  94:src/MightyBoard/Motherboard/term_io.c **** 		c = (uint8_t)(v % r);
+ 376              	 .loc 1 94 0
+ 377 0032 B0FBF3F6 	 udiv r6,r0,r3
+ 378 0036 03FB1606 	 mls r6,r3,r6,r0
+ 379 003a F6B2     	 uxtb r6,r6
+ 380              	.LVL49:
+  95:src/MightyBoard/Motherboard/term_io.c **** 		if (c >= 10) c += 7;
+ 381              	 .loc 1 95 0
+ 382 003c 092E     	 cmp r6,#9
+ 383 003e 84BF     	 itt hi
+ 384 0040 0736     	 addhi r6,r6,#7
+ 385              	.LVL50:
+ 386 0042 F6B2     	 uxtbhi r6,r6
+ 387              	.LVL51:
+  96:src/MightyBoard/Motherboard/term_io.c **** 		c += '0';
+ 388              	 .loc 1 96 0
+ 389 0044 06F13006 	 add r6,r6,#48
+ 390              	.LVL52:
+ 391              	 .loc 1 97 0
+ 392 0048 0DF1180E 	 add lr,sp,#24
+ 393 004c 0EEB0704 	 add r4,lr,r7
+ 394 0050 04F8146C 	 strb r6,[r4,#-20]
+ 395 0054 07F10104 	 add r4,r7,#1
+ 396 0058 E4B2     	 uxtb r4,r4
+ 397              	.LVL53:
+  98:src/MightyBoard/Motherboard/term_io.c **** 		v /= r;
+ 398              	 .loc 1 98 0
+ 399 005a B0FBF3F0 	 udiv r0,r0,r3
+ 400              	.LVL54:
+  99:src/MightyBoard/Motherboard/term_io.c **** 	} while (v);
+ 401              	 .loc 1 99 0
+ 402 005e 0028     	 cmp r0,#0
+ 403 0060 E6D1     	 bne .L43
+ 100:src/MightyBoard/Motherboard/term_io.c **** 	if (sgn) s[i++] = sgn;
+ 404              	 .loc 1 100 0
+ 405 0062 2DB1     	 cbz r5,.L36
+ 406              	 .loc 1 100 0 is_stmt 0 discriminator 1
+ 407 0064 7444     	 add r4,lr,r4
+ 408              	.LVL55:
+ 409 0066 04F8145C 	 strb r5,[r4,#-20]
+ 410 006a 07F10204 	 add r4,r7,#2
+ 411 006e E4B2     	 uxtb r4,r4
+ 412              	.LVL56:
+ 413              	.L36:
+ 101:src/MightyBoard/Motherboard/term_io.c **** 	while (i < len)
+ 414              	 .loc 1 101 0 is_stmt 1 discriminator 1
+ 415 0070 2346     	 mov r3,r4
+ 416              	.LVL57:
+ 417 0072 A242     	 cmp r2,r4
+ 418 0074 09DD     	 ble .L44
+ 419              	.LVL58:
+ 420              	.L45:
+ 102:src/MightyBoard/Motherboard/term_io.c **** 		s[i++] = pad;
+ 421              	 .loc 1 102 0
+ 422 0076 06A8     	 add r0,sp,#24
+ 423 0078 C318     	 adds r3,r0,r3
+ 424 007a 03F8141C 	 strb r1,[r3,#-20]
+ 425 007e 04F10104 	 add r4,r4,#1
+ 426 0082 E4B2     	 uxtb r4,r4
+ 427              	.LVL59:
+ 101:src/MightyBoard/Motherboard/term_io.c **** 	while (i < len)
+ 428              	 .loc 1 101 0
+ 429 0084 2346     	 mov r3,r4
+ 430 0086 A242     	 cmp r2,r4
+ 431 0088 F5DC     	 bgt .L45
+ 432              	.LVL60:
+ 433              	.L44:
+ 103:src/MightyBoard/Motherboard/term_io.c **** 	do
+ 104:src/MightyBoard/Motherboard/term_io.c **** 		xputc(s[--i]);
+ 434              	 .loc 1 104 0 discriminator 1
+ 435 008a 04F1FF34 	 add r4,r4,#-1
+ 436              	.LVL61:
+ 437 008e E4B2     	 uxtb r4,r4
+ 438              	.LVL62:
+ 439 0090 06AA     	 add r2,sp,#24
+ 440 0092 1319     	 adds r3,r2,r4
+ 441 0094 13F8140C 	 ldrb r0,[r3,#-20]
+ 442 0098 FFF7FEFF 	 bl xputc
+ 105:src/MightyBoard/Motherboard/term_io.c **** 	while (i);
+ 443              	 .loc 1 105 0 discriminator 1
+ 444 009c 002C     	 cmp r4,#0
+ 445 009e F4D1     	 bne .L44
+ 446              	.LVL63:
+ 447              	.L30:
+ 106:src/MightyBoard/Motherboard/term_io.c **** }
+ 448              	 .loc 1 106 0
+ 449 00a0 07B0     	 add sp,sp,#28
+ 450 00a2 F0BD     	 pop {r4,r5,r6,r7,pc}
+ 451              	 .cfi_endproc
+ 452              	.LFE58:
+ 454              	 .section .text.xprintf,"ax",%progbits
+ 455              	 .align 2
+ 456              	 .global xprintf
+ 457              	 .thumb
+ 458              	 .thumb_func
+ 460              	xprintf:
+ 461              	.LFB59:
+ 107:src/MightyBoard/Motherboard/term_io.c **** 
+ 108:src/MightyBoard/Motherboard/term_io.c **** 
+ 109:src/MightyBoard/Motherboard/term_io.c **** void xprintf (const char* str, ...)
+ 110:src/MightyBoard/Motherboard/term_io.c **** {
+ 462              	 .loc 1 110 0
+ 463              	 .cfi_startproc
+ 464              	 
+ 465              	 
+ 466              	.LVL64:
+ 467 0000 0FB4     	 push {r0,r1,r2,r3}
+ 468              	.LCFI5:
+ 469              	 .cfi_def_cfa_offset 16
+ 470              	 .cfi_offset 3,-4
+ 471              	 .cfi_offset 2,-8
+ 472              	 .cfi_offset 1,-12
+ 473              	 .cfi_offset 0,-16
+ 474 0002 F0B5     	 push {r4,r5,r6,r7,lr}
+ 475              	.LCFI6:
+ 476              	 .cfi_def_cfa_offset 36
+ 477              	 .cfi_offset 14,-20
+ 478              	 .cfi_offset 7,-24
+ 479              	 .cfi_offset 6,-28
+ 480              	 .cfi_offset 5,-32
+ 481              	 .cfi_offset 4,-36
+ 482 0004 83B0     	 sub sp,sp,#12
+ 483              	.LCFI7:
+ 484              	 .cfi_def_cfa_offset 48
+ 485 0006 08AB     	 add r3,sp,#32
+ 486 0008 53F8044B 	 ldr r4,[r3],#4
+ 111:src/MightyBoard/Motherboard/term_io.c **** 	va_list arp;
+ 112:src/MightyBoard/Motherboard/term_io.c **** 	int d, r, w, s, l;
+ 113:src/MightyBoard/Motherboard/term_io.c **** 
+ 114:src/MightyBoard/Motherboard/term_io.c **** 
+ 115:src/MightyBoard/Motherboard/term_io.c **** 	va_start(arp, str);
+ 487              	 .loc 1 115 0
+ 488 000c 0193     	 str r3,[sp,#4]
+ 116:src/MightyBoard/Motherboard/term_io.c **** 
+ 117:src/MightyBoard/Motherboard/term_io.c **** 	while ((d = *str++) != 0) {
+ 118:src/MightyBoard/Motherboard/term_io.c **** 		if (d != '%') {
+ 119:src/MightyBoard/Motherboard/term_io.c **** 			xputc(d); continue;
+ 120:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 121:src/MightyBoard/Motherboard/term_io.c **** 		d = *str++; w = r = s = l = 0;
+ 122:src/MightyBoard/Motherboard/term_io.c **** 		if (d == '0') {
+ 123:src/MightyBoard/Motherboard/term_io.c **** 			d = *str++; s = 1;
+ 124:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 125:src/MightyBoard/Motherboard/term_io.c **** 		while ((d >= '0')&&(d <= '9')) {
+ 126:src/MightyBoard/Motherboard/term_io.c **** 			w += w * 10 + (d - '0');
+ 127:src/MightyBoard/Motherboard/term_io.c **** 			d = *str++;
+ 128:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 129:src/MightyBoard/Motherboard/term_io.c **** 		if (s) w = -w;
+ 130:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'l') {
+ 131:src/MightyBoard/Motherboard/term_io.c **** 			l = 1;
+ 132:src/MightyBoard/Motherboard/term_io.c **** 			d = *str++;
+ 133:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 134:src/MightyBoard/Motherboard/term_io.c **** 		if (!d) break;
+ 135:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 's') {
+ 136:src/MightyBoard/Motherboard/term_io.c **** 			xputs(va_arg(arp, char*));
+ 137:src/MightyBoard/Motherboard/term_io.c **** 			continue;
+ 138:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 139:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'c') {
+ 140:src/MightyBoard/Motherboard/term_io.c **** 			xputc((char)va_arg(arp, int));
+ 141:src/MightyBoard/Motherboard/term_io.c **** 			continue;
+ 142:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 143:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'u') r = 10;
+ 144:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'd') r = -10;
+ 145:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'X' || d == 'x') r = 16; // 'x' added by mthomas in increase compatibility
+ 146:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'b') r = 2;
+ 489              	 .loc 1 146 0
+ 490 000e 4FF00205 	 mov r5,#2
+ 143:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'u') r = 10;
+ 491              	 .loc 1 143 0
+ 492 0012 4FF00A06 	 mov r6,#10
+ 144:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'd') r = -10;
+ 493              	 .loc 1 144 0
+ 494 0016 6FF00907 	 mvn r7,#9
+ 117:src/MightyBoard/Motherboard/term_io.c **** 	while ((d = *str++) != 0) {
+ 495              	 .loc 1 117 0
+ 496 001a 71E0     	 b .L75
+ 497              	.LVL65:
+ 498              	.L67:
+ 118:src/MightyBoard/Motherboard/term_io.c **** 		if (d != '%') {
+ 499              	 .loc 1 118 0
+ 500 001c 2528     	 cmp r0,#37
+ 501 001e 04D0     	 beq .L50
+ 117:src/MightyBoard/Motherboard/term_io.c **** 	while ((d = *str++) != 0) {
+ 502              	 .loc 1 117 0
+ 503 0020 04F10104 	 add r4,r4,#1
+ 504              	.LVL66:
+ 119:src/MightyBoard/Motherboard/term_io.c **** 			xputc(d); continue;
+ 505              	 .loc 1 119 0
+ 506 0024 FFF7FEFF 	 bl xputc
+ 507              	.LVL67:
+ 508 0028 6AE0     	 b .L75
+ 509              	.LVL68:
+ 510              	.L50:
+ 121:src/MightyBoard/Motherboard/term_io.c **** 		d = *str++; w = r = s = l = 0;
+ 511              	 .loc 1 121 0
+ 512 002a 6078     	 ldrb r0,[r4,#1]
+ 513              	.LVL69:
+ 122:src/MightyBoard/Motherboard/term_io.c **** 		if (d == '0') {
+ 514              	 .loc 1 122 0
+ 515 002c 3028     	 cmp r0,#48
+ 121:src/MightyBoard/Motherboard/term_io.c **** 		d = *str++; w = r = s = l = 0;
+ 516              	 .loc 1 121 0
+ 517 002e 19BF     	 ittee ne
+ 518 0030 0234     	 addne r4,r4,#2
+ 519              	.LVL70:
+ 520 0032 4FF0000C 	 movne ip,#0
+ 123:src/MightyBoard/Motherboard/term_io.c **** 			d = *str++; s = 1;
+ 521              	 .loc 1 123 0
+ 522 0036 A078     	 ldrbeq r0,[r4,#2]
+ 523              	.LVL71:
+ 524 0038 0334     	 addeq r4,r4,#3
+ 525              	.LVL72:
+ 526 003a 08BF     	 it eq
+ 527 003c 4FF0010C 	 moveq ip,#1
+ 528              	.LVL73:
+ 125:src/MightyBoard/Motherboard/term_io.c **** 		while ((d >= '0')&&(d <= '9')) {
+ 529              	 .loc 1 125 0
+ 530 0040 A0F13003 	 sub r3,r0,#48
+ 531 0044 092B     	 cmp r3,#9
+ 532 0046 88BF     	 it hi
+ 533 0048 0022     	 movhi r2,#0
+ 534 004a 11D8     	 bhi .L54
+ 535 004c 2346     	 mov r3,r4
+ 536 004e 4FF00002 	 mov r2,#0
+ 537              	.LVL74:
+ 538              	.L55:
+ 126:src/MightyBoard/Motherboard/term_io.c **** 			w += w * 10 + (d - '0');
+ 539              	 .loc 1 126 0
+ 540 0052 02EB8201 	 add r1,r2,r2,lsl#2
+ 541 0056 A0F13000 	 sub r0,r0,#48
+ 542              	.LVL75:
+ 543 005a 00EB4100 	 add r0,r0,r1,lsl#1
+ 544              	.LVL76:
+ 545 005e 1218     	 adds r2,r2,r0
+ 546              	.LVL77:
+ 127:src/MightyBoard/Motherboard/term_io.c **** 			d = *str++;
+ 547              	 .loc 1 127 0
+ 548 0060 13F8011B 	 ldrb r1,[r3],#1
+ 549              	.LVL78:
+ 550 0064 0846     	 mov r0,r1
+ 551              	.LVL79:
+ 552 0066 1C46     	 mov r4,r3
+ 553              	.LVL80:
+ 125:src/MightyBoard/Motherboard/term_io.c **** 		while ((d >= '0')&&(d <= '9')) {
+ 554              	 .loc 1 125 0
+ 555 0068 A1F13001 	 sub r1,r1,#48
+ 556              	.LVL81:
+ 557 006c 0929     	 cmp r1,#9
+ 558 006e F0D9     	 bls .L55
+ 559              	.LVL82:
+ 560              	.L54:
+ 129:src/MightyBoard/Motherboard/term_io.c **** 		if (s) w = -w;
+ 561              	 .loc 1 129 0
+ 562 0070 BCF1000F 	 cmp ip,#0
+ 563 0074 01D0     	 beq .L56
+ 129:src/MightyBoard/Motherboard/term_io.c **** 		if (s) w = -w;
+ 564              	 .loc 1 129 0 is_stmt 0 discriminator 1
+ 565 0076 C2F10002 	 rsb r2,r2,#0
+ 566              	.LVL83:
+ 567              	.L56:
+ 130:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'l') {
+ 568              	 .loc 1 130 0 is_stmt 1
+ 569 007a 6C28     	 cmp r0,#108
+ 570              	.LVL84:
+ 132:src/MightyBoard/Motherboard/term_io.c **** 			d = *str++;
+ 571              	 .loc 1 132 0
+ 572 007c 06BF     	 itte eq
+ 573 007e 14F8010B 	 ldrbeq r0,[r4],#1
+ 574              	.LVL85:
+ 131:src/MightyBoard/Motherboard/term_io.c **** 			l = 1;
+ 575              	 .loc 1 131 0
+ 576 0082 0123     	 moveq r3,#1
+ 121:src/MightyBoard/Motherboard/term_io.c **** 		d = *str++; w = r = s = l = 0;
+ 577              	 .loc 1 121 0
+ 578 0084 0023     	 movne r3,#0
+ 579              	.LVL86:
+ 134:src/MightyBoard/Motherboard/term_io.c **** 		if (!d) break;
+ 580              	 .loc 1 134 0
+ 581 0086 0028     	 cmp r0,#0
+ 582 0088 3DD0     	 beq .L48
+ 135:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 's') {
+ 583              	 .loc 1 135 0
+ 584 008a 7328     	 cmp r0,#115
+ 585 008c 07D1     	 bne .L59
+ 136:src/MightyBoard/Motherboard/term_io.c **** 			xputs(va_arg(arp, char*));
+ 586              	 .loc 1 136 0
+ 587 008e 019B     	 ldr r3,[sp,#4]
+ 588              	.LVL87:
+ 589 0090 03F10402 	 add r2,r3,#4
+ 590              	.LVL88:
+ 591 0094 0192     	 str r2,[sp,#4]
+ 592 0096 1868     	 ldr r0,[r3,#0]
+ 593              	.LVL89:
+ 594 0098 FFF7FEFF 	 bl xputs
+ 595              	.LVL90:
+ 137:src/MightyBoard/Motherboard/term_io.c **** 			continue;
+ 596              	 .loc 1 137 0
+ 597 009c 30E0     	 b .L75
+ 598              	.LVL91:
+ 599              	.L59:
+ 139:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'c') {
+ 600              	 .loc 1 139 0
+ 601 009e 6328     	 cmp r0,#99
+ 602 00a0 07D1     	 bne .L60
+ 140:src/MightyBoard/Motherboard/term_io.c **** 			xputc((char)va_arg(arp, int));
+ 603              	 .loc 1 140 0
+ 604 00a2 019B     	 ldr r3,[sp,#4]
+ 605              	.LVL92:
+ 606 00a4 03F10402 	 add r2,r3,#4
+ 607              	.LVL93:
+ 608 00a8 0192     	 str r2,[sp,#4]
+ 609 00aa 1878     	 ldrb r0,[r3,#0]
+ 610              	.LVL94:
+ 611 00ac FFF7FEFF 	 bl xputc
+ 612              	.LVL95:
+ 141:src/MightyBoard/Motherboard/term_io.c **** 			continue;
+ 613              	 .loc 1 141 0
+ 614 00b0 26E0     	 b .L75
+ 615              	.LVL96:
+ 616              	.L60:
+ 143:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'u') r = 10;
+ 617              	 .loc 1 143 0
+ 618 00b2 7528     	 cmp r0,#117
+ 619 00b4 0CD0     	 beq .L70
+ 144:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'd') r = -10;
+ 620              	 .loc 1 144 0
+ 621 00b6 6428     	 cmp r0,#100
+ 622 00b8 0ED0     	 beq .L71
+ 145:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'X' || d == 'x') r = 16; // 'x' added by mthomas in increase compatibility
+ 623              	 .loc 1 145 0
+ 624 00ba 7828     	 cmp r0,#120
+ 625 00bc 14BF     	 ite ne
+ 626 00be 0021     	 movne r1,#0
+ 627 00c0 0121     	 moveq r1,#1
+ 628 00c2 5828     	 cmp r0,#88
+ 629 00c4 08BF     	 it eq
+ 630 00c6 41F00101 	 orreq r1,r1,#1
+ 121:src/MightyBoard/Motherboard/term_io.c **** 		d = *str++; w = r = s = l = 0;
+ 631              	 .loc 1 121 0
+ 632 00ca 4FEA0111 	 lsl r1,r1,#4
+ 633 00ce 00E0     	 b .L63
+ 634              	.L70:
+ 143:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'u') r = 10;
+ 635              	 .loc 1 143 0
+ 636 00d0 3146     	 mov r1,r6
+ 637              	.L63:
+ 638              	.LVL97:
+ 639              	 .loc 1 146 0
+ 640 00d2 6228     	 cmp r0,#98
+ 641 00d4 01D1     	 bne .L62
+ 642 00d6 02E0     	 b .L76
+ 643              	.LVL98:
+ 644              	.L71:
+ 144:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'd') r = -10;
+ 645              	 .loc 1 144 0
+ 646 00d8 3946     	 mov r1,r7
+ 647              	.LVL99:
+ 648              	.L62:
+ 147:src/MightyBoard/Motherboard/term_io.c **** 		if (!r) break;
+ 649              	 .loc 1 147 0
+ 650 00da 09B9     	 cbnz r1,.L64
+ 651 00dc 13E0     	 b .L48
+ 652              	.L76:
+ 146:src/MightyBoard/Motherboard/term_io.c **** 		if (d == 'b') r = 2;
+ 653              	 .loc 1 146 0
+ 654 00de 2946     	 mov r1,r5
+ 655              	.LVL100:
+ 656              	.L64:
+ 148:src/MightyBoard/Motherboard/term_io.c **** 		if (l) {
+ 657              	 .loc 1 148 0
+ 658 00e0 3BB1     	 cbz r3,.L65
+ 149:src/MightyBoard/Motherboard/term_io.c **** 			xitoa((long)va_arg(arp, long), r, w);
+ 659              	 .loc 1 149 0
+ 660 00e2 019B     	 ldr r3,[sp,#4]
+ 661              	.LVL101:
+ 662 00e4 03F10400 	 add r0,r3,#4
+ 663              	.LVL102:
+ 664 00e8 0190     	 str r0,[sp,#4]
+ 665 00ea 1868     	 ldr r0,[r3,#0]
+ 666 00ec FFF7FEFF 	 bl xitoa
+ 667              	.LVL103:
+ 668 00f0 06E0     	 b .L75
+ 669              	.LVL104:
+ 670              	.L65:
+ 150:src/MightyBoard/Motherboard/term_io.c **** 		} else {
+ 151:src/MightyBoard/Motherboard/term_io.c **** 			if (r > 0)
+ 152:src/MightyBoard/Motherboard/term_io.c **** 				xitoa((unsigned long)va_arg(arp, int), r, w);
+ 153:src/MightyBoard/Motherboard/term_io.c **** 			else
+ 154:src/MightyBoard/Motherboard/term_io.c **** 				xitoa((long)va_arg(arp, int), r, w);
+ 671              	 .loc 1 154 0
+ 672 00f2 019B     	 ldr r3,[sp,#4]
+ 673              	.LVL105:
+ 674 00f4 03F10400 	 add r0,r3,#4
+ 675              	.LVL106:
+ 676 00f8 0190     	 str r0,[sp,#4]
+ 677 00fa 1868     	 ldr r0,[r3,#0]
+ 678 00fc FFF7FEFF 	 bl xitoa
+ 679              	.LVL107:
+ 680              	.L75:
+ 117:src/MightyBoard/Motherboard/term_io.c **** 	while ((d = *str++) != 0) {
+ 681              	 .loc 1 117 0 discriminator 1
+ 682 0100 2078     	 ldrb r0,[r4,#0]
+ 683              	.LVL108:
+ 684 0102 0028     	 cmp r0,#0
+ 685 0104 8AD1     	 bne .L67
+ 686              	.LVL109:
+ 687              	.L48:
+ 155:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 156:src/MightyBoard/Motherboard/term_io.c **** 	}
+ 157:src/MightyBoard/Motherboard/term_io.c **** 
+ 158:src/MightyBoard/Motherboard/term_io.c **** 	va_end(arp);
+ 159:src/MightyBoard/Motherboard/term_io.c **** }
+ 688              	 .loc 1 159 0
+ 689 0106 03B0     	 add sp,sp,#12
+ 690 0108 BDE8F040 	 pop {r4,r5,r6,r7,lr}
+ 691 010c 04B0     	 add sp,sp,#16
+ 692 010e 7047     	 bx lr
+ 693              	 .cfi_endproc
+ 694              	.LFE59:
+ 696              	 .section .text.put_dump,"ax",%progbits
+ 697              	 .align 2
+ 698              	 .global put_dump
+ 699              	 .thumb
+ 700              	 .thumb_func
+ 702              	put_dump:
+ 703              	.LFB60:
+ 160:src/MightyBoard/Motherboard/term_io.c **** 
+ 161:src/MightyBoard/Motherboard/term_io.c **** 
+ 162:src/MightyBoard/Motherboard/term_io.c **** void put_dump (const uint8_t *buff, uint32_t ofs, int cnt)
+ 163:src/MightyBoard/Motherboard/term_io.c **** {
+ 704              	 .loc 1 163 0
+ 705              	 .cfi_startproc
+ 706              	 
+ 707              	 
+ 708              	.LVL110:
+ 709 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+ 710              	.LCFI8:
+ 711              	 .cfi_def_cfa_offset 24
+ 712              	 .cfi_offset 14,-4
+ 713              	 .cfi_offset 7,-8
+ 714              	 .cfi_offset 6,-12
+ 715              	 .cfi_offset 5,-16
+ 716              	 .cfi_offset 4,-20
+ 717              	 .cfi_offset 3,-24
+ 718 0002 0646     	 mov r6,r0
+ 719 0004 1546     	 mov r5,r2
+ 164:src/MightyBoard/Motherboard/term_io.c **** 	uint8_t n;
+ 165:src/MightyBoard/Motherboard/term_io.c **** 
+ 166:src/MightyBoard/Motherboard/term_io.c **** 	xprintf("%08lX ", ofs);
+ 720              	 .loc 1 166 0
+ 721 0006 40F20000 	 movw r0,#:lower16:.LC0
+ 722              	.LVL111:
+ 723 000a C0F20000 	 movt r0,#:upper16:.LC0
+ 724 000e FFF7FEFF 	 bl xprintf
+ 725              	.LVL112:
+ 167:src/MightyBoard/Motherboard/term_io.c **** 	for(n = 0; n < cnt; n++)
+ 726              	 .loc 1 167 0
+ 727 0012 002D     	 cmp r5,#0
+ 728 0014 29DD     	 ble .L78
+ 729 0016 4FF00004 	 mov r4,#0
+ 168:src/MightyBoard/Motherboard/term_io.c **** 		xprintf(" %02X", buff[n]);
+ 730              	 .loc 1 168 0
+ 731 001a 40F20007 	 movw r7,#:lower16:.LC1
+ 732 001e C0F20007 	 movt r7,#:upper16:.LC1
+ 733              	.LVL113:
+ 734              	.L79:
+ 735              	 .loc 1 168 0 is_stmt 0 discriminator 2
+ 736 0022 3846     	 mov r0,r7
+ 737 0024 315D     	 ldrb r1,[r6,r4]
+ 738 0026 FFF7FEFF 	 bl xprintf
+ 167:src/MightyBoard/Motherboard/term_io.c **** 	for(n = 0; n < cnt; n++)
+ 739              	 .loc 1 167 0 is_stmt 1 discriminator 2
+ 740 002a 04F10104 	 add r4,r4,#1
+ 741 002e E4B2     	 uxtb r4,r4
+ 742              	.LVL114:
+ 743 0030 AC42     	 cmp r4,r5
+ 744 0032 F6DB     	 blt .L79
+ 169:src/MightyBoard/Motherboard/term_io.c **** 	xputc(' ');
+ 745              	 .loc 1 169 0
+ 746 0034 4FF02000 	 mov r0,#32
+ 747 0038 FFF7FEFF 	 bl xputc
+ 748              	.LVL115:
+ 170:src/MightyBoard/Motherboard/term_io.c **** 	for(n = 0; n < cnt; n++) {
+ 749              	 .loc 1 170 0
+ 750 003c 4FF00004 	 mov r4,#0
+ 171:src/MightyBoard/Motherboard/term_io.c **** 		if ((buff[n] < 0x20)||(buff[n] >= 0x7F))
+ 172:src/MightyBoard/Motherboard/term_io.c **** 			xputc('.');
+ 751              	 .loc 1 172 0
+ 752 0040 4FF02E07 	 mov r7,#46
+ 753              	.LVL116:
+ 754              	.L82:
+ 171:src/MightyBoard/Motherboard/term_io.c **** 		if ((buff[n] < 0x20)||(buff[n] >= 0x7F))
+ 755              	 .loc 1 171 0
+ 756 0044 305D     	 ldrb r0,[r6,r4]
+ 757 0046 A0F12003 	 sub r3,r0,#32
+ 758 004a DBB2     	 uxtb r3,r3
+ 759 004c 5E2B     	 cmp r3,#94
+ 760              	 .loc 1 172 0
+ 761 004e 88BF     	 it hi
+ 762 0050 3846     	 movhi r0,r7
+ 173:src/MightyBoard/Motherboard/term_io.c **** 		else
+ 174:src/MightyBoard/Motherboard/term_io.c **** 			xputc(buff[n]);
+ 763              	 .loc 1 174 0
+ 764 0052 FFF7FEFF 	 bl xputc
+ 170:src/MightyBoard/Motherboard/term_io.c **** 	for(n = 0; n < cnt; n++) {
+ 765              	 .loc 1 170 0
+ 766 0056 04F10104 	 add r4,r4,#1
+ 767 005a E4B2     	 uxtb r4,r4
+ 768              	.LVL117:
+ 769 005c A542     	 cmp r5,r4
+ 770 005e F1DC     	 bgt .L82
+ 771              	.LVL118:
+ 772              	.L83:
+ 175:src/MightyBoard/Motherboard/term_io.c **** 	}
+ 176:src/MightyBoard/Motherboard/term_io.c **** 	xputc('\n');
+ 773              	 .loc 1 176 0
+ 774 0060 4FF00A00 	 mov r0,#10
+ 775 0064 FFF7FEFF 	 bl xputc
+ 177:src/MightyBoard/Motherboard/term_io.c **** }
+ 776              	 .loc 1 177 0
+ 777 0068 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 778              	.LVL119:
+ 779              	.L78:
+ 169:src/MightyBoard/Motherboard/term_io.c **** 	xputc(' ');
+ 780              	 .loc 1 169 0
+ 781 006a 4FF02000 	 mov r0,#32
+ 782 006e FFF7FEFF 	 bl xputc
+ 783 0072 F5E7     	 b .L83
+ 784              	 .cfi_endproc
+ 785              	.LFE60:
+ 787              	 .section .text.get_line,"ax",%progbits
+ 788              	 .align 2
+ 789              	 .global get_line
+ 790              	 .thumb
+ 791              	 .thumb_func
+ 793              	get_line:
+ 794              	.LFB61:
+ 178:src/MightyBoard/Motherboard/term_io.c **** 
+ 179:src/MightyBoard/Motherboard/term_io.c **** 
+ 180:src/MightyBoard/Motherboard/term_io.c **** void get_line (char *buff, int len)
+ 181:src/MightyBoard/Motherboard/term_io.c **** {
+ 795              	 .loc 1 181 0
+ 796              	 .cfi_startproc
+ 797              	 
+ 798              	 
+ 799              	.LVL120:
+ 800 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 801              	.LCFI9:
+ 802              	 .cfi_def_cfa_offset 24
+ 803              	 .cfi_offset 14,-4
+ 804              	 .cfi_offset 8,-8
+ 805              	 .cfi_offset 7,-12
+ 806              	 .cfi_offset 6,-16
+ 807              	 .cfi_offset 5,-20
+ 808              	 .cfi_offset 4,-24
+ 809 0004 8046     	 mov r8,r0
+ 810 0006 0E46     	 mov r6,r1
+ 182:src/MightyBoard/Motherboard/term_io.c **** 	xprintf("%s{\n",__func__);
+ 811              	 .loc 1 182 0
+ 812 0008 40F20000 	 movw r0,#:lower16:.LC2
+ 813              	.LVL121:
+ 814 000c C0F20000 	 movt r0,#:upper16:.LC2
+ 815 0010 40F20001 	 movw r1,#:lower16:.LANCHOR0
+ 816              	.LVL122:
+ 817 0014 C0F20001 	 movt r1,#:upper16:.LANCHOR0
+ 818 0018 FFF7FEFF 	 bl xprintf
+ 819              	.LVL123:
+ 183:src/MightyBoard/Motherboard/term_io.c **** //	delay_ms(1000);
+ 184:src/MightyBoard/Motherboard/term_io.c **** 	char c;
+ 185:src/MightyBoard/Motherboard/term_io.c **** 	int idx = 0;
+ 820              	 .loc 1 185 0
+ 821 001c 4FF00005 	 mov r5,#0
+ 186:src/MightyBoard/Motherboard/term_io.c **** 
+ 187:src/MightyBoard/Motherboard/term_io.c **** 	for (;;) {
+ 188:src/MightyBoard/Motherboard/term_io.c **** 		c = xgetc();
+ 189:src/MightyBoard/Motherboard/term_io.c **** 		if ((c == '\r')||(c == '\n')) break;
+ 190:src/MightyBoard/Motherboard/term_io.c **** 		if ((c == '\b') && idx) {
+ 191:src/MightyBoard/Motherboard/term_io.c **** 			idx--; xputc(c);
+ 192:src/MightyBoard/Motherboard/term_io.c **** 			xputc(' '); xputc(c); // added by mthomas for Eclipse Terminal plug-in
+ 822              	 .loc 1 192 0
+ 823 0020 4FF02007 	 mov r7,#32
+ 193:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 194:src/MightyBoard/Motherboard/term_io.c **** 		if (((uint8_t)c >= ' ') && (idx < len - 1)) {
+ 824              	 .loc 1 194 0
+ 825 0024 06F1FF36 	 add r6,r6,#-1
+ 826              	.LVL124:
+ 827              	.L93:
+ 188:src/MightyBoard/Motherboard/term_io.c **** 		c = xgetc();
+ 828              	 .loc 1 188 0
+ 829 0028 FFF7FEFF 	 bl comm_get
+ 830 002c 0446     	 mov r4,r0
+ 831              	.LVL125:
+ 189:src/MightyBoard/Motherboard/term_io.c **** 		if ((c == '\r')||(c == '\n')) break;
+ 832              	 .loc 1 189 0
+ 833 002e 0A28     	 cmp r0,#10
+ 834 0030 14BF     	 ite ne
+ 835 0032 0023     	 movne r3,#0
+ 836 0034 0123     	 moveq r3,#1
+ 837 0036 0D28     	 cmp r0,#13
+ 838 0038 08BF     	 it eq
+ 839 003a 43F00103 	 orreq r3,r3,#1
+ 840 003e F3B9     	 cbnz r3,.L88
+ 190:src/MightyBoard/Motherboard/term_io.c **** 		if ((c == '\b') && idx) {
+ 841              	 .loc 1 190 0
+ 842 0040 2B1C     	 adds r3,r5,#0
+ 843 0042 18BF     	 it ne
+ 844 0044 0123     	 movne r3,#1
+ 845 0046 0828     	 cmp r0,#8
+ 846 0048 14BF     	 ite ne
+ 847 004a 0023     	 movne r3,#0
+ 848 004c 03F00103 	 andeq r3,r3,#1
+ 849 0050 4BB1     	 cbz r3,.L89
+ 191:src/MightyBoard/Motherboard/term_io.c **** 			idx--; xputc(c);
+ 850              	 .loc 1 191 0
+ 851 0052 05F1FF35 	 add r5,r5,#-1
+ 852              	.LVL126:
+ 853 0056 FFF7FEFF 	 bl xputc
+ 854              	.LVL127:
+ 192:src/MightyBoard/Motherboard/term_io.c **** 			xputc(' '); xputc(c); // added by mthomas for Eclipse Terminal plug-in
+ 855              	 .loc 1 192 0
+ 856 005a 3846     	 mov r0,r7
+ 857 005c FFF7FEFF 	 bl xputc
+ 858 0060 2046     	 mov r0,r4
+ 859 0062 FFF7FEFF 	 bl xputc
+ 860              	.L89:
+ 861              	 .loc 1 194 0
+ 862 0066 1F2C     	 cmp r4,#31
+ 863 0068 DED9     	 bls .L93
+ 864              	 .loc 1 194 0 is_stmt 0 discriminator 1
+ 865 006a B542     	 cmp r5,r6
+ 866 006c DCDA     	 bge .L93
+ 195:src/MightyBoard/Motherboard/term_io.c **** 				buff[idx++] = c; xputc(c);
+ 867              	 .loc 1 195 0 is_stmt 1
+ 868 006e 08F80540 	 strb r4,[r8,r5]
+ 869 0072 05F10105 	 add r5,r5,#1
+ 870              	.LVL128:
+ 871 0076 2046     	 mov r0,r4
+ 872 0078 FFF7FEFF 	 bl xputc
+ 873 007c D4E7     	 b .L93
+ 874              	.L88:
+ 196:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 197:src/MightyBoard/Motherboard/term_io.c **** 	}
+ 198:src/MightyBoard/Motherboard/term_io.c **** 	buff[idx] = 0;
+ 875              	 .loc 1 198 0
+ 876 007e 4FF00003 	 mov r3,#0
+ 877 0082 08F80530 	 strb r3,[r8,r5]
+ 199:src/MightyBoard/Motherboard/term_io.c **** 	xputc('\n');
+ 878              	 .loc 1 199 0
+ 879 0086 4FF00A00 	 mov r0,#10
+ 880 008a FFF7FEFF 	 bl xputc
+ 200:src/MightyBoard/Motherboard/term_io.c **** }
+ 881              	 .loc 1 200 0
+ 882 008e BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 883              	 .cfi_endproc
+ 884              	.LFE61:
+ 886 0092 00BF     	 .section .text.get_line_r,"ax",%progbits
+ 887              	 .align 2
+ 888              	 .global get_line_r
+ 889              	 .thumb
+ 890              	 .thumb_func
+ 892              	get_line_r:
+ 893              	.LFB62:
+ 201:src/MightyBoard/Motherboard/term_io.c **** 
+ 202:src/MightyBoard/Motherboard/term_io.c **** 
+ 203:src/MightyBoard/Motherboard/term_io.c **** // function added by mthomas:
+ 204:src/MightyBoard/Motherboard/term_io.c **** int get_line_r (char *buff, int len, int* idx)
+ 205:src/MightyBoard/Motherboard/term_io.c **** {
+ 894              	 .loc 1 205 0
+ 895              	 .cfi_startproc
+ 896              	 
+ 897              	 
+ 898              	.LVL129:
+ 899 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 900              	.LCFI10:
+ 901              	 .cfi_def_cfa_offset 24
+ 902              	 .cfi_offset 14,-4
+ 903              	 .cfi_offset 8,-8
+ 904              	 .cfi_offset 7,-12
+ 905              	 .cfi_offset 6,-16
+ 906              	 .cfi_offset 5,-20
+ 907              	 .cfi_offset 4,-24
+ 908 0004 8046     	 mov r8,r0
+ 909 0006 0F46     	 mov r7,r1
+ 910 0008 1446     	 mov r4,r2
+ 911              	.LVL130:
+ 206:src/MightyBoard/Motherboard/term_io.c **** 	char c;
+ 207:src/MightyBoard/Motherboard/term_io.c **** 	int retval = 0;
+ 208:src/MightyBoard/Motherboard/term_io.c **** 	int myidx;
+ 209:src/MightyBoard/Motherboard/term_io.c **** 
+ 210:src/MightyBoard/Motherboard/term_io.c **** 	if ( xavail() ) {
+ 912              	 .loc 1 210 0
+ 913 000a FFF7FEFF 	 bl comm_test
+ 914              	.LVL131:
+ 915 000e 0028     	 cmp r0,#0
+ 916 0010 3AD0     	 beq .L99
+ 211:src/MightyBoard/Motherboard/term_io.c **** 		myidx = *idx;
+ 917              	 .loc 1 211 0
+ 918 0012 2668     	 ldr r6,[r4,#0]
+ 919              	.LVL132:
+ 212:src/MightyBoard/Motherboard/term_io.c **** 		c = xgetc();
+ 920              	 .loc 1 212 0
+ 921 0014 FFF7FEFF 	 bl comm_get
+ 922              	.LVL133:
+ 923 0018 0546     	 mov r5,r0
+ 924              	.LVL134:
+ 213:src/MightyBoard/Motherboard/term_io.c **** 		if (c == '\r') {
+ 925              	 .loc 1 213 0
+ 926 001a 0D28     	 cmp r0,#13
+ 927 001c 0AD1     	 bne .L96
+ 214:src/MightyBoard/Motherboard/term_io.c **** 			buff[myidx] = 0;
+ 928              	 .loc 1 214 0
+ 929 001e 4FF00003 	 mov r3,#0
+ 930 0022 08F80630 	 strb r3,[r8,r6]
+ 215:src/MightyBoard/Motherboard/term_io.c **** 			xputc('\n');
+ 931              	 .loc 1 215 0
+ 932 0026 4FF00A00 	 mov r0,#10
+ 933              	.LVL135:
+ 934 002a FFF7FEFF 	 bl xputc
+ 935              	.LVL136:
+ 216:src/MightyBoard/Motherboard/term_io.c **** 			retval = 1;
+ 936              	 .loc 1 216 0
+ 937 002e 4FF00100 	 mov r0,#1
+ 938 0032 26E0     	 b .L97
+ 939              	.LVL137:
+ 940              	.L96:
+ 217:src/MightyBoard/Motherboard/term_io.c **** 		} else {
+ 218:src/MightyBoard/Motherboard/term_io.c **** 			if ((c == '\b') && myidx) {
+ 941              	 .loc 1 218 0
+ 942 0034 331C     	 adds r3,r6,#0
+ 943 0036 18BF     	 it ne
+ 944 0038 0123     	 movne r3,#1
+ 945 003a 0828     	 cmp r0,#8
+ 946 003c 14BF     	 ite ne
+ 947 003e 0023     	 movne r3,#0
+ 948 0040 03F00103 	 andeq r3,r3,#1
+ 949 0044 53B1     	 cbz r3,.L98
+ 219:src/MightyBoard/Motherboard/term_io.c **** 				myidx--; xputc(c);
+ 950              	 .loc 1 219 0
+ 951 0046 06F1FF36 	 add r6,r6,#-1
+ 952              	.LVL138:
+ 953 004a FFF7FEFF 	 bl xputc
+ 220:src/MightyBoard/Motherboard/term_io.c **** 				xputc(' '); xputc(c); // added by mthomas for Eclipse Terminal plug-in
+ 954              	 .loc 1 220 0
+ 955 004e 4FF02000 	 mov r0,#32
+ 956 0052 FFF7FEFF 	 bl xputc
+ 957 0056 2846     	 mov r0,r5
+ 958 0058 FFF7FEFF 	 bl xputc
+ 959              	.L98:
+ 221:src/MightyBoard/Motherboard/term_io.c **** 			}
+ 222:src/MightyBoard/Motherboard/term_io.c **** 			if (((uint8_t)c >= ' ') && (myidx < len - 1)) {
+ 960              	 .loc 1 222 0
+ 961 005c 1F2D     	 cmp r5,#31
+ 207:src/MightyBoard/Motherboard/term_io.c **** 	int retval = 0;
+ 962              	 .loc 1 207 0
+ 963 005e 98BF     	 it ls
+ 964 0060 0020     	 movls r0,#0
+ 965              	 .loc 1 222 0
+ 966 0062 0ED9     	 bls .L97
+ 967              	 .loc 1 222 0 is_stmt 0 discriminator 1
+ 968 0064 07F1FF37 	 add r7,r7,#-1
+ 969              	.LVL139:
+ 970 0068 BE42     	 cmp r6,r7
+ 207:src/MightyBoard/Motherboard/term_io.c **** 	int retval = 0;
+ 971              	 .loc 1 207 0 is_stmt 1 discriminator 1
+ 972 006a A8BF     	 it ge
+ 973 006c 0020     	 movge r0,#0
+ 974              	 .loc 1 222 0 discriminator 1
+ 975 006e 08DA     	 bge .L97
+ 223:src/MightyBoard/Motherboard/term_io.c **** 					buff[myidx++] = c; xputc(c);
+ 976              	 .loc 1 223 0
+ 977 0070 08F80650 	 strb r5,[r8,r6]
+ 978 0074 06F10106 	 add r6,r6,#1
+ 979              	.LVL140:
+ 980 0078 2846     	 mov r0,r5
+ 981 007a FFF7FEFF 	 bl xputc
+ 207:src/MightyBoard/Motherboard/term_io.c **** 	int retval = 0;
+ 982              	 .loc 1 207 0
+ 983 007e 4FF00000 	 mov r0,#0
+ 984              	.LVL141:
+ 985              	.L97:
+ 224:src/MightyBoard/Motherboard/term_io.c **** 			}
+ 225:src/MightyBoard/Motherboard/term_io.c **** 		}
+ 226:src/MightyBoard/Motherboard/term_io.c **** 		*idx = myidx;
+ 986              	 .loc 1 226 0
+ 987 0082 2660     	 str r6,[r4,#0]
+ 988 0084 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 989              	.LVL142:
+ 990              	.L99:
+ 207:src/MightyBoard/Motherboard/term_io.c **** 	int retval = 0;
+ 991              	 .loc 1 207 0
+ 992 0088 4FF00000 	 mov r0,#0
+ 993              	.LVL143:
+ 227:src/MightyBoard/Motherboard/term_io.c **** 	}
+ 228:src/MightyBoard/Motherboard/term_io.c **** 
+ 229:src/MightyBoard/Motherboard/term_io.c **** 	return retval;
+ 230:src/MightyBoard/Motherboard/term_io.c **** }
+ 994              	 .loc 1 230 0
+ 995 008c BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 996              	 .cfi_endproc
+ 997              	.LFE62:
+ 999              	 .section .rodata.__func__.6899,"a",%progbits
+ 1000              	 .align 2
+ 1001              	 .set .LANCHOR0,.+0
+ 1004              	__func__.6899:
+ 1005 0000 6765745F 	 .ascii "get_line\000"
+ 1005      6C696E65 
+ 1005      00
+ 1006 0009 000000   	 .section .rodata.str1.4,"aMS",%progbits,1
+ 1007              	 .align 2
+ 1008              	.LC0:
+ 1009 0000 2530386C 	 .ascii "%08lX \000"
+ 1009      582000
+ 1010 0007 00       	 .space 1
+ 1011              	.LC1:
+ 1012 0008 20253032 	 .ascii " %02X\000"
+ 1012      5800
+ 1013 000e 0000     	 .space 2
+ 1014              	.LC2:
+ 1015 0010 25737B0A 	 .ascii "%s{\012\000"
+ 1015      00
+ 1016 0015 000000   	 .text
+ 1017              	.Letext0:
+ 1018              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/include/stdarg.h"
+ 1019              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1020              	 .file 4 "<built-in>"
+ 1021              	 .file 5 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 term_io.c
+    {standard input}:19     .text.xatoi:00000000 $t
+    {standard input}:24     .text.xatoi:00000000 xatoi
+    {standard input}:231    .text.xputc:00000000 $t
+    {standard input}:236    .text.xputc:00000000 xputc
+    {standard input}:266    .text.xputs:00000000 $t
+    {standard input}:271    .text.xputs:00000000 xputs
+    {standard input}:302    .text.xitoa:00000000 $t
+    {standard input}:307    .text.xitoa:00000000 xitoa
+    {standard input}:455    .text.xprintf:00000000 $t
+    {standard input}:460    .text.xprintf:00000000 xprintf
+    {standard input}:697    .text.put_dump:00000000 $t
+    {standard input}:702    .text.put_dump:00000000 put_dump
+    {standard input}:1008   .rodata.str1.4:00000000 .LC0
+    {standard input}:1011   .rodata.str1.4:00000008 .LC1
+    {standard input}:788    .text.get_line:00000000 $t
+    {standard input}:793    .text.get_line:00000000 get_line
+    {standard input}:1014   .rodata.str1.4:00000010 .LC2
+    {standard input}:1001   .rodata.__func__.6899:00000000 .LANCHOR0
+    {standard input}:887    .text.get_line_r:00000000 $t
+    {standard input}:892    .text.get_line_r:00000000 get_line_r
+    {standard input}:1000   .rodata.__func__.6899:00000000 $d
+    {standard input}:1004   .rodata.__func__.6899:00000000 __func__.6899
+    {standard input}:1007   .rodata.str1.4:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+comm_put
+comm_get
+comm_test

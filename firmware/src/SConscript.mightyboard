@@ -82,7 +82,7 @@ vstr = ARGUMENTS.get('version',vstr)
 
 version = parse_version(vstr)
 
-target_name = "Mighty-"+platform+"-v"+str(int(version[0]))+"."+str(int(version[1]))
+target_name = "Mighty-"+platform+"-v"+str(int(version[0]))+"."+str(int(version[1]))+"."+str(int(version[2]))
 
 if (platform == 'lpc1768'):
 	default_baud = '57600'
@@ -101,7 +101,7 @@ else:
 #upload_baud = ARGUMENTS.get('baud',default_baud)
 #upload_prog = ARGUMENTS.get('programmer',default_programmer)
 
-srcs = Glob('MightyBoard/Motherboard/system/*.c') + Glob('MightyBoard/Motherboard/system/*.cc') + Glob('MightyBoard/Motherboard/system/*.S') + Glob('*.cc') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/lib/source/*.c') + Glob('MightyBoard/Motherboard/IAP/*.cc') + Glob('MightyBoard/Motherboard/USBCDC/*.c')
+srcs = Glob('MightyBoard/Motherboard/system/*.c') + Glob('MightyBoard/Motherboard/system/*.cc') + Glob('MightyBoard/Motherboard/system/*.S') + Glob('*.cc') + Glob('MightyBoard/Motherboard/*.c') + Glob('MightyBoard/Motherboard/*.cc') + Glob('MightyBoard/Motherboard/lib_sd/*.c') +  Glob('MightyBoard/shared/*.cc') + Glob('MightyBoard/Motherboard/lib/source/*.c') + Glob('MightyBoard/Motherboard/IAP/*.cc') + Glob('MightyBoard/Motherboard/USBCDC/*.c')
 include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale', 'MightyBoard/Motherboard/lib/include', 'MightyBoard/Motherboard/lib/source', 'MightyBoard/Motherboard/lib_sd', 'MightyBoard/Motherboard/system', 'MightyBoard/Motherboard/USBCDC', 'MightyBoard/Motherboard/IAP'  '.']
 #include_paths = ['MightyBoard/shared', 'MightyBoard/Motherboard', 'MightyBoard/shared/locale',  '.']
 
@@ -123,7 +123,7 @@ codesourcery_path = 'C:/PROGRA~2/CodeSourcery/SOURCE~1/bin'
 
 OBJECTS = 'startup_LPC17xx.o core_cm3.o system_LPC17xx.o main_LPC17xx.o'
 ########### Uncomment top for 64bit win7 #########################
-LSCRIPT = '/src/MightyBoard/Motherboard/system/ldscript_rom_gnu.ld'
+LSCRIPT = '/src/MightyBoard/Motherboard/system/LPC1758_flash.ld'
 ########### Uncomment top for 32bit xp #########################
 #LSCRIPT = 'D:/DOCUME~1/113007~1/git/G3Firmware/v3/src/Mother~1/system/ldscript_rom_gnu.ld'
 #LSCRIPT = '/src/Motherboard/system/LPC17xx_For_NXP_USB_Bootloader.ld'

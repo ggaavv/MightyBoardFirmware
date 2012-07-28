@@ -1,0 +1,359 @@
+   1              	# 1 "src/MightyBoard/Motherboard/system/startup.S"
+   1              	/*****************************************************************************/
+   0              	
+   0              	
+   0              	
+   2              	/* startup_LPC17xx.s: Startup file for LPC17xx device series                 */
+   3              	/*****************************************************************************/
+   4              	/* Version: CodeSourcery Sourcery G++ Lite (with CS3)                        */
+   5              	/*****************************************************************************/
+   6              	
+   7              	/* mthomas:
+   8              	   - replaced CM3 _start with data-copy, bss-init
+   9              	   - added syntax unified
+  10              	   - moved NMI to UsageFault handlers in reset section to minimize checksum
+  11              	     modifications
+  12              	*/
+  13              	
+  14              	/* 
+  15              	//*** <<< Use Configuration Wizard in Context Menu >>> *** 
+  16              	*/
+  17              	
+  18              	
+  19              	/*
+  20              	// <h> Stack Configuration
+  21              	//   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+  22              	// </h>
+  23              	*/
+  24              	
+  25              	.syntax unified
+  26              	
+  27              	    .equ    Stack_Size, 0x00000300
+  28              	    .section ".stack", "w"
+  29              	    .align  3
+  30              	    .globl  __cs3_stack_mem
+  31              	    .globl  __cs3_stack_size
+  32              	__cs3_stack_mem:
+  33              	    .if     Stack_Size
+  34 0000 00000000 	    .space  Stack_Size
+  34      00000000 
+  34      00000000 
+  34      00000000 
+  34      00000000 
+  35              	    .endif
+  37              	    .set    __cs3_stack_size, . - __cs3_stack_mem
+  38              	
+  39              	
+  40              	/*
+  41              	// <h> Heap Configuration
+  42              	//   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+  43              	// </h>
+  44              	*/
+  45              	
+  46              	    .equ    Heap_Size,  0x00001000
+  47              	    
+  48              	    .section ".heap", "w"
+  49              	    .align  3
+  50              	    .globl  __cs3_heap_start
+  51              	    .globl  __cs3_heap_end
+  52              	__cs3_heap_start:
+  53              	    .if     Heap_Size
+  54 0000 00000000 	    .space  Heap_Size
+  54      00000000 
+  54      00000000 
+  54      00000000 
+  54      00000000 
+  55              	    .endif
+  56              	__cs3_heap_end:
+  57              	
+  58              	
+  59              	/* Vector Table */
+  60              	
+  61              	    .section ".cs3.interrupt_vector"
+  62              	    .globl  __cs3_interrupt_vector_cortex_m
+  64              	
+  65              	__cs3_interrupt_vector_cortex_m:
+  66 0000 00000000 	    .long   __cs3_stack                 /* Top of Stack                 */
+  67 0004 00000000 	    .long   __cs3_reset                 /* Reset Handler                */
+  68 0008 00000000 	    .long   NMI_Handler                 /* NMI Handler                  */
+  69 000c 00000000 	    .long   HardFault_Handler           /* Hard Fault Handler           */
+  70 0010 00000000 	    .long   MemManage_Handler           /* MPU Fault Handler            */
+  71 0014 00000000 	    .long   BusFault_Handler            /* Bus Fault Handler            */
+  72 0018 00000000 	    .long   UsageFault_Handler          /* Usage Fault Handler          */
+  73 001c 00000000 	    .long   0 /*0xefff79be                  /* Checksum, see LPC1xxx manual */
+  74 0020 00000000 	    .long   0                           /* Reserved                     */
+  75 0024 00000000 	    .long   0                           /* Reserved                     */
+  76 0028 00000000 	    .long   0                           /* Reserved                     */
+  77 002c 00000000 	    .long   SVC_Handler                 /* SVCall Handler               */
+  78 0030 00000000 	    .long   DebugMon_Handler            /* Debug Monitor Handler        */
+  79 0034 00000000 	    .long   0                           /* Reserved                     */
+  80 0038 00000000 	    .long   PendSV_Handler              /* PendSV Handler               */
+  81 003c 00000000 	    .long   SysTick_Handler             /* SysTick Handler              */
+  82              	
+  83              	    /* External Interrupts */
+  84 0040 00000000 	    .long   WDT_IRQHandler              /* 16: Watchdog Timer               */
+  85 0044 00000000 	    .long   TIMER0_IRQHandler           /* 17: Timer0                       */
+  86 0048 00000000 	    .long   TIMER1_IRQHandler           /* 18: Timer1                       */
+  87 004c 00000000 	    .long   TIMER2_IRQHandler           /* 19: Timer2                       */
+  88 0050 00000000 	    .long   TIMER3_IRQHandler           /* 20: Timer3                       */
+  89 0054 00000000 	    .long   UART0_IRQHandler            /* 21: UART0                        */
+  90 0058 00000000 	    .long   UART1_IRQHandler            /* 22: UART1                        */
+  91 005c 00000000 	    .long   UART2_IRQHandler            /* 23: UART2                        */
+  92 0060 00000000 	    .long   UART3_IRQHandler            /* 24: UART3                        */
+  93 0064 00000000 	    .long   PWM1_IRQHandler             /* 25: PWM1                         */
+  94 0068 00000000 	    .long   I2C0_IRQHandler             /* 26: I2C0                         */
+  95 006c 00000000 	    .long   I2C1_IRQHandler             /* 27: I2C1                         */
+  96 0070 00000000 	    .long   I2C2_IRQHandler             /* 28: I2C2                         */
+  97 0074 00000000 	    .long   SPI_IRQHandler              /* 29: SPI                          */
+  98 0078 00000000 	    .long   SSP0_IRQHandler             /* 30: SSP0                         */
+  99 007c 00000000 	    .long   SSP1_IRQHandler             /* 31: SSP1                         */
+ 100 0080 00000000 	    .long   PLL0_IRQHandler             /* 32: PLL0 Lock (Main PLL)         */
+ 101 0084 00000000 	    .long   RTC_IRQHandler              /* 33: Real Time Clock              */
+ 102 0088 00000000 	    .long   EINT0_IRQHandler            /* 34: External Interrupt 0         */
+ 103 008c 00000000 	    .long   EINT1_IRQHandler            /* 35: External Interrupt 1         */
+ 104 0090 00000000 	    .long   EINT2_IRQHandler            /* 36: External Interrupt 2         */
+ 105 0094 00000000 	    .long   EINT3_IRQHandler            /* 37: External Interrupt 3         */
+ 106 0098 00000000 	    .long   ADC_IRQHandler              /* 38: A/D Converter                */
+ 107 009c 00000000 	    .long   BOD_IRQHandler              /* 39: Brown-Out Detect             */
+ 108 00a0 00000000 	    .long   USB_IRQHandler              /* 40: USB                          */
+ 109 00a4 00000000 	    .long   CAN_IRQHandler              /* 41: CAN                          */
+ 110 00a8 00000000 	    .long   DMA_IRQHandler              /* 42: General Purpose DMA          */
+ 111 00ac 00000000 	    .long   I2S_IRQHandler              /* 43: I2S                          */
+ 112 00b0 00000000 	    .long   ENET_IRQHandler             /* 44: Ethernet                     */
+ 113 00b4 00000000 	    .long   RIT_IRQHandler              /* 45: Repetitive Interrupt Timer   */
+ 114 00b8 00000000 	    .long   MCPWM_IRQHandler            /* 46: Motor Control PWM            */
+ 115 00bc 00000000 	    .long   QEI_IRQHandler              /* 47: Quadrature Encoder Interface */
+ 116 00c0 00000000 	    .long   PLL1_IRQHandler             /* 48: PLL1 Lock (USB PLL)          */
+ 117 00c4 00000000 	    .long	USBActivity_IRQHandler		/* 49: USB Activity 				*/
+ 118 00c8 00000000 	    .long 	CANActivity_IRQHandler		/* 50: CAN Activity					*/
+ 119              	
+ 121              	
+ 122              	
+ 123              	    .thumb
+ 124              	
+ 125              	
+ 126              	/* Reset Handler */
+ 127              	
+ 128              	    .section .cs3.reset,"x",%progbits
+ 129              	    .thumb_func
+ 130              	    .globl  __cs3_reset_cortex_m
+ 132              	__cs3_reset_cortex_m:
+ 133              	    .fnstart
+ 134              	
+ 135              	/* delay at startup to let JTAG-connection catch-up */
+ 136 0000 0D48     	 	LDR R0, =startup_delay
+ 137 0002 8047     		BLX R0
+ 138              	
+ 139              	/* Copy the data segment initializers from flash to SRAM */
+ 140              	.extern _etext
+ 141              	.extern _sdata
+ 142              	.extern _edata
+ 143 0004 0D49     	    ldr   r1, =_etext
+ 144 0006 0E4A     	    ldr   r2, =_sdata
+ 145 0008 0E4B     	    ldr   r3, =_edata
+ 146 000a 9A42     	1:  cmp   r2, r3
+ 147 000c 3EBF     	    ittt  lo
+ 148 000e 51F8040B 	    ldrlo r0, [r1], #4
+ 149 0012 42F8040B 	    strlo r0, [r2], #4
+ 150 0016 F8E7     	    blo   1b
+ 151              	
+ 152              	/* Zero fill the bss segment. */
+ 153              	.extern _sbss
+ 154              	.extern _ebss
+ 155 0018 0020     	    movs  r0, #0
+ 156 001a 0B49     	    ldr   r1, =_sbss
+ 157 001c 0B4A     	    ldr   r2, =_ebss
+ 158 001e 9142     	2:  cmp   r1, r2
+ 159 0020 3CBF     	    itt   lo
+ 160 0022 41F8040B 	    strlo r0, [r1], #4
+ 161 0026 FAE7     	    blo   2b
+ 162              	
+ 163              	/* call __libc_init_array - needed for C++ support */
+ 164 0028 0948     	    LDR     R0, =__libc_init_array
+ 165 002a 8047     	    BLX     R0
+ 166              	
+ 167              	/* call system init in NXP's Device CMSIS code */
+ 168 002c 0948     	    LDR     R0, =SystemInit
+ 169 002e 8047     	    BLX     R0
+ 170              	
+ 171              	/* call main() */
+ 172 0030 0948     	    LDR     R0,=main
+ 173 0032 0047     	    BX      R0
+ 174              	
+ 175 0034 FEE7     	    B .
+ 176              	
+ 177 0036 00000000 	    .pool
+ 177      00000000 
+ 177      00000000 
+ 177      00000000 
+ 177      00000000 
+ 178              	    .cantunwind
+ 179              	    .fnend
+ 181              	
+ 182              	/* Exception Handlers */
+ 183              	
+ 184              	    .weak   NMI_Handler
+ 186              	NMI_Handler:
+ 187 005c FEE7     	    B       .
+ 189              	
+ 190              	    .weak   HardFault_Handler
+ 192              	HardFault_Handler:
+ 193 005e FEE7     	    B       .
+ 195              	
+ 196              	    .weak   MemManage_Handler
+ 198              	MemManage_Handler:
+ 199 0060 FEE7     	    B       .
+ 201              	
+ 202              	    .weak   BusFault_Handler
+ 204              	BusFault_Handler:
+ 205 0062 FEE7     	    B       .
+ 207              	
+ 208              	    .weak   UsageFault_Handler
+ 210              	UsageFault_Handler:
+ 211 0064 FEE7     	    B       .
+ 213              	
+ 214              	
+ 215              	
+ 216              	
+ 217 0066 00BF     	    .section ".text"
+ 218              	
+ 219              	    .weak   SVC_Handler
+ 221              	SVC_Handler:
+ 222 0000 FEE7     	    B       .
+ 224              	
+ 225              	    .weak   DebugMon_Handler
+ 227              	DebugMon_Handler:
+ 228 0002 FEE7     	    B       .
+ 230              	
+ 231              	    .weak   PendSV_Handler
+ 233              	PendSV_Handler:
+ 234 0004 FEE7     	    B       .
+ 236              	
+ 237              	    .weak   SysTick_Handler
+ 239              	SysTick_Handler:
+ 240 0006 FEE7     	    B       .
+ 242              	
+ 243              	
+ 244              	/* IRQ Handlers */
+ 245              	
+ 246              	    .globl  Default_Handler
+ 248              	Default_Handler:
+ 249 0008 FEE7     	    B       .
+ 251              	
+ 252              	    .macro  IRQ handler
+ 253              	    .weak   \handler
+ 254              	    .set    \handler, Default_Handler
+ 255              	    .endm
+ 256              	
+ 257              	    IRQ     WDT_IRQHandler
+ 258              	    IRQ     TIMER0_IRQHandler
+ 259              	    IRQ     TIMER1_IRQHandler
+ 260              	    IRQ     TIMER2_IRQHandler
+ 261              	    IRQ     TIMER3_IRQHandler
+ 262              	    IRQ     UART0_IRQHandler
+ 263              	    IRQ     UART1_IRQHandler
+ 264              	    IRQ     UART2_IRQHandler
+ 265              	    IRQ     UART3_IRQHandler
+ 266              	    IRQ     PWM1_IRQHandler
+ 267              	    IRQ     I2C0_IRQHandler
+ 268              	    IRQ     I2C1_IRQHandler
+ 269              	    IRQ     I2C2_IRQHandler
+ 270              	    IRQ     SPI_IRQHandler
+ 271              	    IRQ     SSP0_IRQHandler
+ 272              	    IRQ     SSP1_IRQHandler
+ 273              	    IRQ     PLL0_IRQHandler
+ 274              	    IRQ     RTC_IRQHandler
+ 275              	    IRQ     EINT0_IRQHandler
+ 276              	    IRQ     EINT1_IRQHandler
+ 277              	    IRQ     EINT2_IRQHandler
+ 278              	    IRQ     EINT3_IRQHandler
+ 279              	    IRQ     ADC_IRQHandler
+ 280              	    IRQ     BOD_IRQHandler
+ 281              	    IRQ     USB_IRQHandler
+ 282              	    IRQ     CAN_IRQHandler
+ 283              	    IRQ     DMA_IRQHandler
+ 284              	    IRQ     I2S_IRQHandler
+ 285              	    IRQ     ENET_IRQHandler
+ 286              	    IRQ     RIT_IRQHandler
+ 287              	    IRQ     MCPWM_IRQHandler
+ 288              	    IRQ     QEI_IRQHandler
+ 289              	    IRQ     PLL1_IRQHandler
+ 290              	    IRQ		USBActivity_IRQHandler
+ 291              	    IRQ		CANActivity_IRQHandler
+ 292              	
+ 293              	    .end
+DEFINED SYMBOLS
+src/MightyBoard/Motherboard/system/startup.S:27     *ABS*:00000300 Stack_Size
+src/MightyBoard/Motherboard/system/startup.S:29     .stack:00000000 $d
+src/MightyBoard/Motherboard/system/startup.S:32     .stack:00000000 __cs3_stack_mem
+                            *ABS*:00000300 __cs3_stack_size
+src/MightyBoard/Motherboard/system/startup.S:46     *ABS*:00001000 Heap_Size
+src/MightyBoard/Motherboard/system/startup.S:49     .heap:00000000 $d
+src/MightyBoard/Motherboard/system/startup.S:52     .heap:00000000 __cs3_heap_start
+src/MightyBoard/Motherboard/system/startup.S:56     .heap:00001000 __cs3_heap_end
+src/MightyBoard/Motherboard/system/startup.S:65     .cs3.interrupt_vector:00000000 __cs3_interrupt_vector_cortex_m
+src/MightyBoard/Motherboard/system/startup.S:186    .cs3.reset:0000005c NMI_Handler
+src/MightyBoard/Motherboard/system/startup.S:192    .cs3.reset:0000005e HardFault_Handler
+src/MightyBoard/Motherboard/system/startup.S:198    .cs3.reset:00000060 MemManage_Handler
+src/MightyBoard/Motherboard/system/startup.S:204    .cs3.reset:00000062 BusFault_Handler
+src/MightyBoard/Motherboard/system/startup.S:210    .cs3.reset:00000064 UsageFault_Handler
+src/MightyBoard/Motherboard/system/startup.S:221    .text:00000000 SVC_Handler
+src/MightyBoard/Motherboard/system/startup.S:227    .text:00000002 DebugMon_Handler
+src/MightyBoard/Motherboard/system/startup.S:233    .text:00000004 PendSV_Handler
+src/MightyBoard/Motherboard/system/startup.S:239    .text:00000006 SysTick_Handler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 WDT_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 TIMER0_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 TIMER1_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 TIMER2_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 TIMER3_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 UART0_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 UART1_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 UART2_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 UART3_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 PWM1_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 I2C0_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 I2C1_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 I2C2_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 SPI_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 SSP0_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 SSP1_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 PLL0_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 RTC_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 EINT0_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 EINT1_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 EINT2_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 EINT3_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 ADC_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 BOD_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 USB_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 CAN_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 DMA_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 I2S_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 ENET_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 RIT_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 MCPWM_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 QEI_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 PLL1_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 USBActivity_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 CANActivity_IRQHandler
+src/MightyBoard/Motherboard/system/startup.S:132    .cs3.reset:00000000 __cs3_reset_cortex_m
+src/MightyBoard/Motherboard/system/startup.S:136    .cs3.reset:00000000 $t
+src/MightyBoard/Motherboard/system/startup.S:177    .cs3.reset:00000036 $d
+             .ARM.exidx.cs3.reset:00000000 $d
+src/MightyBoard/Motherboard/system/startup.S:187    .cs3.reset:0000005c $t
+src/MightyBoard/Motherboard/system/startup.S:222    .text:00000000 $t
+src/MightyBoard/Motherboard/system/startup.S:248    .text:00000008 Default_Handler
+                   .debug_aranges:0000000c $d
+
+UNDEFINED SYMBOLS
+__cs3_stack
+__cs3_reset
+startup_delay
+_etext
+_sdata
+_edata
+_sbss
+_ebss
+__libc_init_array
+SystemInit
+main

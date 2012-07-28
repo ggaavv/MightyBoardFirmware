@@ -1,0 +1,1521 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "RGB_LED.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN7RGB_LED12setBlinkRateEhhh,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN7RGB_LED12setBlinkRateEhhh
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN7RGB_LED12setBlinkRateEhhh:
+  25              	.LFB61:
+  26              	 .file 1 "src/MightyBoard/Motherboard/RGB_LED.cc"
+   1:src/MightyBoard/Motherboard/RGB_LED.cc **** /*
+   2:src/MightyBoard/Motherboard/RGB_LED.cc ****  * Copyright 2011 by Alison Leonard	 <alison@makerbot.com>
+   3:src/MightyBoard/Motherboard/RGB_LED.cc ****  *
+   4:src/MightyBoard/Motherboard/RGB_LED.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/Motherboard/RGB_LED.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/Motherboard/RGB_LED.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/Motherboard/RGB_LED.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/Motherboard/RGB_LED.cc ****  *
+   9:src/MightyBoard/Motherboard/RGB_LED.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/Motherboard/RGB_LED.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/Motherboard/RGB_LED.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/Motherboard/RGB_LED.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/Motherboard/RGB_LED.cc ****  *
+  14:src/MightyBoard/Motherboard/RGB_LED.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/Motherboard/RGB_LED.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/Motherboard/RGB_LED.cc ****  */
+  17:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+  18:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+  19:src/MightyBoard/Motherboard/RGB_LED.cc ****  #include "RGB_LED.hh"
+  20:src/MightyBoard/Motherboard/RGB_LED.cc **** // #include "TWI.hh"
+  21:src/MightyBoard/Motherboard/RGB_LED.cc **** // #include <util/delay.h>
+  22:src/MightyBoard/Motherboard/RGB_LED.cc ****  #include "Configuration.hh"
+  23:src/MightyBoard/Motherboard/RGB_LED.cc ****  #include "Pin.hh"
+  24:src/MightyBoard/Motherboard/RGB_LED.cc ****  #include "EepromMap.hh"
+  25:src/MightyBoard/Motherboard/RGB_LED.cc **** #include "Eeprom.hh"
+  26:src/MightyBoard/Motherboard/RGB_LED.cc **** //#include <avr/eeprom.h>
+  27:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+  28:src/MightyBoard/Motherboard/RGB_LED.cc ****  #include "Delay.hh"
+  29:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+  30:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+  31:src/MightyBoard/Motherboard/RGB_LED.cc **** namespace RGB_LED{
+  32:src/MightyBoard/Motherboard/RGB_LED.cc **** //	const static int LEDAddress = 0B11000100;
+  33:src/MightyBoard/Motherboard/RGB_LED.cc **** 	uint8_t LEDSelect = 0;
+  34:src/MightyBoard/Motherboard/RGB_LED.cc **** 	uint8_t blinkRate = 0;
+  35:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+  36:src/MightyBoard/Motherboard/RGB_LED.cc **** void init(){
+  37:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 
+  38:src/MightyBoard/Motherboard/RGB_LED.cc **** //	 TWI_init();
+  39:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 
+  40:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 setDefaultColor();
+  41:src/MightyBoard/Motherboard/RGB_LED.cc ****  }
+  42:src/MightyBoard/Motherboard/RGB_LED.cc ****     
+  43:src/MightyBoard/Motherboard/RGB_LED.cc ****  // channel : 1,2 select PWM channels, 3 is a pure on / off channel
+  44:src/MightyBoard/Motherboard/RGB_LED.cc ****  // level : duty cycle (brightness) for channels 1,2,  
+  45:src/MightyBoard/Motherboard/RGB_LED.cc ****  //			for Channel 3, level is on if not zero
+  46:src/MightyBoard/Motherboard/RGB_LED.cc ****  // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Red:0b1100, Green:0b11} 
+  47:src/MightyBoard/Motherboard/RGB_LED.cc ****  //  		ones indicate on, zeros indicate off 
+  48:src/MightyBoard/Motherboard/RGB_LED.cc ****  void setBrightness(uint8_t Channel, uint8_t level, uint8_t LEDs)
+  49:src/MightyBoard/Motherboard/RGB_LED.cc ****  {
+  50:src/MightyBoard/Motherboard/RGB_LED.cc ****  	uint8_t data[4] = {LED_REG_SELECT, 0, 0 , level};
+  51:src/MightyBoard/Motherboard/RGB_LED.cc ****      uint8_t data1[2] = {LED_REG_SELECT, 0};
+  52:src/MightyBoard/Motherboard/RGB_LED.cc ****      uint8_t data2[2] = {0, level};
+  53:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+  54:src/MightyBoard/Motherboard/RGB_LED.cc **** 	// set pwm for select channel
+  55:src/MightyBoard/Motherboard/RGB_LED.cc ****  	if (Channel == LED_CHANNEL1){
+  56:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data2[0] = LED_REG_PWM0;
+  57:src/MightyBoard/Motherboard/RGB_LED.cc ****  		// clear past select data and apply PWM0
+  58:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+  59:src/MightyBoard/Motherboard/RGB_LED.cc ****  	}
+  60:src/MightyBoard/Motherboard/RGB_LED.cc ****  	else if (Channel == LED_CHANNEL2){
+  61:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data2[0] = LED_REG_PWM1;
+  62:src/MightyBoard/Motherboard/RGB_LED.cc ****  		// clear past select data and apply PWM1
+  63:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+  64:src/MightyBoard/Motherboard/RGB_LED.cc ****  	}
+  65:src/MightyBoard/Motherboard/RGB_LED.cc ****  	else {
+  66:src/MightyBoard/Motherboard/RGB_LED.cc ****  		toggleLEDNoPWM((level != 0), LEDs);
+  67:src/MightyBoard/Motherboard/RGB_LED.cc ****  		return;
+  68:src/MightyBoard/Motherboard/RGB_LED.cc ****  	}
+  69:src/MightyBoard/Motherboard/RGB_LED.cc ****  	
+  70:src/MightyBoard/Motherboard/RGB_LED.cc **** // 	uint8_t error = TWI_write_data(LEDAddress, data1, 2);
+  71:src/MightyBoard/Motherboard/RGB_LED.cc ****      _delay_us(1);
+  72:src/MightyBoard/Motherboard/RGB_LED.cc **** //    error = TWI_write_data(LEDAddress, data2, 2);
+  73:src/MightyBoard/Motherboard/RGB_LED.cc ****      _delay_us(1);
+  74:src/MightyBoard/Motherboard/RGB_LED.cc ****  	
+  75:src/MightyBoard/Motherboard/RGB_LED.cc ****      LEDSelect = data1[1];
+  76:src/MightyBoard/Motherboard/RGB_LED.cc ****  		
+  77:src/MightyBoard/Motherboard/RGB_LED.cc ****  }
+  78:src/MightyBoard/Motherboard/RGB_LED.cc ****     
+  79:src/MightyBoard/Motherboard/RGB_LED.cc ****   // channel : 1,2 select PWM channels, channel 3 does nothing
+  80:src/MightyBoard/Motherboard/RGB_LED.cc ****  // level : blink rate for channels 1,2,  channel 3 ignores this
+  81:src/MightyBoard/Motherboard/RGB_LED.cc ****  // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11} 
+  82:src/MightyBoard/Motherboard/RGB_LED.cc ****  //  		ones indicate on, zeros indicate off 
+  83:src/MightyBoard/Motherboard/RGB_LED.cc ****  void setBlinkRate(uint8_t Channel, uint8_t rate, uint8_t LEDs)
+  84:src/MightyBoard/Motherboard/RGB_LED.cc ****  {
+  27              	 .loc 1 84 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 10B5     	 push {r4,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 8
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 4,-8
+  37              	.LVL1:
+  38              	.LBB2:
+  85:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 uint8_t data[4] = {0 , rate, LED_REG_SELECT, 0};
+  86:src/MightyBoard/Motherboard/RGB_LED.cc ****      uint8_t data1[2] = {LED_REG_SELECT, 0};
+  87:src/MightyBoard/Motherboard/RGB_LED.cc ****      uint8_t data2[2] = {0 , rate};
+  88:src/MightyBoard/Motherboard/RGB_LED.cc ****  	
+  89:src/MightyBoard/Motherboard/RGB_LED.cc ****  	// set pwm for select channel
+  90:src/MightyBoard/Motherboard/RGB_LED.cc ****  	if (Channel == LED_CHANNEL1){
+  39              	 .loc 1 90 0
+  40 0002 50B9     	 cbnz r0,.L2
+  91:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data2[0] = LED_REG_PSC0;
+  92:src/MightyBoard/Motherboard/RGB_LED.cc ****  		// clear past select data and apply PWM0
+  93:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+  41              	 .loc 1 93 0
+  42 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  43 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  44 000c 1C78     	 ldrb r4,[r3,#0]
+  45 000e 24EA0204 	 bic r4,r4,r2
+  46 0012 22F05502 	 bic r2,r2,#85
+  47              	.LVL2:
+  48 0016 1443     	 orrs r4,r4,r2
+  49              	.LVL3:
+  50 0018 09E0     	 b .L3
+  51              	.LVL4:
+  52              	.L2:
+  94:src/MightyBoard/Motherboard/RGB_LED.cc ****  	}
+  95:src/MightyBoard/Motherboard/RGB_LED.cc ****  	else if (Channel == LED_CHANNEL2){
+  53              	 .loc 1 95 0
+  54 001a 0128     	 cmp r0,#1
+  55 001c 14D1     	 bne .L1
+  96:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data2[0] = LED_REG_PSC1;
+  97:src/MightyBoard/Motherboard/RGB_LED.cc ****  		// clear past select data and apply PWM1
+  98:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+  56              	 .loc 1 98 0
+  57 001e 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  58 0022 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  59 0026 1C78     	 ldrb r4,[r3,#0]
+  60 0028 24EA0204 	 bic r4,r4,r2
+  61 002c 1443     	 orrs r4,r4,r2
+  62              	.LVL5:
+  63              	.L3:
+  99:src/MightyBoard/Motherboard/RGB_LED.cc ****  	}
+ 100:src/MightyBoard/Motherboard/RGB_LED.cc ****  	else
+ 101:src/MightyBoard/Motherboard/RGB_LED.cc ****  		return;
+ 102:src/MightyBoard/Motherboard/RGB_LED.cc ****  	
+ 103:src/MightyBoard/Motherboard/RGB_LED.cc **** //     uint8_t error = TWI_write_data(LEDAddress, data1, 2);
+ 104:src/MightyBoard/Motherboard/RGB_LED.cc ****      _delay_us(1);
+  64              	 .loc 1 104 0
+  65 002e 4FF00100 	 mov r0,#1
+  66              	.LVL6:
+  67 0032 FFF7FEFF 	 bl _delay_us
+  68              	.LVL7:
+ 105:src/MightyBoard/Motherboard/RGB_LED.cc **** //     error = TWI_write_data(LEDAddress, data2, 2);
+ 106:src/MightyBoard/Motherboard/RGB_LED.cc ****      _delay_us(1);
+  69              	 .loc 1 106 0
+  70 0036 4FF00100 	 mov r0,#1
+  71 003a FFF7FEFF 	 bl _delay_us
+ 107:src/MightyBoard/Motherboard/RGB_LED.cc ****      
+ 108:src/MightyBoard/Motherboard/RGB_LED.cc ****  	LEDSelect = data1[1];	
+  72              	 .loc 1 108 0
+  73 003e 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  74 0042 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  75 0046 1C70     	 strb r4,[r3,#0]
+  76              	.LVL8:
+  77              	.L1:
+  78 0048 10BD     	 pop {r4,pc}
+  79              	.LBE2:
+  80              	 .cfi_endproc
+  81              	.LFE61:
+  83 004a 00BF     	 .section .text._ZN7RGB_LED14toggleLEDNoPWMEbh,"ax",%progbits
+  84              	 .align 2
+  85              	 .global _ZN7RGB_LED14toggleLEDNoPWMEbh
+  86              	 .thumb
+  87              	 .thumb_func
+  89              	_ZN7RGB_LED14toggleLEDNoPWMEbh:
+  90              	.LFB62:
+ 109:src/MightyBoard/Motherboard/RGB_LED.cc ****  }
+ 110:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+ 111:src/MightyBoard/Motherboard/RGB_LED.cc ****  // channel 3 sets LEDs on or off 
+ 112:src/MightyBoard/Motherboard/RGB_LED.cc ****  // LEDs:  {bits: XXBBGGRR : BLUE: 0b110000, Green:0b1100, RED:0b11} 
+ 113:src/MightyBoard/Motherboard/RGB_LED.cc ****  //  		ones indicate on, zeros indicate off 
+ 114:src/MightyBoard/Motherboard/RGB_LED.cc ****  void toggleLEDNoPWM(bool enable, uint8_t LEDs)
+ 115:src/MightyBoard/Motherboard/RGB_LED.cc ****  {
+  91              	 .loc 1 115 0
+  92              	 .cfi_startproc
+  93              	 
+  94              	 
+  95              	 
+  96              	.LVL9:
+  97              	.LBB3:
+ 116:src/MightyBoard/Motherboard/RGB_LED.cc ****  	uint8_t data[2] = {LED_REG_SELECT, 0};
+ 117:src/MightyBoard/Motherboard/RGB_LED.cc ****  	
+ 118:src/MightyBoard/Motherboard/RGB_LED.cc ****  	if(enable)
+  98              	 .loc 1 118 0
+  99 0000 50B1     	 cbz r0,.L6
+ 119:src/MightyBoard/Motherboard/RGB_LED.cc ****  	// clear past select data and turn LEDs full on
+ 120:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data[1] = (LEDSelect & ~LEDs) | (LED_ON & LEDs);
+ 100              	 .loc 1 120 0
+ 101 0002 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 102 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 103 000a 1B78     	 ldrb r3,[r3,#0]
+ 104 000c 23EA0103 	 bic r3,r3,r1
+ 105 0010 01F05501 	 and r1,r1,#85
+ 106              	.LVL10:
+ 107 0014 1943     	 orrs r1,r1,r3
+ 108              	.LVL11:
+ 109 0016 06E0     	 b .L7
+ 110              	.LVL12:
+ 111              	.L6:
+ 121:src/MightyBoard/Motherboard/RGB_LED.cc ****  	else
+ 122:src/MightyBoard/Motherboard/RGB_LED.cc ****  	// clear past select data and turn LEDs full off
+ 123:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data[1] = (LEDSelect & ~LEDs) | (LED_OFF & LEDs); 
+ 112              	 .loc 1 123 0
+ 113 0018 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 114 001c C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 115 0020 1B78     	 ldrb r3,[r3,#0]
+ 116 0022 23EA0101 	 bic r1,r3,r1
+ 117              	.LVL13:
+ 118              	.L7:
+ 124:src/MightyBoard/Motherboard/RGB_LED.cc ****  		
+ 125:src/MightyBoard/Motherboard/RGB_LED.cc **** // 	uint8_t error = TWI_write_data(LEDAddress, data, 2);
+ 126:src/MightyBoard/Motherboard/RGB_LED.cc ****  	
+ 127:src/MightyBoard/Motherboard/RGB_LED.cc ****      LEDSelect = data[1];
+ 119              	 .loc 1 127 0
+ 120 0026 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 121 002a C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 122 002e 1970     	 strb r1,[r3,#0]
+ 123              	.LBE3:
+ 128:src/MightyBoard/Motherboard/RGB_LED.cc ****  }
+ 124              	 .loc 1 128 0
+ 125 0030 7047     	 bx lr
+ 126              	 .cfi_endproc
+ 127              	.LFE62:
+ 129 0032 00BF     	 .section .text._ZN7RGB_LED13setBrightnessEhhh,"ax",%progbits
+ 130              	 .align 2
+ 131              	 .global _ZN7RGB_LED13setBrightnessEhhh
+ 132              	 .thumb
+ 133              	 .thumb_func
+ 135              	_ZN7RGB_LED13setBrightnessEhhh:
+ 136              	.LFB60:
+  49:src/MightyBoard/Motherboard/RGB_LED.cc ****  {
+ 137              	 .loc 1 49 0
+ 138              	 .cfi_startproc
+ 139              	 
+ 140              	 
+ 141              	.LVL14:
+ 142 0000 10B5     	 push {r4,lr}
+ 143              	.LCFI1:
+ 144              	 .cfi_def_cfa_offset 8
+ 145              	 .cfi_offset 14,-4
+ 146              	 .cfi_offset 4,-8
+ 147              	.LVL15:
+ 148              	.LBB4:
+  55:src/MightyBoard/Motherboard/RGB_LED.cc ****  	if (Channel == LED_CHANNEL1){
+ 149              	 .loc 1 55 0
+ 150 0002 50B9     	 cbnz r0,.L9
+  58:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM0 & LEDs);
+ 151              	 .loc 1 58 0
+ 152 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 153 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 154 000c 1C78     	 ldrb r4,[r3,#0]
+ 155 000e 24EA0204 	 bic r4,r4,r2
+ 156 0012 22F05502 	 bic r2,r2,#85
+ 157              	.LVL16:
+ 158 0016 1443     	 orrs r4,r4,r2
+ 159              	.LVL17:
+ 160 0018 11E0     	 b .L10
+ 161              	.LVL18:
+ 162              	.L9:
+  60:src/MightyBoard/Motherboard/RGB_LED.cc ****  	else if (Channel == LED_CHANNEL2){
+ 163              	 .loc 1 60 0
+ 164 001a 0128     	 cmp r0,#1
+ 165 001c 08D1     	 bne .L11
+  63:src/MightyBoard/Motherboard/RGB_LED.cc ****  		data1[1] = (LEDSelect & ~LEDs) | (LED_BLINK_PWM1 & LEDs);
+ 166              	 .loc 1 63 0
+ 167 001e 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 168 0022 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 169 0026 1C78     	 ldrb r4,[r3,#0]
+ 170 0028 24EA0204 	 bic r4,r4,r2
+ 171 002c 1443     	 orrs r4,r4,r2
+ 172              	.LVL19:
+ 173 002e 06E0     	 b .L10
+ 174              	.LVL20:
+ 175              	.L11:
+  66:src/MightyBoard/Motherboard/RGB_LED.cc ****  		toggleLEDNoPWM((level != 0), LEDs);
+ 176              	 .loc 1 66 0
+ 177 0030 081C     	 adds r0,r1,#0
+ 178              	.LVL21:
+ 179 0032 18BF     	 it ne
+ 180 0034 0120     	 movne r0,#1
+ 181 0036 1146     	 mov r1,r2
+ 182              	.LVL22:
+ 183 0038 FFF7FEFF 	 bl _ZN7RGB_LED14toggleLEDNoPWMEbh
+ 184              	.LVL23:
+  67:src/MightyBoard/Motherboard/RGB_LED.cc ****  		return;
+ 185              	 .loc 1 67 0
+ 186 003c 10BD     	 pop {r4,pc}
+ 187              	.LVL24:
+ 188              	.L10:
+  71:src/MightyBoard/Motherboard/RGB_LED.cc ****      _delay_us(1);
+ 189              	 .loc 1 71 0
+ 190 003e 4FF00100 	 mov r0,#1
+ 191              	.LVL25:
+ 192 0042 FFF7FEFF 	 bl _delay_us
+ 193              	.LVL26:
+  73:src/MightyBoard/Motherboard/RGB_LED.cc ****      _delay_us(1);
+ 194              	 .loc 1 73 0
+ 195 0046 4FF00100 	 mov r0,#1
+ 196 004a FFF7FEFF 	 bl _delay_us
+  75:src/MightyBoard/Motherboard/RGB_LED.cc ****      LEDSelect = data1[1];
+ 197              	 .loc 1 75 0
+ 198 004e 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 199 0052 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 200 0056 1C70     	 strb r4,[r3,#0]
+ 201 0058 10BD     	 pop {r4,pc}
+ 202              	.LBE4:
+ 203              	 .cfi_endproc
+ 204              	.LFE60:
+ 206 005a 00BF     	 .section .text._ZN7RGB_LED15startupSequenceEv,"ax",%progbits
+ 207              	 .align 2
+ 208              	 .global _ZN7RGB_LED15startupSequenceEv
+ 209              	 .thumb
+ 210              	 .thumb_func
+ 212              	_ZN7RGB_LED15startupSequenceEv:
+ 213              	.LFB63:
+ 129:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+ 130:src/MightyBoard/Motherboard/RGB_LED.cc ****  void startupSequence(){
+ 214              	 .loc 1 130 0
+ 215              	 .cfi_startproc
+ 216              	 
+ 217              	 
+ 218              	 
+ 131:src/MightyBoard/Motherboard/RGB_LED.cc ****  }
+ 219              	 .loc 1 131 0
+ 220 0000 7047     	 bx lr
+ 221              	 .cfi_endproc
+ 222              	.LFE63:
+ 224 0002 00BF     	 .section .text._ZN7RGB_LED5clearEv,"ax",%progbits
+ 225              	 .align 2
+ 226              	 .global _ZN7RGB_LED5clearEv
+ 227              	 .thumb
+ 228              	 .thumb_func
+ 230              	_ZN7RGB_LED5clearEv:
+ 231              	.LFB64:
+ 132:src/MightyBoard/Motherboard/RGB_LED.cc ****      
+ 133:src/MightyBoard/Motherboard/RGB_LED.cc ****  void clear(){
+ 232              	 .loc 1 133 0
+ 233              	 .cfi_startproc
+ 234              	 
+ 235              	 
+ 236 0000 08B5     	 push {r3,lr}
+ 237              	.LCFI2:
+ 238              	 .cfi_def_cfa_offset 8
+ 239              	 .cfi_offset 14,-4
+ 240              	 .cfi_offset 3,-8
+ 134:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 
+ 135:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 // clear LEDs 
+ 136:src/MightyBoard/Motherboard/RGB_LED.cc ****     setBrightness(3, 0, LED_RED | LED_GREEN | LED_BLUE);
+ 241              	 .loc 1 136 0
+ 242 0002 4FF00300 	 mov r0,#3
+ 243 0006 4FF00001 	 mov r1,#0
+ 244 000a 4FF03F02 	 mov r2,#63
+ 245 000e FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 137:src/MightyBoard/Motherboard/RGB_LED.cc ****  }
+ 246              	 .loc 1 137 0
+ 247 0012 08BD     	 pop {r3,pc}
+ 248              	 .cfi_endproc
+ 249              	.LFE64:
+ 251              	 .section .text._ZN7RGB_LED13errorSequenceEv,"ax",%progbits
+ 252              	 .align 2
+ 253              	 .global _ZN7RGB_LED13errorSequenceEv
+ 254              	 .thumb
+ 255              	 .thumb_func
+ 257              	_ZN7RGB_LED13errorSequenceEv:
+ 258              	.LFB65:
+ 138:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+ 139:src/MightyBoard/Motherboard/RGB_LED.cc **** void errorSequence(){
+ 259              	 .loc 1 139 0
+ 260              	 .cfi_startproc
+ 261              	 
+ 262              	 
+ 263 0000 08B5     	 push {r3,lr}
+ 264              	.LCFI3:
+ 265              	 .cfi_def_cfa_offset 8
+ 266              	 .cfi_offset 14,-4
+ 267              	 .cfi_offset 3,-8
+ 140:src/MightyBoard/Motherboard/RGB_LED.cc **** 	
+ 141:src/MightyBoard/Motherboard/RGB_LED.cc **** 	clear();
+ 268              	 .loc 1 141 0
+ 269 0002 FFF7FEFF 	 bl _ZN7RGB_LED5clearEv
+ 142:src/MightyBoard/Motherboard/RGB_LED.cc ****      
+ 143:src/MightyBoard/Motherboard/RGB_LED.cc ****     // set blinking red lights
+ 144:src/MightyBoard/Motherboard/RGB_LED.cc ****     setBrightness(1, 200, LED_RED);
+ 270              	 .loc 1 144 0
+ 271 0006 4FF00100 	 mov r0,#1
+ 272 000a 4FF0C801 	 mov r1,#200
+ 273 000e 4FF00302 	 mov r2,#3
+ 274 0012 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 145:src/MightyBoard/Motherboard/RGB_LED.cc ****     setBlinkRate(1, 130, LED_RED);    
+ 275              	 .loc 1 145 0
+ 276 0016 4FF00100 	 mov r0,#1
+ 277 001a 4FF08201 	 mov r1,#130
+ 278 001e 4FF00302 	 mov r2,#3
+ 279 0022 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 146:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 280              	 .loc 1 146 0
+ 281 0026 08BD     	 pop {r3,pc}
+ 282              	 .cfi_endproc
+ 283              	.LFE65:
+ 285              	 .section .text._ZN7RGB_LED8setColorEhhhb,"ax",%progbits
+ 286              	 .align 2
+ 287              	 .global _ZN7RGB_LED8setColorEhhhb
+ 288              	 .thumb
+ 289              	 .thumb_func
+ 291              	_ZN7RGB_LED8setColorEhhhb:
+ 292              	.LFB69:
+ 147:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+ 148:src/MightyBoard/Motherboard/RGB_LED.cc **** void setDefaultColor(){
+ 149:src/MightyBoard/Motherboard/RGB_LED.cc **** 	
+ 150:src/MightyBoard/Motherboard/RGB_LED.cc **** 	clear();
+ 151:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 
+ 152:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 // set frequency to slowest and duty cyle to zero (off)
+ 153:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 1);
+ 154:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offs
+ 155:src/MightyBoard/Motherboard/RGB_LED.cc **** 	
+ 156:src/MightyBoard/Motherboard/RGB_LED.cc **** 	// blink rate has to be set first in order for color to register,
+ 157:src/MightyBoard/Motherboard/RGB_LED.cc **** 	// so set blink before each color
+ 158:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 
+ 159:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 switch(LEDColor){
+ 160:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_WHITE:
+ 161:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_RED | LED_GREEN | LED_BLUE);
+ 162:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_RED | LED_GREEN | LED_BLUE);	
+ 163:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 164:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_BLUE:
+ 165:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_BLUE);
+ 166:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_BLUE);
+ 167:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 168:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_RED: 
+ 169:src/MightyBoard/Motherboard/RGB_LED.cc **** 		    setBlinkRate(1, blinkRate, LED_RED);
+ 170:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_RED);
+ 171:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 172:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_GREEN: 
+ 173:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_GREEN);
+ 174:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_GREEN);
+ 175:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 176:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_ORANGE:		
+ 177:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_GREEN);
+ 178:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 50, LED_GREEN);		
+ 179:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(0, blinkRate, LED_RED);
+ 180:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(0, 200, LED_RED);
+ 181:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 182:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_PINK:
+ 183:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_BLUE| LED_RED);
+ 184:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 70, LED_BLUE| LED_RED);
+ 185:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 186:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_PURPLE:
+ 187:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_BLUE | LED_RED);
+ 188:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 200, LED_BLUE | LED_RED);
+ 189:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 190:src/MightyBoard/Motherboard/RGB_LED.cc **** 		 case LED_DEFAULT_CUSTOM:
+ 191:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8, true);
+ 192:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 193:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 }
+ 194:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 195:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+ 196:src/MightyBoard/Motherboard/RGB_LED.cc **** void setLEDBlink(uint8_t rate){
+ 197:src/MightyBoard/Motherboard/RGB_LED.cc **** 		
+ 198:src/MightyBoard/Motherboard/RGB_LED.cc **** 	blinkRate = rate;
+ 199:src/MightyBoard/Motherboard/RGB_LED.cc **** 	setDefaultColor();
+ 200:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 201:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+ 202:src/MightyBoard/Motherboard/RGB_LED.cc ****     // set LED color and store to EEPROM "custom" color area
+ 203:src/MightyBoard/Motherboard/RGB_LED.cc **** void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
+ 204:src/MightyBoard/Motherboard/RGB_LED.cc **** 	eeprom::setCustomColor(red, green, blue);
+ 205:src/MightyBoard/Motherboard/RGB_LED.cc **** 	setColor(red, green, blue, true);
+ 206:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 207:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+ 208:src/MightyBoard/Motherboard/RGB_LED.cc **** #define abs(X) ((X) < 0 ? -(X) : (X)) 
+ 209:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+ 210:src/MightyBoard/Motherboard/RGB_LED.cc **** // wiggly: set a three value color using a 2 value driver (+ ON/OFF channel)
+ 211:src/MightyBoard/Motherboard/RGB_LED.cc **** void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
+ 293              	 .loc 1 211 0
+ 294              	 .cfi_startproc
+ 295              	 
+ 296              	 
+ 297              	.LVL27:
+ 298 0000 2DE9F843 	 push {r3,r4,r5,r6,r7,r8,r9,lr}
+ 299              	.LCFI4:
+ 300              	 .cfi_def_cfa_offset 32
+ 301              	 .cfi_offset 14,-4
+ 302              	 .cfi_offset 9,-8
+ 303              	 .cfi_offset 8,-12
+ 304              	 .cfi_offset 7,-16
+ 305              	 .cfi_offset 6,-20
+ 306              	 .cfi_offset 5,-24
+ 307              	 .cfi_offset 4,-28
+ 308              	 .cfi_offset 3,-32
+ 309 0004 0446     	 mov r4,r0
+ 310 0006 0F46     	 mov r7,r1
+ 311 0008 1646     	 mov r6,r2
+ 312              	.LBB5:
+ 212:src/MightyBoard/Motherboard/RGB_LED.cc **** 
+ 213:src/MightyBoard/Motherboard/RGB_LED.cc **** 	if(clearOld){
+ 313              	 .loc 1 213 0
+ 314 000a 0BB1     	 cbz r3,.L17
+ 214:src/MightyBoard/Motherboard/RGB_LED.cc **** 		clear();}
+ 315              	 .loc 1 214 0
+ 316 000c FFF7FEFF 	 bl _ZN7RGB_LED5clearEv
+ 317              	.LVL28:
+ 318              	.L17:
+ 215:src/MightyBoard/Motherboard/RGB_LED.cc **** 	
+ 216:src/MightyBoard/Motherboard/RGB_LED.cc **** 	int on, count;
+ 217:src/MightyBoard/Motherboard/RGB_LED.cc **** 	on = count = 0;
+ 218:src/MightyBoard/Motherboard/RGB_LED.cc ****     uint8_t leds_on;
+ 219:src/MightyBoard/Motherboard/RGB_LED.cc **** 	
+ 220:src/MightyBoard/Motherboard/RGB_LED.cc ****     // if any color is all on, set it to ON
+ 221:src/MightyBoard/Motherboard/RGB_LED.cc ****     if (red == 255)
+ 319              	 .loc 1 221 0
+ 320 0010 FF2C     	 cmp r4,#255
+ 222:src/MightyBoard/Motherboard/RGB_LED.cc ****         leds_on |= LED_RED;
+ 321              	 .loc 1 222 0
+ 322 0012 08BF     	 it eq
+ 323 0014 0325     	 moveq r5,#3
+ 324              	.LVL29:
+ 223:src/MightyBoard/Motherboard/RGB_LED.cc ****     if (green == 255)
+ 325              	 .loc 1 223 0
+ 326 0016 FF2F     	 cmp r7,#255
+ 224:src/MightyBoard/Motherboard/RGB_LED.cc ****         leds_on |= LED_GREEN;
+ 327              	 .loc 1 224 0
+ 328 0018 04BF     	 itt eq
+ 329 001a 45F00C05 	 orreq r5,r5,#12
+ 330              	.LVL30:
+ 331 001e EDB2     	 uxtbeq r5,r5
+ 332              	.LVL31:
+ 225:src/MightyBoard/Motherboard/RGB_LED.cc ****     if(blue == 255)
+ 333              	 .loc 1 225 0
+ 334 0020 FF2E     	 cmp r6,#255
+ 226:src/MightyBoard/Motherboard/RGB_LED.cc ****         leds_on |= LED_BLUE;
+ 335              	 .loc 1 226 0
+ 336 0022 04BF     	 itt eq
+ 337 0024 45F03005 	 orreq r5,r5,#48
+ 338              	.LVL32:
+ 339 0028 EDB2     	 uxtbeq r5,r5
+ 340              	.LVL33:
+ 227:src/MightyBoard/Motherboard/RGB_LED.cc ****     
+ 228:src/MightyBoard/Motherboard/RGB_LED.cc ****     setBrightness(3, 1, leds_on);
+ 341              	 .loc 1 228 0
+ 342 002a 4FF00300 	 mov r0,#3
+ 343 002e 4FF00101 	 mov r1,#1
+ 344 0032 2A46     	 mov r2,r5
+ 345 0034 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 229:src/MightyBoard/Motherboard/RGB_LED.cc ****     
+ 230:src/MightyBoard/Motherboard/RGB_LED.cc ****     // find number of distict color values
+ 231:src/MightyBoard/Motherboard/RGB_LED.cc **** 	if(!((red == 0) || (red == 255)))
+ 346              	 .loc 1 231 0
+ 347 0038 04F1FF32 	 add r2,r4,#-1
+ 211:src/MightyBoard/Motherboard/RGB_LED.cc **** void setColor(uint8_t red, uint8_t green, uint8_t blue, bool clearOld){
+ 348              	 .loc 1 211 0
+ 349 003c D2B2     	 uxtb r2,r2
+ 350 003e FD2A     	 cmp r2,#253
+ 351 0040 8CBF     	 ite hi
+ 352 0042 0022     	 movhi r2,#0
+ 353 0044 0122     	 movls r2,#1
+ 217:src/MightyBoard/Motherboard/RGB_LED.cc **** 	on = count = 0;
+ 354              	 .loc 1 217 0
+ 355 0046 1346     	 mov r3,r2
+ 356              	.LVL34:
+ 232:src/MightyBoard/Motherboard/RGB_LED.cc **** 	{	count++;}
+ 233:src/MightyBoard/Motherboard/RGB_LED.cc **** 		
+ 234:src/MightyBoard/Motherboard/RGB_LED.cc **** 	if(!((green == 0) || (green == 255)))
+ 357              	 .loc 1 234 0
+ 358 0048 07F1FF35 	 add r5,r7,#-1
+ 359              	.LVL35:
+ 360 004c EDB2     	 uxtb r5,r5
+ 361 004e FD2D     	 cmp r5,#253
+ 235:src/MightyBoard/Motherboard/RGB_LED.cc **** 	{	count++;}
+ 362              	 .loc 1 235 0
+ 363 0050 98BF     	 it ls
+ 364 0052 531C     	 addls r3,r2,#1
+ 365              	.LVL36:
+ 236:src/MightyBoard/Motherboard/RGB_LED.cc **** 	
+ 237:src/MightyBoard/Motherboard/RGB_LED.cc **** 	if(!((blue == 0) || (blue == 255)))
+ 366              	 .loc 1 237 0
+ 367 0054 06F1FF38 	 add r8,r6,#-1
+ 368 0058 5FFA88F8 	 uxtb r8,r8
+ 369 005c B8F1FD0F 	 cmp r8,#253
+ 238:src/MightyBoard/Motherboard/RGB_LED.cc **** 	{	count++;}
+ 370              	 .loc 1 238 0
+ 371 0060 98BF     	 it ls
+ 372 0062 0133     	 addls r3,r3,#1
+ 373              	.LVL37:
+ 374              	.LBB6:
+ 239:src/MightyBoard/Motherboard/RGB_LED.cc ****     
+ 240:src/MightyBoard/Motherboard/RGB_LED.cc **** 	
+ 241:src/MightyBoard/Motherboard/RGB_LED.cc **** 	// we have two channels for brightness, if we have two settings
+ 242:src/MightyBoard/Motherboard/RGB_LED.cc **** 	// or less, just set the channels to the requested values
+ 243:src/MightyBoard/Motherboard/RGB_LED.cc **** 	int channel = 0;
+ 244:src/MightyBoard/Motherboard/RGB_LED.cc **** 	if(count < 3){
+ 375              	 .loc 1 244 0
+ 376 0064 022B     	 cmp r3,#2
+ 377 0066 44DC     	 bgt .L23
+ 243:src/MightyBoard/Motherboard/RGB_LED.cc **** 	int channel = 0;
+ 378              	 .loc 1 243 0
+ 379 0068 4FF00009 	 mov r9,#0
+ 245:src/MightyBoard/Motherboard/RGB_LED.cc **** 		if((red > 0) && (red < 255)){
+ 380              	 .loc 1 245 0
+ 381 006c 9AB1     	 cbz r2,.L24
+ 246:src/MightyBoard/Motherboard/RGB_LED.cc ****             setBlinkRate(channel, blinkRate, LED_RED);
+ 382              	 .loc 1 246 0
+ 383 006e 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 384              	.LVL38:
+ 385 0072 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 386 0076 4FF00000 	 mov r0,#0
+ 387 007a 1978     	 ldrb r1,[r3,#0]
+ 388 007c 4FF00302 	 mov r2,#3
+ 389 0080 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 390              	.LVL39:
+ 247:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(channel++, red, LED_RED);
+ 391              	 .loc 1 247 0
+ 392 0084 4FF00000 	 mov r0,#0
+ 393 0088 2146     	 mov r1,r4
+ 394 008a 4FF00302 	 mov r2,#3
+ 395 008e FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 396 0092 4FF00109 	 mov r9,#1
+ 397              	.LVL40:
+ 398              	.L24:
+ 248:src/MightyBoard/Motherboard/RGB_LED.cc ****         }
+ 249:src/MightyBoard/Motherboard/RGB_LED.cc **** 		if((green > 0) && (green < 255))
+ 399              	 .loc 1 249 0
+ 400 0096 FD2D     	 cmp r5,#253
+ 401 0098 13D8     	 bhi .L25
+ 250:src/MightyBoard/Motherboard/RGB_LED.cc ****         {
+ 251:src/MightyBoard/Motherboard/RGB_LED.cc ****             setBlinkRate(channel, blinkRate, LED_GREEN);
+ 402              	 .loc 1 251 0
+ 403 009a 5FFA89F4 	 uxtb r4,r9
+ 404 009e 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 405 00a2 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 406 00a6 2046     	 mov r0,r4
+ 407 00a8 1978     	 ldrb r1,[r3,#0]
+ 408 00aa 4FF00C02 	 mov r2,#12
+ 409 00ae FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 252:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(channel++, green, LED_GREEN);
+ 410              	 .loc 1 252 0
+ 411 00b2 09F10109 	 add r9,r9,#1
+ 412              	.LVL41:
+ 413 00b6 2046     	 mov r0,r4
+ 414 00b8 3946     	 mov r1,r7
+ 415 00ba 4FF00C02 	 mov r2,#12
+ 416 00be FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 417              	.L25:
+ 253:src/MightyBoard/Motherboard/RGB_LED.cc ****         }
+ 254:src/MightyBoard/Motherboard/RGB_LED.cc **** 		if((blue > 0) && (blue < 255)){
+ 418              	 .loc 1 254 0
+ 419 00c2 B8F1FD0F 	 cmp r8,#253
+ 420 00c6 00F2AC80 	 bhi .L16
+ 255:src/MightyBoard/Motherboard/RGB_LED.cc ****             setBlinkRate(channel, blinkRate, LED_BLUE);
+ 421              	 .loc 1 255 0
+ 422 00ca 5FFA89F9 	 uxtb r9,r9
+ 423              	.LVL42:
+ 424 00ce 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 425 00d2 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 426 00d6 4846     	 mov r0,r9
+ 427 00d8 1978     	 ldrb r1,[r3,#0]
+ 428 00da 4FF03002 	 mov r2,#48
+ 429 00de FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 256:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(channel++, blue, LED_BLUE);
+ 430              	 .loc 1 256 0
+ 431 00e2 4846     	 mov r0,r9
+ 432 00e4 3146     	 mov r1,r6
+ 433 00e6 4FF03002 	 mov r2,#48
+ 434 00ea FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 435 00ee BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 436              	.LVL43:
+ 437              	.L23:
+ 438              	.LBB7:
+ 257:src/MightyBoard/Motherboard/RGB_LED.cc ****         }
+ 258:src/MightyBoard/Motherboard/RGB_LED.cc **** 	}
+ 259:src/MightyBoard/Motherboard/RGB_LED.cc **** 	// if three different values are requested, set the two closest
+ 260:src/MightyBoard/Motherboard/RGB_LED.cc **** 	// values to be equal and use the same channel 
+ 261:src/MightyBoard/Motherboard/RGB_LED.cc **** 	else {
+ 262:src/MightyBoard/Motherboard/RGB_LED.cc **** 		int distRB = abs(red - blue);
+ 439              	 .loc 1 262 0
+ 440 00f2 A21B     	 subs r2,r4,r6
+ 441 00f4 002A     	 cmp r2,#0
+ 442 00f6 B8BF     	 it lt
+ 443 00f8 5242     	 rsblt r2,r2,#0
+ 444              	.LVL44:
+ 263:src/MightyBoard/Motherboard/RGB_LED.cc **** 		int distRG = abs(red - green);
+ 445              	 .loc 1 263 0
+ 446 00fa E31B     	 subs r3,r4,r7
+ 447              	.LVL45:
+ 448 00fc 002B     	 cmp r3,#0
+ 449 00fe B8BF     	 it lt
+ 450 0100 5B42     	 rsblt r3,r3,#0
+ 451              	.LVL46:
+ 264:src/MightyBoard/Motherboard/RGB_LED.cc **** 		int distBG = abs(blue - green);
+ 452              	 .loc 1 264 0
+ 453 0102 F11B     	 subs r1,r6,r7
+ 454 0104 0029     	 cmp r1,#0
+ 455 0106 B8BF     	 it lt
+ 456 0108 4942     	 rsblt r1,r1,#0
+ 457              	.LVL47:
+ 265:src/MightyBoard/Motherboard/RGB_LED.cc **** 		
+ 266:src/MightyBoard/Motherboard/RGB_LED.cc **** 		if(distRB < distRG){
+ 458              	 .loc 1 266 0
+ 459 010a 9A42     	 cmp r2,r3
+ 460 010c 45DA     	 bge .L27
+ 267:src/MightyBoard/Motherboard/RGB_LED.cc **** 			/// red and blue closest
+ 268:src/MightyBoard/Motherboard/RGB_LED.cc **** 			if(distRB < distBG){
+ 461              	 .loc 1 268 0
+ 462 010e 8A42     	 cmp r2,r1
+ 463 0110 21DA     	 bge .L28
+ 269:src/MightyBoard/Motherboard/RGB_LED.cc ****                 setBlinkRate(0, blinkRate, LED_GREEN);
+ 464              	 .loc 1 269 0
+ 465 0112 40F20005 	 movw r5,#:lower16:.LANCHOR1
+ 466 0116 C0F20005 	 movt r5,#:upper16:.LANCHOR1
+ 467 011a 4FF00000 	 mov r0,#0
+ 468 011e 2978     	 ldrb r1,[r5,#0]
+ 469              	.LVL48:
+ 470 0120 4FF00C02 	 mov r2,#12
+ 471              	.LVL49:
+ 472 0124 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 473              	.LVL50:
+ 270:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(0, green, LED_GREEN);
+ 474              	 .loc 1 270 0
+ 475 0128 4FF00000 	 mov r0,#0
+ 476 012c 3946     	 mov r1,r7
+ 477 012e 4FF00C02 	 mov r2,#12
+ 478 0132 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 271:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBlinkRate(1, blinkRate, LED_RED | LED_BLUE);
+ 479              	 .loc 1 271 0
+ 480 0136 4FF00100 	 mov r0,#1
+ 481 013a 2978     	 ldrb r1,[r5,#0]
+ 482 013c 4FF03302 	 mov r2,#51
+ 483 0140 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 272:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(1, red, LED_RED | LED_BLUE);
+ 484              	 .loc 1 272 0
+ 485 0144 4FF00100 	 mov r0,#1
+ 486 0148 2146     	 mov r1,r4
+ 487 014a 4FF03302 	 mov r2,#51
+ 488 014e FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 489 0152 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 490              	.LVL51:
+ 491              	.L28:
+ 273:src/MightyBoard/Motherboard/RGB_LED.cc **** 			}
+ 274:src/MightyBoard/Motherboard/RGB_LED.cc **** 			/// blue and green closest
+ 275:src/MightyBoard/Motherboard/RGB_LED.cc **** 			else{
+ 276:src/MightyBoard/Motherboard/RGB_LED.cc ****                 setBlinkRate(0, blinkRate, LED_RED);
+ 492              	 .loc 1 276 0
+ 493 0156 40F20005 	 movw r5,#:lower16:.LANCHOR1
+ 494 015a C0F20005 	 movt r5,#:upper16:.LANCHOR1
+ 495 015e 4FF00000 	 mov r0,#0
+ 496 0162 2978     	 ldrb r1,[r5,#0]
+ 497              	.LVL52:
+ 498 0164 4FF00302 	 mov r2,#3
+ 499              	.LVL53:
+ 500 0168 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 501              	.LVL54:
+ 277:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(0, red, LED_RED);
+ 502              	 .loc 1 277 0
+ 503 016c 4FF00000 	 mov r0,#0
+ 504 0170 2146     	 mov r1,r4
+ 505 0172 4FF00302 	 mov r2,#3
+ 506 0176 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 278:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
+ 507              	 .loc 1 278 0
+ 508 017a 4FF00100 	 mov r0,#1
+ 509 017e 2978     	 ldrb r1,[r5,#0]
+ 510 0180 4FF03C02 	 mov r2,#60
+ 511 0184 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 279:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(1, green, LED_GREEN | LED_BLUE);
+ 512              	 .loc 1 279 0
+ 513 0188 4FF00100 	 mov r0,#1
+ 514 018c 3946     	 mov r1,r7
+ 515 018e 4FF03C02 	 mov r2,#60
+ 516 0192 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 517 0196 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 518              	.LVL55:
+ 519              	.L27:
+ 280:src/MightyBoard/Motherboard/RGB_LED.cc **** 			}
+ 281:src/MightyBoard/Motherboard/RGB_LED.cc **** 		}
+ 282:src/MightyBoard/Motherboard/RGB_LED.cc **** 		else{
+ 283:src/MightyBoard/Motherboard/RGB_LED.cc **** 			/// red and green closest
+ 284:src/MightyBoard/Motherboard/RGB_LED.cc **** 			if(distRG < distBG){
+ 520              	 .loc 1 284 0
+ 521 019a 8B42     	 cmp r3,r1
+ 522 019c 21DA     	 bge .L29
+ 285:src/MightyBoard/Motherboard/RGB_LED.cc ****                 setBlinkRate(0, blinkRate, LED_BLUE);
+ 523              	 .loc 1 285 0
+ 524 019e 40F20004 	 movw r4,#:lower16:.LANCHOR1
+ 525 01a2 C0F20004 	 movt r4,#:upper16:.LANCHOR1
+ 526 01a6 4FF00000 	 mov r0,#0
+ 527 01aa 2178     	 ldrb r1,[r4,#0]
+ 528              	.LVL56:
+ 529 01ac 4FF03002 	 mov r2,#48
+ 530              	.LVL57:
+ 531 01b0 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 532              	.LVL58:
+ 286:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(0, blue, LED_BLUE);
+ 533              	 .loc 1 286 0
+ 534 01b4 4FF00000 	 mov r0,#0
+ 535 01b8 3146     	 mov r1,r6
+ 536 01ba 4FF03002 	 mov r2,#48
+ 537 01be FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 287:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBlinkRate(1, blinkRate, LED_GREEN | LED_RED);
+ 538              	 .loc 1 287 0
+ 539 01c2 4FF00100 	 mov r0,#1
+ 540 01c6 2178     	 ldrb r1,[r4,#0]
+ 541 01c8 4FF00F02 	 mov r2,#15
+ 542 01cc FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 288:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(1, green, LED_GREEN | LED_RED);
+ 543              	 .loc 1 288 0
+ 544 01d0 4FF00100 	 mov r0,#1
+ 545 01d4 3946     	 mov r1,r7
+ 546 01d6 4FF00F02 	 mov r2,#15
+ 547 01da FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 548 01de BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 549              	.LVL59:
+ 550              	.L29:
+ 289:src/MightyBoard/Motherboard/RGB_LED.cc **** 			}
+ 290:src/MightyBoard/Motherboard/RGB_LED.cc **** 			/// blue and green closest
+ 291:src/MightyBoard/Motherboard/RGB_LED.cc **** 			else{
+ 292:src/MightyBoard/Motherboard/RGB_LED.cc ****                 setBlinkRate(0, blinkRate, LED_RED);
+ 551              	 .loc 1 292 0
+ 552 01e2 40F20005 	 movw r5,#:lower16:.LANCHOR1
+ 553 01e6 C0F20005 	 movt r5,#:upper16:.LANCHOR1
+ 554 01ea 4FF00000 	 mov r0,#0
+ 555 01ee 2978     	 ldrb r1,[r5,#0]
+ 556              	.LVL60:
+ 557 01f0 4FF00302 	 mov r2,#3
+ 558              	.LVL61:
+ 559 01f4 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 560              	.LVL62:
+ 293:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(0, red, LED_RED);
+ 561              	 .loc 1 293 0
+ 562 01f8 4FF00000 	 mov r0,#0
+ 563 01fc 2146     	 mov r1,r4
+ 564 01fe 4FF00302 	 mov r2,#3
+ 565 0202 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 294:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBlinkRate(1, blinkRate, LED_GREEN |LED_BLUE);
+ 566              	 .loc 1 294 0
+ 567 0206 4FF00100 	 mov r0,#1
+ 568 020a 2978     	 ldrb r1,[r5,#0]
+ 569 020c 4FF03C02 	 mov r2,#60
+ 570 0210 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 295:src/MightyBoard/Motherboard/RGB_LED.cc **** 				setBrightness(1, green, LED_GREEN | LED_BLUE);
+ 571              	 .loc 1 295 0
+ 572 0214 4FF00100 	 mov r0,#1
+ 573 0218 3946     	 mov r1,r7
+ 574 021a 4FF03C02 	 mov r2,#60
+ 575 021e FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 576              	.LVL63:
+ 577              	.L16:
+ 578 0222 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 579              	.LBE7:
+ 580              	.LBE6:
+ 581              	.LBE5:
+ 582              	 .cfi_endproc
+ 583              	.LFE69:
+ 585 0226 00BF     	 .section .text._ZN7RGB_LED14setCustomColorEhhh,"ax",%progbits
+ 586              	 .align 2
+ 587              	 .global _ZN7RGB_LED14setCustomColorEhhh
+ 588              	 .thumb
+ 589              	 .thumb_func
+ 591              	_ZN7RGB_LED14setCustomColorEhhh:
+ 592              	.LFB68:
+ 203:src/MightyBoard/Motherboard/RGB_LED.cc **** void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
+ 593              	 .loc 1 203 0
+ 594              	 .cfi_startproc
+ 595              	 
+ 596              	 
+ 597              	.LVL64:
+ 598 0000 70B5     	 push {r4,r5,r6,lr}
+ 599              	.LCFI5:
+ 600              	 .cfi_def_cfa_offset 16
+ 601              	 .cfi_offset 14,-4
+ 602              	 .cfi_offset 6,-8
+ 603              	 .cfi_offset 5,-12
+ 604              	 .cfi_offset 4,-16
+ 605 0002 0546     	 mov r5,r0
+ 606 0004 0C46     	 mov r4,r1
+ 607 0006 1646     	 mov r6,r2
+ 204:src/MightyBoard/Motherboard/RGB_LED.cc **** 	eeprom::setCustomColor(red, green, blue);
+ 608              	 .loc 1 204 0
+ 609 0008 FFF7FEFF 	 bl _ZN6eeprom14setCustomColorEhhh
+ 610              	.LVL65:
+ 205:src/MightyBoard/Motherboard/RGB_LED.cc **** 	setColor(red, green, blue, true);
+ 611              	 .loc 1 205 0
+ 612 000c 2846     	 mov r0,r5
+ 613 000e 2146     	 mov r1,r4
+ 614 0010 3246     	 mov r2,r6
+ 615 0012 4FF00103 	 mov r3,#1
+ 616 0016 FFF7FEFF 	 bl _ZN7RGB_LED8setColorEhhhb
+ 206:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 617              	 .loc 1 206 0
+ 618 001a 70BD     	 pop {r4,r5,r6,pc}
+ 619              	 .cfi_endproc
+ 620              	.LFE68:
+ 622              	 .section .text._ZN7RGB_LED15setDefaultColorEv,"ax",%progbits
+ 623              	 .align 2
+ 624              	 .global _ZN7RGB_LED15setDefaultColorEv
+ 625              	 .thumb
+ 626              	 .thumb_func
+ 628              	_ZN7RGB_LED15setDefaultColorEv:
+ 629              	.LFB66:
+ 148:src/MightyBoard/Motherboard/RGB_LED.cc **** void setDefaultColor(){
+ 630              	 .loc 1 148 0
+ 631              	 .cfi_startproc
+ 632              	 
+ 633              	 
+ 634 0000 10B5     	 push {r4,lr}
+ 635              	.LCFI6:
+ 636              	 .cfi_def_cfa_offset 8
+ 637              	 .cfi_offset 14,-4
+ 638              	 .cfi_offset 4,-8
+ 639              	.LBB8:
+ 150:src/MightyBoard/Motherboard/RGB_LED.cc **** 	clear();
+ 640              	 .loc 1 150 0
+ 641 0002 FFF7FEFF 	 bl _ZN7RGB_LED5clearEv
+ 153:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 uint8_t LEDColor = eeprom::getEeprom8(eeprom_offsets::LED_STRIP_SETTINGS, 1);
+ 642              	 .loc 1 153 0
+ 643 0006 4FF4A070 	 mov r0,#320
+ 644 000a 4FF00101 	 mov r1,#1
+ 645 000e FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
+ 646 0012 0446     	 mov r4,r0
+ 647              	.LVL66:
+ 154:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 uint32_t CustomColor = eeprom::getEeprom32(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offs
+ 648              	 .loc 1 154 0
+ 649 0014 4FF4A270 	 mov r0,#324
+ 650              	.LVL67:
+ 651 0018 4FF0FF31 	 mov r1,#-1
+ 652 001c FFF7FEFF 	 bl _ZN6eeprom11getEeprom32Etm
+ 653 0020 0246     	 mov r2,r0
+ 654              	.LVL68:
+ 159:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 switch(LEDColor){
+ 655              	 .loc 1 159 0
+ 656 0022 072C     	 cmp r4,#7
+ 657 0024 00F2AB80 	 bhi .L32
+ 658 0028 DFE804F0 	 tbb [pc,r4]
+ 659              	.L42:
+ 660 002c 04       	 .byte (.L34-.L42)/2
+ 661 002d 2C       	 .byte (.L35-.L42)/2
+ 662 002e 54       	 .byte (.L36-.L42)/2
+ 663 002f 77       	 .byte (.L37-.L42)/2
+ 664 0030 40       	 .byte (.L38-.L42)/2
+ 665 0031 18       	 .byte (.L39-.L42)/2
+ 666 0032 8B       	 .byte (.L40-.L42)/2
+ 667 0033 9F       	 .byte (.L41-.L42)/2
+ 668              	 .align 1
+ 669              	.L34:
+ 161:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_RED | LED_GREEN | LED_BLUE);
+ 670              	 .loc 1 161 0
+ 671 0034 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 672 0038 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 673 003c 4FF00100 	 mov r0,#1
+ 674              	.LVL69:
+ 675 0040 1978     	 ldrb r1,[r3,#0]
+ 676 0042 4FF03F02 	 mov r2,#63
+ 677              	.LVL70:
+ 678 0046 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 162:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_RED | LED_GREEN | LED_BLUE);	
+ 679              	 .loc 1 162 0
+ 680 004a 4FF00100 	 mov r0,#1
+ 681 004e 4FF06401 	 mov r1,#100
+ 682 0052 4FF03F02 	 mov r2,#63
+ 683 0056 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 163:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 684              	 .loc 1 163 0
+ 685 005a 10BD     	 pop {r4,pc}
+ 686              	.LVL71:
+ 687              	.L39:
+ 165:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_BLUE);
+ 688              	 .loc 1 165 0
+ 689 005c 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 690 0060 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 691 0064 4FF00100 	 mov r0,#1
+ 692              	.LVL72:
+ 693 0068 1978     	 ldrb r1,[r3,#0]
+ 694 006a 4FF03002 	 mov r2,#48
+ 695              	.LVL73:
+ 696 006e FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 166:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_BLUE);
+ 697              	 .loc 1 166 0
+ 698 0072 4FF00100 	 mov r0,#1
+ 699 0076 4FF06401 	 mov r1,#100
+ 700 007a 4FF03002 	 mov r2,#48
+ 701 007e FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 167:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 702              	 .loc 1 167 0
+ 703 0082 10BD     	 pop {r4,pc}
+ 704              	.LVL74:
+ 705              	.L35:
+ 169:src/MightyBoard/Motherboard/RGB_LED.cc **** 		    setBlinkRate(1, blinkRate, LED_RED);
+ 706              	 .loc 1 169 0
+ 707 0084 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 708 0088 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 709 008c 4FF00100 	 mov r0,#1
+ 710              	.LVL75:
+ 711 0090 1978     	 ldrb r1,[r3,#0]
+ 712 0092 4FF00302 	 mov r2,#3
+ 713              	.LVL76:
+ 714 0096 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 170:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_RED);
+ 715              	 .loc 1 170 0
+ 716 009a 4FF00100 	 mov r0,#1
+ 717 009e 4FF06401 	 mov r1,#100
+ 718 00a2 4FF00302 	 mov r2,#3
+ 719 00a6 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 171:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 720              	 .loc 1 171 0
+ 721 00aa 10BD     	 pop {r4,pc}
+ 722              	.LVL77:
+ 723              	.L38:
+ 173:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_GREEN);
+ 724              	 .loc 1 173 0
+ 725 00ac 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 726 00b0 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 727 00b4 4FF00100 	 mov r0,#1
+ 728              	.LVL78:
+ 729 00b8 1978     	 ldrb r1,[r3,#0]
+ 730 00ba 4FF00C02 	 mov r2,#12
+ 731              	.LVL79:
+ 732 00be FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 174:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 100, LED_GREEN);
+ 733              	 .loc 1 174 0
+ 734 00c2 4FF00100 	 mov r0,#1
+ 735 00c6 4FF06401 	 mov r1,#100
+ 736 00ca 4FF00C02 	 mov r2,#12
+ 737 00ce FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 175:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 738              	 .loc 1 175 0
+ 739 00d2 10BD     	 pop {r4,pc}
+ 740              	.LVL80:
+ 741              	.L36:
+ 177:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_GREEN);
+ 742              	 .loc 1 177 0
+ 743 00d4 40F20004 	 movw r4,#:lower16:.LANCHOR1
+ 744              	.LVL81:
+ 745 00d8 C0F20004 	 movt r4,#:upper16:.LANCHOR1
+ 746 00dc 4FF00100 	 mov r0,#1
+ 747              	.LVL82:
+ 748 00e0 2178     	 ldrb r1,[r4,#0]
+ 749 00e2 4FF00C02 	 mov r2,#12
+ 750              	.LVL83:
+ 751 00e6 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 178:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 50, LED_GREEN);		
+ 752              	 .loc 1 178 0
+ 753 00ea 4FF00100 	 mov r0,#1
+ 754 00ee 4FF03201 	 mov r1,#50
+ 755 00f2 4FF00C02 	 mov r2,#12
+ 756 00f6 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 179:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(0, blinkRate, LED_RED);
+ 757              	 .loc 1 179 0
+ 758 00fa 4FF00000 	 mov r0,#0
+ 759 00fe 2178     	 ldrb r1,[r4,#0]
+ 760 0100 4FF00302 	 mov r2,#3
+ 761 0104 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 180:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(0, 200, LED_RED);
+ 762              	 .loc 1 180 0
+ 763 0108 4FF00000 	 mov r0,#0
+ 764 010c 4FF0C801 	 mov r1,#200
+ 765 0110 4FF00302 	 mov r2,#3
+ 766 0114 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 181:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 767              	 .loc 1 181 0
+ 768 0118 10BD     	 pop {r4,pc}
+ 769              	.LVL84:
+ 770              	.L37:
+ 183:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_BLUE| LED_RED);
+ 771              	 .loc 1 183 0
+ 772 011a 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 773 011e C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 774 0122 4FF00100 	 mov r0,#1
+ 775              	.LVL85:
+ 776 0126 1978     	 ldrb r1,[r3,#0]
+ 777 0128 4FF03302 	 mov r2,#51
+ 778              	.LVL86:
+ 779 012c FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 184:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 70, LED_BLUE| LED_RED);
+ 780              	 .loc 1 184 0
+ 781 0130 4FF00100 	 mov r0,#1
+ 782 0134 4FF04601 	 mov r1,#70
+ 783 0138 4FF03302 	 mov r2,#51
+ 784 013c FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 185:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 785              	 .loc 1 185 0
+ 786 0140 10BD     	 pop {r4,pc}
+ 787              	.LVL87:
+ 788              	.L40:
+ 187:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBlinkRate(1, blinkRate, LED_BLUE | LED_RED);
+ 789              	 .loc 1 187 0
+ 790 0142 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 791 0146 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 792 014a 4FF00100 	 mov r0,#1
+ 793              	.LVL88:
+ 794 014e 1978     	 ldrb r1,[r3,#0]
+ 795 0150 4FF03302 	 mov r2,#51
+ 796              	.LVL89:
+ 797 0154 FFF7FEFF 	 bl _ZN7RGB_LED12setBlinkRateEhhh
+ 188:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setBrightness(1, 200, LED_BLUE | LED_RED);
+ 798              	 .loc 1 188 0
+ 799 0158 4FF00100 	 mov r0,#1
+ 800 015c 4FF0C801 	 mov r1,#200
+ 801 0160 4FF03302 	 mov r2,#51
+ 802 0164 FFF7FEFF 	 bl _ZN7RGB_LED13setBrightnessEhhh
+ 189:src/MightyBoard/Motherboard/RGB_LED.cc **** 			break;
+ 803              	 .loc 1 189 0
+ 804 0168 10BD     	 pop {r4,pc}
+ 805              	.LVL90:
+ 806              	.L41:
+ 191:src/MightyBoard/Motherboard/RGB_LED.cc **** 			setColor(CustomColor >> 24, CustomColor >> 16, CustomColor >> 8, true);
+ 807              	 .loc 1 191 0
+ 808 016a 4FEA1060 	 lsr r0,r0,#24
+ 809              	.LVL91:
+ 810 016e C2F30741 	 ubfx r1,r2,#16,#8
+ 811 0172 C2F30722 	 ubfx r2,r2,#8,#8
+ 812              	.LVL92:
+ 813 0176 4FF00103 	 mov r3,#1
+ 814 017a FFF7FEFF 	 bl _ZN7RGB_LED8setColorEhhhb
+ 815              	.L32:
+ 816 017e 10BD     	 pop {r4,pc}
+ 817              	.LBE8:
+ 818              	 .cfi_endproc
+ 819              	.LFE66:
+ 821              	 .section .text._ZN7RGB_LED11setLEDBlinkEh,"ax",%progbits
+ 822              	 .align 2
+ 823              	 .global _ZN7RGB_LED11setLEDBlinkEh
+ 824              	 .thumb
+ 825              	 .thumb_func
+ 827              	_ZN7RGB_LED11setLEDBlinkEh:
+ 828              	.LFB67:
+ 196:src/MightyBoard/Motherboard/RGB_LED.cc **** void setLEDBlink(uint8_t rate){
+ 829              	 .loc 1 196 0
+ 830              	 .cfi_startproc
+ 831              	 
+ 832              	 
+ 833              	.LVL93:
+ 834 0000 08B5     	 push {r3,lr}
+ 835              	.LCFI7:
+ 836              	 .cfi_def_cfa_offset 8
+ 837              	 .cfi_offset 14,-4
+ 838              	 .cfi_offset 3,-8
+ 198:src/MightyBoard/Motherboard/RGB_LED.cc **** 	blinkRate = rate;
+ 839              	 .loc 1 198 0
+ 840 0002 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 841 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 842 000a 1870     	 strb r0,[r3,#0]
+ 199:src/MightyBoard/Motherboard/RGB_LED.cc **** 	setDefaultColor();
+ 843              	 .loc 1 199 0
+ 844 000c FFF7FEFF 	 bl _ZN7RGB_LED15setDefaultColorEv
+ 845              	.LVL94:
+ 200:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 846              	 .loc 1 200 0
+ 847 0010 08BD     	 pop {r3,pc}
+ 848              	 .cfi_endproc
+ 849              	.LFE67:
+ 851 0012 00BF     	 .section .text._ZN7RGB_LED4initEv,"ax",%progbits
+ 852              	 .align 2
+ 853              	 .global _ZN7RGB_LED4initEv
+ 854              	 .thumb
+ 855              	 .thumb_func
+ 857              	_ZN7RGB_LED4initEv:
+ 858              	.LFB59:
+  36:src/MightyBoard/Motherboard/RGB_LED.cc **** void init(){
+ 859              	 .loc 1 36 0
+ 860              	 .cfi_startproc
+ 861              	 
+ 862              	 
+ 863 0000 08B5     	 push {r3,lr}
+ 864              	.LCFI8:
+ 865              	 .cfi_def_cfa_offset 8
+ 866              	 .cfi_offset 14,-4
+ 867              	 .cfi_offset 3,-8
+  40:src/MightyBoard/Motherboard/RGB_LED.cc **** 	 setDefaultColor();
+ 868              	 .loc 1 40 0
+ 869 0002 FFF7FEFF 	 bl _ZN7RGB_LED15setDefaultColorEv
+  41:src/MightyBoard/Motherboard/RGB_LED.cc ****  }
+ 870              	 .loc 1 41 0
+ 871 0006 08BD     	 pop {r3,pc}
+ 872              	 .cfi_endproc
+ 873              	.LFE59:
+ 875              	 .section .text._GLOBAL__sub_I__ZN7RGB_LED9LEDSelectE,"ax",%progbits
+ 876              	 .align 2
+ 877              	 .thumb
+ 878              	 .thumb_func
+ 880              	_GLOBAL__sub_I__ZN7RGB_LED9LEDSelectE:
+ 881              	.LFB71:
+ 296:src/MightyBoard/Motherboard/RGB_LED.cc **** 			}
+ 297:src/MightyBoard/Motherboard/RGB_LED.cc **** 		}
+ 298:src/MightyBoard/Motherboard/RGB_LED.cc **** 	}	
+ 299:src/MightyBoard/Motherboard/RGB_LED.cc ****  
+ 300:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 301:src/MightyBoard/Motherboard/RGB_LED.cc ****     
+ 302:src/MightyBoard/Motherboard/RGB_LED.cc **** }
+ 882              	 .loc 1 302 0
+ 883              	 .cfi_startproc
+ 884              	 
+ 885              	 
+ 886 0000 10B5     	 push {r4,lr}
+ 887              	.LCFI9:
+ 888              	 .cfi_def_cfa_offset 8
+ 889              	 .cfi_offset 14,-4
+ 890              	 .cfi_offset 4,-8
+ 891              	.LVL95:
+ 892              	.LBB11:
+ 893              	.LBB12:
+ 894              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 895              	 .loc 2 49 0
+ 896 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 897 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 898 000a 4FF00001 	 mov r1,#0
+ 899 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 900              	 .loc 2 50 0
+ 901 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 902 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 903 001a 4FF00101 	 mov r1,#1
+ 904 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 905              	 .loc 2 51 0
+ 906 0022 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 907 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 908 002a 4FF00201 	 mov r1,#2
+ 909 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 910              	 .loc 2 52 0
+ 911 0032 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 912 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 913 003a 4FF00301 	 mov r1,#3
+ 914 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 915              	 .loc 2 53 0
+ 916 0042 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 917 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 918 004a 4FF00401 	 mov r1,#4
+ 919 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 920              	 .loc 2 55 0
+ 921 0052 40F20004 	 movw r4,#:lower16:.LANCHOR7
+ 922 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR7
+ 923 005a 2046     	 mov r0,r4
+ 924 005c 4FF0FF01 	 mov r1,#255
+ 925 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 926              	 .file 3 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 927              	 .loc 3 76 0
+ 928 0064 40F20000 	 movw r0,#:lower16:.LANCHOR8
+ 929 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR8
+ 930 006c 2146     	 mov r1,r4
+ 931 006e 4FF00002 	 mov r2,#0
+ 932 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 933              	.LBE12:
+ 934              	.LBE11:
+ 935              	 .loc 1 302 0
+ 936 0076 10BD     	 pop {r4,pc}
+ 937              	 .cfi_endproc
+ 938              	.LFE71:
+ 940              	 .section .init_array,"aw",%init_array
+ 941              	 .align 2
+ 942 0000 00000000 	 .word _GLOBAL__sub_I__ZN7RGB_LED9LEDSelectE(target1)
+ 943              	 .global _ZN7RGB_LED9blinkRateE
+ 944              	 .global _ZN7RGB_LED9LEDSelectE
+ 945              	 .section .bss._ZL5Port0,"aw",%nobits
+ 946              	 .align 2
+ 947              	 .set .LANCHOR2,.+0
+ 950              	_ZL5Port0:
+ 951 0000 00       	 .space 1
+ 952 0001 000000   	 .section .bss._ZN7RGB_LED9blinkRateE,"aw",%nobits
+ 953              	 .set .LANCHOR1,.+0
+ 956              	_ZN7RGB_LED9blinkRateE:
+ 957 0000 00       	 .space 1
+ 958              	 .section .bss._ZL5Port1,"aw",%nobits
+ 959              	 .align 2
+ 960              	 .set .LANCHOR3,.+0
+ 963              	_ZL5Port1:
+ 964 0000 00       	 .space 1
+ 965 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 966              	 .align 2
+ 967              	 .set .LANCHOR5,.+0
+ 970              	_ZL5Port3:
+ 971 0000 00       	 .space 1
+ 972 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 973              	 .align 2
+ 974              	 .set .LANCHOR4,.+0
+ 977              	_ZL5Port2:
+ 978 0000 00       	 .space 1
+ 979 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 980              	 .align 2
+ 981              	 .set .LANCHOR6,.+0
+ 984              	_ZL5Port4:
+ 985 0000 00       	 .space 1
+ 986 0001 000000   	 .section .bss._ZN7RGB_LED9LEDSelectE,"aw",%nobits
+ 987              	 .set .LANCHOR0,.+0
+ 990              	_ZN7RGB_LED9LEDSelectE:
+ 991 0000 00       	 .space 1
+ 992              	 .section .bss._ZL8NullPort,"aw",%nobits
+ 993              	 .align 2
+ 994              	 .set .LANCHOR7,.+0
+ 997              	_ZL8NullPort:
+ 998 0000 00       	 .space 1
+ 999 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 1000              	 .align 2
+ 1001              	 .set .LANCHOR8,.+0
+ 1004              	_ZL7NullPin:
+ 1005 0000 00000000 	 .space 5
+ 1005      00
+ 1006 0005 000000   	 .text
+ 1007              	.Letext0:
+ 1008              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1009              	 .file 5 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 1010              	 .file 6 "src/MightyBoard/Motherboard/RGB_LED.hh"
+ 1011              	 .file 7 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 RGB_LED.cc
+    {standard input}:19     .text._ZN7RGB_LED12setBlinkRateEhhh:00000000 $t
+    {standard input}:24     .text._ZN7RGB_LED12setBlinkRateEhhh:00000000 _ZN7RGB_LED12setBlinkRateEhhh
+    {standard input}:987    .bss._ZN7RGB_LED9LEDSelectE:00000000 .LANCHOR0
+    {standard input}:84     .text._ZN7RGB_LED14toggleLEDNoPWMEbh:00000000 $t
+    {standard input}:89     .text._ZN7RGB_LED14toggleLEDNoPWMEbh:00000000 _ZN7RGB_LED14toggleLEDNoPWMEbh
+    {standard input}:130    .text._ZN7RGB_LED13setBrightnessEhhh:00000000 $t
+    {standard input}:135    .text._ZN7RGB_LED13setBrightnessEhhh:00000000 _ZN7RGB_LED13setBrightnessEhhh
+    {standard input}:207    .text._ZN7RGB_LED15startupSequenceEv:00000000 $t
+    {standard input}:212    .text._ZN7RGB_LED15startupSequenceEv:00000000 _ZN7RGB_LED15startupSequenceEv
+    {standard input}:225    .text._ZN7RGB_LED5clearEv:00000000 $t
+    {standard input}:230    .text._ZN7RGB_LED5clearEv:00000000 _ZN7RGB_LED5clearEv
+    {standard input}:252    .text._ZN7RGB_LED13errorSequenceEv:00000000 $t
+    {standard input}:257    .text._ZN7RGB_LED13errorSequenceEv:00000000 _ZN7RGB_LED13errorSequenceEv
+    {standard input}:286    .text._ZN7RGB_LED8setColorEhhhb:00000000 $t
+    {standard input}:291    .text._ZN7RGB_LED8setColorEhhhb:00000000 _ZN7RGB_LED8setColorEhhhb
+    {standard input}:953    .bss._ZN7RGB_LED9blinkRateE:00000000 .LANCHOR1
+    {standard input}:586    .text._ZN7RGB_LED14setCustomColorEhhh:00000000 $t
+    {standard input}:591    .text._ZN7RGB_LED14setCustomColorEhhh:00000000 _ZN7RGB_LED14setCustomColorEhhh
+    {standard input}:623    .text._ZN7RGB_LED15setDefaultColorEv:00000000 $t
+    {standard input}:628    .text._ZN7RGB_LED15setDefaultColorEv:00000000 _ZN7RGB_LED15setDefaultColorEv
+    {standard input}:660    .text._ZN7RGB_LED15setDefaultColorEv:0000002c $d
+    {standard input}:668    .text._ZN7RGB_LED15setDefaultColorEv:00000034 $t
+    {standard input}:822    .text._ZN7RGB_LED11setLEDBlinkEh:00000000 $t
+    {standard input}:827    .text._ZN7RGB_LED11setLEDBlinkEh:00000000 _ZN7RGB_LED11setLEDBlinkEh
+    {standard input}:852    .text._ZN7RGB_LED4initEv:00000000 $t
+    {standard input}:857    .text._ZN7RGB_LED4initEv:00000000 _ZN7RGB_LED4initEv
+    {standard input}:876    .text._GLOBAL__sub_I__ZN7RGB_LED9LEDSelectE:00000000 $t
+    {standard input}:880    .text._GLOBAL__sub_I__ZN7RGB_LED9LEDSelectE:00000000 _GLOBAL__sub_I__ZN7RGB_LED9LEDSelectE
+    {standard input}:947    .bss._ZL5Port0:00000000 .LANCHOR2
+    {standard input}:960    .bss._ZL5Port1:00000000 .LANCHOR3
+    {standard input}:974    .bss._ZL5Port2:00000000 .LANCHOR4
+    {standard input}:967    .bss._ZL5Port3:00000000 .LANCHOR5
+    {standard input}:981    .bss._ZL5Port4:00000000 .LANCHOR6
+    {standard input}:994    .bss._ZL8NullPort:00000000 .LANCHOR7
+    {standard input}:1001   .bss._ZL7NullPin:00000000 .LANCHOR8
+    {standard input}:941    .init_array:00000000 $d
+    {standard input}:956    .bss._ZN7RGB_LED9blinkRateE:00000000 _ZN7RGB_LED9blinkRateE
+    {standard input}:990    .bss._ZN7RGB_LED9LEDSelectE:00000000 _ZN7RGB_LED9LEDSelectE
+    {standard input}:946    .bss._ZL5Port0:00000000 $d
+    {standard input}:950    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:957    .bss._ZN7RGB_LED9blinkRateE:00000000 $d
+    {standard input}:959    .bss._ZL5Port1:00000000 $d
+    {standard input}:963    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:966    .bss._ZL5Port3:00000000 $d
+    {standard input}:970    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:973    .bss._ZL5Port2:00000000 $d
+    {standard input}:977    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:980    .bss._ZL5Port4:00000000 $d
+    {standard input}:984    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:991    .bss._ZN7RGB_LED9LEDSelectE:00000000 $d
+    {standard input}:993    .bss._ZL8NullPort:00000000 $d
+    {standard input}:997    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:1000   .bss._ZL7NullPin:00000000 $d
+    {standard input}:1004   .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_delay_us
+_ZN6eeprom14setCustomColorEhhh
+_ZN6eeprom10getEeprom8Eth
+_ZN6eeprom11getEeprom32Etm
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth

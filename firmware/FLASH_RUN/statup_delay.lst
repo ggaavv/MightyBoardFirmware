@@ -1,0 +1,71 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "statup_delay.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.startup_delay,"ax",%progbits
+  19              	 .align 2
+  20              	 .global startup_delay
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	startup_delay:
+  25              	.LFB0:
+  26              	 .file 1 "src/MightyBoard/Motherboard/system/statup_delay.c"
+   1:src/MightyBoard/Motherboard/system/statup_delay.c **** 
+   2:src/MightyBoard/Motherboard/system/statup_delay.c **** void startup_delay(void){
+  27              	 .loc 1 2 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32 0000 82B0     	 sub sp,sp,#8
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 8
+   3:src/MightyBoard/Motherboard/system/statup_delay.c **** 	volatile unsigned long i;
+   4:src/MightyBoard/Motherboard/system/statup_delay.c **** 	for (i = 0; i < 5; i++) { ; }
+  35              	 .loc 1 4 0
+  36 0002 4FF00003 	 mov r3,#0
+  37 0006 0193     	 str r3,[sp,#4]
+  38              	.LVL0:
+  39 0008 019B     	 ldr r3,[sp,#4]
+  40 000a 042B     	 cmp r3,#4
+  41 000c 06D8     	 bhi .L1
+  42              	.L4:
+  43              	 .loc 1 4 0 is_stmt 0 discriminator 2
+  44 000e 019B     	 ldr r3,[sp,#4]
+  45 0010 03F10103 	 add r3,r3,#1
+  46              	.LVL1:
+  47 0014 0193     	 str r3,[sp,#4]
+  48              	.LVL2:
+  49 0016 019B     	 ldr r3,[sp,#4]
+  50              	.LVL3:
+  51 0018 042B     	 cmp r3,#4
+  52 001a F8D9     	 bls .L4
+  53              	.L1:
+   5:src/MightyBoard/Motherboard/system/statup_delay.c **** }
+  54              	 .loc 1 5 0 is_stmt 1
+  55 001c 02B0     	 add sp,sp,#8
+  56 001e 7047     	 bx lr
+  57              	 .cfi_endproc
+  58              	.LFE0:
+  60              	 .text
+  61              	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 statup_delay.c
+    {standard input}:19     .text.startup_delay:00000000 $t
+    {standard input}:24     .text.startup_delay:00000000 startup_delay
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

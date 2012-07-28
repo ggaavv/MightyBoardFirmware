@@ -1,0 +1,685 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_wdt.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.WDT_SetTimeOut,"ax",%progbits
+  19              	 .align 2
+  20              	 .thumb
+  21              	 .thumb_func
+  23              	WDT_SetTimeOut:
+  24              	.LFB55:
+  25              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * $Id$		lpc17xx_wdt.c			2010-05-21
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @file		lpc17xx_wdt.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @brief	Contains all functions support for WDT firmware library
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * 			on LPC17xx
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @version	2.0
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @date		21. May. 2010
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @author	NXP MCU SW Application Team
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** *
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * Copyright(C) 2010, NXP Semiconductor
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * All rights reserved.
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** *
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** ***********************************************************************
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * Software that is described herein is for illustrative purposes only
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * which provides customers with programming information regarding the
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * products. This software is supplied "AS IS" without any warranties.
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * use of the software, conveys no license or title under any patent,
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * reserves the right to make changes in the software without
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * notification. NXP Semiconductors also make no representation or
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * warranty that such application will be suitable for the specified
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * use without further testing or modification.
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** **********************************************************************/
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /* Peripheral group ----------------------------------------------------------- */
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /** @addtogroup WDT
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @{
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  */
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /* Includes ------------------------------------------------------------------- */
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #include "lpc17xx_wdt.h"
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #include "lpc17xx_clkpwr.h"
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #include "lpc17xx_pinsel.h"
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /* If this source file built with example, the LPC17xx FW library configuration
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * file in each example directory ("lpc17xx_libcfg.h") must be included,
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * otherwise the default FW library configuration file must be included instead
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  */
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #ifdef __BUILD_WITH_EXAMPLE__
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #include "lpc17xx_libcfg.h"
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #else
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #include "lpc17xx_libcfg_default.h"
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #endif /* __BUILD_WITH_EXAMPLE__ */
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** #ifdef _WDT
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /* Private Functions ---------------------------------------------------------- */
+  52:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  53:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** static uint8_t WDT_SetTimeOut (uint8_t clk_source, uint32_t timeout);
+  54:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  55:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /********************************************************************//**
+  56:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @brief 		Set WDT time out value and WDT mode
+  57:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @param[in]	clk_source select Clock source for WDT device
+  58:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @param[in]	timeout value of time-out for WDT (us)
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @return		None
+  60:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  *********************************************************************/
+  61:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** static uint8_t WDT_SetTimeOut (uint8_t clk_source, uint32_t timeout)
+  62:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+  26              	 .loc 1 62 0
+  27              	 .cfi_startproc
+  28              	 
+  29              	 
+  30              	.LVL0:
+  31 0000 10B5     	 push {r4,lr}
+  32              	.LCFI0:
+  33              	 .cfi_def_cfa_offset 8
+  34              	 .cfi_offset 14,-4
+  35              	 .cfi_offset 4,-8
+  36              	.LVL1:
+  63:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  64:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	uint32_t pclk_wdt = 0;
+  65:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	uint32_t tempval = 0;
+  66:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	switch ((WDT_CLK_OPT) clk_source)
+  37              	 .loc 1 67 0
+  38 0002 10B1     	 cbz r0,.L3
+  39 0004 0128     	 cmp r0,#1
+  40 0006 5CD1     	 bne .L10
+  41 0008 09E0     	 b .L11
+  42              	.L3:
+  43              	.LVL2:
+  68:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     {
+  69:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     case WDT_CLKSRC_IRC:
+  70:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	pclk_wdt = 4000000;
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	// Calculate TC in WDT
+  72:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	tempval  = (((pclk_wdt) / WDT_US_INDEX) * (timeout / 4));
+  44              	 .loc 1 72 0
+  45 000a 21F00301 	 bic r1,r1,#3
+  46              	.LVL3:
+  73:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	// Check if it valid
+  74:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	if ((tempval >= WDT_TIMEOUT_MIN) && (tempval <= WDT_TIMEOUT_MAX))
+  47              	 .loc 1 74 0
+  48 000e FE29     	 cmp r1,#254
+  49 0010 5AD9     	 bls .L8
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	{
+  76:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     		LPC_WDT->WDTC = tempval;
+  50              	 .loc 1 76 0
+  51 0012 4FF08043 	 mov r3,#1073741824
+  52 0016 5960     	 str r1,[r3,#4]
+  77:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     		return	SUCCESS;
+  53              	 .loc 1 77 0
+  54 0018 4FF00100 	 mov r0,#1
+  55              	.LVL4:
+  56 001c 10BD     	 pop {r4,pc}
+  57              	.LVL5:
+  58              	.L11:
+  78:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	}
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  80:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	break;
+  81:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  82:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     case WDT_CLKSRC_PCLK:
+  83:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     	// Get WDT clock with CCLK divider = 4
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		pclk_wdt = SystemCoreClock / 4;
+  59              	 .loc 1 85 0
+  60 001e 40F20003 	 movw r3,#:lower16:SystemCoreClock
+  61 0022 C0F20003 	 movt r3,#:upper16:SystemCoreClock
+  62 0026 1B68     	 ldr r3,[r3,#0]
+  63              	.LVL6:
+  86:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		// Calculate TC in WDT
+  87:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		tempval  = (((pclk_wdt) / WDT_US_INDEX) * (timeout / 4));
+  64              	 .loc 1 87 0
+  65 0028 4FEA9101 	 lsr r1,r1,#2
+  66              	.LVL7:
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		pclk_wdt = SystemCoreClock / 4;
+  67              	 .loc 1 85 0
+  68 002c 4FEA9304 	 lsr r4,r3,#2
+  69              	 .loc 1 87 0
+  70 0030 4DF68362 	 movw r2,#56963
+  71 0034 C4F21B32 	 movt r2,17179
+  72 0038 A2FB0404 	 umull r0,r4,r2,r4
+  73              	.LVL8:
+  74 003c 4FEA9444 	 lsr r4,r4,#18
+  75 0040 04FB01F4 	 mul r4,r4,r1
+  76              	.LVL9:
+  88:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  89:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		if ((tempval >= WDT_TIMEOUT_MIN) && (tempval <= WDT_TIMEOUT_MAX))
+  77              	 .loc 1 89 0
+  78 0044 FE2C     	 cmp r4,#254
+  79 0046 0AD9     	 bls .L5
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		{
+  91:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_WDT, CLKPWR_PCLKSEL_CCLK_DIV_4);
+  80              	 .loc 1 91 0
+  81 0048 4FF00000 	 mov r0,#0
+  82 004c 0146     	 mov r1,r0
+  83 004e FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+  84              	.LVL10:
+  92:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			LPC_WDT->WDTC = (uint32_t) tempval;
+  85              	 .loc 1 92 0
+  86 0052 4FF08043 	 mov r3,#1073741824
+  87 0056 5C60     	 str r4,[r3,#4]
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			return SUCCESS;
+  88              	 .loc 1 93 0
+  89 0058 4FF00100 	 mov r0,#1
+  90 005c 10BD     	 pop {r4,pc}
+  91              	.LVL11:
+  92              	.L5:
+  94:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		}
+  95:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		// Get WDT clock with CCLK divider = 2
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		pclk_wdt = SystemCoreClock / 2;
+  93              	 .loc 1 97 0
+  94 005e 4FEA5304 	 lsr r4,r3,#1
+  95              	.LVL12:
+  98:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		// Calculate TC in WDT
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		tempval  = (((pclk_wdt) / WDT_US_INDEX) * (timeout / 4));
+  96              	 .loc 1 99 0
+  97 0062 4DF68362 	 movw r2,#56963
+  98 0066 C4F21B32 	 movt r2,17179
+  99 006a A2FB0404 	 umull r0,r4,r2,r4
+ 100 006e 4FEA9444 	 lsr r4,r4,#18
+ 101 0072 04FB01F4 	 mul r4,r4,r1
+ 102              	.LVL13:
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		if ((tempval >= WDT_TIMEOUT_MIN) && (tempval <= WDT_TIMEOUT_MAX))
+ 103              	 .loc 1 101 0
+ 104 0076 FE2C     	 cmp r4,#254
+ 105 0078 0BD9     	 bls .L6
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		{
+ 103:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_WDT, CLKPWR_PCLKSEL_CCLK_DIV_2);
+ 106              	 .loc 1 103 0
+ 107 007a 4FF00000 	 mov r0,#0
+ 108 007e 4FF00201 	 mov r1,#2
+ 109 0082 FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+ 110              	.LVL14:
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			LPC_WDT->WDTC = (uint32_t) tempval;
+ 111              	 .loc 1 104 0
+ 112 0086 4FF08043 	 mov r3,#1073741824
+ 113 008a 5C60     	 str r4,[r3,#4]
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			return	SUCCESS;
+ 114              	 .loc 1 105 0
+ 115 008c 4FF00100 	 mov r0,#1
+ 116 0090 10BD     	 pop {r4,pc}
+ 117              	.LVL15:
+ 118              	.L6:
+ 106:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		}
+ 107:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 108:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		// Get WDT clock with CCLK divider = 1
+ 109:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		pclk_wdt = SystemCoreClock;
+ 110:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		// Calculate TC in WDT
+ 111:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		tempval  = (((pclk_wdt) / WDT_US_INDEX) * (timeout / 4));
+ 119              	 .loc 1 111 0
+ 120 0092 4DF68364 	 movw r4,#56963
+ 121              	.LVL16:
+ 122 0096 C4F21B34 	 movt r4,17179
+ 123 009a A4FB0324 	 umull r2,r4,r4,r3
+ 124 009e 4FEA9444 	 lsr r4,r4,#18
+ 125 00a2 04FB01F4 	 mul r4,r4,r1
+ 126              	.LVL17:
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 113:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		if ((tempval >= WDT_TIMEOUT_MIN) && (tempval <= WDT_TIMEOUT_MAX))
+ 127              	 .loc 1 113 0
+ 128 00a6 FE2C     	 cmp r4,#254
+ 129 00a8 11D9     	 bls .L9
+ 114:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		{
+ 115:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_WDT, CLKPWR_PCLKSEL_CCLK_DIV_1);
+ 130              	 .loc 1 115 0
+ 131 00aa 4FF00000 	 mov r0,#0
+ 132 00ae 4FF00101 	 mov r1,#1
+ 133 00b2 FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+ 134              	.LVL18:
+ 116:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			LPC_WDT->WDTC = (uint32_t) tempval;
+ 135              	 .loc 1 116 0
+ 136 00b6 4FF08043 	 mov r3,#1073741824
+ 137 00ba 5C60     	 str r4,[r3,#4]
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			return	SUCCESS;
+ 138              	 .loc 1 117 0
+ 139 00bc 4FF00100 	 mov r0,#1
+ 140 00c0 10BD     	 pop {r4,pc}
+ 141              	.LVL19:
+ 142              	.L10:
+ 118:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		}
+ 119:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		break ;
+ 120:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 122:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****     case WDT_CLKSRC_RTC:
+ 123:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		pclk_wdt = 32768;
+ 124:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		// Calculate TC in WDT
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		tempval  = (((pclk_wdt) / WDT_US_INDEX) * (timeout / 4));
+ 126:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		// Check if it valid
+ 127:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		if ((tempval >= WDT_TIMEOUT_MIN) && (tempval <= WDT_TIMEOUT_MAX))
+ 128:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		{
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			LPC_WDT->WDTC = (uint32_t) tempval;
+ 130:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			return	SUCCESS;
+ 131:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		}
+ 132:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 133:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		break;
+ 134:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 135:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** // Error parameter
+ 136:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		default:
+ 137:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 			break;
+ 138:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 139:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 140:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	return ERROR;
+ 143              	 .loc 1 140 0
+ 144 00c2 4FF00000 	 mov r0,#0
+ 145              	.LVL20:
+ 146 00c6 10BD     	 pop {r4,pc}
+ 147              	.LVL21:
+ 148              	.L8:
+ 149 00c8 4FF00000 	 mov r0,#0
+ 150              	.LVL22:
+ 151 00cc 10BD     	 pop {r4,pc}
+ 152              	.LVL23:
+ 153              	.L9:
+ 154 00ce 4FF00000 	 mov r0,#0
+ 141:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 155              	 .loc 1 141 0
+ 156 00d2 10BD     	 pop {r4,pc}
+ 157              	 .cfi_endproc
+ 158              	.LFE55:
+ 160              	 .section .text.WDT_Init,"ax",%progbits
+ 161              	 .align 2
+ 162              	 .global WDT_Init
+ 163              	 .thumb
+ 164              	 .thumb_func
+ 166              	WDT_Init:
+ 167              	.LFB56:
+ 142:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 143:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /* End of Private Functions --------------------------------------------------- */
+ 144:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 145:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 146:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /* Public Functions ----------------------------------------------------------- */
+ 147:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /** @addtogroup WDT_Public_Functions
+ 148:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @{
+ 149:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  */
+ 150:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 151:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 152:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /*********************************************************************//**
+ 153:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @brief 		Initial for Watchdog function
+ 154:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * 					Clock source = RTC ,
+ 155:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @param[in]	ClkSrc  Select clock source, should be:
+ 156:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * 				- WDT_CLKSRC_IRC: Clock source from Internal RC oscillator
+ 157:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * 				- WDT_CLKSRC_PCLK: Selects the APB peripheral clock (PCLK)
+ 158:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * 				- WDT_CLKSRC_RTC: Selects the RTC oscillator
+ 159:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @param[in]	WDTMode WDT mode, should be:
+ 160:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * 				- WDT_MODE_INT_ONLY: Use WDT to generate interrupt only
+ 161:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * 				- WDT_MODE_RESET: Use WDT to generate interrupt and reset MCU
+ 162:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @return 		None
+ 163:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  **********************************************************************/
+ 164:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** void WDT_Init (WDT_CLK_OPT ClkSrc, WDT_MODE_OPT WDTMode)
+ 165:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 168              	 .loc 1 165 0
+ 169              	 .cfi_startproc
+ 170              	 
+ 171              	 
+ 172              	.LVL24:
+ 173 0000 38B5     	 push {r3,r4,r5,lr}
+ 174              	.LCFI1:
+ 175              	 .cfi_def_cfa_offset 16
+ 176              	 .cfi_offset 14,-4
+ 177              	 .cfi_offset 5,-8
+ 178              	 .cfi_offset 4,-12
+ 179              	 .cfi_offset 3,-16
+ 180 0002 0546     	 mov r5,r0
+ 181 0004 0C46     	 mov r4,r1
+ 166:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	CHECK_PARAM(PARAM_WDT_CLK_OPT(ClkSrc));
+ 182              	 .loc 1 166 0
+ 183 0006 0228     	 cmp r0,#2
+ 184 0008 07D9     	 bls .L13
+ 185              	 .loc 1 166 0 is_stmt 0 discriminator 1
+ 186 000a 40F20000 	 movw r0,#:lower16:.LC0
+ 187              	.LVL25:
+ 188 000e C0F20000 	 movt r0,#:upper16:.LC0
+ 189 0012 4FF0A601 	 mov r1,#166
+ 190              	.LVL26:
+ 191 0016 FFF7FEFF 	 bl check_failed
+ 192              	.L13:
+ 167:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	CHECK_PARAM(PARAM_WDT_MODE_OPT(WDTMode));
+ 193              	 .loc 1 167 0 is_stmt 1
+ 194 001a 012C     	 cmp r4,#1
+ 195 001c 07D9     	 bls .L14
+ 196              	 .loc 1 167 0 is_stmt 0 discriminator 1
+ 197 001e 40F20000 	 movw r0,#:lower16:.LC0
+ 198 0022 C0F20000 	 movt r0,#:upper16:.LC0
+ 199 0026 4FF0A701 	 mov r1,#167
+ 200 002a FFF7FEFF 	 bl check_failed
+ 201              	.L14:
+ 168:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	CLKPWR_SetPCLKDiv (CLKPWR_PCLKSEL_WDT, CLKPWR_PCLKSEL_CCLK_DIV_4);
+ 202              	 .loc 1 168 0 is_stmt 1
+ 203 002e 4FF00000 	 mov r0,#0
+ 204 0032 0146     	 mov r1,r0
+ 205 0034 FFF7FEFF 	 bl CLKPWR_SetPCLKDiv
+ 169:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 170:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	//Set clock source
+ 171:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	LPC_WDT->WDCLKSEL &= ~WDT_WDCLKSEL_MASK;
+ 206              	 .loc 1 171 0
+ 207 0038 4FF08043 	 mov r3,#1073741824
+ 208 003c 1A69     	 ldr r2,[r3,#16]
+ 209 003e 22F00302 	 bic r2,r2,#3
+ 210 0042 1A61     	 str r2,[r3,#16]
+ 172:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	LPC_WDT->WDCLKSEL |= ClkSrc;
+ 211              	 .loc 1 172 0
+ 212 0044 1A69     	 ldr r2,[r3,#16]
+ 213 0046 1543     	 orrs r5,r5,r2
+ 214 0048 1D61     	 str r5,[r3,#16]
+ 173:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	//Set WDT mode
+ 174:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	if (WDTMode == WDT_MODE_RESET){
+ 215              	 .loc 1 174 0
+ 216 004a 012C     	 cmp r4,#1
+ 175:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 		LPC_WDT->WDMOD |= WDT_WDMOD(WDTMode);
+ 217              	 .loc 1 175 0
+ 218 004c 02BF     	 ittt eq
+ 219 004e 1A78     	 ldrbeq r2,[r3,#0]
+ 220 0050 42F00202 	 orreq r2,r2,#2
+ 221 0054 1A70     	 strbeq r2,[r3,#0]
+ 222 0056 38BD     	 pop {r3,r4,r5,pc}
+ 223              	 .cfi_endproc
+ 224              	.LFE56:
+ 226              	 .section .text.WDT_ReadTimeOutFlag,"ax",%progbits
+ 227              	 .align 2
+ 228              	 .global WDT_ReadTimeOutFlag
+ 229              	 .thumb
+ 230              	 .thumb_func
+ 232              	WDT_ReadTimeOutFlag:
+ 233              	.LFB58:
+ 176:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	}
+ 177:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 178:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 179:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /*********************************************************************//**
+ 180:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @brief 		Start WDT activity with given timeout value
+ 181:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @param[in]	TimeOut WDT reset after timeout if it is not feed
+ 182:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** * @return 		None
+ 183:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  **********************************************************************/
+ 184:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** void WDT_Start(uint32_t TimeOut)
+ 185:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 186:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	uint32_t ClkSrc;
+ 187:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 188:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	ClkSrc = LPC_WDT->WDCLKSEL;
+ 189:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	ClkSrc &=WDT_WDCLKSEL_MASK;
+ 190:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_SetTimeOut(ClkSrc,TimeOut);
+ 191:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	//enable watchdog
+ 192:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	LPC_WDT->WDMOD |= WDT_WDMOD_WDEN;
+ 193:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_Feed();
+ 194:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 195:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 196:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /********************************************************************//**
+ 197:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @brief 		Read WDT Time out flag
+ 198:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @param[in]	None
+ 199:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @return		Time out flag status of WDT
+ 200:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  *********************************************************************/
+ 201:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** FlagStatus WDT_ReadTimeOutFlag (void)
+ 202:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 234              	 .loc 1 202 0
+ 235              	 .cfi_startproc
+ 236              	 
+ 237              	 
+ 238              	 
+ 203:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	return ((FlagStatus)((LPC_WDT->WDMOD & WDT_WDMOD_WDTOF) >>2));
+ 239              	 .loc 1 203 0
+ 240 0000 4FF08043 	 mov r3,#1073741824
+ 241 0004 1878     	 ldrb r0,[r3,#0]
+ 204:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 242              	 .loc 1 204 0
+ 243 0006 C0F38000 	 ubfx r0,r0,#2,#1
+ 244 000a 7047     	 bx lr
+ 245              	 .cfi_endproc
+ 246              	.LFE58:
+ 248              	 .section .text.WDT_ClrTimeOutFlag,"ax",%progbits
+ 249              	 .align 2
+ 250              	 .global WDT_ClrTimeOutFlag
+ 251              	 .thumb
+ 252              	 .thumb_func
+ 254              	WDT_ClrTimeOutFlag:
+ 255              	.LFB59:
+ 205:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 206:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /********************************************************************//**
+ 207:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @brief 		Clear WDT Time out flag
+ 208:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @param[in]	None
+ 209:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @return		None
+ 210:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  *********************************************************************/
+ 211:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** void WDT_ClrTimeOutFlag (void)
+ 212:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 256              	 .loc 1 212 0
+ 257              	 .cfi_startproc
+ 258              	 
+ 259              	 
+ 260              	 
+ 213:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	LPC_WDT->WDMOD &=~WDT_WDMOD_WDTOF;
+ 261              	 .loc 1 213 0
+ 262 0000 4FF08043 	 mov r3,#1073741824
+ 263 0004 1A78     	 ldrb r2,[r3,#0]
+ 264 0006 02F0FB02 	 and r2,r2,#251
+ 265 000a 1A70     	 strb r2,[r3,#0]
+ 214:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 266              	 .loc 1 214 0
+ 267 000c 7047     	 bx lr
+ 268              	 .cfi_endproc
+ 269              	.LFE59:
+ 271 000e 00BF     	 .section .text.WDT_Feed,"ax",%progbits
+ 272              	 .align 2
+ 273              	 .global WDT_Feed
+ 274              	 .thumb
+ 275              	 .thumb_func
+ 277              	WDT_Feed:
+ 278              	.LFB61:
+ 215:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 216:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /********************************************************************//**
+ 217:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @brief 		Update WDT timeout value and feed
+ 218:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @param[in]	TimeOut	TimeOut value to be updated
+ 219:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @return		None
+ 220:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  *********************************************************************/
+ 221:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** void WDT_UpdateTimeOut ( uint32_t TimeOut)
+ 222:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 223:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	uint32_t ClkSrc;
+ 224:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	ClkSrc = LPC_WDT->WDCLKSEL;
+ 225:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	ClkSrc &=WDT_WDCLKSEL_MASK;
+ 226:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_SetTimeOut(ClkSrc,TimeOut);
+ 227:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_Feed();
+ 228:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 229:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 230:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 231:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /********************************************************************//**
+ 232:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @brief 		After set WDTEN, call this function to start Watchdog
+ 233:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * 				or reload the Watchdog timer
+ 234:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @param[in]	None
+ 235:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  *
+ 236:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @return		None
+ 237:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  *********************************************************************/
+ 238:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** void WDT_Feed (void)
+ 239:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 279              	 .loc 1 239 0
+ 280              	 .cfi_startproc
+ 281              	 
+ 282              	 
+ 283              	 
+ 240:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	// Disable irq interrupt
+ 241:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** //	__disable_irq();
+ 242:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	LPC_WDT->WDFEED = 0xAA;
+ 284              	 .loc 1 242 0
+ 285 0000 4FF08043 	 mov r3,#1073741824
+ 286 0004 4FF0AA02 	 mov r2,#170
+ 287 0008 1A72     	 strb r2,[r3,#8]
+ 243:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	LPC_WDT->WDFEED = 0x55;
+ 288              	 .loc 1 243 0
+ 289 000a 4FF05502 	 mov r2,#85
+ 290 000e 1A72     	 strb r2,[r3,#8]
+ 244:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	// Then enable irq interrupt
+ 245:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** //	__enable_irq();
+ 246:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 291              	 .loc 1 246 0
+ 292 0010 7047     	 bx lr
+ 293              	 .cfi_endproc
+ 294              	.LFE61:
+ 296 0012 00BF     	 .section .text.WDT_UpdateTimeOut,"ax",%progbits
+ 297              	 .align 2
+ 298              	 .global WDT_UpdateTimeOut
+ 299              	 .thumb
+ 300              	 .thumb_func
+ 302              	WDT_UpdateTimeOut:
+ 303              	.LFB60:
+ 222:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 304              	 .loc 1 222 0
+ 305              	 .cfi_startproc
+ 306              	 
+ 307              	 
+ 308              	.LVL27:
+ 309 0000 08B5     	 push {r3,lr}
+ 310              	.LCFI2:
+ 311              	 .cfi_def_cfa_offset 8
+ 312              	 .cfi_offset 14,-4
+ 313              	 .cfi_offset 3,-8
+ 314 0002 0146     	 mov r1,r0
+ 224:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	ClkSrc = LPC_WDT->WDCLKSEL;
+ 315              	 .loc 1 224 0
+ 316 0004 4FF08043 	 mov r3,#1073741824
+ 317 0008 1869     	 ldr r0,[r3,#16]
+ 318              	.LVL28:
+ 226:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_SetTimeOut(ClkSrc,TimeOut);
+ 319              	 .loc 1 226 0
+ 320 000a 00F00300 	 and r0,r0,#3
+ 321              	.LVL29:
+ 322 000e FFF7FEFF 	 bl WDT_SetTimeOut
+ 323              	.LVL30:
+ 227:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_Feed();
+ 324              	 .loc 1 227 0
+ 325 0012 FFF7FEFF 	 bl WDT_Feed
+ 228:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 326              	 .loc 1 228 0
+ 327 0016 08BD     	 pop {r3,pc}
+ 328              	 .cfi_endproc
+ 329              	.LFE60:
+ 331              	 .section .text.WDT_Start,"ax",%progbits
+ 332              	 .align 2
+ 333              	 .global WDT_Start
+ 334              	 .thumb
+ 335              	 .thumb_func
+ 337              	WDT_Start:
+ 338              	.LFB57:
+ 185:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 339              	 .loc 1 185 0
+ 340              	 .cfi_startproc
+ 341              	 
+ 342              	 
+ 343              	.LVL31:
+ 344 0000 10B5     	 push {r4,lr}
+ 345              	.LCFI3:
+ 346              	 .cfi_def_cfa_offset 8
+ 347              	 .cfi_offset 14,-4
+ 348              	 .cfi_offset 4,-8
+ 349 0002 0146     	 mov r1,r0
+ 188:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	ClkSrc = LPC_WDT->WDCLKSEL;
+ 350              	 .loc 1 188 0
+ 351 0004 4FF08044 	 mov r4,#1073741824
+ 352 0008 2069     	 ldr r0,[r4,#16]
+ 353              	.LVL32:
+ 190:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_SetTimeOut(ClkSrc,TimeOut);
+ 354              	 .loc 1 190 0
+ 355 000a 00F00300 	 and r0,r0,#3
+ 356              	.LVL33:
+ 357 000e FFF7FEFF 	 bl WDT_SetTimeOut
+ 358              	.LVL34:
+ 192:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	LPC_WDT->WDMOD |= WDT_WDMOD_WDEN;
+ 359              	 .loc 1 192 0
+ 360 0012 2378     	 ldrb r3,[r4,#0]
+ 361 0014 43F00103 	 orr r3,r3,#1
+ 362 0018 2370     	 strb r3,[r4,#0]
+ 193:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	WDT_Feed();
+ 363              	 .loc 1 193 0
+ 364 001a FFF7FEFF 	 bl WDT_Feed
+ 194:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 365              	 .loc 1 194 0
+ 366 001e 10BD     	 pop {r4,pc}
+ 367              	 .cfi_endproc
+ 368              	.LFE57:
+ 370              	 .section .text.WDT_GetCurrentCount,"ax",%progbits
+ 371              	 .align 2
+ 372              	 .global WDT_GetCurrentCount
+ 373              	 .thumb
+ 374              	 .thumb_func
+ 376              	WDT_GetCurrentCount:
+ 377              	.LFB62:
+ 247:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 
+ 248:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** /********************************************************************//**
+ 249:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @brief 		Get the current value of WDT
+ 250:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @param[in]	None
+ 251:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  * @return		current value of WDT
+ 252:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c ****  *********************************************************************/
+ 253:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** uint32_t WDT_GetCurrentCount(void)
+ 254:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** {
+ 378              	 .loc 1 254 0
+ 379              	 .cfi_startproc
+ 380              	 
+ 381              	 
+ 382              	 
+ 255:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** 	return LPC_WDT->WDTV;
+ 383              	 .loc 1 255 0
+ 384 0000 4FF08043 	 mov r3,#1073741824
+ 385 0004 D868     	 ldr r0,[r3,#12]
+ 256:src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt.c **** }
+ 386              	 .loc 1 256 0
+ 387 0006 7047     	 bx lr
+ 388              	 .cfi_endproc
+ 389              	.LFE62:
+ 391              	 .section .rodata.str1.4,"aMS",%progbits,1
+ 392              	 .align 2
+ 393              	.LC0:
+ 394 0000 7372632F 	 .ascii "src/MightyBoard/Motherboard/lib/source/lpc17xx_wdt."
+ 394      4D696768 
+ 394      7479426F 
+ 394      6172642F 
+ 394      4D6F7468 
+ 395 0033 6300     	 .ascii "c\000"
+ 396 0035 000000   	 .text
+ 397              	.Letext0:
+ 398              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 399              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 400              	 .file 4 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 401              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc17xx_wdt.h"
+ 402              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 403              	 .file 7 "src/MightyBoard/Motherboard/system/system_LPC17xx.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_wdt.c
+    {standard input}:19     .text.WDT_SetTimeOut:00000000 $t
+    {standard input}:23     .text.WDT_SetTimeOut:00000000 WDT_SetTimeOut
+    {standard input}:161    .text.WDT_Init:00000000 $t
+    {standard input}:166    .text.WDT_Init:00000000 WDT_Init
+    {standard input}:393    .rodata.str1.4:00000000 .LC0
+    {standard input}:227    .text.WDT_ReadTimeOutFlag:00000000 $t
+    {standard input}:232    .text.WDT_ReadTimeOutFlag:00000000 WDT_ReadTimeOutFlag
+    {standard input}:249    .text.WDT_ClrTimeOutFlag:00000000 $t
+    {standard input}:254    .text.WDT_ClrTimeOutFlag:00000000 WDT_ClrTimeOutFlag
+    {standard input}:272    .text.WDT_Feed:00000000 $t
+    {standard input}:277    .text.WDT_Feed:00000000 WDT_Feed
+    {standard input}:297    .text.WDT_UpdateTimeOut:00000000 $t
+    {standard input}:302    .text.WDT_UpdateTimeOut:00000000 WDT_UpdateTimeOut
+    {standard input}:332    .text.WDT_Start:00000000 $t
+    {standard input}:337    .text.WDT_Start:00000000 WDT_Start
+    {standard input}:371    .text.WDT_GetCurrentCount:00000000 $t
+    {standard input}:376    .text.WDT_GetCurrentCount:00000000 WDT_GetCurrentCount
+    {standard input}:392    .rodata.str1.4:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+SystemCoreClock
+CLKPWR_SetPCLKDiv
+check_failed

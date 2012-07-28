@@ -1,0 +1,626 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Cutoff.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN6Cutoff14isCutoffActiveEv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN6Cutoff14isCutoffActiveEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN6Cutoff14isCutoffActiveEv:
+  25              	.LFB60:
+  26              	 .file 1 "src/MightyBoard/Motherboard/Cutoff.cc"
+   1:src/MightyBoard/Motherboard/Cutoff.cc **** /*
+   2:src/MightyBoard/Motherboard/Cutoff.cc ****  * Copyright 2011 by Alison Leonard	 <alison@makerbot.com>
+   3:src/MightyBoard/Motherboard/Cutoff.cc ****  *
+   4:src/MightyBoard/Motherboard/Cutoff.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/Motherboard/Cutoff.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/Motherboard/Cutoff.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/Motherboard/Cutoff.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/Motherboard/Cutoff.cc ****  *
+   9:src/MightyBoard/Motherboard/Cutoff.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/Motherboard/Cutoff.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/Motherboard/Cutoff.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/Motherboard/Cutoff.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/Motherboard/Cutoff.cc ****  *
+  14:src/MightyBoard/Motherboard/Cutoff.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/Motherboard/Cutoff.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/Motherboard/Cutoff.cc ****  */
+  17:src/MightyBoard/Motherboard/Cutoff.cc **** 
+  18:src/MightyBoard/Motherboard/Cutoff.cc **** #include "Cutoff.hh"
+  19:src/MightyBoard/Motherboard/Cutoff.cc **** #include "Pin.hh"
+  20:src/MightyBoard/Motherboard/Cutoff.cc **** //#include "Piezo.hh"
+  21:src/MightyBoard/Motherboard/Cutoff.cc **** 
+  22:src/MightyBoard/Motherboard/Cutoff.cc **** 
+  23:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::init()
+  24:src/MightyBoard/Motherboard/Cutoff.cc **** {
+  25:src/MightyBoard/Motherboard/Cutoff.cc **** 	// reset pin is an output, default low
+  26:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setValue(false);
+  27:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setDirection(true);
+  28:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  29:src/MightyBoard/Motherboard/Cutoff.cc **** 	// SR Check pin is an input, checks if safety cutoff is active
+  30:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_SR_CHECK.setValue(false);
+  31:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_SR_CHECK.setDirection(false);
+  32:src/MightyBoard/Motherboard/Cutoff.cc ****  
+  33:src/MightyBoard/Motherboard/Cutoff.cc **** 	if (CUTOFF_PRESENT)
+  34:src/MightyBoard/Motherboard/Cutoff.cc **** 		enable();
+  35:src/MightyBoard/Motherboard/Cutoff.cc **** 	else
+  36:src/MightyBoard/Motherboard/Cutoff.cc **** 		disable();
+  37:src/MightyBoard/Motherboard/Cutoff.cc **** 		
+  38:src/MightyBoard/Motherboard/Cutoff.cc **** 	noiseCount = 0;
+  39:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoffCount = 0;
+  40:src/MightyBoard/Motherboard/Cutoff.cc **** 	alarmRun = false;
+  41:src/MightyBoard/Motherboard/Cutoff.cc **** }
+  42:src/MightyBoard/Motherboard/Cutoff.cc **** bool Cutoff::isCutoffActive()
+  43:src/MightyBoard/Motherboard/Cutoff.cc **** {
+  27              	 .loc 1 43 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  44:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if cutoff test pin is high or if cutoff output is latched high, flag as cutoff active
+  45:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_TEST.getValue() || CUTOFF_SR_CHECK.getValue())
+  46:src/MightyBoard/Motherboard/Cutoff.cc **** 		return true;
+  47:src/MightyBoard/Motherboard/Cutoff.cc **** //	else
+  48:src/MightyBoard/Motherboard/Cutoff.cc **** //		return false;
+  49:src/MightyBoard/Motherboard/Cutoff.cc **** }
+  33              	 .loc 1 49 0
+  34 0000 4FF00100 	 mov r0,#1
+  35              	.LVL1:
+  36 0004 7047     	 bx lr
+  37              	 .cfi_endproc
+  38              	.LFE60:
+  40 0006 00BF     	 .section .text._ZN6Cutoff6enableEv,"ax",%progbits
+  41              	 .align 2
+  42              	 .global _ZN6Cutoff6enableEv
+  43              	 .thumb
+  44              	 .thumb_func
+  46              	_ZN6Cutoff6enableEv:
+  47              	.LFB61:
+  50:src/MightyBoard/Motherboard/Cutoff.cc **** 
+  51:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::enable()
+  52:src/MightyBoard/Motherboard/Cutoff.cc **** {
+  48              	 .loc 1 52 0
+  49              	 .cfi_startproc
+  50              	 
+  51              	 
+  52              	 
+  53              	.LVL2:
+  53:src/MightyBoard/Motherboard/Cutoff.cc **** 	// cutoff test pin is an input
+  54:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setValue(false);
+  55:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setDirection(false);
+  56:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  57:src/MightyBoard/Motherboard/Cutoff.cc **** 	// set enabled flag
+  58:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoff_enabled = true;
+  54              	 .loc 1 58 0
+  55 0000 4FF00103 	 mov r3,#1
+  56 0004 0370     	 strb r3,[r0,#0]
+  59:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  60:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if output is shut off (high when off), toggle reset pin
+  61:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_SR_CHECK.getValue())
+  62:src/MightyBoard/Motherboard/Cutoff.cc **** 		resetCutoff();
+  63:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  64:src/MightyBoard/Motherboard/Cutoff.cc **** 	// set reset line to default value (low)
+  65:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setValue(false);
+  66:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  67:src/MightyBoard/Motherboard/Cutoff.cc **** }
+  57              	 .loc 1 67 0
+  58 0006 7047     	 bx lr
+  59              	 .cfi_endproc
+  60              	.LFE61:
+  62              	 .section .text._ZN6Cutoff7disableEv,"ax",%progbits
+  63              	 .align 2
+  64              	 .global _ZN6Cutoff7disableEv
+  65              	 .thumb
+  66              	 .thumb_func
+  68              	_ZN6Cutoff7disableEv:
+  69              	.LFB62:
+  68:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::disable()
+  69:src/MightyBoard/Motherboard/Cutoff.cc **** {
+  70              	 .loc 1 69 0
+  71              	 .cfi_startproc
+  72              	 
+  73              	 
+  74              	 
+  75              	.LVL3:
+  70:src/MightyBoard/Motherboard/Cutoff.cc **** 	// cutoff test pin is an output and pulled down
+  71:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setValue(false);
+  72:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setDirection(true);
+  73:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  74:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoff_enabled = false;
+  76              	 .loc 1 74 0
+  77 0000 4FF00003 	 mov r3,#0
+  78 0004 0370     	 strb r3,[r0,#0]
+  75:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if output is shut off (high when off), toggle reset pin
+  76:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_SR_CHECK.getValue())
+  77:src/MightyBoard/Motherboard/Cutoff.cc **** 		resetCutoff();
+  78:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  79:src/MightyBoard/Motherboard/Cutoff.cc **** 	// set reset line to default value (low)
+  80:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setValue(false);
+  81:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  82:src/MightyBoard/Motherboard/Cutoff.cc **** }
+  79              	 .loc 1 82 0
+  80 0006 7047     	 bx lr
+  81              	 .cfi_endproc
+  82              	.LFE62:
+  84              	 .section .text._ZN6Cutoff4initEv,"ax",%progbits
+  85              	 .align 2
+  86              	 .global _ZN6Cutoff4initEv
+  87              	 .thumb
+  88              	 .thumb_func
+  90              	_ZN6Cutoff4initEv:
+  91              	.LFB59:
+  24:src/MightyBoard/Motherboard/Cutoff.cc **** {
+  92              	 .loc 1 24 0
+  93              	 .cfi_startproc
+  94              	 
+  95              	 
+  96              	.LVL4:
+  97 0000 10B5     	 push {r4,lr}
+  98              	.LCFI0:
+  99              	 .cfi_def_cfa_offset 8
+ 100              	 .cfi_offset 14,-4
+ 101              	 .cfi_offset 4,-8
+ 102 0002 0446     	 mov r4,r0
+  36:src/MightyBoard/Motherboard/Cutoff.cc **** 		disable();
+ 103              	 .loc 1 36 0
+ 104 0004 FFF7FEFF 	 bl _ZN6Cutoff7disableEv
+ 105              	.LVL5:
+  38:src/MightyBoard/Motherboard/Cutoff.cc **** 	noiseCount = 0;
+ 106              	 .loc 1 38 0
+ 107 0008 4FF00003 	 mov r3,#0
+ 108 000c 6370     	 strb r3,[r4,#1]
+  39:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoffCount = 0;
+ 109              	 .loc 1 39 0
+ 110 000e A370     	 strb r3,[r4,#2]
+  40:src/MightyBoard/Motherboard/Cutoff.cc **** 	alarmRun = false;
+ 111              	 .loc 1 40 0
+ 112 0010 E370     	 strb r3,[r4,#3]
+  41:src/MightyBoard/Motherboard/Cutoff.cc **** }
+ 113              	 .loc 1 41 0
+ 114 0012 10BD     	 pop {r4,pc}
+ 115              	 .cfi_endproc
+ 116              	.LFE59:
+ 118              	 .section .text._ZN6Cutoff11resetCutoffEv,"ax",%progbits
+ 119              	 .align 2
+ 120              	 .global _ZN6Cutoff11resetCutoffEv
+ 121              	 .thumb
+ 122              	 .thumb_func
+ 124              	_ZN6Cutoff11resetCutoffEv:
+ 125              	.LFB63:
+  83:src/MightyBoard/Motherboard/Cutoff.cc **** 
+  84:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::resetCutoff(){
+ 126              	 .loc 1 84 0
+ 127              	 .cfi_startproc
+ 128              	 
+ 129              	 
+ 130              	 
+ 131              	.LVL6:
+  85:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  86:src/MightyBoard/Motherboard/Cutoff.cc **** 	//Timeout resetTimeout;
+  87:src/MightyBoard/Motherboard/Cutoff.cc **** 
+  88:src/MightyBoard/Motherboard/Cutoff.cc **** 	// abort if cutoff test is high
+  89:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_TEST.getValue())
+  90:src/MightyBoard/Motherboard/Cutoff.cc **** //		return;
+  91:src/MightyBoard/Motherboard/Cutoff.cc **** 		
+  92:src/MightyBoard/Motherboard/Cutoff.cc **** 	// toggle reset pin	
+  93:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setValue(true);
+  94:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+  95:src/MightyBoard/Motherboard/Cutoff.cc **** 	// ensure that reset worked
+  96:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if not, enable hardware circuit
+  97:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_SR_CHECK.getValue())
+  98:src/MightyBoard/Motherboard/Cutoff.cc **** //		disable();
+  99:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if reset OK, return reset line to default (pulled down)
+ 100:src/MightyBoard/Motherboard/Cutoff.cc **** //	else
+ 101:src/MightyBoard/Motherboard/Cutoff.cc **** //		CUTOFF_RESET.setValue(false);
+ 102:src/MightyBoard/Motherboard/Cutoff.cc **** }
+ 132              	 .loc 1 102 0
+ 133 0000 7047     	 bx lr
+ 134              	 .cfi_endproc
+ 135              	.LFE63:
+ 137 0002 00BF     	 .section .text._ZN6Cutoff8setAlarmEv,"ax",%progbits
+ 138              	 .align 2
+ 139              	 .global _ZN6Cutoff8setAlarmEv
+ 140              	 .thumb
+ 141              	 .thumb_func
+ 143              	_ZN6Cutoff8setAlarmEv:
+ 144              	.LFB64:
+ 103:src/MightyBoard/Motherboard/Cutoff.cc **** 
+ 104:src/MightyBoard/Motherboard/Cutoff.cc **** // call piezo alarm in cutoff is triggered
+ 105:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::setAlarm()
+ 106:src/MightyBoard/Motherboard/Cutoff.cc **** {
+ 145              	 .loc 1 106 0
+ 146              	 .cfi_startproc
+ 147              	 
+ 148              	 
+ 149              	 
+ 150              	.LVL7:
+ 107:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(!alarmRun)
+ 151              	 .loc 1 107 0
+ 152 0000 C378     	 ldrb r3,[r0,#3]
+ 153 0002 13B9     	 cbnz r3,.L6
+ 108:src/MightyBoard/Motherboard/Cutoff.cc **** 	{
+ 109:src/MightyBoard/Motherboard/Cutoff.cc **** //		Piezo::errorTone(5);
+ 110:src/MightyBoard/Motherboard/Cutoff.cc **** 		alarmRun = true;
+ 154              	 .loc 1 110 0
+ 155 0004 4FF00103 	 mov r3,#1
+ 156 0008 C370     	 strb r3,[r0,#3]
+ 157              	.L6:
+ 158 000a 7047     	 bx lr
+ 159              	 .cfi_endproc
+ 160              	.LFE64:
+ 162              	 .section .text._ZN6Cutoff13noiseResponseEv,"ax",%progbits
+ 163              	 .align 2
+ 164              	 .global _ZN6Cutoff13noiseResponseEv
+ 165              	 .thumb
+ 166              	 .thumb_func
+ 168              	_ZN6Cutoff13noiseResponseEv:
+ 169              	.LFB65:
+ 111:src/MightyBoard/Motherboard/Cutoff.cc **** 	}
+ 112:src/MightyBoard/Motherboard/Cutoff.cc **** }
+ 113:src/MightyBoard/Motherboard/Cutoff.cc **** 
+ 114:src/MightyBoard/Motherboard/Cutoff.cc **** // this circuit is called once a microsecond by the motherboard if the 
+ 115:src/MightyBoard/Motherboard/Cutoff.cc **** // safety cutoff is triggered.  
+ 116:src/MightyBoard/Motherboard/Cutoff.cc **** // if cutoff signal is low and has one microsecond has passed
+ 117:src/MightyBoard/Motherboard/Cutoff.cc **** // we expect that a spike in power has occured thus we should reset the
+ 118:src/MightyBoard/Motherboard/Cutoff.cc **** // cutoff circuit
+ 119:src/MightyBoard/Motherboard/Cutoff.cc **** bool Cutoff::noiseResponse(){
+ 170              	 .loc 1 119 0
+ 171              	 .cfi_startproc
+ 172              	 
+ 173              	 
+ 174              	.LVL8:
+ 175 0000 08B5     	 push {r3,lr}
+ 176              	.LCFI1:
+ 177              	 .cfi_def_cfa_offset 8
+ 178              	 .cfi_offset 14,-4
+ 179              	 .cfi_offset 3,-8
+ 120:src/MightyBoard/Motherboard/Cutoff.cc **** 	
+ 121:src/MightyBoard/Motherboard/Cutoff.cc **** 		// not noise if cutoff has been high for longer than cutoff limit
+ 122:src/MightyBoard/Motherboard/Cutoff.cc **** 		if(cutoffCount > CUTOFF_COUNT_LIMIT)
+ 180              	 .loc 1 122 0
+ 181 0002 8378     	 ldrb r3,[r0,#2]
+ 182 0004 142B     	 cmp r3,#20
+ 183 0006 04D9     	 bls .L9
+ 123:src/MightyBoard/Motherboard/Cutoff.cc **** 		{
+ 124:src/MightyBoard/Motherboard/Cutoff.cc **** 			setAlarm();
+ 184              	 .loc 1 124 0
+ 185 0008 FFF7FEFF 	 bl _ZN6Cutoff8setAlarmEv
+ 186              	.LVL9:
+ 125:src/MightyBoard/Motherboard/Cutoff.cc **** 			return false;
+ 187              	 .loc 1 125 0
+ 188 000c 4FF00000 	 mov r0,#0
+ 189 0010 08BD     	 pop {r3,pc}
+ 190              	.LVL10:
+ 191              	.L9:
+ 126:src/MightyBoard/Motherboard/Cutoff.cc **** 		}
+ 127:src/MightyBoard/Motherboard/Cutoff.cc **** 			
+ 128:src/MightyBoard/Motherboard/Cutoff.cc **** 		// if cutoff test line is high do nothing / clear cutoffCount
+ 129:src/MightyBoard/Motherboard/Cutoff.cc **** //		if(CUTOFF_TEST.getValue())
+ 130:src/MightyBoard/Motherboard/Cutoff.cc **** //		{
+ 131:src/MightyBoard/Motherboard/Cutoff.cc **** 			noiseCount = 0;
+ 132:src/MightyBoard/Motherboard/Cutoff.cc **** 			cutoffCount++;
+ 133:src/MightyBoard/Motherboard/Cutoff.cc **** //		}
+ 134:src/MightyBoard/Motherboard/Cutoff.cc **** 		// if cutoff test line is low, reset circuit - check low 5 times
+ 135:src/MightyBoard/Motherboard/Cutoff.cc **** 		// before resetting.  
+ 136:src/MightyBoard/Motherboard/Cutoff.cc **** //		else{
+ 137:src/MightyBoard/Motherboard/Cutoff.cc **** 			if(noiseCount > NOISE_COUNT_LIMIT){
+ 138:src/MightyBoard/Motherboard/Cutoff.cc **** 					resetCutoff();
+ 139:src/MightyBoard/Motherboard/Cutoff.cc **** 					noiseCount = 0;
+ 140:src/MightyBoard/Motherboard/Cutoff.cc **** 			}
+ 141:src/MightyBoard/Motherboard/Cutoff.cc **** 			noiseCount++;
+ 192              	 .loc 1 141 0
+ 193 0012 4FF00103 	 mov r3,#1
+ 194 0016 4370     	 strb r3,[r0,#1]
+ 142:src/MightyBoard/Motherboard/Cutoff.cc **** 			cutoffCount = 0;
+ 195              	 .loc 1 142 0
+ 196 0018 4FF00002 	 mov r2,#0
+ 197 001c 8270     	 strb r2,[r0,#2]
+ 143:src/MightyBoard/Motherboard/Cutoff.cc **** //		}
+ 144:src/MightyBoard/Motherboard/Cutoff.cc **** 		
+ 145:src/MightyBoard/Motherboard/Cutoff.cc **** 		return true;
+ 198              	 .loc 1 145 0
+ 199 001e 1846     	 mov r0,r3
+ 200              	.LVL11:
+ 146:src/MightyBoard/Motherboard/Cutoff.cc **** }
+ 201              	 .loc 1 146 0
+ 202 0020 08BD     	 pop {r3,pc}
+ 203              	 .cfi_endproc
+ 204              	.LFE65:
+ 206 0022 00BF     	 .section .text._GLOBAL__sub_I__ZN6Cutoff4initEv,"ax",%progbits
+ 207              	 .align 2
+ 208              	 .thumb
+ 209              	 .thumb_func
+ 211              	_GLOBAL__sub_I__ZN6Cutoff4initEv:
+ 212              	.LFB67:
+ 213              	 .loc 1 146 0
+ 214              	 .cfi_startproc
+ 215              	 
+ 216              	 
+ 217 0000 10B5     	 push {r4,lr}
+ 218              	.LCFI2:
+ 219              	 .cfi_def_cfa_offset 8
+ 220              	 .cfi_offset 14,-4
+ 221              	 .cfi_offset 4,-8
+ 222              	.LVL12:
+ 223              	.LBB4:
+ 224              	.LBB5:
+ 225              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 226              	 .loc 2 49 0
+ 227 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 228 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 229 000a 4FF00001 	 mov r1,#0
+ 230 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 231              	 .loc 2 50 0
+ 232 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 233 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 234 001a 4FF00101 	 mov r1,#1
+ 235 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 236              	 .loc 2 51 0
+ 237 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 238 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 239 002a 4FF00201 	 mov r1,#2
+ 240 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 241              	 .loc 2 52 0
+ 242 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 243 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 244 003a 4FF00301 	 mov r1,#3
+ 245 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 246              	 .loc 2 53 0
+ 247 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 248 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 249 004a 4FF00401 	 mov r1,#4
+ 250 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 251              	 .loc 2 55 0
+ 252 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 253 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 254 005a 2046     	 mov r0,r4
+ 255 005c 4FF0FF01 	 mov r1,#255
+ 256 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 257              	 .file 3 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 258              	 .loc 3 76 0
+ 259 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 260 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 261 006c 2146     	 mov r1,r4
+ 262 006e 4FF00002 	 mov r2,#0
+ 263 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 264              	.LBE5:
+ 265              	.LBE4:
+ 266              	 .loc 1 146 0
+ 267 0076 10BD     	 pop {r4,pc}
+ 268              	 .cfi_endproc
+ 269              	.LFE67:
+ 271              	 .section .init_array,"aw",%init_array
+ 272              	 .align 2
+ 273 0000 00000000 	 .word _GLOBAL__sub_I__ZN6Cutoff4initEv(target1)
+ 274              	 .section .bss._ZL5Port0,"aw",%nobits
+ 275              	 .align 2
+ 276              	 .set .LANCHOR0,.+0
+ 279              	_ZL5Port0:
+ 280 0000 00       	 .space 1
+ 281 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 282              	 .align 2
+ 283              	 .set .LANCHOR1,.+0
+ 286              	_ZL5Port1:
+ 287 0000 00       	 .space 1
+ 288 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 289              	 .align 2
+ 290              	 .set .LANCHOR2,.+0
+ 293              	_ZL5Port2:
+ 294 0000 00       	 .space 1
+ 295 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 296              	 .align 2
+ 297              	 .set .LANCHOR3,.+0
+ 300              	_ZL5Port3:
+ 301 0000 00       	 .space 1
+ 302 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 303              	 .align 2
+ 304              	 .set .LANCHOR4,.+0
+ 307              	_ZL5Port4:
+ 308 0000 00       	 .space 1
+ 309 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 310              	 .align 2
+ 311              	 .set .LANCHOR5,.+0
+ 314              	_ZL8NullPort:
+ 315 0000 00       	 .space 1
+ 316 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 317              	 .align 2
+ 318              	 .set .LANCHOR6,.+0
+ 321              	_ZL7NullPin:
+ 322 0000 00000000 	 .space 5
+ 322      00
+ 323 0005 000000   	 .text
+ 324              	.Letext0:
+ 325              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 326              	 .file 5 "src/MightyBoard/Motherboard/Cutoff.hh"
+ 327              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Cutoff.cc
+    {standard input}:19     .text._ZN6Cutoff14isCutoffActiveEv:00000000 $t
+    {standard input}:24     .text._ZN6Cutoff14isCutoffActiveEv:00000000 _ZN6Cutoff14isCutoffActiveEv
+    {standard input}:41     .text._ZN6Cutoff6enableEv:00000000 $t
+    {standard input}:46     .text._ZN6Cutoff6enableEv:00000000 _ZN6Cutoff6enableEv
+    {standard input}:63     .text._ZN6Cutoff7disableEv:00000000 $t
+    {standard input}:68     .text._ZN6Cutoff7disableEv:00000000 _ZN6Cutoff7disableEv
+    {standard input}:85     .text._ZN6Cutoff4initEv:00000000 $t
+    {standard input}:90     .text._ZN6Cutoff4initEv:00000000 _ZN6Cutoff4initEv
+    {standard input}:119    .text._ZN6Cutoff11resetCutoffEv:00000000 $t
+    {standard input}:124    .text._ZN6Cutoff11resetCutoffEv:00000000 _ZN6Cutoff11resetCutoffEv
+    {standard input}:138    .text._ZN6Cutoff8setAlarmEv:00000000 $t
+    {standard input}:143    .text._ZN6Cutoff8setAlarmEv:00000000 _ZN6Cutoff8setAlarmEv
+    {standard input}:163    .text._ZN6Cutoff13noiseResponseEv:00000000 $t
+    {standard input}:168    .text._ZN6Cutoff13noiseResponseEv:00000000 _ZN6Cutoff13noiseResponseEv
+    {standard input}:207    .text._GLOBAL__sub_I__ZN6Cutoff4initEv:00000000 $t
+    {standard input}:211    .text._GLOBAL__sub_I__ZN6Cutoff4initEv:00000000 _GLOBAL__sub_I__ZN6Cutoff4initEv
+    {standard input}:276    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:283    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:290    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:297    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:304    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:311    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:318    .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:272    .init_array:00000000 $d
+    {standard input}:275    .bss._ZL5Port0:00000000 $d
+    {standard input}:279    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:282    .bss._ZL5Port1:00000000 $d
+    {standard input}:286    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:289    .bss._ZL5Port2:00000000 $d
+    {standard input}:293    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:296    .bss._ZL5Port3:00000000 $d
+    {standard input}:300    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:303    .bss._ZL5Port4:00000000 $d
+    {standard input}:307    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:310    .bss._ZL8NullPort:00000000 $d
+    {standard input}:314    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:317    .bss._ZL7NullPin:00000000 $d
+    {standard input}:321    .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth

@@ -1,0 +1,690 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "serial.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.ser_OpenPort,"ax",%progbits
+  19              	 .align 2
+  20              	 .global ser_OpenPort
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	ser_OpenPort:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/USBCDC/serial.c"
+   1:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+   2:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      Name:    serial.c
+   3:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      Purpose: serial port handling for LPC17xx
+   4:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      Version: V1.20
+   5:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *----------------------------------------------------------------------------
+   6:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      This software is supplied "AS IS" without any warranties, express,
+   7:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      implied or statutory, including but not limited to the implied
+   8:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      warranties of fitness for purpose, satisfactory quality and
+   9:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      noninfringement. Keil extends you a royalty-free right to reproduce
+  10:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      and distribute executable files created using this software for use
+  11:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      on NXP Semiconductors LPC microcontroller devices only. Nothing else
+  12:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *      gives you the right to use this software.
+  13:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *
+  14:src/MightyBoard/Motherboard/USBCDC/serial.c ****  * Copyright (c) 2009 Keil - An ARM Company. All rights reserved.
+  15:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+  16:src/MightyBoard/Motherboard/USBCDC/serial.c **** #include "LPC17xx.h"                                   // LPC17xx definitions
+  17:src/MightyBoard/Motherboard/USBCDC/serial.c **** #include "lpc_types.h"
+  18:src/MightyBoard/Motherboard/USBCDC/serial.c **** #include "serial.h"
+  19:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  20:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  21:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+  22:src/MightyBoard/Motherboard/USBCDC/serial.c ****   Defines for ring buffers
+  23:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+  24:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_SIZE               (128)               // serial buffer in bytes (power 2)
+  25:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_MASK               (SER_BUF_SIZE-1ul)  // buffer size mask
+  26:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  27:src/MightyBoard/Motherboard/USBCDC/serial.c **** /* Buffer read / write macros */
+  28:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_RESET(serBuf)      (serBuf.rdIdx = serBuf.wrIdx = 0)
+  29:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_WR(serBuf, dataIn) (serBuf.data[SER_BUF_MASK & serBuf.wrIdx++] = (dataIn))
+  30:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_RD(serBuf)         (serBuf.data[SER_BUF_MASK & serBuf.rdIdx++])
+  31:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_EMPTY(serBuf)      (serBuf.rdIdx == serBuf.wrIdx)
+  32:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_FULL(serBuf)       (serBuf.rdIdx == serBuf.wrIdx+1)
+  33:src/MightyBoard/Motherboard/USBCDC/serial.c **** #define SER_BUF_COUNT(serBuf)      (SER_BUF_MASK & (serBuf.wrIdx - serBuf.rdIdx))
+  34:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  35:src/MightyBoard/Motherboard/USBCDC/serial.c **** // buffer type
+  36:src/MightyBoard/Motherboard/USBCDC/serial.c **** typedef struct __SER_BUF_T {
+  37:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned char data[SER_BUF_SIZE];
+  38:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned int wrIdx;
+  39:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned int rdIdx;
+  40:src/MightyBoard/Motherboard/USBCDC/serial.c **** } SER_BUF_T;
+  41:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  42:src/MightyBoard/Motherboard/USBCDC/serial.c **** unsigned long          ser_txRestart;                  // NZ if TX restart is required
+  43:src/MightyBoard/Motherboard/USBCDC/serial.c **** unsigned short         ser_lineState;                  // ((msr << 8) | (lsr))
+  44:src/MightyBoard/Motherboard/USBCDC/serial.c **** SER_BUF_T              ser_out;                        // Serial data buffers
+  45:src/MightyBoard/Motherboard/USBCDC/serial.c **** SER_BUF_T              ser_in;
+  46:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  47:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+  48:src/MightyBoard/Motherboard/USBCDC/serial.c ****   open the serial port
+  49:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+  50:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  51:src/MightyBoard/Motherboard/USBCDC/serial.c **** void ser_OpenPort (char portNum) {
+  27              	 .loc 1 51 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  52:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*
+  53:src/MightyBoard/Motherboard/USBCDC/serial.c ****   if ( portNum == 0 )
+  54:src/MightyBoard/Motherboard/USBCDC/serial.c ****   {
+  55:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	// Port 0
+  56:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	NVIC_DisableIRQ(UART0_IRQn);
+  57:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_PINCON->PINSEL0 &= ~0x000000F0;
+  58:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_PINCON->PINSEL0 |= 0x00000050;     // RxD0 is P0.3 and TxD0 is P0.2
+  59:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+  60:src/MightyBoard/Motherboard/USBCDC/serial.c ****   else
+  61:src/MightyBoard/Motherboard/USBCDC/serial.c ****   {
+  62:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	// Port 1
+  63:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	NVIC_DisableIRQ(UART1_IRQn);
+  64:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_PINCON->PINSEL4 &= ~0x0000000F;
+  65:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_PINCON->PINSEL4 |= 0x0000000A;    // Enable RxD1 P2.1, TxD1 P2.0
+  66:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }*/
+  67:src/MightyBoard/Motherboard/USBCDC/serial.c ****   return;
+  68:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+  33              	 .loc 1 68 0
+  34 0000 7047     	 bx lr
+  35              	 .cfi_endproc
+  36              	.LFE55:
+  38 0002 00BF     	 .section .text.ser_ClosePort,"ax",%progbits
+  39              	 .align 2
+  40              	 .global ser_ClosePort
+  41              	 .thumb
+  42              	 .thumb_func
+  44              	ser_ClosePort:
+  45              	.LFB56:
+  69:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  70:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  71:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+  72:src/MightyBoard/Motherboard/USBCDC/serial.c ****   close the serial port
+  73:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+  74:src/MightyBoard/Motherboard/USBCDC/serial.c **** void ser_ClosePort (char portNum ) {
+  46              	 .loc 1 74 0
+  47              	 .cfi_startproc
+  48              	 
+  49              	 
+  50              	 
+  51              	.LVL1:
+  75:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*  if ( portNum == 0 )
+  76:src/MightyBoard/Motherboard/USBCDC/serial.c ****   {
+  77:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	// POrt 0
+  78:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_PINCON->PINSEL0 &= ~0x000000F0;
+  79:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	// Disable the interrupt in the VIC and UART controllers
+  80:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_UART0->IER = 0;
+  81:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	NVIC_DisableIRQ(UART0_IRQn);
+  82:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+  83:src/MightyBoard/Motherboard/USBCDC/serial.c ****   else
+  84:src/MightyBoard/Motherboard/USBCDC/serial.c ****   {
+  85:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	// Port 1
+  86:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_PINCON->PINSEL4 &= ~0x0000000F;
+  87:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	// Disable the interrupt in the VIC and UART controllers
+  88:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	LPC_UART1->IER = 0;
+  89:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	NVIC_DisableIRQ(UART1_IRQn);
+  90:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }*/
+  91:src/MightyBoard/Motherboard/USBCDC/serial.c ****   return;
+  92:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+  52              	 .loc 1 92 0
+  53 0000 7047     	 bx lr
+  54              	 .cfi_endproc
+  55              	.LFE56:
+  57 0002 00BF     	 .section .text.ser_InitPort0,"ax",%progbits
+  58              	 .align 2
+  59              	 .global ser_InitPort0
+  60              	 .thumb
+  61              	 .thumb_func
+  63              	ser_InitPort0:
+  64              	.LFB57:
+  93:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+  94:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+  95:src/MightyBoard/Motherboard/USBCDC/serial.c ****   initialize the serial port
+  96:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+  97:src/MightyBoard/Motherboard/USBCDC/serial.c **** void ser_InitPort0 (unsigned long baudrate, unsigned int  databits,
+  98:src/MightyBoard/Motherboard/USBCDC/serial.c ****                   unsigned int  parity,   unsigned int  stopbits) {
+  65              	 .loc 1 98 0
+  66              	 .cfi_startproc
+  67              	 
+  68              	 
+  69              	 
+  70              	.LVL2:
+  99:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*
+ 100:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned char lcr_p, lcr_s, lcr_d;
+ 101:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned int dll;
+ 102:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned int pclkdiv, pclk;
+ 103:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 104:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch (databits) {
+ 105:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 5:                                            // 5 Data bits
+ 106:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x00;
+ 107:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 108:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 6:                                            // 6 Data bits
+ 109:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x01;
+ 110:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 111:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 7:                                            // 7 Data bits
+ 112:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x02;
+ 113:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 114:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 8:                                            // 8 Data bits
+ 115:src/MightyBoard/Motherboard/USBCDC/serial.c ****     default:
+ 116:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x03;
+ 117:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 118:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 119:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 120:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch (stopbits) {
+ 121:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 1:                                            // 1,5 Stop bits
+ 122:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 2:                                            // 2   Stop bits
+ 123:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_s = 0x04;
+ 124:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 125:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 0:                                            // 1   Stop bit
+ 126:src/MightyBoard/Motherboard/USBCDC/serial.c ****     default:
+ 127:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_s = 0x00;
+ 128:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 129:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 130:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 131:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch (parity) {
+ 132:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 1:                                            // Parity Odd
+ 133:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x08;
+ 134:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 135:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 2:                                            // Parity Even
+ 136:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x18;
+ 137:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 138:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 3:                                            // Parity Mark
+ 139:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x28;
+ 140:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 141:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 4:                                            // Parity Space
+ 142:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x38;
+ 143:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 144:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 0:                                            // Parity None
+ 145:src/MightyBoard/Motherboard/USBCDC/serial.c ****     default:
+ 146:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x00;
+ 147:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 148:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 149:src/MightyBoard/Motherboard/USBCDC/serial.c **** */
+ 150:src/MightyBoard/Motherboard/USBCDC/serial.c ****   SER_BUF_RESET(ser_out);                              // reset out buffer
+  71              	 .loc 1 150 0
+  72 0000 40F20003 	 movw r3,#:lower16:ser_out
+  73              	.LVL3:
+  74 0004 C0F20003 	 movt r3,#:upper16:ser_out
+  75 0008 4FF00002 	 mov r2,#0
+  76              	.LVL4:
+  77 000c C3F88020 	 str r2,[r3,#128]
+  78 0010 C3F88420 	 str r2,[r3,#132]
+ 151:src/MightyBoard/Motherboard/USBCDC/serial.c ****   SER_BUF_RESET(ser_in);                               // reset in buffer
+  79              	 .loc 1 151 0
+  80 0014 40F20003 	 movw r3,#:lower16:ser_in
+  81 0018 C0F20003 	 movt r3,#:upper16:ser_in
+  82 001c C3F88020 	 str r2,[r3,#128]
+  83 0020 C3F88420 	 str r2,[r3,#132]
+ 152:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*
+ 153:src/MightyBoard/Motherboard/USBCDC/serial.c ****   // Bit 6~7 is for UART0
+ 154:src/MightyBoard/Motherboard/USBCDC/serial.c **** //  pclkdiv = (LPC_SC->PCLKSEL0 >> 6) & 0x03;
+ 155:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 156:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch ( pclkdiv )
+ 157:src/MightyBoard/Motherboard/USBCDC/serial.c ****   {
+ 158:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x00:
+ 159:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	default:
+ 160:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock/4;
+ 161:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 162:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x01:
+ 163:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock;
+ 164:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 165:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x02:
+ 166:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock/2;
+ 167:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 168:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x03:
+ 169:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock/8;
+ 170:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 171:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 172:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 173:src/MightyBoard/Motherboard/USBCDC/serial.c ****   dll = (pclk/16)/baudrate ;	//baud rate
+ 174:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART0->FDR = 0;                             // Fractional divider not used
+ 175:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART0->LCR = 0x80 | lcr_d | lcr_p | lcr_s;  // Data bits, Parity,   Stop bit
+ 176:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART0->DLL = dll;                           // Baud Rate depending on PCLK
+ 177:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART0->DLM = (dll >> 8);                    // High divisor latch
+ 178:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART0->LCR = 0x00 | lcr_d | lcr_p | lcr_s;  // DLAB = 0
+ 179:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART0->IER = 0x03;                          // Enable TX/RX interrupts
+ 180:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 181:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART0->FCR = 0x07;*/				// Enable and reset TX and RX FIFO.
+ 182:src/MightyBoard/Motherboard/USBCDC/serial.c ****   ser_txRestart = 1;                                   // TX fifo is empty
+  84              	 .loc 1 182 0
+  85 0024 40F20003 	 movw r3,#:lower16:ser_txRestart
+  86 0028 C0F20003 	 movt r3,#:upper16:ser_txRestart
+  87 002c 4FF00102 	 mov r2,#1
+  88 0030 1A60     	 str r2,[r3,#0]
+ 183:src/MightyBoard/Motherboard/USBCDC/serial.c ****   // Enable the UART Interrupt
+ 184:src/MightyBoard/Motherboard/USBCDC/serial.c **** //  NVIC_EnableIRQ(UART0_IRQn);
+ 185:src/MightyBoard/Motherboard/USBCDC/serial.c ****   return;
+ 186:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+  89              	 .loc 1 186 0
+  90 0032 7047     	 bx lr
+  91              	 .cfi_endproc
+  92              	.LFE57:
+  94              	 .section .text.ser_Read,"ax",%progbits
+  95              	 .align 2
+  96              	 .global ser_Read
+  97              	 .thumb
+  98              	 .thumb_func
+ 100              	ser_Read:
+ 101              	.LFB58:
+ 187:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 188:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+ 189:src/MightyBoard/Motherboard/USBCDC/serial.c ****   initialize the serial port
+ 190:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+ 191:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*
+ 192:src/MightyBoard/Motherboard/USBCDC/serial.c **** void ser_InitPort1 (unsigned long baudrate, unsigned int  databits,
+ 193:src/MightyBoard/Motherboard/USBCDC/serial.c ****                   unsigned int  parity,   unsigned int  stopbits) {
+ 194:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 195:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned char lcr_p, lcr_s, lcr_d;
+ 196:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned int dll;
+ 197:src/MightyBoard/Motherboard/USBCDC/serial.c ****   unsigned int pclkdiv, pclk;
+ 198:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 199:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch (databits) {
+ 200:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 5:                                            // 5 Data bits
+ 201:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x00;
+ 202:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 203:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 6:                                            // 6 Data bits
+ 204:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x01;
+ 205:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 206:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 7:                                            // 7 Data bits
+ 207:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x02;
+ 208:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 209:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 8:                                            // 8 Data bits
+ 210:src/MightyBoard/Motherboard/USBCDC/serial.c ****     default:
+ 211:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_d = 0x03;
+ 212:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 213:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 214:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 215:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch (stopbits) {
+ 216:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 1:                                            // 1,5 Stop bits
+ 217:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 2:                                            // 2   Stop bits
+ 218:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_s = 0x04;
+ 219:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 220:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 0:                                            // 1   Stop bit
+ 221:src/MightyBoard/Motherboard/USBCDC/serial.c ****     default:
+ 222:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_s = 0x00;
+ 223:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 224:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 225:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 226:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch (parity) {
+ 227:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 1:                                            // Parity Odd
+ 228:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x08;
+ 229:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 230:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 2:                                            // Parity Even
+ 231:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x18;
+ 232:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 233:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 3:                                            // Parity Mark
+ 234:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x28;
+ 235:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 236:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 4:                                            // Parity Space
+ 237:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x38;
+ 238:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 239:src/MightyBoard/Motherboard/USBCDC/serial.c ****     case 0:                                            // Parity None
+ 240:src/MightyBoard/Motherboard/USBCDC/serial.c ****     default:
+ 241:src/MightyBoard/Motherboard/USBCDC/serial.c ****       lcr_p = 0x00;
+ 242:src/MightyBoard/Motherboard/USBCDC/serial.c ****     break;
+ 243:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 244:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 245:src/MightyBoard/Motherboard/USBCDC/serial.c **** //  SER_BUF_RESET(ser_out);                              // reset out buffer
+ 246:src/MightyBoard/Motherboard/USBCDC/serial.c **** //  SER_BUF_RESET(ser_in);                               // reset in buffer
+ 247:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 248:src/MightyBoard/Motherboard/USBCDC/serial.c ****   // Bit 8,9 are for UART1
+ 249:src/MightyBoard/Motherboard/USBCDC/serial.c **** //  pclkdiv = (LPC_SC->PCLKSEL0 >> 8) & 0x03;
+ 250:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 251:src/MightyBoard/Motherboard/USBCDC/serial.c ****   switch ( pclkdiv )
+ 252:src/MightyBoard/Motherboard/USBCDC/serial.c ****   {
+ 253:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x00:
+ 254:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	default:
+ 255:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock/4;
+ 256:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 257:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x01:
+ 258:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock;
+ 259:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 260:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x02:
+ 261:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock/2;
+ 262:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 263:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	case 0x03:
+ 264:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  pclk = SystemCoreClock/8;
+ 265:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  break;
+ 266:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 267:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 268:src/MightyBoard/Motherboard/USBCDC/serial.c ****   dll = (pclk/16)/baudrate ;	//baud rate
+ 269:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART1->FDR = 0;                             // Fractional divider not used
+ 270:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART1->LCR = 0x80 | lcr_d | lcr_p | lcr_s;  // Data bits, Parity,   Stop bit
+ 271:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART1->DLL = dll;                           // Baud Rate depending on PCLK
+ 272:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART1->DLM = (dll >> 8);                    // High divisor latch
+ 273:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART1->LCR = 0x00 | lcr_d | lcr_p | lcr_s;  // DLAB = 0
+ 274:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART1->IER = 0x03;                          // Enable TX/RX interrupts
+ 275:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 276:src/MightyBoard/Motherboard/USBCDC/serial.c ****   LPC_UART1->FCR = 0x07;				// Enable and reset TX and RX FIFO.
+ 277:src/MightyBoard/Motherboard/USBCDC/serial.c ****   ser_txRestart = 1;                                   // TX fifo is empty
+ 278:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 279:src/MightyBoard/Motherboard/USBCDC/serial.c ****   // Enable the UART Interrupt
+ 280:src/MightyBoard/Motherboard/USBCDC/serial.c ****   NVIC_EnableIRQ(UART1_IRQn);
+ 281:src/MightyBoard/Motherboard/USBCDC/serial.c ****   return;
+ 282:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+ 283:src/MightyBoard/Motherboard/USBCDC/serial.c **** */
+ 284:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 285:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+ 286:src/MightyBoard/Motherboard/USBCDC/serial.c ****   read data from serial port
+ 287:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+ 288:src/MightyBoard/Motherboard/USBCDC/serial.c **** int ser_Read (char *buffer, const int *length) {
+ 102              	 .loc 1 288 0
+ 103              	 .cfi_startproc
+ 104              	 
+ 105              	 
+ 106              	 
+ 107              	.LVL5:
+ 108 0000 30B4     	 push {r4,r5}
+ 109              	.LCFI0:
+ 110              	 .cfi_def_cfa_offset 8
+ 111              	 .cfi_offset 5,-4
+ 112              	 .cfi_offset 4,-8
+ 113 0002 0346     	 mov r3,r0
+ 289:src/MightyBoard/Motherboard/USBCDC/serial.c ****   int bytesToRead, bytesRead;
+ 290:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 291:src/MightyBoard/Motherboard/USBCDC/serial.c ****   /* Read *length bytes, block if *bytes are not avaialable	*/
+ 292:src/MightyBoard/Motherboard/USBCDC/serial.c ****   bytesToRead = *length;
+ 114              	 .loc 1 292 0
+ 115 0004 0868     	 ldr r0,[r1,#0]
+ 116              	.LVL6:
+ 293:src/MightyBoard/Motherboard/USBCDC/serial.c ****   bytesToRead = (bytesToRead < (*length)) ? bytesToRead : (*length);
+ 294:src/MightyBoard/Motherboard/USBCDC/serial.c ****   bytesRead = bytesToRead;
+ 295:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 296:src/MightyBoard/Motherboard/USBCDC/serial.c ****   while (bytesToRead--) {
+ 117              	 .loc 1 296 0
+ 118 0006 A8B1     	 cbz r0,.L5
+ 288:src/MightyBoard/Motherboard/USBCDC/serial.c **** int ser_Read (char *buffer, const int *length) {
+ 119              	 .loc 1 288 0
+ 120 0008 1D18     	 adds r5,r3,r0
+ 297:src/MightyBoard/Motherboard/USBCDC/serial.c ****     while (SER_BUF_EMPTY(ser_in));                     // Block until data is available if none
+ 121              	 .loc 1 297 0
+ 122 000a 40F20002 	 movw r2,#:lower16:ser_in
+ 123 000e C0F20002 	 movt r2,#:upper16:ser_in
+ 124              	.LVL7:
+ 125              	.L7:
+ 126              	 .loc 1 297 0 is_stmt 0 discriminator 1
+ 127 0012 D2F88410 	 ldr r1,[r2,#132]
+ 128 0016 D2F88040 	 ldr r4,[r2,#128]
+ 129 001a A142     	 cmp r1,r4
+ 130 001c 0CD0     	 beq .L6
+ 298:src/MightyBoard/Motherboard/USBCDC/serial.c ****     *buffer++ = SER_BUF_RD(ser_in);
+ 131              	 .loc 1 298 0 is_stmt 1
+ 132 001e 01F07F04 	 and r4,r1,#127
+ 133 0022 145D     	 ldrb r4,[r2,r4]
+ 134 0024 03F8014B 	 strb r4,[r3],#1
+ 135              	.LVL8:
+ 136 0028 01F10101 	 add r1,r1,#1
+ 137 002c C2F88410 	 str r1,[r2,#132]
+ 296:src/MightyBoard/Motherboard/USBCDC/serial.c ****   while (bytesToRead--) {
+ 138              	 .loc 1 296 0
+ 139 0030 AB42     	 cmp r3,r5
+ 140 0032 EED1     	 bne .L7
+ 141              	.L5:
+ 299:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 300:src/MightyBoard/Motherboard/USBCDC/serial.c ****   return (bytesRead);
+ 301:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+ 142              	 .loc 1 301 0
+ 143 0034 30BC     	 pop {r4,r5}
+ 144 0036 7047     	 bx lr
+ 145              	.L6:
+ 146              	.L9:
+ 147 0038 FEE7     	 b .L9
+ 148              	 .cfi_endproc
+ 149              	.LFE58:
+ 151 003a 00BF     	 .section .text.ser_Write,"ax",%progbits
+ 152              	 .align 2
+ 153              	 .global ser_Write
+ 154              	 .thumb
+ 155              	 .thumb_func
+ 157              	ser_Write:
+ 158              	.LFB59:
+ 302:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 303:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+ 304:src/MightyBoard/Motherboard/USBCDC/serial.c ****   write data to the serial port
+ 305:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+ 306:src/MightyBoard/Motherboard/USBCDC/serial.c **** int ser_Write (char portNum, const char *buffer, int *length) {
+ 159              	 .loc 1 306 0
+ 160              	 .cfi_startproc
+ 161              	 
+ 162              	 
+ 163              	 
+ 164              	.LVL9:
+ 165 0000 F0B4     	 push {r4,r5,r6,r7}
+ 166              	.LCFI1:
+ 167              	 .cfi_def_cfa_offset 16
+ 168              	 .cfi_offset 7,-4
+ 169              	 .cfi_offset 6,-8
+ 170              	 .cfi_offset 5,-12
+ 171              	 .cfi_offset 4,-16
+ 172 0002 0346     	 mov r3,r0
+ 307:src/MightyBoard/Motherboard/USBCDC/serial.c ****   int  bytesToWrite, bytesWritten;
+ 308:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 309:src/MightyBoard/Motherboard/USBCDC/serial.c ****   // Write *length bytes
+ 310:src/MightyBoard/Motherboard/USBCDC/serial.c ****   bytesToWrite = *length;
+ 173              	 .loc 1 310 0
+ 174 0004 1068     	 ldr r0,[r2,#0]
+ 175              	.LVL10:
+ 311:src/MightyBoard/Motherboard/USBCDC/serial.c ****   bytesWritten = bytesToWrite;
+ 312:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 313:src/MightyBoard/Motherboard/USBCDC/serial.c ****   while (!SER_BUF_EMPTY(ser_out));               // Block until space is available if none
+ 176              	 .loc 1 313 0
+ 177 0006 40F20002 	 movw r2,#:lower16:ser_out
+ 178              	.LVL11:
+ 179 000a C0F20002 	 movt r2,#:upper16:ser_out
+ 180 000e D2F884C0 	 ldr ip,[r2,#132]
+ 181 0012 D2F88020 	 ldr r2,[r2,#128]
+ 182 0016 9445     	 cmp ip,r2
+ 183 0018 43D1     	 bne .L11
+ 314:src/MightyBoard/Motherboard/USBCDC/serial.c ****   while (bytesToWrite) {
+ 184              	 .loc 1 314 0 discriminator 1
+ 185 001a 88B1     	 cbz r0,.L12
+ 306:src/MightyBoard/Motherboard/USBCDC/serial.c **** int ser_Write (char portNum, const char *buffer, int *length) {
+ 186              	 .loc 1 306 0
+ 187 001c 0F18     	 adds r7,r1,r0
+ 315:src/MightyBoard/Motherboard/USBCDC/serial.c ****       SER_BUF_WR(ser_out, *buffer++);            // Read Rx FIFO to buffer
+ 188              	 .loc 1 315 0
+ 189 001e 40F20002 	 movw r2,#:lower16:ser_out
+ 190 0022 C0F20002 	 movt r2,#:upper16:ser_out
+ 191              	.LVL12:
+ 192              	.L13:
+ 193 0026 D2F88040 	 ldr r4,[r2,#128]
+ 194 002a 11F8016B 	 ldrb r6,[r1],#1
+ 195              	.LVL13:
+ 196 002e 04F07F05 	 and r5,r4,#127
+ 197 0032 5655     	 strb r6,[r2,r5]
+ 198 0034 04F10104 	 add r4,r4,#1
+ 199 0038 C2F88040 	 str r4,[r2,#128]
+ 200              	.LVL14:
+ 314:src/MightyBoard/Motherboard/USBCDC/serial.c ****   while (bytesToWrite) {
+ 201              	 .loc 1 314 0
+ 202 003c B942     	 cmp r1,r7
+ 203 003e F2D1     	 bne .L13
+ 204              	.L12:
+ 316:src/MightyBoard/Motherboard/USBCDC/serial.c ****       bytesToWrite--;
+ 317:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 318:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 319:src/MightyBoard/Motherboard/USBCDC/serial.c ****   if (ser_txRestart) {
+ 205              	 .loc 1 319 0
+ 206 0040 40F20002 	 movw r2,#:lower16:ser_txRestart
+ 207 0044 C0F20002 	 movt r2,#:upper16:ser_txRestart
+ 208 0048 1268     	 ldr r2,[r2,#0]
+ 209 004a 42B3     	 cbz r2,.L14
+ 320:src/MightyBoard/Motherboard/USBCDC/serial.c ****     ser_txRestart = 0;
+ 210              	 .loc 1 320 0
+ 211 004c 40F20002 	 movw r2,#:lower16:ser_txRestart
+ 212 0050 C0F20002 	 movt r2,#:upper16:ser_txRestart
+ 213 0054 4FF00001 	 mov r1,#0
+ 214              	.LVL15:
+ 215 0058 1160     	 str r1,[r2,#0]
+ 321:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	if ( portNum == 0 )
+ 216              	 .loc 1 321 0
+ 217 005a 83B9     	 cbnz r3,.L15
+ 322:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	{
+ 323:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	  LPC_UART0->THR = SER_BUF_RD(ser_out);             // Write to the Tx Register
+ 218              	 .loc 1 323 0
+ 219 005c 40F20003 	 movw r3,#:lower16:ser_out
+ 220 0060 C0F20003 	 movt r3,#:upper16:ser_out
+ 221 0064 0CF07F02 	 and r2,ip,#127
+ 222 0068 995C     	 ldrb r1,[r3,r2]
+ 223 006a 4FF44042 	 mov r2,#49152
+ 224 006e C4F20002 	 movt r2,16384
+ 225 0072 1170     	 strb r1,[r2,#0]
+ 226 0074 0CF10102 	 add r2,ip,#1
+ 227 0078 C3F88420 	 str r2,[r3,#132]
+ 228 007c 0FE0     	 b .L14
+ 229              	.L15:
+ 324:src/MightyBoard/Motherboard/USBCDC/serial.c ****     }
+ 325:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	else
+ 326:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	{
+ 327:src/MightyBoard/Motherboard/USBCDC/serial.c ****       LPC_UART1->THR = SER_BUF_RD(ser_out);             // Write to the Tx Register
+ 230              	 .loc 1 327 0
+ 231 007e 40F20003 	 movw r3,#:lower16:ser_out
+ 232 0082 C0F20003 	 movt r3,#:upper16:ser_out
+ 233 0086 0CF07F02 	 and r2,ip,#127
+ 234 008a 995C     	 ldrb r1,[r3,r2]
+ 235 008c 4FF00002 	 mov r2,#0
+ 236 0090 C4F20102 	 movt r2,16385
+ 237 0094 1170     	 strb r1,[r2,#0]
+ 238 0096 0CF10102 	 add r2,ip,#1
+ 239 009a C3F88420 	 str r2,[r3,#132]
+ 240              	.L14:
+ 328:src/MightyBoard/Motherboard/USBCDC/serial.c **** 	}
+ 329:src/MightyBoard/Motherboard/USBCDC/serial.c ****   }
+ 330:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 331:src/MightyBoard/Motherboard/USBCDC/serial.c ****   return (bytesWritten);
+ 332:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+ 241              	 .loc 1 332 0
+ 242 009e F0BC     	 pop {r4,r5,r6,r7}
+ 243 00a0 7047     	 bx lr
+ 244              	.LVL16:
+ 245              	.L11:
+ 246              	.L17:
+ 247 00a2 FEE7     	 b .L17
+ 248              	 .cfi_endproc
+ 249              	.LFE59:
+ 251              	 .section .text.ser_AvailChar,"ax",%progbits
+ 252              	 .align 2
+ 253              	 .global ser_AvailChar
+ 254              	 .thumb
+ 255              	 .thumb_func
+ 257              	ser_AvailChar:
+ 258              	.LFB60:
+ 333:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 334:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+ 335:src/MightyBoard/Motherboard/USBCDC/serial.c ****   check if character(s) are available at the serial interface
+ 336:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+ 337:src/MightyBoard/Motherboard/USBCDC/serial.c **** void ser_AvailChar (int *availChar) {
+ 259              	 .loc 1 337 0
+ 260              	 .cfi_startproc
+ 261              	 
+ 262              	 
+ 263              	 
+ 264              	.LVL17:
+ 338:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 339:src/MightyBoard/Motherboard/USBCDC/serial.c ****   *availChar = SER_BUF_COUNT(ser_in);
+ 265              	 .loc 1 339 0
+ 266 0000 40F20003 	 movw r3,#:lower16:ser_in
+ 267 0004 C0F20003 	 movt r3,#:upper16:ser_in
+ 268 0008 D3F88020 	 ldr r2,[r3,#128]
+ 269 000c D3F88430 	 ldr r3,[r3,#132]
+ 270 0010 D31A     	 subs r3,r2,r3
+ 271 0012 03F07F03 	 and r3,r3,#127
+ 272 0016 0360     	 str r3,[r0,#0]
+ 340:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 341:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+ 273              	 .loc 1 341 0
+ 274 0018 7047     	 bx lr
+ 275              	 .cfi_endproc
+ 276              	.LFE60:
+ 278 001a 00BF     	 .section .text.ser_LineState,"ax",%progbits
+ 279              	 .align 2
+ 280              	 .global ser_LineState
+ 281              	 .thumb
+ 282              	 .thumb_func
+ 284              	ser_LineState:
+ 285              	.LFB61:
+ 342:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 343:src/MightyBoard/Motherboard/USBCDC/serial.c **** /*----------------------------------------------------------------------------
+ 344:src/MightyBoard/Motherboard/USBCDC/serial.c ****   read the line state of the serial port
+ 345:src/MightyBoard/Motherboard/USBCDC/serial.c ****  *---------------------------------------------------------------------------*/
+ 346:src/MightyBoard/Motherboard/USBCDC/serial.c **** void ser_LineState (unsigned short *lineState) {
+ 286              	 .loc 1 346 0
+ 287              	 .cfi_startproc
+ 288              	 
+ 289              	 
+ 290              	 
+ 291              	.LVL18:
+ 347:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 348:src/MightyBoard/Motherboard/USBCDC/serial.c ****   *lineState = ser_lineState;
+ 292              	 .loc 1 348 0
+ 293 0000 40F20003 	 movw r3,#:lower16:ser_lineState
+ 294 0004 C0F20003 	 movt r3,#:upper16:ser_lineState
+ 295 0008 1A88     	 ldrh r2,[r3,#0]
+ 296 000a 0280     	 strh r2,[r0,#0]
+ 349:src/MightyBoard/Motherboard/USBCDC/serial.c ****   ser_lineState = 0;
+ 297              	 .loc 1 349 0
+ 298 000c 4FF00002 	 mov r2,#0
+ 299 0010 1A80     	 strh r2,[r3,#0]
+ 350:src/MightyBoard/Motherboard/USBCDC/serial.c **** 
+ 351:src/MightyBoard/Motherboard/USBCDC/serial.c **** }
+ 300              	 .loc 1 351 0
+ 301 0012 7047     	 bx lr
+ 302              	 .cfi_endproc
+ 303              	.LFE61:
+ 305              	 .comm ser_in,136,4
+ 306              	 .comm ser_out,136,4
+ 307              	 .comm ser_lineState,2,2
+ 308              	 .comm ser_txRestart,4,4
+ 309              	 .comm FCR_0,1,1
+ 310              	 .comm IER_0,1,1
+ 311              	 .comm DLM_0,1,1
+ 312              	 .comm DLL_0,1,1
+ 313              	 .comm LCR_0,1,1
+ 314              	 .comm FDR_0,1,1
+ 315              	 .text
+ 316              	.Letext0:
+ 317              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 318              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 319              	 .file 4 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 320              	 .file 5 "src/MightyBoard/Motherboard/USBCDC/serial.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 serial.c
+    {standard input}:19     .text.ser_OpenPort:00000000 $t
+    {standard input}:24     .text.ser_OpenPort:00000000 ser_OpenPort
+    {standard input}:39     .text.ser_ClosePort:00000000 $t
+    {standard input}:44     .text.ser_ClosePort:00000000 ser_ClosePort
+    {standard input}:58     .text.ser_InitPort0:00000000 $t
+    {standard input}:63     .text.ser_InitPort0:00000000 ser_InitPort0
+                            *COM*:00000088 ser_out
+                            *COM*:00000088 ser_in
+                            *COM*:00000004 ser_txRestart
+    {standard input}:95     .text.ser_Read:00000000 $t
+    {standard input}:100    .text.ser_Read:00000000 ser_Read
+    {standard input}:152    .text.ser_Write:00000000 $t
+    {standard input}:157    .text.ser_Write:00000000 ser_Write
+    {standard input}:252    .text.ser_AvailChar:00000000 $t
+    {standard input}:257    .text.ser_AvailChar:00000000 ser_AvailChar
+    {standard input}:279    .text.ser_LineState:00000000 $t
+    {standard input}:284    .text.ser_LineState:00000000 ser_LineState
+                            *COM*:00000002 ser_lineState
+                            *COM*:00000001 FCR_0
+                            *COM*:00000001 IER_0
+                            *COM*:00000001 DLM_0
+                            *COM*:00000001 DLL_0
+                            *COM*:00000001 LCR_0
+                            *COM*:00000001 FDR_0
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

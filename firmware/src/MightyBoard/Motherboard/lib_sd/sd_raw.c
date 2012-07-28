@@ -525,7 +525,7 @@ uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
             memcpy(buffer, raw_block + block_offset, read_length);
             buffer += read_length;
 #endif
-            
+
             /* read crc16 */
             sd_raw_rec_byte();
             sd_raw_rec_byte();

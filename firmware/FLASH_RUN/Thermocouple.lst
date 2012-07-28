@@ -1,0 +1,1134 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Thermocouple.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN17TemperatureSensorD2Ev,"axG",%progbits,_ZN17TemperatureSensorD5Ev,comdat
+  19              	 .align 2
+  20              	 .weak _ZN17TemperatureSensorD2Ev
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN17TemperatureSensorD2Ev:
+  25              	.LFB1:
+  26              	 .file 1 "src/MightyBoard/shared/TemperatureSensor.hh"
+   1:src/MightyBoard/shared/TemperatureSensor.hh **** /*
+   2:src/MightyBoard/shared/TemperatureSensor.hh ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/TemperatureSensor.hh ****  *
+   4:src/MightyBoard/shared/TemperatureSensor.hh ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/TemperatureSensor.hh ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/TemperatureSensor.hh ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/TemperatureSensor.hh ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/TemperatureSensor.hh ****  *
+   9:src/MightyBoard/shared/TemperatureSensor.hh ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/TemperatureSensor.hh ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/TemperatureSensor.hh ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/TemperatureSensor.hh ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/TemperatureSensor.hh ****  *
+  14:src/MightyBoard/shared/TemperatureSensor.hh ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/TemperatureSensor.hh ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/TemperatureSensor.hh ****  */
+  17:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  18:src/MightyBoard/shared/TemperatureSensor.hh **** #ifndef TEMPERATURE_HH_
+  19:src/MightyBoard/shared/TemperatureSensor.hh **** #define TEMPERATURE_HH_
+  20:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  21:src/MightyBoard/shared/TemperatureSensor.hh **** #include <stdint.h>
+  22:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  23:src/MightyBoard/shared/TemperatureSensor.hh **** /// Flag specifying that the temperature reading is invalid.
+  24:src/MightyBoard/shared/TemperatureSensor.hh **** #define BAD_TEMPERATURE 1024
+  25:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  26:src/MightyBoard/shared/TemperatureSensor.hh **** /// The temperature sensor interface is a standard interface used to communicate with
+  27:src/MightyBoard/shared/TemperatureSensor.hh **** /// things that can sense temperatures.
+  28:src/MightyBoard/shared/TemperatureSensor.hh **** /// \ingroup SoftwareLibraries
+  29:src/MightyBoard/shared/TemperatureSensor.hh **** class TemperatureSensor {
+  30:src/MightyBoard/shared/TemperatureSensor.hh **** protected:
+  31:src/MightyBoard/shared/TemperatureSensor.hh ****         /// The last temperature reading from the sensor, in degrees Celcius, or
+  32:src/MightyBoard/shared/TemperatureSensor.hh ****         /// #BAD_TEMPERATURE if the last reading is invalid.
+  33:src/MightyBoard/shared/TemperatureSensor.hh **** 	volatile uint16_t current_temp;
+  34:src/MightyBoard/shared/TemperatureSensor.hh **** public:
+  35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
+  27              	 .loc 1 35 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33              	.LBB31:
+  34              	 .loc 1 35 0
+  35 0000 014B     	 ldr r3,.L3
+  36 0002 0360     	 str r3,[r0,#0]
+  37              	.LBE31:
+  38 0004 7047     	 bx lr
+  39              	.L4:
+  40 0006 00BF     	 .align 2
+  41              	.L3:
+  42 0008 08000000 	 .word _ZTV17TemperatureSensor+8
+  43              	 .cfi_endproc
+  44              	.LFE1:
+  46              	 .section .text._ZN17TemperatureSensor4initEv,"axG",%progbits,_ZN17TemperatureSensor4initEv,comdat
+  47              	 .align 2
+  48              	 .weak _ZN17TemperatureSensor4initEv
+  49              	 .thumb
+  50              	 .thumb_func
+  52              	_ZN17TemperatureSensor4initEv:
+  53              	.LFB5:
+  36:src/MightyBoard/shared/TemperatureSensor.hh **** 	enum SensorState {
+  37:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_OK,              ///< Temperature measured correctly
+  38:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_ADC_BUSY,        ///< Temperature failed to update because ADC is busy
+  39:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_ADC_WAITING,     ///< Temperature failed to update, still waiting for ADC
+  40:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_ERROR_UNPLUGGED  ///< Temperature failed to update, the sensor is unplugged.
+  41:src/MightyBoard/shared/TemperatureSensor.hh **** 	};
+  42:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  43:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  44:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// Get the last read temperature from the sensor. Note that you need to call
+  45:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// update() at least once for this to return good data.
+  46:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// \return The current temperature, in degrees Celcius, or #BAD_TEMPERATURE if the
+  47:src/MightyBoard/shared/TemperatureSensor.hh **** 	///         last read failed.
+  48:src/MightyBoard/shared/TemperatureSensor.hh **** 	int16_t getTemperature() const { return current_temp; }
+  49:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  50:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// Initialize the temperature sensor hardware. Must be called before the temperature
+  51:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// sensor can be used.
+  52:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual void init() {}
+  54              	 .loc 1 52 0
+  55              	 .cfi_startproc
+  56              	 
+  57              	 
+  58              	 
+  59              	.LVL1:
+  60              	 .loc 1 52 0
+  61 0000 7047     	 bx lr
+  62              	 .cfi_endproc
+  63              	.LFE5:
+  65 0002 00BF     	 .section .text._ZN12ThermocoupleD2Ev,"axG",%progbits,_ZN12ThermocoupleD5Ev,comdat
+  66              	 .align 2
+  67              	 .weak _ZN12ThermocoupleD2Ev
+  68              	 .thumb
+  69              	 .thumb_func
+  71              	_ZN12ThermocoupleD2Ev:
+  72              	.LFB75:
+  73              	 .file 2 "src/MightyBoard/shared/Thermocouple.hh"
+   1:src/MightyBoard/shared/Thermocouple.hh **** /*
+   2:src/MightyBoard/shared/Thermocouple.hh ****  * Copyright 2010 by Adam Mayer <adam@makerbot.com>
+   3:src/MightyBoard/shared/Thermocouple.hh ****  *
+   4:src/MightyBoard/shared/Thermocouple.hh ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/Thermocouple.hh ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/Thermocouple.hh ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/Thermocouple.hh ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/Thermocouple.hh ****  *
+   9:src/MightyBoard/shared/Thermocouple.hh ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/Thermocouple.hh ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/Thermocouple.hh ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/Thermocouple.hh ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/Thermocouple.hh ****  *
+  14:src/MightyBoard/shared/Thermocouple.hh ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/Thermocouple.hh ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/Thermocouple.hh ****  */
+  17:src/MightyBoard/shared/Thermocouple.hh **** 
+  18:src/MightyBoard/shared/Thermocouple.hh **** #ifndef THERMOCOUPLE_HH_
+  19:src/MightyBoard/shared/Thermocouple.hh **** #define THERMOCOUPLE_HH_
+  20:src/MightyBoard/shared/Thermocouple.hh **** 
+  21:src/MightyBoard/shared/Thermocouple.hh **** #include "TemperatureSensor.hh"
+  22:src/MightyBoard/shared/Thermocouple.hh **** #include "Pin.hh"
+  23:src/MightyBoard/shared/Thermocouple.hh **** 
+  24:src/MightyBoard/shared/Thermocouple.hh **** /// The thermocouple module provides a bitbanging driver that can read the
+  25:src/MightyBoard/shared/Thermocouple.hh **** /// temperature from (chip name) sensor, and also report on any error conditions.
+  26:src/MightyBoard/shared/Thermocouple.hh **** /// \ingroup SoftwareLibraries
+  27:src/MightyBoard/shared/Thermocouple.hh **** class Thermocouple : public TemperatureSensor {
+  74              	 .loc 2 27 0
+  75              	 .cfi_startproc
+  76              	 
+  77              	 
+  78              	 
+  79              	.LVL2:
+  80              	.LBB32:
+  81              	.LBB33:
+  82              	.LBB34:
+  83              	.LBB35:
+  35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
+  84              	 .loc 1 35 0
+  85 0000 014B     	 ldr r3,.L9
+  86 0002 0360     	 str r3,[r0,#0]
+  87              	.LBE35:
+  88              	.LBE34:
+  89              	.LBE33:
+  90              	.LBE32:
+  91              	 .loc 2 27 0
+  92 0004 7047     	 bx lr
+  93              	.L10:
+  94 0006 00BF     	 .align 2
+  95              	.L9:
+  96 0008 08000000 	 .word _ZTV17TemperatureSensor+8
+  97              	 .cfi_endproc
+  98              	.LFE75:
+ 100              	 .section .text._ZN12ThermocoupleD0Ev,"axG",%progbits,_ZN12ThermocoupleD5Ev,comdat
+ 101              	 .align 2
+ 102              	 .weak _ZN12ThermocoupleD0Ev
+ 103              	 .thumb
+ 104              	 .thumb_func
+ 106              	_ZN12ThermocoupleD0Ev:
+ 107              	.LFB77:
+ 108              	 .loc 2 27 0
+ 109              	 .cfi_startproc
+ 110              	 
+ 111              	 
+ 112              	.LVL3:
+ 113 0000 10B5     	 push {r4,lr}
+ 114              	.LCFI0:
+ 115              	 .cfi_def_cfa_offset 8
+ 116              	 .cfi_offset 14,-4
+ 117              	 .cfi_offset 4,-8
+ 118 0002 0446     	 mov r4,r0
+ 119              	.LVL4:
+ 120              	.LBB36:
+ 121              	.LBB37:
+ 122              	.LBB38:
+ 123              	.LBB39:
+ 124              	.LBB40:
+ 125              	.LBB41:
+  35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
+ 126              	 .loc 1 35 0
+ 127 0004 024B     	 ldr r3,.L15
+ 128 0006 0360     	 str r3,[r0,#0]
+ 129              	.LBE41:
+ 130              	.LBE40:
+ 131              	.LBE39:
+ 132              	.LBE38:
+ 133              	.LBE37:
+ 134              	.LBE36:
+ 135              	 .loc 2 27 0
+ 136 0008 FFF7FEFF 	 bl _ZdlPv
+ 137              	.LVL5:
+ 138 000c 2046     	 mov r0,r4
+ 139 000e 10BD     	 pop {r4,pc}
+ 140              	.L16:
+ 141              	 .align 2
+ 142              	.L15:
+ 143 0010 08000000 	 .word _ZTV17TemperatureSensor+8
+ 144              	 .cfi_endproc
+ 145              	.LFE77:
+ 147              	 .section .text._ZN17TemperatureSensorD0Ev,"axG",%progbits,_ZN17TemperatureSensorD5Ev,comdat
+ 148              	 .align 2
+ 149              	 .weak _ZN17TemperatureSensorD0Ev
+ 150              	 .thumb
+ 151              	 .thumb_func
+ 153              	_ZN17TemperatureSensorD0Ev:
+ 154              	.LFB3:
+  35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
+ 155              	 .loc 1 35 0
+ 156              	 .cfi_startproc
+ 157              	 
+ 158              	 
+ 159              	.LVL6:
+ 160 0000 10B5     	 push {r4,lr}
+ 161              	.LCFI1:
+ 162              	 .cfi_def_cfa_offset 8
+ 163              	 .cfi_offset 14,-4
+ 164              	 .cfi_offset 4,-8
+ 165 0002 0446     	 mov r4,r0
+ 166              	.LVL7:
+ 167              	.LBB42:
+ 168              	.LBB43:
+ 169              	.LBB44:
+  35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
+ 170              	 .loc 1 35 0
+ 171 0004 024B     	 ldr r3,.L20
+ 172 0006 0360     	 str r3,[r0,#0]
+ 173              	.LBE44:
+ 174              	.LBE43:
+ 175              	.LBE42:
+ 176 0008 FFF7FEFF 	 bl _ZdlPv
+ 177              	.LVL8:
+ 178 000c 2046     	 mov r0,r4
+ 179 000e 10BD     	 pop {r4,pc}
+ 180              	.L21:
+ 181              	 .align 2
+ 182              	.L20:
+ 183 0010 08000000 	 .word _ZTV17TemperatureSensor+8
+ 184              	 .cfi_endproc
+ 185              	.LFE3:
+ 187              	 .section .text._ZN12Thermocouple4initEv,"ax",%progbits
+ 188              	 .align 2
+ 189              	 .global _ZN12Thermocouple4initEv
+ 190              	 .thumb
+ 191              	 .thumb_func
+ 193              	_ZN12Thermocouple4initEv:
+ 194              	.LFB72:
+ 195              	 .file 3 "src/MightyBoard/shared/Thermocouple.cc"
+   1:src/MightyBoard/shared/Thermocouple.cc **** /*
+   2:src/MightyBoard/shared/Thermocouple.cc ****  * Copyright 2010 by Adam Mayer <adam@makerbot.com>
+   3:src/MightyBoard/shared/Thermocouple.cc ****  *
+   4:src/MightyBoard/shared/Thermocouple.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/Thermocouple.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/Thermocouple.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/Thermocouple.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/Thermocouple.cc ****  *
+   9:src/MightyBoard/shared/Thermocouple.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/Thermocouple.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/Thermocouple.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/Thermocouple.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/Thermocouple.cc ****  *
+  14:src/MightyBoard/shared/Thermocouple.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/Thermocouple.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/Thermocouple.cc ****  */
+  17:src/MightyBoard/shared/Thermocouple.cc **** 
+  18:src/MightyBoard/shared/Thermocouple.cc **** 
+  19:src/MightyBoard/shared/Thermocouple.cc **** 
+  20:src/MightyBoard/shared/Thermocouple.cc **** #include "Thermocouple.hh"
+  21:src/MightyBoard/shared/Thermocouple.cc **** 
+  22:src/MightyBoard/shared/Thermocouple.cc **** 
+  23:src/MightyBoard/shared/Thermocouple.cc **** // We'll throw in nops to get the timing right (if necessary)
+  24:src/MightyBoard/shared/Thermocouple.cc **** inline void nop() {
+  25:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+  26:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+  27:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+  28:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+  29:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+  30:src/MightyBoard/shared/Thermocouple.cc **** }
+  31:src/MightyBoard/shared/Thermocouple.cc **** 
+  32:src/MightyBoard/shared/Thermocouple.cc **** 
+  33:src/MightyBoard/shared/Thermocouple.cc **** Thermocouple::Thermocouple(const Pin cs,const Pin sck,const Pin so) :
+  34:src/MightyBoard/shared/Thermocouple.cc ****         cs_pin(cs),
+  35:src/MightyBoard/shared/Thermocouple.cc ****         sck_pin(sck),
+  36:src/MightyBoard/shared/Thermocouple.cc ****         so_pin(so)
+  37:src/MightyBoard/shared/Thermocouple.cc **** {
+  38:src/MightyBoard/shared/Thermocouple.cc **** }
+  39:src/MightyBoard/shared/Thermocouple.cc **** 
+  40:src/MightyBoard/shared/Thermocouple.cc **** void Thermocouple::init() {
+ 196              	 .loc 3 40 0
+ 197              	 .cfi_startproc
+ 198              	 
+ 199              	 
+ 200              	.LVL9:
+ 201 0000 10B5     	 push {r4,lr}
+ 202              	.LCFI2:
+ 203              	 .cfi_def_cfa_offset 8
+ 204              	 .cfi_offset 14,-4
+ 205              	 .cfi_offset 4,-8
+ 206 0002 0446     	 mov r4,r0
+  41:src/MightyBoard/shared/Thermocouple.cc **** 	cs_pin.setDirection(true);
+ 207              	 .loc 3 41 0
+ 208 0004 00F10600 	 add r0,r0,#6
+ 209              	.LVL10:
+ 210 0008 4FF00101 	 mov r1,#1
+ 211 000c FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  42:src/MightyBoard/shared/Thermocouple.cc **** 	sck_pin.setDirection(true);
+ 212              	 .loc 3 42 0
+ 213 0010 04F10B00 	 add r0,r4,#11
+ 214 0014 4FF00101 	 mov r1,#1
+ 215 0018 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  43:src/MightyBoard/shared/Thermocouple.cc **** 	so_pin.setDirection(false);
+ 216              	 .loc 3 43 0
+ 217 001c 04F11000 	 add r0,r4,#16
+ 218 0020 4FF00001 	 mov r1,#0
+ 219 0024 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  44:src/MightyBoard/shared/Thermocouple.cc **** 	
+  45:src/MightyBoard/shared/Thermocouple.cc **** 	current_temp = 0;
+ 220              	 .loc 3 45 0
+ 221 0028 4FF00003 	 mov r3,#0
+ 222 002c A380     	 strh r3,[r4,#4]
+  46:src/MightyBoard/shared/Thermocouple.cc **** 
+  47:src/MightyBoard/shared/Thermocouple.cc **** //	cs_pin.setValue(true);   // Clock select is active low
+  48:src/MightyBoard/shared/Thermocouple.cc **** //	sck_pin.setValue(false); // TODO: Is this a good idea?
+  49:src/MightyBoard/shared/Thermocouple.cc **** }
+ 223              	 .loc 3 49 0
+ 224 002e 10BD     	 pop {r4,pc}
+ 225              	 .cfi_endproc
+ 226              	.LFE72:
+ 228              	 .section .text._ZN12Thermocouple6updateEv,"ax",%progbits
+ 229              	 .align 2
+ 230              	 .global _ZN12Thermocouple6updateEv
+ 231              	 .thumb
+ 232              	 .thumb_func
+ 234              	_ZN12Thermocouple6updateEv:
+ 235              	.LFB73:
+  50:src/MightyBoard/shared/Thermocouple.cc **** 
+  51:src/MightyBoard/shared/Thermocouple.cc **** 
+  52:src/MightyBoard/shared/Thermocouple.cc **** Thermocouple::SensorState Thermocouple::update() {
+ 236              	 .loc 3 52 0
+ 237              	 .cfi_startproc
+ 238              	 
+ 239              	 
+ 240              	.LVL11:
+ 241 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 242              	.LCFI3:
+ 243              	 .cfi_def_cfa_offset 24
+ 244              	 .cfi_offset 14,-4
+ 245              	 .cfi_offset 8,-8
+ 246              	 .cfi_offset 7,-12
+ 247              	 .cfi_offset 6,-16
+ 248              	 .cfi_offset 5,-20
+ 249              	 .cfi_offset 4,-24
+ 250 0004 0446     	 mov r4,r0
+ 251              	.LVL12:
+ 252              	.LBB73:
+ 253              	.LBB74:
+ 254              	.LBB75:
+ 255              	 .file 4 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 256              	 .loc 4 35 0
+ 257 0006 C379     	 ldrb r3,[r0,#7]
+ 258 0008 3BB9     	 cbnz r3,.L24
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+ 259              	 .loc 4 48 0
+ 260 000a 037A     	 ldrb r3,[r0,#8]
+ 261 000c 8079     	 ldrb r0,[r0,#6]
+ 262              	.LVL13:
+ 263 000e 4FF00101 	 mov r1,#1
+ 264 0012 01FA03F1 	 lsl r1,r1,r3
+ 265 0016 FFF7FEFF 	 bl GPIO_ClearValue
+ 266              	.L24:
+ 267              	.LBE75:
+ 268              	.LBE74:
+ 269              	.LBB76:
+ 270              	.LBB77:
+  25:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 271              	 .loc 3 25 0
+ 272              	
+ 273 001a 00BF     	 nop
+ 274              	
+  26:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 275              	 .loc 3 26 0
+ 276              	
+ 277 001c 00BF     	 nop
+ 278              	
+  27:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 279              	 .loc 3 27 0
+ 280              	
+ 281 001e 00BF     	 nop
+ 282              	
+  28:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 283              	 .loc 3 28 0
+ 284              	
+ 285 0020 00BF     	 nop
+ 286              	
+  29:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 287              	 .loc 3 29 0
+ 288              	
+ 289 0022 00BF     	 nop
+ 290              	
+ 291              	.LVL14:
+ 292              	 .thumb
+ 293              	.LBE77:
+ 294              	.LBE76:
+ 295              	.LBB78:
+ 296              	.LBB79:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 297              	 .loc 4 35 0
+ 298 0024 237B     	 ldrb r3,[r4,#12]
+ 299 0026 3BB9     	 cbnz r3,.L25
+ 300              	 .loc 4 48 0
+ 301 0028 637B     	 ldrb r3,[r4,#13]
+ 302 002a E07A     	 ldrb r0,[r4,#11]
+ 303 002c 4FF00101 	 mov r1,#1
+ 304 0030 01FA03F1 	 lsl r1,r1,r3
+ 305 0034 FFF7FEFF 	 bl GPIO_ClearValue
+ 306              	.L25:
+ 307              	.LBE79:
+ 308              	.LBE78:
+ 309              	.LBB80:
+ 310              	.LBB81:
+  25:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 311              	 .loc 3 25 0
+ 312              	
+ 313 0038 00BF     	 nop
+ 314              	
+  26:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 315              	 .loc 3 26 0
+ 316              	
+ 317 003a 00BF     	 nop
+ 318              	
+  27:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 319              	 .loc 3 27 0
+ 320              	
+ 321 003c 00BF     	 nop
+ 322              	
+  28:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 323              	 .loc 3 28 0
+ 324              	
+ 325 003e 00BF     	 nop
+ 326              	
+  29:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 327              	 .loc 3 29 0
+ 328              	
+ 329 0040 00BF     	 nop
+ 330              	
+ 331              	.LVL15:
+  53:src/MightyBoard/shared/Thermocouple.cc **** 	// TODO: Check timing against datasheet.
+  54:src/MightyBoard/shared/Thermocouple.cc **** 	cs_pin.setValue(false);
+  55:src/MightyBoard/shared/Thermocouple.cc **** 	nop();
+  56:src/MightyBoard/shared/Thermocouple.cc **** 	sck_pin.setValue(false);
+  57:src/MightyBoard/shared/Thermocouple.cc **** 	nop();
+  58:src/MightyBoard/shared/Thermocouple.cc **** 
+  59:src/MightyBoard/shared/Thermocouple.cc **** 	int raw = 0;
+  60:src/MightyBoard/shared/Thermocouple.cc **** 	bool bad_temperature = false; // Indicate a disconnected state
+  61:src/MightyBoard/shared/Thermocouple.cc **** 	for (int i = 0; i < 16; i++) {
+ 332              	 .loc 3 61 0
+ 333              	 .thumb
+ 334 0042 4FF00005 	 mov r5,#0
+  60:src/MightyBoard/shared/Thermocouple.cc **** 	bool bad_temperature = false; // Indicate a disconnected state
+ 335              	 .loc 3 60 0
+ 336 0046 A846     	 mov r8,r5
+  59:src/MightyBoard/shared/Thermocouple.cc **** 	int raw = 0;
+ 337              	 .loc 3 59 0
+ 338 0048 2F46     	 mov r7,r5
+ 339              	.LBE81:
+ 340              	.LBE80:
+ 341              	.LBB82:
+ 342              	.LBB83:
+ 343              	.LBB84:
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 344              	 .loc 4 44 0
+ 345 004a 4FF00106 	 mov r6,#1
+ 346              	.LVL16:
+ 347              	.L30:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 348              	 .loc 4 35 0
+ 349 004e 237B     	 ldrb r3,[r4,#12]
+ 350 0050 2BB9     	 cbnz r3,.L26
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 351              	 .loc 4 44 0
+ 352 0052 617B     	 ldrb r1,[r4,#13]
+ 353 0054 E07A     	 ldrb r0,[r4,#11]
+ 354 0056 06FA01F1 	 lsl r1,r6,r1
+ 355 005a FFF7FEFF 	 bl GPIO_SetValue
+ 356              	.L26:
+ 357              	.LBE84:
+ 358              	.LBE83:
+ 359              	.LBB85:
+ 360              	.LBB86:
+  25:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 361              	 .loc 3 25 0
+ 362              	
+ 363 005e 00BF     	 nop
+ 364              	
+  26:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 365              	 .loc 3 26 0
+ 366              	
+ 367 0060 00BF     	 nop
+ 368              	
+  27:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 369              	 .loc 3 27 0
+ 370              	
+ 371 0062 00BF     	 nop
+ 372              	
+  28:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 373              	 .loc 3 28 0
+ 374              	
+ 375 0064 00BF     	 nop
+ 376              	
+  29:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 377              	 .loc 3 29 0
+ 378              	
+ 379 0066 00BF     	 nop
+ 380              	
+ 381              	 .thumb
+ 382              	.LBE86:
+ 383              	.LBE85:
+  62:src/MightyBoard/shared/Thermocouple.cc **** 		sck_pin.setValue(true);
+  63:src/MightyBoard/shared/Thermocouple.cc **** 		nop();
+  64:src/MightyBoard/shared/Thermocouple.cc **** 		if (i >= 1 && i < 11) { // data bit... skip LSBs
+ 384              	 .loc 3 64 0
+ 385 0068 05F1FF33 	 add r3,r5,#-1
+ 386 006c 092B     	 cmp r3,#9
+ 387 006e 0FD8     	 bhi .L27
+  65:src/MightyBoard/shared/Thermocouple.cc **** 			raw = raw << 1;
+ 388              	 .loc 3 65 0
+ 389 0070 4FEA4707 	 lsl r7,r7,#1
+ 390              	.LVL17:
+ 391              	.LBB87:
+ 392              	.LBB88:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 393              	 .loc 4 28 0
+ 394 0074 637C     	 ldrb r3,[r4,#17]
+ 395 0076 5BB9     	 cbnz r3,.L27
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 396              	 .loc 4 30 0
+ 397 0078 207C     	 ldrb r0,[r4,#16]
+ 398 007a FFF7FEFF 	 bl FIO_ReadValue
+ 399 007e A37C     	 ldrb r3,[r4,#18]
+ 400 0080 06FA03F3 	 lsl r3,r6,r3
+ 401              	.LBE88:
+ 402              	.LBE87:
+  66:src/MightyBoard/shared/Thermocouple.cc **** 			if (so_pin.getValue()) { raw = raw | 0x01; }
+ 403              	 .loc 3 66 0
+ 404 0084 0340     	 ands r3,r3,r0
+ 405 0086 13F0FF0F 	 tst r3,#255
+ 406 008a 18BF     	 it ne
+ 407 008c 47F00107 	 orrne r7,r7,#1
+ 408              	.LVL18:
+ 409              	.L27:
+  67:src/MightyBoard/shared/Thermocouple.cc **** 		}
+  68:src/MightyBoard/shared/Thermocouple.cc **** 		if (i == 13) { // Safety check: Check for open thermocouple input
+ 410              	 .loc 3 68 0
+ 411 0090 0D2D     	 cmp r5,#13
+ 412 0092 0ED1     	 bne .L28
+ 413              	.LVL19:
+ 414              	.LBB89:
+ 415              	.LBB90:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 416              	 .loc 4 28 0
+ 417 0094 637C     	 ldrb r3,[r4,#17]
+ 418 0096 63B9     	 cbnz r3,.L28
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 419              	 .loc 4 30 0
+ 420 0098 207C     	 ldrb r0,[r4,#16]
+ 421 009a FFF7FEFF 	 bl FIO_ReadValue
+ 422 009e A37C     	 ldrb r3,[r4,#18]
+ 423 00a0 06FA03F3 	 lsl r3,r6,r3
+ 424              	.LBE90:
+ 425              	.LBE89:
+  69:src/MightyBoard/shared/Thermocouple.cc **** 			if (so_pin.getValue()) {
+ 426              	 .loc 3 69 0
+ 427 00a4 0340     	 ands r3,r3,r0
+ 428 00a6 03F0FF03 	 and r3,r3,#255
+  70:src/MightyBoard/shared/Thermocouple.cc **** 			  bad_temperature = true;
+ 429              	 .loc 3 70 0
+ 430 00aa 002B     	 cmp r3,#0
+ 431 00ac 18BF     	 it ne
+ 432 00ae 4FF00108 	 movne r8,#1
+ 433              	.LVL20:
+ 434              	.L28:
+ 435              	.LBB91:
+ 436              	.LBB92:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 437              	 .loc 4 35 0
+ 438 00b2 237B     	 ldrb r3,[r4,#12]
+ 439 00b4 2BB9     	 cbnz r3,.L29
+ 440              	 .loc 4 48 0
+ 441 00b6 617B     	 ldrb r1,[r4,#13]
+ 442 00b8 E07A     	 ldrb r0,[r4,#11]
+ 443 00ba 06FA01F1 	 lsl r1,r6,r1
+ 444 00be FFF7FEFF 	 bl GPIO_ClearValue
+ 445              	.L29:
+ 446              	.LBE92:
+ 447              	.LBE91:
+ 448              	.LBB93:
+ 449              	.LBB94:
+  25:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 450              	 .loc 3 25 0
+ 451              	
+ 452 00c2 00BF     	 nop
+ 453              	
+  26:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 454              	 .loc 3 26 0
+ 455              	
+ 456 00c4 00BF     	 nop
+ 457              	
+  27:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 458              	 .loc 3 27 0
+ 459              	
+ 460 00c6 00BF     	 nop
+ 461              	
+  28:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 462              	 .loc 3 28 0
+ 463              	
+ 464 00c8 00BF     	 nop
+ 465              	
+  29:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 466              	 .loc 3 29 0
+ 467              	
+ 468 00ca 00BF     	 nop
+ 469              	
+ 470              	 .thumb
+ 471              	.LBE94:
+ 472              	.LBE93:
+  61:src/MightyBoard/shared/Thermocouple.cc **** 	for (int i = 0; i < 16; i++) {
+ 473              	 .loc 3 61 0
+ 474 00cc 05F10105 	 add r5,r5,#1
+ 475              	.LVL21:
+ 476 00d0 102D     	 cmp r5,#16
+ 477 00d2 BCD1     	 bne .L30
+ 478              	.LVL22:
+ 479              	.LBE82:
+ 480              	.LBB95:
+ 481              	.LBB96:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 482              	 .loc 4 35 0
+ 483 00d4 E379     	 ldrb r3,[r4,#7]
+ 484 00d6 3BB9     	 cbnz r3,.L31
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 485              	 .loc 4 44 0
+ 486 00d8 237A     	 ldrb r3,[r4,#8]
+ 487 00da A079     	 ldrb r0,[r4,#6]
+ 488 00dc 4FF00101 	 mov r1,#1
+ 489 00e0 01FA03F1 	 lsl r1,r1,r3
+ 490 00e4 FFF7FEFF 	 bl GPIO_SetValue
+ 491              	.L31:
+ 492              	.LBE96:
+ 493              	.LBE95:
+ 494              	.LBB97:
+ 495              	.LBB98:
+  25:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 496              	 .loc 3 25 0
+ 497              	
+ 498 00e8 00BF     	 nop
+ 499              	
+  26:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 500              	 .loc 3 26 0
+ 501              	
+ 502 00ea 00BF     	 nop
+ 503              	
+  27:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 504              	 .loc 3 27 0
+ 505              	
+ 506 00ec 00BF     	 nop
+ 507              	
+  28:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 508              	 .loc 3 28 0
+ 509              	
+ 510 00ee 00BF     	 nop
+ 511              	
+  29:src/MightyBoard/shared/Thermocouple.cc ****         asm volatile("nop"::);
+ 512              	 .loc 3 29 0
+ 513              	
+ 514 00f0 00BF     	 nop
+ 515              	
+ 516              	.LVL23:
+ 517              	 .thumb
+ 518              	.LBE98:
+ 519              	.LBE97:
+ 520              	.LBB99:
+ 521              	.LBB100:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 522              	 .loc 4 35 0
+ 523 00f2 237B     	 ldrb r3,[r4,#12]
+ 524 00f4 3BB9     	 cbnz r3,.L32
+ 525              	 .loc 4 48 0
+ 526 00f6 637B     	 ldrb r3,[r4,#13]
+ 527 00f8 E07A     	 ldrb r0,[r4,#11]
+ 528 00fa 4FF00101 	 mov r1,#1
+ 529 00fe 01FA03F1 	 lsl r1,r1,r3
+ 530 0102 FFF7FEFF 	 bl GPIO_ClearValue
+ 531              	.L32:
+ 532              	.LBE100:
+ 533              	.LBE99:
+  71:src/MightyBoard/shared/Thermocouple.cc **** 			}
+  72:src/MightyBoard/shared/Thermocouple.cc **** 		}
+  73:src/MightyBoard/shared/Thermocouple.cc **** 		sck_pin.setValue(false);
+  74:src/MightyBoard/shared/Thermocouple.cc **** 		nop();
+  75:src/MightyBoard/shared/Thermocouple.cc **** 	}
+  76:src/MightyBoard/shared/Thermocouple.cc **** 
+  77:src/MightyBoard/shared/Thermocouple.cc **** 	cs_pin.setValue(true);
+  78:src/MightyBoard/shared/Thermocouple.cc **** 	nop();
+  79:src/MightyBoard/shared/Thermocouple.cc **** 	sck_pin.setValue(false);
+  80:src/MightyBoard/shared/Thermocouple.cc **** 
+  81:src/MightyBoard/shared/Thermocouple.cc **** 	if (bad_temperature) {
+ 534              	 .loc 3 81 0
+ 535 0106 B8F1000F 	 cmp r8,#0
+ 536 010a 06D0     	 beq .L33
+  82:src/MightyBoard/shared/Thermocouple.cc **** 	  // Set the temperature to 1024 as an error condition
+  83:src/MightyBoard/shared/Thermocouple.cc **** 	  current_temp = BAD_TEMPERATURE;
+ 537              	 .loc 3 83 0
+ 538 010c 4FF48063 	 mov r3,#1024
+ 539 0110 A380     	 strh r3,[r4,#4]
+  84:src/MightyBoard/shared/Thermocouple.cc **** 	  return SS_ERROR_UNPLUGGED;
+ 540              	 .loc 3 84 0
+ 541 0112 4FF00300 	 mov r0,#3
+ 542 0116 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 543              	.L33:
+  85:src/MightyBoard/shared/Thermocouple.cc **** 	}
+  86:src/MightyBoard/shared/Thermocouple.cc **** 
+  87:src/MightyBoard/shared/Thermocouple.cc **** 	current_temp = raw;
+ 544              	 .loc 3 87 0
+ 545 011a BFB2     	 uxth r7,r7
+ 546              	.LVL24:
+ 547 011c A780     	 strh r7,[r4,#4]
+  88:src/MightyBoard/shared/Thermocouple.cc **** 	return SS_OK;
+ 548              	 .loc 3 88 0
+ 549 011e 4FF00000 	 mov r0,#0
+ 550              	.LBE73:
+  89:src/MightyBoard/shared/Thermocouple.cc **** }
+ 551              	 .loc 3 89 0
+ 552 0122 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 553              	 .cfi_endproc
+ 554              	.LFE73:
+ 556 0126 00BF     	 .section .text._ZN12ThermocoupleC2E3PinS0_S0_,"ax",%progbits
+ 557              	 .align 2
+ 558              	 .global _ZN12ThermocoupleC2E3PinS0_S0_
+ 559              	 .thumb
+ 560              	 .thumb_func
+ 562              	_ZN12ThermocoupleC2E3PinS0_S0_:
+ 563              	.LFB70:
+  33:src/MightyBoard/shared/Thermocouple.cc **** Thermocouple::Thermocouple(const Pin cs,const Pin sck,const Pin so) :
+ 564              	 .loc 3 33 0
+ 565              	 .cfi_startproc
+ 566              	 
+ 567              	 
+ 568              	.LVL25:
+ 569 0000 70B5     	 push {r4,r5,r6,lr}
+ 570              	.LCFI4:
+ 571              	 .cfi_def_cfa_offset 16
+ 572              	 .cfi_offset 14,-4
+ 573              	 .cfi_offset 6,-8
+ 574              	 .cfi_offset 5,-12
+ 575              	 .cfi_offset 4,-16
+ 576 0002 0446     	 mov r4,r0
+ 577 0004 1546     	 mov r5,r2
+ 578 0006 1E46     	 mov r6,r3
+ 579              	.LVL26:
+ 580              	.LBB101:
+  36:src/MightyBoard/shared/Thermocouple.cc ****         so_pin(so)
+ 581              	 .loc 3 36 0
+ 582 0008 084B     	 ldr r3,.L40
+ 583              	.LVL27:
+ 584 000a 40F8063B 	 str r3,[r0],#6
+ 585              	.LVL28:
+ 586 000e FFF7FEFF 	 bl _ZN3PinC1ERKS_
+ 587              	.LVL29:
+ 588 0012 04F10B00 	 add r0,r4,#11
+ 589 0016 2946     	 mov r1,r5
+ 590 0018 FFF7FEFF 	 bl _ZN3PinC1ERKS_
+ 591 001c 04F11000 	 add r0,r4,#16
+ 592 0020 3146     	 mov r1,r6
+ 593 0022 FFF7FEFF 	 bl _ZN3PinC1ERKS_
+ 594              	.LBE101:
+  38:src/MightyBoard/shared/Thermocouple.cc **** }
+ 595              	 .loc 3 38 0
+ 596 0026 2046     	 mov r0,r4
+ 597 0028 70BD     	 pop {r4,r5,r6,pc}
+ 598              	.L41:
+ 599 002a 00BF     	 .align 2
+ 600              	.L40:
+ 601 002c 08000000 	 .word .LANCHOR0+8
+ 602              	 .cfi_endproc
+ 603              	.LFE70:
+ 605              	 .section .text._GLOBAL__sub_I__ZN12ThermocoupleC2E3PinS0_S0_,"ax",%progbits
+ 606              	 .align 2
+ 607              	 .thumb
+ 608              	 .thumb_func
+ 610              	_GLOBAL__sub_I__ZN12ThermocoupleC2E3PinS0_S0_:
+ 611              	.LFB79:
+ 612              	 .loc 3 89 0
+ 613              	 .cfi_startproc
+ 614              	 
+ 615              	 
+ 616 0000 10B5     	 push {r4,lr}
+ 617              	.LCFI5:
+ 618              	 .cfi_def_cfa_offset 8
+ 619              	 .cfi_offset 14,-4
+ 620              	 .cfi_offset 4,-8
+ 621              	.LVL30:
+ 622              	.LBB104:
+ 623              	.LBB105:
+ 624              	 .file 5 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 625              	 .loc 5 49 0
+ 626 0002 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 627 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 628 000a 4FF00001 	 mov r1,#0
+ 629 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 630              	 .loc 5 50 0
+ 631 0012 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 632 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 633 001a 4FF00101 	 mov r1,#1
+ 634 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 635              	 .loc 5 51 0
+ 636 0022 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 637 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 638 002a 4FF00201 	 mov r1,#2
+ 639 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 640              	 .loc 5 52 0
+ 641 0032 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 642 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 643 003a 4FF00301 	 mov r1,#3
+ 644 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 645              	 .loc 5 53 0
+ 646 0042 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 647 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 648 004a 4FF00401 	 mov r1,#4
+ 649 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 650              	 .loc 5 55 0
+ 651 0052 40F20004 	 movw r4,#:lower16:.LANCHOR6
+ 652 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR6
+ 653 005a 2046     	 mov r0,r4
+ 654 005c 4FF0FF01 	 mov r1,#255
+ 655 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 656              	 .loc 4 76 0
+ 657 0064 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 658 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 659 006c 2146     	 mov r1,r4
+ 660 006e 4FF00002 	 mov r2,#0
+ 661 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 662              	.LBE105:
+ 663              	.LBE104:
+ 664              	 .loc 3 89 0
+ 665 0076 10BD     	 pop {r4,pc}
+ 666              	 .cfi_endproc
+ 667              	.LFE79:
+ 669              	 .section .init_array,"aw",%init_array
+ 670              	 .align 2
+ 671 0000 00000000 	 .word _GLOBAL__sub_I__ZN12ThermocoupleC2E3PinS0_S0_(target1)
+ 672              	 .global _ZTV12Thermocouple
+ 673              	 .weak _ZTV17TemperatureSensor
+ 674              	 .section .rodata._ZTV17TemperatureSensor,"aG",%progbits,_ZTV17TemperatureSensor,comdat
+ 675              	 .align 3
+ 678              	_ZTV17TemperatureSensor:
+ 679 0000 00000000 	 .word 0
+ 680 0004 00000000 	 .word 0
+ 681 0008 00000000 	 .word _ZN17TemperatureSensorD1Ev
+ 682 000c 00000000 	 .word _ZN17TemperatureSensorD0Ev
+ 683 0010 00000000 	 .word _ZN17TemperatureSensor4initEv
+ 684 0014 00000000 	 .word __cxa_pure_virtual
+ 685              	 .weak _ZN17TemperatureSensorD1Ev
+ 686              	 .thumb_set _ZN17TemperatureSensorD1Ev,_ZN17TemperatureSensorD2Ev
+ 687              	 .weak _ZN12ThermocoupleD1Ev
+ 688              	 .thumb_set _ZN12ThermocoupleD1Ev,_ZN12ThermocoupleD2Ev
+ 689              	 .global _ZN12ThermocoupleC1E3PinS0_S0_
+ 690              	 .thumb_set _ZN12ThermocoupleC1E3PinS0_S0_,_ZN12ThermocoupleC2E3PinS0_S0_
+ 691              	 .section .bss._ZL5Port0,"aw",%nobits
+ 692              	 .align 2
+ 693              	 .set .LANCHOR1,.+0
+ 696              	_ZL5Port0:
+ 697 0000 00       	 .space 1
+ 698 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 699              	 .align 2
+ 700              	 .set .LANCHOR2,.+0
+ 703              	_ZL5Port1:
+ 704 0000 00       	 .space 1
+ 705 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 706              	 .align 2
+ 707              	 .set .LANCHOR3,.+0
+ 710              	_ZL5Port2:
+ 711 0000 00       	 .space 1
+ 712 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 713              	 .align 2
+ 714              	 .set .LANCHOR4,.+0
+ 717              	_ZL5Port3:
+ 718 0000 00       	 .space 1
+ 719 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 720              	 .align 2
+ 721              	 .set .LANCHOR5,.+0
+ 724              	_ZL5Port4:
+ 725 0000 00       	 .space 1
+ 726 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 727              	 .align 2
+ 728              	 .set .LANCHOR6,.+0
+ 731              	_ZL8NullPort:
+ 732 0000 00       	 .space 1
+ 733 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 734              	 .align 2
+ 735              	 .set .LANCHOR7,.+0
+ 738              	_ZL7NullPin:
+ 739 0000 00000000 	 .space 5
+ 739      00
+ 740 0005 000000   	 .section .rodata._ZTV12Thermocouple,"a",%progbits
+ 741              	 .align 3
+ 742              	 .set .LANCHOR0,.+0
+ 745              	_ZTV12Thermocouple:
+ 746 0000 00000000 	 .word 0
+ 747 0004 00000000 	 .word 0
+ 748 0008 00000000 	 .word _ZN12ThermocoupleD1Ev
+ 749 000c 00000000 	 .word _ZN12ThermocoupleD0Ev
+ 750 0010 00000000 	 .word _ZN12Thermocouple4initEv
+ 751 0014 00000000 	 .word _ZN12Thermocouple6updateEv
+ 752              	 .text
+ 753              	.Letext0:
+ 754              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 755              	 .file 7 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Thermocouple.cc
+    {standard input}:19     .text._ZN17TemperatureSensorD2Ev:00000000 $t
+    {standard input}:24     .text._ZN17TemperatureSensorD2Ev:00000000 _ZN17TemperatureSensorD2Ev
+    {standard input}:42     .text._ZN17TemperatureSensorD2Ev:00000008 $d
+    {standard input}:678    .rodata._ZTV17TemperatureSensor:00000000 _ZTV17TemperatureSensor
+    {standard input}:47     .text._ZN17TemperatureSensor4initEv:00000000 $t
+    {standard input}:52     .text._ZN17TemperatureSensor4initEv:00000000 _ZN17TemperatureSensor4initEv
+    {standard input}:66     .text._ZN12ThermocoupleD2Ev:00000000 $t
+    {standard input}:71     .text._ZN12ThermocoupleD2Ev:00000000 _ZN12ThermocoupleD2Ev
+    {standard input}:96     .text._ZN12ThermocoupleD2Ev:00000008 $d
+    {standard input}:101    .text._ZN12ThermocoupleD0Ev:00000000 $t
+    {standard input}:106    .text._ZN12ThermocoupleD0Ev:00000000 _ZN12ThermocoupleD0Ev
+    {standard input}:143    .text._ZN12ThermocoupleD0Ev:00000010 $d
+    {standard input}:148    .text._ZN17TemperatureSensorD0Ev:00000000 $t
+    {standard input}:153    .text._ZN17TemperatureSensorD0Ev:00000000 _ZN17TemperatureSensorD0Ev
+    {standard input}:183    .text._ZN17TemperatureSensorD0Ev:00000010 $d
+    {standard input}:188    .text._ZN12Thermocouple4initEv:00000000 $t
+    {standard input}:193    .text._ZN12Thermocouple4initEv:00000000 _ZN12Thermocouple4initEv
+    {standard input}:229    .text._ZN12Thermocouple6updateEv:00000000 $t
+    {standard input}:234    .text._ZN12Thermocouple6updateEv:00000000 _ZN12Thermocouple6updateEv
+    {standard input}:557    .text._ZN12ThermocoupleC2E3PinS0_S0_:00000000 $t
+    {standard input}:562    .text._ZN12ThermocoupleC2E3PinS0_S0_:00000000 _ZN12ThermocoupleC2E3PinS0_S0_
+    {standard input}:601    .text._ZN12ThermocoupleC2E3PinS0_S0_:0000002c $d
+    {standard input}:606    .text._GLOBAL__sub_I__ZN12ThermocoupleC2E3PinS0_S0_:00000000 $t
+    {standard input}:610    .text._GLOBAL__sub_I__ZN12ThermocoupleC2E3PinS0_S0_:00000000 _GLOBAL__sub_I__ZN12ThermocoupleC2E3PinS0_S0_
+    {standard input}:693    .bss._ZL5Port0:00000000 .LANCHOR1
+    {standard input}:700    .bss._ZL5Port1:00000000 .LANCHOR2
+    {standard input}:707    .bss._ZL5Port2:00000000 .LANCHOR3
+    {standard input}:714    .bss._ZL5Port3:00000000 .LANCHOR4
+    {standard input}:721    .bss._ZL5Port4:00000000 .LANCHOR5
+    {standard input}:728    .bss._ZL8NullPort:00000000 .LANCHOR6
+    {standard input}:735    .bss._ZL7NullPin:00000000 .LANCHOR7
+    {standard input}:670    .init_array:00000000 $d
+    {standard input}:745    .rodata._ZTV12Thermocouple:00000000 _ZTV12Thermocouple
+    {standard input}:675    .rodata._ZTV17TemperatureSensor:00000000 $d
+    {standard input}:24     .text._ZN17TemperatureSensorD2Ev:00000000 _ZN17TemperatureSensorD1Ev
+    {standard input}:71     .text._ZN12ThermocoupleD2Ev:00000000 _ZN12ThermocoupleD1Ev
+    {standard input}:562    .text._ZN12ThermocoupleC2E3PinS0_S0_:00000000 _ZN12ThermocoupleC1E3PinS0_S0_
+    {standard input}:692    .bss._ZL5Port0:00000000 $d
+    {standard input}:696    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:699    .bss._ZL5Port1:00000000 $d
+    {standard input}:703    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:706    .bss._ZL5Port2:00000000 $d
+    {standard input}:710    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:713    .bss._ZL5Port3:00000000 $d
+    {standard input}:717    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:720    .bss._ZL5Port4:00000000 $d
+    {standard input}:724    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:727    .bss._ZL8NullPort:00000000 $d
+    {standard input}:731    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:734    .bss._ZL7NullPin:00000000 $d
+    {standard input}:738    .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:741    .rodata._ZTV12Thermocouple:00000000 $d
+                     .debug_frame:00000010 $d
+                           .group:00000000 _ZN17TemperatureSensorD5Ev
+                           .group:00000000 _ZN12ThermocoupleD5Ev
+
+UNDEFINED SYMBOLS
+_ZdlPv
+_ZNK3Pin12setDirectionEb
+GPIO_ClearValue
+GPIO_SetValue
+FIO_ReadValue
+_ZN3PinC1ERKS_
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth
+__cxa_pure_virtual

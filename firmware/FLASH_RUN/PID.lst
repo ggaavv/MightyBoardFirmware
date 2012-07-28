@@ -1,0 +1,485 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "PID.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN3PID11reset_stateEv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN3PID11reset_stateEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN3PID11reset_stateEv:
+  25              	.LFB8:
+  26              	 .file 1 "src/MightyBoard/shared/PID.cc"
+   1:src/MightyBoard/shared/PID.cc **** /*
+   2:src/MightyBoard/shared/PID.cc ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/PID.cc ****  *
+   4:src/MightyBoard/shared/PID.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/PID.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/PID.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/PID.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/PID.cc ****  *
+   9:src/MightyBoard/shared/PID.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/PID.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/PID.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/PID.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/PID.cc ****  *
+  14:src/MightyBoard/shared/PID.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/PID.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/PID.cc ****  *
+  17:src/MightyBoard/shared/PID.cc ****  * This simplified PID controller was written with reference to:
+  18:src/MightyBoard/shared/PID.cc ****  * * The Heater.h implementation (lookup credits)
+  19:src/MightyBoard/shared/PID.cc ****  * * Brett Beauregard's Arduino PID implementation
+  20:src/MightyBoard/shared/PID.cc ****  *  Created on: Feb 19, 2010
+  21:src/MightyBoard/shared/PID.cc ****  *      Author: phooky
+  22:src/MightyBoard/shared/PID.cc ****  *
+  23:src/MightyBoard/shared/PID.cc ****  */
+  24:src/MightyBoard/shared/PID.cc **** 
+  25:src/MightyBoard/shared/PID.cc **** #include "PID.hh"
+  26:src/MightyBoard/shared/PID.cc **** 
+  27:src/MightyBoard/shared/PID.cc **** #define ERR_ACC_MAX 256
+  28:src/MightyBoard/shared/PID.cc **** #define ERR_ACC_MIN -ERR_ACC_MAX
+  29:src/MightyBoard/shared/PID.cc **** 
+  30:src/MightyBoard/shared/PID.cc **** // scale the output term to account for our fixed-point bounds
+  31:src/MightyBoard/shared/PID.cc **** #define OUTPUT_SCALE 2
+  32:src/MightyBoard/shared/PID.cc **** 
+  33:src/MightyBoard/shared/PID.cc **** PID::PID() {
+  34:src/MightyBoard/shared/PID.cc ****     reset();
+  35:src/MightyBoard/shared/PID.cc **** }
+  36:src/MightyBoard/shared/PID.cc **** 
+  37:src/MightyBoard/shared/PID.cc **** void PID::reset() {
+  38:src/MightyBoard/shared/PID.cc **** 	sp = 0;
+  39:src/MightyBoard/shared/PID.cc **** 	p_gain = i_gain = d_gain = 0;
+  40:src/MightyBoard/shared/PID.cc **** 
+  41:src/MightyBoard/shared/PID.cc **** 	reset_state();
+  42:src/MightyBoard/shared/PID.cc **** }
+  43:src/MightyBoard/shared/PID.cc **** 
+  44:src/MightyBoard/shared/PID.cc **** void PID::reset_state() {
+  27              	 .loc 1 44 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  45:src/MightyBoard/shared/PID.cc **** 	error_acc = 0;
+  33              	 .loc 1 45 0
+  34 0000 4FF00003 	 mov r3,#0
+  35 0004 0362     	 str r3,[r0,#32]
+  46:src/MightyBoard/shared/PID.cc **** 	prev_error = 0;
+  36              	 .loc 1 46 0
+  37 0006 C361     	 str r3,[r0,#28]
+  47:src/MightyBoard/shared/PID.cc **** 	delta_idx = 0;
+  48:src/MightyBoard/shared/PID.cc **** 
+  49:src/MightyBoard/shared/PID.cc **** 	for (delta_idx = 0; delta_idx < DELTA_SAMPLES; delta_idx++) {
+  50:src/MightyBoard/shared/PID.cc **** 		delta_history[delta_idx] = 0;
+  38              	 .loc 1 50 0
+  39 0008 8381     	 strh r3,[r0,#12]
+  40 000a C381     	 strh r3,[r0,#14]
+  41 000c 0382     	 strh r3,[r0,#16]
+  42 000e 4382     	 strh r3,[r0,#18]
+  51:src/MightyBoard/shared/PID.cc **** 	}
+  52:src/MightyBoard/shared/PID.cc **** 	delta_idx = 0;
+  43              	 .loc 1 52 0
+  44 0010 0376     	 strb r3,[r0,#24]
+  53:src/MightyBoard/shared/PID.cc **** 	delta_summation = 0;
+  45              	 .loc 1 53 0
+  46 0012 4FF00002 	 mov r2,#0
+  47 0016 4261     	 str r2,[r0,#20]
+  54:src/MightyBoard/shared/PID.cc **** 
+  55:src/MightyBoard/shared/PID.cc **** 	last_output = 0;
+  48              	 .loc 1 55 0
+  49 0018 8362     	 str r3,[r0,#40]
+  56:src/MightyBoard/shared/PID.cc **** }
+  50              	 .loc 1 56 0
+  51 001a 7047     	 bx lr
+  52              	 .cfi_endproc
+  53              	.LFE8:
+  55              	 .section .text._ZN3PID5resetEv,"ax",%progbits
+  56              	 .align 2
+  57              	 .global _ZN3PID5resetEv
+  58              	 .thumb
+  59              	 .thumb_func
+  61              	_ZN3PID5resetEv:
+  62              	.LFB7:
+  37:src/MightyBoard/shared/PID.cc **** void PID::reset() {
+  63              	 .loc 1 37 0
+  64              	 .cfi_startproc
+  65              	 
+  66              	 
+  67              	.LVL1:
+  68 0000 08B5     	 push {r3,lr}
+  69              	.LCFI0:
+  70              	 .cfi_def_cfa_offset 8
+  71              	 .cfi_offset 14,-4
+  72              	 .cfi_offset 3,-8
+  38:src/MightyBoard/shared/PID.cc **** 	sp = 0;
+  73              	 .loc 1 38 0
+  74 0002 4FF00002 	 mov r2,#0
+  75 0006 4262     	 str r2,[r0,#36]
+  39:src/MightyBoard/shared/PID.cc **** 	p_gain = i_gain = d_gain = 0;
+  76              	 .loc 1 39 0
+  77 0008 4FF00002 	 mov r2,#0
+  78 000c 8260     	 str r2,[r0,#8]
+  79 000e 4260     	 str r2,[r0,#4]
+  80 0010 0260     	 str r2,[r0,#0]
+  41:src/MightyBoard/shared/PID.cc **** 	reset_state();
+  81              	 .loc 1 41 0
+  82 0012 FFF7FEFF 	 bl _ZN3PID11reset_stateEv
+  83              	.LVL2:
+  42:src/MightyBoard/shared/PID.cc **** }
+  84              	 .loc 1 42 0
+  85 0016 08BD     	 pop {r3,pc}
+  86              	 .cfi_endproc
+  87              	.LFE7:
+  89              	 .section .text._ZN3PIDC2Ev,"ax",%progbits
+  90              	 .align 2
+  91              	 .global _ZN3PIDC2Ev
+  92              	 .thumb
+  93              	 .thumb_func
+  95              	_ZN3PIDC2Ev:
+  96              	.LFB5:
+  33:src/MightyBoard/shared/PID.cc **** PID::PID() {
+  97              	 .loc 1 33 0
+  98              	 .cfi_startproc
+  99              	 
+ 100              	 
+ 101              	.LVL3:
+ 102 0000 10B5     	 push {r4,lr}
+ 103              	.LCFI1:
+ 104              	 .cfi_def_cfa_offset 8
+ 105              	 .cfi_offset 14,-4
+ 106              	 .cfi_offset 4,-8
+ 107 0002 0446     	 mov r4,r0
+ 108              	.LBB2:
+  34:src/MightyBoard/shared/PID.cc ****     reset();
+ 109              	 .loc 1 34 0
+ 110 0004 FFF7FEFF 	 bl _ZN3PID5resetEv
+ 111              	.LVL4:
+ 112              	.LBE2:
+  35:src/MightyBoard/shared/PID.cc **** }
+ 113              	 .loc 1 35 0
+ 114 0008 2046     	 mov r0,r4
+ 115 000a 10BD     	 pop {r4,pc}
+ 116              	 .cfi_endproc
+ 117              	.LFE5:
+ 119              	 .global __aeabi_i2f
+ 120              	 .global __aeabi_fmul
+ 121              	 .global __aeabi_fsub
+ 122              	 .global __aeabi_fadd
+ 123              	 .global __aeabi_f2iz
+ 124              	 .section .text._ZN3PID9calculateEi,"ax",%progbits
+ 125              	 .align 2
+ 126              	 .global _ZN3PID9calculateEi
+ 127              	 .thumb
+ 128              	 .thumb_func
+ 130              	_ZN3PID9calculateEi:
+ 131              	.LFB9:
+  57:src/MightyBoard/shared/PID.cc **** 
+  58:src/MightyBoard/shared/PID.cc **** // We're modifying the way we compute delta by averaging the deltas over a
+  59:src/MightyBoard/shared/PID.cc **** // series of samples.  This helps us get a reasonable delta despite the discrete
+  60:src/MightyBoard/shared/PID.cc **** // nature of the samples; on average we will get a delta of maybe 1/deg/second,
+  61:src/MightyBoard/shared/PID.cc **** // which will give us a delta impulse for that one calculation round and then
+  62:src/MightyBoard/shared/PID.cc **** // the D term will immediately disappear.  By averaging the last N deltas, we
+  63:src/MightyBoard/shared/PID.cc **** // allow changes to be registered rather than get subsumed in the sampling noise.
+  64:src/MightyBoard/shared/PID.cc **** int PID::calculate(const int pv) {
+ 132              	 .loc 1 64 0
+ 133              	 .cfi_startproc
+ 134              	 
+ 135              	 
+ 136              	.LVL5:
+ 137 0000 2DE9F84F 	 push {r3,r4,r5,r6,r7,r8,r9,sl,fp,lr}
+ 138              	.LCFI2:
+ 139              	 .cfi_def_cfa_offset 40
+ 140              	 .cfi_offset 14,-4
+ 141              	 .cfi_offset 11,-8
+ 142              	 .cfi_offset 10,-12
+ 143              	 .cfi_offset 9,-16
+ 144              	 .cfi_offset 8,-20
+ 145              	 .cfi_offset 7,-24
+ 146              	 .cfi_offset 6,-28
+ 147              	 .cfi_offset 5,-32
+ 148              	 .cfi_offset 4,-36
+ 149              	 .cfi_offset 3,-40
+ 150 0004 0446     	 mov r4,r0
+ 151              	.LBB3:
+  65:src/MightyBoard/shared/PID.cc **** 	int e = sp - pv;
+ 152              	 .loc 1 65 0
+ 153 0006 456A     	 ldr r5,[r0,#36]
+ 154 0008 6D1A     	 subs r5,r5,r1
+ 155              	.LVL6:
+  66:src/MightyBoard/shared/PID.cc **** 	error_acc += e;
+ 156              	 .loc 1 66 0
+ 157 000a 036A     	 ldr r3,[r0,#32]
+ 158 000c EB18     	 adds r3,r5,r3
+ 159 000e 0362     	 str r3,[r0,#32]
+  67:src/MightyBoard/shared/PID.cc **** 	// Clamp the error accumulator at accepted values.
+  68:src/MightyBoard/shared/PID.cc **** 	// This will help control overcorrection for accumulated error during the run-up
+  69:src/MightyBoard/shared/PID.cc **** 	// and allow the I term to be integrated away more quickly as we approach the
+  70:src/MightyBoard/shared/PID.cc **** 	// setpoint.
+  71:src/MightyBoard/shared/PID.cc **** 	if (error_acc > ERR_ACC_MAX) {
+ 160              	 .loc 1 71 0
+ 161 0010 B3F5807F 	 cmp r3,#256
+  72:src/MightyBoard/shared/PID.cc **** 		error_acc = ERR_ACC_MAX;
+ 162              	 .loc 1 72 0
+ 163 0014 C4BF     	 itt gt
+ 164 0016 4FF48073 	 movgt r3,#256
+ 165 001a 0362     	 strgt r3,[r0,#32]
+  71:src/MightyBoard/shared/PID.cc **** 	if (error_acc > ERR_ACC_MAX) {
+ 166              	 .loc 1 71 0
+ 167 001c 05DC     	 bgt .L7
+  73:src/MightyBoard/shared/PID.cc **** 	}
+  74:src/MightyBoard/shared/PID.cc **** 	if (error_acc < ERR_ACC_MIN) {
+ 168              	 .loc 1 74 0
+ 169 001e 13F5807F 	 cmn r3,#256
+  75:src/MightyBoard/shared/PID.cc **** 		error_acc = ERR_ACC_MIN;
+ 170              	 .loc 1 75 0
+ 171 0022 BCBF     	 itt lt
+ 172 0024 6FF0FF03 	 mvnlt r3,#255
+ 173 0028 0362     	 strlt r3,[r0,#32]
+ 174              	.L7:
+  76:src/MightyBoard/shared/PID.cc **** 	}
+  77:src/MightyBoard/shared/PID.cc **** 	float p_term = (float)e * p_gain;
+ 175              	 .loc 1 77 0
+ 176 002a 2846     	 mov r0,r5
+ 177              	.LVL7:
+ 178 002c FFF7FEFF 	 bl __aeabi_i2f
+ 179              	.LVL8:
+ 180 0030 2168     	 ldr r1,[r4,#0]
+ 181 0032 FFF7FEFF 	 bl __aeabi_fmul
+ 182 0036 8246     	 mov sl,r0
+ 183              	.LVL9:
+  78:src/MightyBoard/shared/PID.cc **** 	float i_term = (float)error_acc * i_gain;
+ 184              	 .loc 1 78 0
+ 185 0038 206A     	 ldr r0,[r4,#32]
+ 186              	.LVL10:
+ 187 003a FFF7FEFF 	 bl __aeabi_i2f
+ 188 003e 6168     	 ldr r1,[r4,#4]
+ 189 0040 FFF7FEFF 	 bl __aeabi_fmul
+ 190 0044 8346     	 mov fp,r0
+ 191              	.LVL11:
+  79:src/MightyBoard/shared/PID.cc **** 	int delta = e - prev_error;
+ 192              	 .loc 1 79 0
+ 193 0046 E769     	 ldr r7,[r4,#28]
+ 194 0048 EF1B     	 subs r7,r5,r7
+ 195              	.LVL12:
+  80:src/MightyBoard/shared/PID.cc **** 	// Add to delta history
+  81:src/MightyBoard/shared/PID.cc **** 	delta_summation -= delta_history[delta_idx];
+ 196              	 .loc 1 81 0
+ 197 004a 94F81880 	 ldrb r8,[r4,#24]
+ 198 004e 08F10406 	 add r6,r8,#4
+ 199 0052 04EB4606 	 add r6,r4,r6,lsl#1
+ 200 0056 B6F90400 	 ldrsh r0,[r6,#4]
+ 201              	.LVL13:
+ 202 005a FFF7FEFF 	 bl __aeabi_i2f
+ 203 005e 0146     	 mov r1,r0
+ 204 0060 6069     	 ldr r0,[r4,#20]
+ 205 0062 FFF7FEFF 	 bl __aeabi_fsub
+ 206 0066 8146     	 mov r9,r0
+  82:src/MightyBoard/shared/PID.cc **** 	delta_history[delta_idx] = delta;
+ 207              	 .loc 1 82 0
+ 208 0068 B780     	 strh r7,[r6,#4]
+  83:src/MightyBoard/shared/PID.cc **** 	delta_summation += (float)delta;
+ 209              	 .loc 1 83 0
+ 210 006a 3846     	 mov r0,r7
+ 211 006c FFF7FEFF 	 bl __aeabi_i2f
+ 212 0070 0146     	 mov r1,r0
+ 213 0072 4846     	 mov r0,r9
+ 214 0074 FFF7FEFF 	 bl __aeabi_fadd
+ 215 0078 6061     	 str r0,[r4,#20]
+  84:src/MightyBoard/shared/PID.cc **** 	delta_idx = (delta_idx+1) % DELTA_SAMPLES;
+ 216              	 .loc 1 84 0
+ 217 007a 08F10108 	 add r8,r8,#1
+ 218 007e 08F00308 	 and r8,r8,#3
+ 219 0082 84F81880 	 strb r8,[r4,#24]
+  85:src/MightyBoard/shared/PID.cc **** 	// Use the delta over the whole window
+  86:src/MightyBoard/shared/PID.cc **** 	float d_term = delta_summation * d_gain;
+ 220              	 .loc 1 86 0
+ 221 0086 A168     	 ldr r1,[r4,#8]
+ 222 0088 FFF7FEFF 	 bl __aeabi_fmul
+ 223 008c 0646     	 mov r6,r0
+ 224              	.LVL14:
+  87:src/MightyBoard/shared/PID.cc **** 
+  88:src/MightyBoard/shared/PID.cc **** 	prev_error = e;
+ 225              	 .loc 1 88 0
+ 226 008e E561     	 str r5,[r4,#28]
+  89:src/MightyBoard/shared/PID.cc **** 
+  90:src/MightyBoard/shared/PID.cc **** 	last_output = ((int)(p_term + i_term + d_term))*OUTPUT_SCALE;
+ 227              	 .loc 1 90 0
+ 228 0090 5046     	 mov r0,sl
+ 229              	.LVL15:
+ 230 0092 5946     	 mov r1,fp
+ 231 0094 FFF7FEFF 	 bl __aeabi_fadd
+ 232 0098 3146     	 mov r1,r6
+ 233 009a FFF7FEFF 	 bl __aeabi_fadd
+ 234 009e FFF7FEFF 	 bl __aeabi_f2iz
+ 235 00a2 4FEA4000 	 lsl r0,r0,#1
+ 236 00a6 A062     	 str r0,[r4,#40]
+ 237              	.LBE3:
+  91:src/MightyBoard/shared/PID.cc **** 
+  92:src/MightyBoard/shared/PID.cc **** 	return last_output;
+  93:src/MightyBoard/shared/PID.cc **** }
+ 238              	 .loc 1 93 0
+ 239 00a8 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 240              	 .cfi_endproc
+ 241              	.LFE9:
+ 243              	 .section .text._ZN3PID9setTargetEi,"ax",%progbits
+ 244              	 .align 2
+ 245              	 .global _ZN3PID9setTargetEi
+ 246              	 .thumb
+ 247              	 .thumb_func
+ 249              	_ZN3PID9setTargetEi:
+ 250              	.LFB10:
+  94:src/MightyBoard/shared/PID.cc **** 
+  95:src/MightyBoard/shared/PID.cc **** void PID::setTarget(const int target) {
+ 251              	 .loc 1 95 0
+ 252              	 .cfi_startproc
+ 253              	 
+ 254              	 
+ 255              	.LVL16:
+ 256 0000 38B5     	 push {r3,r4,r5,lr}
+ 257              	.LCFI3:
+ 258              	 .cfi_def_cfa_offset 16
+ 259              	 .cfi_offset 14,-4
+ 260              	 .cfi_offset 5,-8
+ 261              	 .cfi_offset 4,-12
+ 262              	 .cfi_offset 3,-16
+ 263 0002 0446     	 mov r4,r0
+ 264 0004 0D46     	 mov r5,r1
+  96:src/MightyBoard/shared/PID.cc **** 	if (sp != target) {
+ 265              	 .loc 1 96 0
+ 266 0006 436A     	 ldr r3,[r0,#36]
+ 267 0008 8B42     	 cmp r3,r1
+ 268 000a 02D0     	 beq .L8
+  97:src/MightyBoard/shared/PID.cc **** 		reset_state();
+ 269              	 .loc 1 97 0
+ 270 000c FFF7FEFF 	 bl _ZN3PID11reset_stateEv
+ 271              	.LVL17:
+  98:src/MightyBoard/shared/PID.cc **** 		sp = target;
+ 272              	 .loc 1 98 0
+ 273 0010 6562     	 str r5,[r4,#36]
+ 274              	.L8:
+ 275 0012 38BD     	 pop {r3,r4,r5,pc}
+ 276              	 .cfi_endproc
+ 277              	.LFE10:
+ 279              	 .section .text._ZN3PID12getErrorTermEv,"ax",%progbits
+ 280              	 .align 2
+ 281              	 .global _ZN3PID12getErrorTermEv
+ 282              	 .thumb
+ 283              	 .thumb_func
+ 285              	_ZN3PID12getErrorTermEv:
+ 286              	.LFB11:
+  99:src/MightyBoard/shared/PID.cc **** 	}
+ 100:src/MightyBoard/shared/PID.cc **** }
+ 101:src/MightyBoard/shared/PID.cc **** 
+ 102:src/MightyBoard/shared/PID.cc **** int PID::getErrorTerm() {
+ 287              	 .loc 1 102 0
+ 288              	 .cfi_startproc
+ 289              	 
+ 290              	 
+ 291              	 
+ 292              	.LVL18:
+ 103:src/MightyBoard/shared/PID.cc **** 	return error_acc;
+ 104:src/MightyBoard/shared/PID.cc **** }
+ 293              	 .loc 1 104 0
+ 294 0000 006A     	 ldr r0,[r0,#32]
+ 295              	.LVL19:
+ 296 0002 7047     	 bx lr
+ 297              	 .cfi_endproc
+ 298              	.LFE11:
+ 300              	 .section .text._ZN3PID12getDeltaTermEv,"ax",%progbits
+ 301              	 .align 2
+ 302              	 .global _ZN3PID12getDeltaTermEv
+ 303              	 .thumb
+ 304              	 .thumb_func
+ 306              	_ZN3PID12getDeltaTermEv:
+ 307              	.LFB12:
+ 105:src/MightyBoard/shared/PID.cc **** 
+ 106:src/MightyBoard/shared/PID.cc **** int PID::getDeltaTerm() {
+ 308              	 .loc 1 106 0
+ 309              	 .cfi_startproc
+ 310              	 
+ 311              	 
+ 312              	.LVL20:
+ 313 0000 08B5     	 push {r3,lr}
+ 314              	.LCFI4:
+ 315              	 .cfi_def_cfa_offset 8
+ 316              	 .cfi_offset 14,-4
+ 317              	 .cfi_offset 3,-8
+ 107:src/MightyBoard/shared/PID.cc **** 	return (int)delta_summation;
+ 318              	 .loc 1 107 0
+ 319 0002 4069     	 ldr r0,[r0,#20]
+ 320              	.LVL21:
+ 321 0004 FFF7FEFF 	 bl __aeabi_f2iz
+ 108:src/MightyBoard/shared/PID.cc **** }
+ 322              	 .loc 1 108 0
+ 323 0008 08BD     	 pop {r3,pc}
+ 324              	 .cfi_endproc
+ 325              	.LFE12:
+ 327 000a 00BF     	 .section .text._ZN3PID13getLastOutputEv,"ax",%progbits
+ 328              	 .align 2
+ 329              	 .global _ZN3PID13getLastOutputEv
+ 330              	 .thumb
+ 331              	 .thumb_func
+ 333              	_ZN3PID13getLastOutputEv:
+ 334              	.LFB13:
+ 109:src/MightyBoard/shared/PID.cc **** 
+ 110:src/MightyBoard/shared/PID.cc **** int PID::getLastOutput() {
+ 335              	 .loc 1 110 0
+ 336              	 .cfi_startproc
+ 337              	 
+ 338              	 
+ 339              	 
+ 340              	.LVL22:
+ 111:src/MightyBoard/shared/PID.cc **** 	return (int)last_output;
+ 112:src/MightyBoard/shared/PID.cc **** }
+ 341              	 .loc 1 112 0
+ 342 0000 806A     	 ldr r0,[r0,#40]
+ 343              	.LVL23:
+ 344 0002 7047     	 bx lr
+ 345              	 .cfi_endproc
+ 346              	.LFE13:
+ 348              	 .global _ZN3PIDC1Ev
+ 349              	 .thumb_set _ZN3PIDC1Ev,_ZN3PIDC2Ev
+ 350              	 .text
+ 351              	.Letext0:
+ 352              	 .file 2 "src/MightyBoard/shared/PID.hh"
+ 353              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 PID.cc
+    {standard input}:19     .text._ZN3PID11reset_stateEv:00000000 $t
+    {standard input}:24     .text._ZN3PID11reset_stateEv:00000000 _ZN3PID11reset_stateEv
+    {standard input}:56     .text._ZN3PID5resetEv:00000000 $t
+    {standard input}:61     .text._ZN3PID5resetEv:00000000 _ZN3PID5resetEv
+    {standard input}:90     .text._ZN3PIDC2Ev:00000000 $t
+    {standard input}:95     .text._ZN3PIDC2Ev:00000000 _ZN3PIDC2Ev
+    {standard input}:125    .text._ZN3PID9calculateEi:00000000 $t
+    {standard input}:130    .text._ZN3PID9calculateEi:00000000 _ZN3PID9calculateEi
+    {standard input}:244    .text._ZN3PID9setTargetEi:00000000 $t
+    {standard input}:249    .text._ZN3PID9setTargetEi:00000000 _ZN3PID9setTargetEi
+    {standard input}:280    .text._ZN3PID12getErrorTermEv:00000000 $t
+    {standard input}:285    .text._ZN3PID12getErrorTermEv:00000000 _ZN3PID12getErrorTermEv
+    {standard input}:301    .text._ZN3PID12getDeltaTermEv:00000000 $t
+    {standard input}:306    .text._ZN3PID12getDeltaTermEv:00000000 _ZN3PID12getDeltaTermEv
+    {standard input}:328    .text._ZN3PID13getLastOutputEv:00000000 $t
+    {standard input}:333    .text._ZN3PID13getLastOutputEv:00000000 _ZN3PID13getLastOutputEv
+    {standard input}:95     .text._ZN3PIDC2Ev:00000000 _ZN3PIDC1Ev
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+__aeabi_i2f
+__aeabi_fmul
+__aeabi_fsub
+__aeabi_fadd
+__aeabi_f2iz

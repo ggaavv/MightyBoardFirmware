@@ -1,0 +1,289 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_nvic.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.NVIC_DeInit,"ax",%progbits
+  19              	 .align 2
+  20              	 .global NVIC_DeInit
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	NVIC_DeInit:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * $Id$		lpc17xx_nvic.c				2010-05-21
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * @file		lpc17xx_nvic.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * @brief	Contains all expansion functions support for
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * 			NVIC firmware library on LPC17xx. The main
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * 			NVIC functions are defined in core_cm3.h
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * @version	2.0
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * @date		21. May. 2010
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * @author	NXP MCU SW Application Team
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** *
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * Copyright(C) 2010, NXP Semiconductor
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * All rights reserved.
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** *
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** ***********************************************************************
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * Software that is described herein is for illustrative purposes only
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * which provides customers with programming information regarding the
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * products. This software is supplied "AS IS" without any warranties.
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * use of the software, conveys no license or title under any patent,
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * reserves the right to make changes in the software without
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * notification. NXP Semiconductors also make no representation or
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * warranty that such application will be suitable for the specified
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** * use without further testing or modification.
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** **********************************************************************/
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /* Peripheral group ----------------------------------------------------------- */
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /** @addtogroup NVIC
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @{
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  */
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /* Includes ------------------------------------------------------------------- */
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** #include "lpc17xx_nvic.h"
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /* Private Macros ------------------------------------------------------------- */
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /** @addtogroup NVIC_Private_Macros
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @{
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  */
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /* Vector table offset bit mask */
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** #define NVIC_VTOR_MASK              0x3FFFFF80
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /**
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @}
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  */
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /* Public Functions ----------------------------------------------------------- */
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /** @addtogroup NVIC_Public_Functions
+  52:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @{
+  53:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  */
+  54:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  55:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  56:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /*****************************************************************************//**
+  57:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @brief		De-initializes the NVIC peripheral registers to their default
+  58:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * 				reset values.
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @param		None
+  60:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @return      None
+  61:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  *
+  62:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * These following NVIC peripheral registers will be de-initialized:
+  63:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Disable Interrupt (32 IRQ interrupt sources that matched with LPC17xx)
+  64:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Clear all Pending Interrupts (32 IRQ interrupt source that matched with LPC17xx)
+  65:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Clear all Interrupt Priorities (32 IRQ interrupt source that matched with LPC17xx)
+  66:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  *******************************************************************************/
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** void NVIC_DeInit(void)
+  68:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** {
+  27              	 .loc 1 68 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  69:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	uint8_t tmp;
+  70:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	/* Disable all interrupts */
+  72:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	NVIC->ICER[0] = 0xFFFFFFFF;
+  32              	 .loc 1 72 0
+  33 0000 4FF46143 	 mov r3,#57600
+  34 0004 CEF20003 	 movt r3,57344
+  35 0008 4FF0FF31 	 mov r1,#-1
+  36 000c C3F88010 	 str r1,[r3,#128]
+  73:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	NVIC->ICER[1] = 0x00000001;
+  37              	 .loc 1 73 0
+  38 0010 4FF00102 	 mov r2,#1
+  39 0014 C3F88420 	 str r2,[r3,#132]
+  74:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	/* Clear all pending interrupts */
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	NVIC->ICPR[0] = 0xFFFFFFFF;
+  40              	 .loc 1 75 0
+  41 0018 C3F88011 	 str r1,[r3,#384]
+  76:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	NVIC->ICPR[1] = 0x00000001;
+  42              	 .loc 1 76 0
+  43 001c C3F88421 	 str r2,[r3,#388]
+  44              	.LVL0:
+  45 0020 4FF00003 	 mov r3,#0
+  77:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  78:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	/* Clear all interrupt priority */
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	for (tmp = 0; tmp < 32; tmp++) {
+  80:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 		NVIC->IP[tmp] = 0x00;
+  46              	 .loc 1 80 0
+  47 0024 4FF46141 	 mov r1,#57600
+  48 0028 CEF20001 	 movt r1,57344
+  49 002c 1846     	 mov r0,r3
+  50              	.LVL1:
+  51              	.L2:
+  52              	 .loc 1 80 0 is_stmt 0 discriminator 2
+  53 002e CA18     	 adds r2,r1,r3
+  54 0030 82F80003 	 strb r0,[r2,#768]
+  55 0034 03F10103 	 add r3,r3,#1
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	for (tmp = 0; tmp < 32; tmp++) {
+  56              	 .loc 1 79 0 is_stmt 1 discriminator 2
+  57 0038 202B     	 cmp r3,#32
+  58 003a F8D1     	 bne .L2
+  81:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	}
+  82:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** }
+  59              	 .loc 1 82 0
+  60 003c 7047     	 bx lr
+  61              	 .cfi_endproc
+  62              	.LFE55:
+  64 003e 00BF     	 .section .text.NVIC_SCBDeInit,"ax",%progbits
+  65              	 .align 2
+  66              	 .global NVIC_SCBDeInit
+  67              	 .thumb
+  68              	 .thumb_func
+  70              	NVIC_SCBDeInit:
+  71              	.LFB56:
+  83:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /*****************************************************************************//**
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @brief			De-initializes the SCB peripheral registers to their default
+  86:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  *                  reset values.
+  87:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @param			none
+  88:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @return 			none
+  89:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  *
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * These following SCB NVIC peripheral registers will be de-initialized:
+  91:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Interrupt Control State register
+  92:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Interrupt Vector Table Offset register
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Application Interrupt/Reset Control register
+  94:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - System Control register
+  95:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Configuration Control register
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - System Handlers Priority Registers
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - System Handler Control and State Register
+  98:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Configurable Fault Status Register
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Hard Fault Status Register
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * - Debug Fault Status Register
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  *******************************************************************************/
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** void NVIC_SCBDeInit(void)
+ 103:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** {
+  72              	 .loc 1 103 0
+  73              	 .cfi_startproc
+  74              	 
+  75              	 
+  76              	 
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	uint8_t tmp;
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+ 106:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->ICSR = 0x0A000000;
+  77              	 .loc 1 106 0
+  78 0000 4FF46D42 	 mov r2,#60672
+  79 0004 CEF20002 	 movt r2,57344
+  80 0008 4FF02063 	 mov r3,#167772160
+  81 000c 5360     	 str r3,[r2,#4]
+ 107:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->VTOR = 0x00000000;
+  82              	 .loc 1 107 0
+  83 000e 4FF00003 	 mov r3,#0
+  84 0012 9360     	 str r3,[r2,#8]
+ 108:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->AIRCR = 0x05FA0000;
+  85              	 .loc 1 108 0
+  86 0014 1946     	 mov r1,r3
+  87 0016 C0F2FA51 	 movt r1,1530
+  88 001a D160     	 str r1,[r2,#12]
+ 109:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->SCR = 0x00000000;
+  89              	 .loc 1 109 0
+  90 001c 1361     	 str r3,[r2,#16]
+ 110:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->CCR = 0x00000000;
+  91              	 .loc 1 110 0
+  92 001e 5361     	 str r3,[r2,#20]
+  93              	.LVL2:
+ 111:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	for (tmp = 0; tmp < 32; tmp++) {
+ 113:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 		SCB->SHP[tmp] = 0x00;
+  94              	 .loc 1 113 0
+  95 0020 4FF46D41 	 mov r1,#60672
+  96 0024 CEF20001 	 movt r1,57344
+  97 0028 1846     	 mov r0,r3
+  98              	.LVL3:
+  99              	.L5:
+ 100              	 .loc 1 113 0 is_stmt 0 discriminator 2
+ 101 002a CA18     	 adds r2,r1,r3
+ 102 002c 1076     	 strb r0,[r2,#24]
+ 103 002e 03F10103 	 add r3,r3,#1
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	for (tmp = 0; tmp < 32; tmp++) {
+ 104              	 .loc 1 112 0 is_stmt 1 discriminator 2
+ 105 0032 202B     	 cmp r3,#32
+ 106 0034 F9D1     	 bne .L5
+ 114:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	}
+ 115:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+ 116:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->SHCSR = 0x00000000;
+ 107              	 .loc 1 116 0
+ 108 0036 4FF46D43 	 mov r3,#60672
+ 109 003a CEF20003 	 movt r3,57344
+ 110 003e 4FF00002 	 mov r2,#0
+ 111 0042 5A62     	 str r2,[r3,#36]
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->CFSR = 0xFFFFFFFF;
+ 112              	 .loc 1 117 0
+ 113 0044 4FF0FF32 	 mov r2,#-1
+ 114 0048 9A62     	 str r2,[r3,#40]
+ 118:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->HFSR = 0xFFFFFFFF;
+ 115              	 .loc 1 118 0
+ 116 004a DA62     	 str r2,[r3,#44]
+ 119:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->DFSR = 0xFFFFFFFF;
+ 117              	 .loc 1 119 0
+ 118 004c 1A63     	 str r2,[r3,#48]
+ 120:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** }
+ 119              	 .loc 1 120 0
+ 120 004e 7047     	 bx lr
+ 121              	 .cfi_endproc
+ 122              	.LFE56:
+ 124              	 .section .text.NVIC_SetVTOR,"ax",%progbits
+ 125              	 .align 2
+ 126              	 .global NVIC_SetVTOR
+ 127              	 .thumb
+ 128              	 .thumb_func
+ 130              	NVIC_SetVTOR:
+ 131              	.LFB57:
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+ 122:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 
+ 123:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** /*****************************************************************************//**
+ 124:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @brief		Set Vector Table Offset value
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @param		offset Offset value
+ 126:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  * @return      None
+ 127:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c ****  *******************************************************************************/
+ 128:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** void NVIC_SetVTOR(uint32_t offset)
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** {
+ 132              	 .loc 1 129 0
+ 133              	 .cfi_startproc
+ 134              	 
+ 135              	 
+ 136              	 
+ 137              	.LVL4:
+ 130:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** //	SCB->VTOR  = (offset & NVIC_VTOR_MASK);
+ 131:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** 	SCB->VTOR  = offset;
+ 138              	 .loc 1 131 0
+ 139 0000 4FF46D43 	 mov r3,#60672
+ 140 0004 CEF20003 	 movt r3,57344
+ 141 0008 9860     	 str r0,[r3,#8]
+ 132:src/MightyBoard/Motherboard/lib/source/lpc17xx_nvic.c **** }
+ 142              	 .loc 1 132 0
+ 143 000a 7047     	 bx lr
+ 144              	 .cfi_endproc
+ 145              	.LFE57:
+ 147              	 .text
+ 148              	.Letext0:
+ 149              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 150              	 .file 3 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_nvic.c
+    {standard input}:19     .text.NVIC_DeInit:00000000 $t
+    {standard input}:24     .text.NVIC_DeInit:00000000 NVIC_DeInit
+    {standard input}:65     .text.NVIC_SCBDeInit:00000000 $t
+    {standard input}:70     .text.NVIC_SCBDeInit:00000000 NVIC_SCBDeInit
+    {standard input}:125    .text.NVIC_SetVTOR:00000000 $t
+    {standard input}:130    .text.NVIC_SetVTOR:00000000 NVIC_SetVTOR
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

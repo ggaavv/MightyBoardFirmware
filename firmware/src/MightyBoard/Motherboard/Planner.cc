@@ -265,8 +265,6 @@ namespace planner {
 	
 	void init()
 	{
-//		xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET),_F_,_L_);
-//		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS, eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET),_F_,_L_);
 		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 
 		/// if eeprom has not been initialized. store default values
@@ -289,7 +287,6 @@ namespace planner {
 		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
 		if(accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)){
 			xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
-			_delay_us(10000);
 			eeprom::setDefaultsAcceleration();
 		}
 		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
@@ -654,7 +651,10 @@ namespace planner {
 	void addMoveToBufferRelative(const Point& move, const int32_t &ms, const int8_t relative)
 	{
 		
-		Point target = move + *tool_offsets;
+		Point target;
+
+		target = move + *tool_offsets;
+
 		int32_t max_delta = 0;
 		for (int i = 0; i < STEPPER_COUNT; i++) {
 			int32_t delta = 0;
@@ -670,6 +670,7 @@ namespace planner {
 				max_delta = delta;
 			}
 		}
+
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
 		if(target[Z_AXIS] > axes[Z_AXIS].max_length){
@@ -683,7 +684,8 @@ namespace planner {
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
-		Point offset_target = target + *tool_offsets;
+		Point offset_target;
+		offset_target = target + *tool_offsets;
 		
 		/// Clip Z axis so that plate cannot attempt to move out of build area
 		/// other axis clipping will be added in a future revision
@@ -694,6 +696,7 @@ namespace planner {
 			
 		planNextMove(offset_target, us_per_step, offset_target - position);
 		position = target;
+
 	}
 
 
@@ -944,6 +947,13 @@ namespace planner {
 	void definePosition(const Point& new_position)
 	{
 		position = new_position;
+		
+		/// Clip Z axis so that plate cannot attempt to move out of build area
+		/// other axis clipping will be added in a future revision
+		if(position[Z_AXIS] > axes[Z_AXIS].max_length){
+			position[Z_AXIS] = axes[Z_AXIS].max_length;
+		}
+		
 		steppers::definePosition(new_position);
 		
 		// reset speed

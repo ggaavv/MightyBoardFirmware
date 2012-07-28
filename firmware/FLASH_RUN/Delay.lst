@@ -1,0 +1,661 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Delay.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.few_ticks,"ax",%progbits
+  19              	 .align 2
+  20              	 .global few_ticks
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	few_ticks:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/Delay.cc"
+   1:src/MightyBoard/Motherboard/Delay.cc **** /*Copyright (C) 2011 by Sagar G V
+   2:src/MightyBoard/Motherboard/Delay.cc **** 
+   3:src/MightyBoard/Motherboard/Delay.cc **** Permission is hereby granted, free of charge, to any person obtaining a copy
+   4:src/MightyBoard/Motherboard/Delay.cc **** of this software and associated documentation files (the "Software"), to deal
+   5:src/MightyBoard/Motherboard/Delay.cc **** in the Software without restriction, including without limitation the rights
+   6:src/MightyBoard/Motherboard/Delay.cc **** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   7:src/MightyBoard/Motherboard/Delay.cc **** copies of the Software, and to permit persons to whom the Software is
+   8:src/MightyBoard/Motherboard/Delay.cc **** furnished to do so, subject to the following conditions:
+   9:src/MightyBoard/Motherboard/Delay.cc **** 
+  10:src/MightyBoard/Motherboard/Delay.cc **** The above copyright notice and this permission notice shall be included in
+  11:src/MightyBoard/Motherboard/Delay.cc **** all copies or substantial portions of the Software.
+  12:src/MightyBoard/Motherboard/Delay.cc **** 
+  13:src/MightyBoard/Motherboard/Delay.cc **** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  14:src/MightyBoard/Motherboard/Delay.cc **** IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  15:src/MightyBoard/Motherboard/Delay.cc **** FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  16:src/MightyBoard/Motherboard/Delay.cc **** AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  17:src/MightyBoard/Motherboard/Delay.cc **** LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  18:src/MightyBoard/Motherboard/Delay.cc **** OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  19:src/MightyBoard/Motherboard/Delay.cc **** THE SOFTWARE.
+  20:src/MightyBoard/Motherboard/Delay.cc **** */
+  21:src/MightyBoard/Motherboard/Delay.cc **** 
+  22:src/MightyBoard/Motherboard/Delay.cc **** #include "Delay.hh"
+  23:src/MightyBoard/Motherboard/Delay.cc **** 
+  24:src/MightyBoard/Motherboard/Delay.cc **** #ifdef __cplusplus
+  25:src/MightyBoard/Motherboard/Delay.cc **** extern "C" {
+  26:src/MightyBoard/Motherboard/Delay.cc **** #endif
+  27:src/MightyBoard/Motherboard/Delay.cc **** 
+  28:src/MightyBoard/Motherboard/Delay.cc **** void few_ticks()
+  29:src/MightyBoard/Motherboard/Delay.cc **** {
+  27              	 .loc 1 29 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  30:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  32              	 .loc 1 30 0
+  33              	
+  34 0000 00BF     	 nop
+  35              	
+  31:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  36              	 .loc 1 31 0
+  37              	
+  38 0002 00BF     	 nop
+  39              	
+  32:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  40              	 .loc 1 32 0
+  41              	
+  42 0004 00BF     	 nop
+  43              	
+  33:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  44              	 .loc 1 33 0
+  45              	
+  46 0006 00BF     	 nop
+  47              	
+  34:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  48              	 .loc 1 34 0
+  49              	
+  50 0008 00BF     	 nop
+  51              	
+  35:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  52              	 .loc 1 35 0
+  53              	
+  54 000a 00BF     	 nop
+  55              	
+  36:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  56              	 .loc 1 36 0
+  57              	
+  58 000c 00BF     	 nop
+  59              	
+  37:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  60              	 .loc 1 37 0
+  61              	
+  62 000e 00BF     	 nop
+  63              	
+  38:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  64              	 .loc 1 38 0
+  65              	
+  66 0010 00BF     	 nop
+  67              	
+  39:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  68              	 .loc 1 39 0
+  69              	
+  70 0012 00BF     	 nop
+  71              	
+  40:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  72              	 .loc 1 40 0
+  73              	
+  74 0014 00BF     	 nop
+  75              	
+  41:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  76              	 .loc 1 41 0
+  77              	
+  78 0016 00BF     	 nop
+  79              	
+  42:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  80              	 .loc 1 42 0
+  81              	
+  82 0018 00BF     	 nop
+  83              	
+  43:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  84              	 .loc 1 43 0
+  85              	
+  86 001a 00BF     	 nop
+  87              	
+  44:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  88              	 .loc 1 44 0
+  89              	
+  90 001c 00BF     	 nop
+  91              	
+  45:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  92              	 .loc 1 45 0
+  93              	
+  94 001e 00BF     	 nop
+  95              	
+  46:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+  96              	 .loc 1 46 0
+  97              	
+  98 0020 00BF     	 nop
+  99              	
+  47:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 100              	 .loc 1 47 0
+ 101              	
+ 102 0022 00BF     	 nop
+ 103              	
+  48:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 104              	 .loc 1 48 0
+ 105              	
+ 106 0024 00BF     	 nop
+ 107              	
+  49:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 108              	 .loc 1 49 0
+ 109              	
+ 110 0026 00BF     	 nop
+ 111              	
+  50:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 112              	 .loc 1 50 0
+ 113              	
+ 114 0028 00BF     	 nop
+ 115              	
+  51:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 116              	 .loc 1 51 0
+ 117              	
+ 118 002a 00BF     	 nop
+ 119              	
+  52:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 120              	 .loc 1 52 0
+ 121              	
+ 122 002c 00BF     	 nop
+ 123              	
+  53:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 124              	 .loc 1 53 0
+ 125              	
+ 126 002e 00BF     	 nop
+ 127              	
+  54:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 128              	 .loc 1 54 0
+ 129              	
+ 130 0030 00BF     	 nop
+ 131              	
+  55:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 132              	 .loc 1 55 0
+ 133              	
+ 134 0032 00BF     	 nop
+ 135              	
+  56:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 136              	 .loc 1 56 0
+ 137              	
+ 138 0034 00BF     	 nop
+ 139              	
+  57:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 140              	 .loc 1 57 0
+ 141              	
+ 142 0036 00BF     	 nop
+ 143              	
+  58:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 144              	 .loc 1 58 0
+ 145              	
+ 146 0038 00BF     	 nop
+ 147              	
+  59:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 148              	 .loc 1 59 0
+ 149              	
+ 150 003a 00BF     	 nop
+ 151              	
+  60:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 152              	 .loc 1 60 0
+ 153              	
+ 154 003c 00BF     	 nop
+ 155              	
+  61:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 156              	 .loc 1 61 0
+ 157              	
+ 158 003e 00BF     	 nop
+ 159              	
+  62:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 160              	 .loc 1 62 0
+ 161              	
+ 162 0040 00BF     	 nop
+ 163              	
+  63:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 164              	 .loc 1 63 0
+ 165              	
+ 166 0042 00BF     	 nop
+ 167              	
+  64:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 168              	 .loc 1 64 0
+ 169              	
+ 170 0044 00BF     	 nop
+ 171              	
+  65:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 172              	 .loc 1 65 0
+ 173              	
+ 174 0046 00BF     	 nop
+ 175              	
+  66:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 176              	 .loc 1 66 0
+ 177              	
+ 178 0048 00BF     	 nop
+ 179              	
+  67:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 180              	 .loc 1 67 0
+ 181              	
+ 182 004a 00BF     	 nop
+ 183              	
+  68:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 184              	 .loc 1 68 0
+ 185              	
+ 186 004c 00BF     	 nop
+ 187              	
+  69:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 188              	 .loc 1 69 0
+ 189              	
+ 190 004e 00BF     	 nop
+ 191              	
+  70:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 192              	 .loc 1 70 0
+ 193              	
+ 194 0050 00BF     	 nop
+ 195              	
+  71:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 196              	 .loc 1 71 0
+ 197              	
+ 198 0052 00BF     	 nop
+ 199              	
+  72:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 200              	 .loc 1 72 0
+ 201              	
+ 202 0054 00BF     	 nop
+ 203              	
+  73:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 204              	 .loc 1 73 0
+ 205              	
+ 206 0056 00BF     	 nop
+ 207              	
+  74:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 208              	 .loc 1 74 0
+ 209              	
+ 210 0058 00BF     	 nop
+ 211              	
+  75:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 212              	 .loc 1 75 0
+ 213              	
+ 214 005a 00BF     	 nop
+ 215              	
+  76:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 216              	 .loc 1 76 0
+ 217              	
+ 218 005c 00BF     	 nop
+ 219              	
+  77:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 220              	 .loc 1 77 0
+ 221              	
+ 222 005e 00BF     	 nop
+ 223              	
+  78:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 224              	 .loc 1 78 0
+ 225              	
+ 226 0060 00BF     	 nop
+ 227              	
+  79:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 228              	 .loc 1 79 0
+ 229              	
+ 230 0062 00BF     	 nop
+ 231              	
+  80:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 232              	 .loc 1 80 0
+ 233              	
+ 234 0064 00BF     	 nop
+ 235              	
+  81:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 236              	 .loc 1 81 0
+ 237              	
+ 238 0066 00BF     	 nop
+ 239              	
+  82:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 240              	 .loc 1 82 0
+ 241              	
+ 242 0068 00BF     	 nop
+ 243              	
+  83:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 244              	 .loc 1 83 0
+ 245              	
+ 246 006a 00BF     	 nop
+ 247              	
+  84:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 248              	 .loc 1 84 0
+ 249              	
+ 250 006c 00BF     	 nop
+ 251              	
+  85:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 252              	 .loc 1 85 0
+ 253              	
+ 254 006e 00BF     	 nop
+ 255              	
+  86:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 256              	 .loc 1 86 0
+ 257              	
+ 258 0070 00BF     	 nop
+ 259              	
+  87:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 260              	 .loc 1 87 0
+ 261              	
+ 262 0072 00BF     	 nop
+ 263              	
+  88:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 264              	 .loc 1 88 0
+ 265              	
+ 266 0074 00BF     	 nop
+ 267              	
+  89:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 268              	 .loc 1 89 0
+ 269              	
+ 270 0076 00BF     	 nop
+ 271              	
+  90:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 272              	 .loc 1 90 0
+ 273              	
+ 274 0078 00BF     	 nop
+ 275              	
+  91:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 276              	 .loc 1 91 0
+ 277              	
+ 278 007a 00BF     	 nop
+ 279              	
+  92:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 280              	 .loc 1 92 0
+ 281              	
+ 282 007c 00BF     	 nop
+ 283              	
+  93:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 284              	 .loc 1 93 0
+ 285              	
+ 286 007e 00BF     	 nop
+ 287              	
+  94:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 288              	 .loc 1 94 0
+ 289              	
+ 290 0080 00BF     	 nop
+ 291              	
+  95:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 292              	 .loc 1 95 0
+ 293              	
+ 294 0082 00BF     	 nop
+ 295              	
+  96:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 296              	 .loc 1 96 0
+ 297              	
+ 298 0084 00BF     	 nop
+ 299              	
+  97:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 300              	 .loc 1 97 0
+ 301              	
+ 302 0086 00BF     	 nop
+ 303              	
+  98:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 304              	 .loc 1 98 0
+ 305              	
+ 306 0088 00BF     	 nop
+ 307              	
+  99:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 308              	 .loc 1 99 0
+ 309              	
+ 310 008a 00BF     	 nop
+ 311              	
+ 100:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 312              	 .loc 1 100 0
+ 313              	
+ 314 008c 00BF     	 nop
+ 315              	
+ 101:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 316              	 .loc 1 101 0
+ 317              	
+ 318 008e 00BF     	 nop
+ 319              	
+ 102:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 320              	 .loc 1 102 0
+ 321              	
+ 322 0090 00BF     	 nop
+ 323              	
+ 103:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 324              	 .loc 1 103 0
+ 325              	
+ 326 0092 00BF     	 nop
+ 327              	
+ 104:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 328              	 .loc 1 104 0
+ 329              	
+ 330 0094 00BF     	 nop
+ 331              	
+ 105:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 332              	 .loc 1 105 0
+ 333              	
+ 334 0096 00BF     	 nop
+ 335              	
+ 106:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 336              	 .loc 1 106 0
+ 337              	
+ 338 0098 00BF     	 nop
+ 339              	
+ 107:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 340              	 .loc 1 107 0
+ 341              	
+ 342 009a 00BF     	 nop
+ 343              	
+ 108:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 344              	 .loc 1 108 0
+ 345              	
+ 346 009c 00BF     	 nop
+ 347              	
+ 109:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 348              	 .loc 1 109 0
+ 349              	
+ 350 009e 00BF     	 nop
+ 351              	
+ 110:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 352              	 .loc 1 110 0
+ 353              	
+ 354 00a0 00BF     	 nop
+ 355              	
+ 111:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 356              	 .loc 1 111 0
+ 357              	
+ 358 00a2 00BF     	 nop
+ 359              	
+ 112:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 360              	 .loc 1 112 0
+ 361              	
+ 362 00a4 00BF     	 nop
+ 363              	
+ 113:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 364              	 .loc 1 113 0
+ 365              	
+ 366 00a6 00BF     	 nop
+ 367              	
+ 114:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 368              	 .loc 1 114 0
+ 369              	
+ 370 00a8 00BF     	 nop
+ 371              	
+ 115:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 372              	 .loc 1 115 0
+ 373              	
+ 374 00aa 00BF     	 nop
+ 375              	
+ 116:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 376              	 .loc 1 116 0
+ 377              	
+ 378 00ac 00BF     	 nop
+ 379              	
+ 117:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 380              	 .loc 1 117 0
+ 381              	
+ 382 00ae 00BF     	 nop
+ 383              	
+ 118:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 384              	 .loc 1 118 0
+ 385              	
+ 386 00b0 00BF     	 nop
+ 387              	
+ 119:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 388              	 .loc 1 119 0
+ 389              	
+ 390 00b2 00BF     	 nop
+ 391              	
+ 120:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 392              	 .loc 1 120 0
+ 393              	
+ 394 00b4 00BF     	 nop
+ 395              	
+ 121:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 396              	 .loc 1 121 0
+ 397              	
+ 398 00b6 00BF     	 nop
+ 399              	
+ 122:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 400              	 .loc 1 122 0
+ 401              	
+ 402 00b8 00BF     	 nop
+ 403              	
+ 123:src/MightyBoard/Motherboard/Delay.cc **** 	__ASM("nop");
+ 404              	 .loc 1 123 0
+ 405              	
+ 406 00ba 00BF     	 nop
+ 407              	
+ 124:src/MightyBoard/Motherboard/Delay.cc **** }
+ 408              	 .loc 1 124 0
+ 409              	 .thumb
+ 410 00bc 7047     	 bx lr
+ 411              	 .cfi_endproc
+ 412              	.LFE55:
+ 414 00be 00BF     	 .section .text._delay_us,"ax",%progbits
+ 415              	 .align 2
+ 416              	 .global _delay_us
+ 417              	 .thumb
+ 418              	 .thumb_func
+ 420              	_delay_us:
+ 421              	.LFB56:
+ 125:src/MightyBoard/Motherboard/Delay.cc **** 
+ 126:src/MightyBoard/Motherboard/Delay.cc **** void _delay_us(uint32_t time)
+ 127:src/MightyBoard/Motherboard/Delay.cc **** {
+ 422              	 .loc 1 127 0
+ 423              	 .cfi_startproc
+ 424              	 
+ 425              	 
+ 426              	.LVL0:
+ 427 0000 38B5     	 push {r3,r4,r5,lr}
+ 428              	.LCFI0:
+ 429              	 .cfi_def_cfa_offset 16
+ 430              	 .cfi_offset 14,-4
+ 431              	 .cfi_offset 5,-8
+ 432              	 .cfi_offset 4,-12
+ 433              	 .cfi_offset 3,-16
+ 434              	.LVL1:
+ 435              	.LBB2:
+ 128:src/MightyBoard/Motherboard/Delay.cc **** 	uint32_t i;
+ 129:src/MightyBoard/Motherboard/Delay.cc **** 	for(i=0;i<time;i++)
+ 436              	 .loc 1 129 0
+ 437 0002 0546     	 mov r5,r0
+ 438 0004 38B1     	 cbz r0,.L2
+ 439 0006 4FF00004 	 mov r4,#0
+ 440              	.LVL2:
+ 441              	.L4:
+ 130:src/MightyBoard/Motherboard/Delay.cc **** 		few_ticks();
+ 442              	 .loc 1 130 0 discriminator 2
+ 443 000a FFF7FEFF 	 bl few_ticks
+ 129:src/MightyBoard/Motherboard/Delay.cc **** 	for(i=0;i<time;i++)
+ 444              	 .loc 1 129 0 discriminator 2
+ 445 000e 04F10104 	 add r4,r4,#1
+ 446              	.LVL3:
+ 447 0012 AC42     	 cmp r4,r5
+ 448 0014 F9D1     	 bne .L4
+ 449              	.LVL4:
+ 450              	.L2:
+ 451 0016 38BD     	 pop {r3,r4,r5,pc}
+ 452              	.LBE2:
+ 453              	 .cfi_endproc
+ 454              	.LFE56:
+ 456              	 .section .text._delay_ms,"ax",%progbits
+ 457              	 .align 2
+ 458              	 .global _delay_ms
+ 459              	 .thumb
+ 460              	 .thumb_func
+ 462              	_delay_ms:
+ 463              	.LFB57:
+ 131:src/MightyBoard/Motherboard/Delay.cc **** 	
+ 132:src/MightyBoard/Motherboard/Delay.cc **** }
+ 133:src/MightyBoard/Motherboard/Delay.cc **** void _delay_ms(uint32_t time)
+ 134:src/MightyBoard/Motherboard/Delay.cc **** {
+ 464              	 .loc 1 134 0
+ 465              	 .cfi_startproc
+ 466              	 
+ 467              	 
+ 468              	.LVL5:
+ 469 0000 08B5     	 push {r3,lr}
+ 470              	.LCFI1:
+ 471              	 .cfi_def_cfa_offset 8
+ 472              	 .cfi_offset 14,-4
+ 473              	 .cfi_offset 3,-8
+ 135:src/MightyBoard/Motherboard/Delay.cc **** 	_delay_us(1000*time);
+ 474              	 .loc 1 135 0
+ 475 0002 4FF47A73 	 mov r3,#1000
+ 476 0006 03FB00F0 	 mul r0,r3,r0
+ 477              	.LVL6:
+ 478 000a FFF7FEFF 	 bl _delay_us
+ 136:src/MightyBoard/Motherboard/Delay.cc **** }
+ 479              	 .loc 1 136 0
+ 480 000e 08BD     	 pop {r3,pc}
+ 481              	 .cfi_endproc
+ 482              	.LFE57:
+ 484              	 .section .text._delay_s,"ax",%progbits
+ 485              	 .align 2
+ 486              	 .global _delay_s
+ 487              	 .thumb
+ 488              	 .thumb_func
+ 490              	_delay_s:
+ 491              	.LFB58:
+ 137:src/MightyBoard/Motherboard/Delay.cc **** void _delay_s(uint32_t time)
+ 138:src/MightyBoard/Motherboard/Delay.cc **** {
+ 492              	 .loc 1 138 0
+ 493              	 .cfi_startproc
+ 494              	 
+ 495              	 
+ 496              	.LVL7:
+ 497 0000 08B5     	 push {r3,lr}
+ 498              	.LCFI2:
+ 499              	 .cfi_def_cfa_offset 8
+ 500              	 .cfi_offset 14,-4
+ 501              	 .cfi_offset 3,-8
+ 139:src/MightyBoard/Motherboard/Delay.cc **** 	_delay_ms(1000*time);
+ 502              	 .loc 1 139 0
+ 503 0002 4FF47A73 	 mov r3,#1000
+ 504 0006 03FB00F0 	 mul r0,r3,r0
+ 505              	.LVL8:
+ 506 000a FFF7FEFF 	 bl _delay_ms
+ 140:src/MightyBoard/Motherboard/Delay.cc **** }
+ 507              	 .loc 1 140 0
+ 508 000e 08BD     	 pop {r3,pc}
+ 509              	 .cfi_endproc
+ 510              	.LFE58:
+ 512              	 .text
+ 513              	.Letext0:
+ 514              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 515              	 .file 3 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Delay.cc
+    {standard input}:19     .text.few_ticks:00000000 $t
+    {standard input}:24     .text.few_ticks:00000000 few_ticks
+    {standard input}:415    .text._delay_us:00000000 $t
+    {standard input}:420    .text._delay_us:00000000 _delay_us
+    {standard input}:457    .text._delay_ms:00000000 $t
+    {standard input}:462    .text._delay_ms:00000000 _delay_ms
+    {standard input}:485    .text._delay_s:00000000 $t
+    {standard input}:490    .text._delay_s:00000000 _delay_s
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

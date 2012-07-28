@@ -1,0 +1,541 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_pinsel.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.PINSEL_ConfigTraceFunc,"ax",%progbits
+  19              	 .align 2
+  20              	 .global PINSEL_ConfigTraceFunc
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	PINSEL_ConfigTraceFunc:
+  25              	.LFB58:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * $Id$		lpc17xx_pinsel.c				2010-05-21
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * @file		lpc17xx_pinsel.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * @brief	Contains all functions support for Pin connect block firmware
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * 			library on LPC17xx
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * @version	2.0
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * @date		21. May. 2010
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * @author	NXP MCU SW Application Team
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** *
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * Copyright(C) 2010, NXP Semiconductor
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * All rights reserved.
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** *
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** ***********************************************************************
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * Software that is described herein is for illustrative purposes only
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * which provides customers with programming information regarding the
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * products. This software is supplied "AS IS" without any warranties.
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * use of the software, conveys no license or title under any patent,
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * reserves the right to make changes in the software without
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * notification. NXP Semiconductors also make no representation or
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * warranty that such application will be suitable for the specified
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** * use without further testing or modification.
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** **********************************************************************/
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /* Peripheral group ----------------------------------------------------------- */
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /** @addtogroup PINSEL
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @{
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  */
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /* Includes ------------------------------------------------------------------- */
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** #include "lpc17xx_pinsel.h"
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /* Public Functions ----------------------------------------------------------- */
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** static void set_PinFunc ( uint8_t portnum, uint8_t pinnum, uint8_t funcnum);
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** static void set_ResistorMode ( uint8_t portnum, uint8_t pinnum, uint8_t modenum);
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** static void set_OpenDrainMode( uint8_t portnum, uint8_t pinnum, uint8_t modenum);
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /*********************************************************************//**
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @brief 		Setup the pin selection function
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	portnum PORT number,
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_0	: Port 0
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_1	: Port 1
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_2	: Port 2
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_3	: Port 3
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	pinnum	Pin number,
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+  52:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_0 : Pin 0
+  53:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_1 : Pin 1
+  54:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_2 : Pin 2
+  55:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_3 : Pin 3
+  56:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_4 : Pin 4
+  57:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_5 : Pin 5
+  58:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_6 : Pin 6
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_7 : Pin 7
+  60:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_8 : Pin 8
+  61:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_9 : Pin 9
+  62:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_10 : Pin 10
+  63:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_11 : Pin 11
+  64:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_12 : Pin 12
+  65:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_13 : Pin 13
+  66:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_14 : Pin 14
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_15 : Pin 15
+  68:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_16 : Pin 16
+  69:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_17 : Pin 17
+  70:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_18 : Pin 18
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_19 : Pin 19
+  72:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_20 : Pin 20
+  73:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_21 : Pin 21
+  74:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_22 : Pin 22
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_23 : Pin 23
+  76:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_24 : Pin 24
+  77:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_25 : Pin 25
+  78:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_26 : Pin 26
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_27 : Pin 27
+  80:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_28 : Pin 28
+  81:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_29 : Pin 29
+  82:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_30 : Pin 30
+  83:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_31 : Pin 31
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in] 	funcnum Function number,
+  86:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+  87:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *				- PINSEL_FUNC_0 : default function
+  88:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *				- PINSEL_FUNC_1 : first alternate function
+  89:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *				- PINSEL_FUNC_2 : second alternate function
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *				- PINSEL_FUNC_3 : third alternate function
+  91:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *
+  92:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @return 		None
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  **********************************************************************/
+  94:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** static void set_PinFunc ( uint8_t portnum, uint8_t pinnum, uint8_t funcnum)
+  95:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** {
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinnum_t = pinnum;
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinselreg_idx = 2 * portnum;
+  98:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t *pPinCon = (uint32_t *)&LPC_PINCON->PINSEL0;
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (pinnum_t >= 16) {
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinnum_t -= 16;
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinselreg_idx++;
+ 103:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	}
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinselreg_idx) &= ~(0x03UL << (pinnum_t * 2));
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinselreg_idx) |= ((uint32_t)funcnum) << (pinnum_t * 2);
+ 106:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** }
+ 107:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 108:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /*********************************************************************//**
+ 109:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @brief 		Setup resistor mode for each pin
+ 110:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	portnum PORT number,
+ 111:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_0	: Port 0
+ 113:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_1	: Port 1
+ 114:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_2	: Port 2
+ 115:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_3	: Port 3
+ 116:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	pinnum	Pin number,
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 118:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_0 : Pin 0
+ 119:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_1 : Pin 1
+ 120:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_2 : Pin 2
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_3 : Pin 3
+ 122:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_4 : Pin 4
+ 123:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_5 : Pin 5
+ 124:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_6 : Pin 6
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_7 : Pin 7
+ 126:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_8 : Pin 8
+ 127:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_9 : Pin 9
+ 128:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_10 : Pin 10
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_11 : Pin 11
+ 130:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_12 : Pin 12
+ 131:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_13 : Pin 13
+ 132:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_14 : Pin 14
+ 133:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_15 : Pin 15
+ 134:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_16 : Pin 16
+ 135:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_17 : Pin 17
+ 136:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_18 : Pin 18
+ 137:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_19 : Pin 19
+ 138:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_20 : Pin 20
+ 139:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_21 : Pin 21
+ 140:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_22 : Pin 22
+ 141:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_23 : Pin 23
+ 142:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_24 : Pin 24
+ 143:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_25 : Pin 25
+ 144:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_26 : Pin 26
+ 145:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_27 : Pin 27
+ 146:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_28 : Pin 28
+ 147:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_29 : Pin 29
+ 148:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_30 : Pin 30
+ 149:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_31 : Pin 31
+ 150:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 151:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in] 	modenum: Mode number,
+ 152:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 153:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PINMODE_PULLUP	: Internal pull-up resistor
+ 154:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PINMODE_TRISTATE : Tri-state
+ 155:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PINMODE_PULLDOWN : Internal pull-down resistor
+ 156:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 157:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @return 		None
+ 158:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  **********************************************************************/
+ 159:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** void set_ResistorMode ( uint8_t portnum, uint8_t pinnum, uint8_t modenum)
+ 160:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** {
+ 161:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinnum_t = pinnum;
+ 162:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinmodereg_idx = 2 * portnum;
+ 163:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t *pPinCon = (uint32_t *)&LPC_PINCON->PINMODE0;
+ 164:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 165:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (pinnum_t >= 16) {
+ 166:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinnum_t -= 16;
+ 167:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinmodereg_idx++ ;
+ 168:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	}
+ 169:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 170:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinmodereg_idx) &= ~(0x03UL << (pinnum_t * 2));
+ 171:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinmodereg_idx) |= ((uint32_t)modenum) << (pinnum_t * 2);
+ 172:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** }
+ 173:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 174:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /*********************************************************************//**
+ 175:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @brief 		Setup Open drain mode for each pin
+ 176:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	portnum PORT number,
+ 177:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 178:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_0	: Port 0
+ 179:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_1	: Port 1
+ 180:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_2	: Port 2
+ 181:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PORT_3	: Port 3
+ 182:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *
+ 183:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	pinnum	Pin number,
+ 184:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 185:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_0 : Pin 0
+ 186:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_1 : Pin 1
+ 187:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_2 : Pin 2
+ 188:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_3 : Pin 3
+ 189:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_4 : Pin 4
+ 190:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_5 : Pin 5
+ 191:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_6 : Pin 6
+ 192:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_7 : Pin 7
+ 193:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_8 : Pin 8
+ 194:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_9 : Pin 9
+ 195:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_10 : Pin 10
+ 196:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_11 : Pin 11
+ 197:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_12 : Pin 12
+ 198:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_13 : Pin 13
+ 199:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_14 : Pin 14
+ 200:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_15 : Pin 15
+ 201:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_16 : Pin 16
+ 202:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_17 : Pin 17
+ 203:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_18 : Pin 18
+ 204:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_19 : Pin 19
+ 205:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_20 : Pin 20
+ 206:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_21 : Pin 21
+ 207:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_22 : Pin 22
+ 208:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_23 : Pin 23
+ 209:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_24 : Pin 24
+ 210:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_25 : Pin 25
+ 211:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_26 : Pin 26
+ 212:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_27 : Pin 27
+ 213:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_28 : Pin 28
+ 214:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_29 : Pin 29
+ 215:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_30 : Pin 30
+ 216:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 				- PINSEL_PIN_31 : Pin 31
+ 217:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 218:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	modenum  Open drain mode number,
+ 219:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 220:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PINMODE_NORMAL : Pin is in the normal (not open drain) mode
+ 221:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_PINMODE_OPENDRAIN : Pin is in the open drain mode
+ 222:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *
+ 223:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @return 		None
+ 224:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  **********************************************************************/
+ 225:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** void set_OpenDrainMode( uint8_t portnum, uint8_t pinnum, uint8_t modenum)
+ 226:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** {
+ 227:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t *pPinCon = (uint32_t *)&LPC_PINCON->PINMODE_OD0;
+ 228:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 229:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (modenum == PINSEL_PINMODE_OPENDRAIN){
+ 230:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		*(uint32_t *)(pPinCon + portnum) |= (0x01UL << pinnum);
+ 231:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	} else {
+ 232:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		*(uint32_t *)(pPinCon + portnum) &= ~(0x01UL << pinnum);
+ 233:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	}
+ 234:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** }
+ 235:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 236:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /* End of Public Functions ---------------------------------------------------- */
+ 237:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 238:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /* Public Functions ----------------------------------------------------------- */
+ 239:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /** @addtogroup PINSEL_Public_Functions
+ 240:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @{
+ 241:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  */
+ 242:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /*********************************************************************//**
+ 243:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @brief 		Configure trace function
+ 244:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in] 	NewState State of the Trace function configuration,
+ 245:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 246:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- ENABLE : Enable Trace Function
+ 247:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- DISABLE : Disable Trace Function
+ 248:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *
+ 249:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @return 		None
+ 250:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  **********************************************************************/
+ 251:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** void PINSEL_ConfigTraceFunc(FunctionalState NewState)
+ 252:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** {
+  27              	 .loc 1 252 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+ 253:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (NewState == ENABLE) {
+  33              	 .loc 1 253 0
+  34 0000 0128     	 cmp r0,#1
+  35 0002 08D1     	 bne .L2
+ 254:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		LPC_PINCON->PINSEL10 |= (0x01UL << 3);
+  36              	 .loc 1 254 0
+  37 0004 4FF44043 	 mov r3,#49152
+  38 0008 C4F20203 	 movt r3,16386
+  39 000c 9A6A     	 ldr r2,[r3,#40]
+  40 000e 42F00802 	 orr r2,r2,#8
+  41 0012 9A62     	 str r2,[r3,#40]
+  42 0014 7047     	 bx lr
+  43              	.L2:
+ 255:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	} else if (NewState == DISABLE) {
+  44              	 .loc 1 255 0
+  45 0016 38B9     	 cbnz r0,.L1
+ 256:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		LPC_PINCON->PINSEL10 &= ~(0x01UL << 3);
+  46              	 .loc 1 256 0
+  47 0018 4FF44043 	 mov r3,#49152
+  48 001c C4F20203 	 movt r3,16386
+  49 0020 9A6A     	 ldr r2,[r3,#40]
+  50 0022 22F00802 	 bic r2,r2,#8
+  51 0026 9A62     	 str r2,[r3,#40]
+  52              	.L1:
+  53 0028 7047     	 bx lr
+  54              	 .cfi_endproc
+  55              	.LFE58:
+  57 002a 00BF     	 .section .text.PINSEL_SetI2C0Pins,"ax",%progbits
+  58              	 .align 2
+  59              	 .global PINSEL_SetI2C0Pins
+  60              	 .thumb
+  61              	 .thumb_func
+  63              	PINSEL_SetI2C0Pins:
+  64              	.LFB59:
+ 257:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	}
+ 258:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** }
+ 259:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 260:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /*********************************************************************//**
+ 261:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @brief 		Setup I2C0 pins
+ 262:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	i2cPinMode I2C pin mode,
+ 263:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				should be one of the following:
+ 264:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_I2C_Normal_Mode : The standard drive mode
+ 265:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- PINSEL_I2C_Fast_Mode : Fast Mode Plus drive mode
+ 266:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *
+ 267:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	filterSlewRateEnable  should be:
+ 268:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- ENABLE: Enable filter and slew rate.
+ 269:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				- DISABLE: Disable filter and slew rate.
+ 270:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *
+ 271:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @return 		None
+ 272:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  **********************************************************************/
+ 273:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** void PINSEL_SetI2C0Pins(uint8_t i2cPinMode, FunctionalState filterSlewRateEnable)
+ 274:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** {
+  65              	 .loc 1 274 0
+  66              	 .cfi_startproc
+  67              	 
+  68              	 
+  69              	 
+  70              	.LVL1:
+ 275:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t regVal;
+ 276:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 277:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (i2cPinMode == PINSEL_I2C_Fast_Mode){
+ 278:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		regVal = PINSEL_I2CPADCFG_SCLDRV0 | PINSEL_I2CPADCFG_SDADRV0;
+ 279:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	}
+ 280:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 281:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (filterSlewRateEnable == DISABLE){
+  71              	 .loc 1 281 0
+  72 0000 0029     	 cmp r1,#0
+  73 0002 0CBF     	 ite eq
+  74 0004 0A21     	 moveq r1,#10
+  75 0006 0521     	 movne r1,#5
+  76              	.LVL2:
+ 282:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		regVal = PINSEL_I2CPADCFG_SCLI2C0 | PINSEL_I2CPADCFG_SDAI2C0;
+ 283:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	}
+ 284:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	LPC_PINCON->I2CPADCFG = regVal;
+  77              	 .loc 1 284 0
+  78 0008 4FF44043 	 mov r3,#49152
+  79 000c C4F20203 	 movt r3,16386
+  80 0010 D967     	 str r1,[r3,#124]
+ 285:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** }
+  81              	 .loc 1 285 0
+  82 0012 7047     	 bx lr
+  83              	 .cfi_endproc
+  84              	.LFE59:
+  86              	 .section .text.PINSEL_ConfigPin,"ax",%progbits
+  87              	 .align 2
+  88              	 .global PINSEL_ConfigPin
+  89              	 .thumb
+  90              	 .thumb_func
+  92              	PINSEL_ConfigPin:
+  93              	.LFB60:
+ 286:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 287:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 
+ 288:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** /*********************************************************************//**
+ 289:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @brief 		Configure Pin corresponding to specified parameters passed
+ 290:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * 				in the PinCfg
+ 291:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @param[in]	PinCfg	Pointer to a PINSEL_CFG_Type structure
+ 292:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *                    that contains the configuration information for the
+ 293:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  *                    specified pin.
+ 294:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  * @return 		None
+ 295:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c ****  **********************************************************************/
+ 296:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** void PINSEL_ConfigPin(PINSEL_CFG_Type *PinCfg)
+ 297:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** {
+  94              	 .loc 1 297 0
+  95              	 .cfi_startproc
+  96              	 
+  97              	 
+  98              	 
+  99              	.LVL3:
+ 100 0000 70B4     	 push {r4,r5,r6}
+ 101              	.LCFI0:
+ 102              	 .cfi_def_cfa_offset 12
+ 103              	 .cfi_offset 6,-4
+ 104              	 .cfi_offset 5,-8
+ 105              	 .cfi_offset 4,-12
+ 298:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	set_PinFunc(PinCfg->Portnum, PinCfg->Pinnum, PinCfg->Funcnum);
+ 106              	 .loc 1 298 0
+ 107 0002 8478     	 ldrb r4,[r0,#2]
+ 108              	.LVL4:
+ 109              	.LBB8:
+ 110              	.LBB9:
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinnum_t = pinnum;
+ 111              	 .loc 1 96 0
+ 112 0004 4378     	 ldrb r3,[r0,#1]
+ 113              	.LVL5:
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinselreg_idx = 2 * portnum;
+ 114              	 .loc 1 97 0
+ 115 0006 0278     	 ldrb r2,[r0,#0]
+ 116 0008 4FEA4202 	 lsl r2,r2,#1
+ 117              	.LVL6:
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (pinnum_t >= 16) {
+ 118              	 .loc 1 100 0
+ 119 000c 0F2B     	 cmp r3,#15
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinnum_t -= 16;
+ 120              	 .loc 1 101 0
+ 121 000e 84BF     	 itt hi
+ 122 0010 103B     	 subhi r3,r3,#16
+ 123              	.LVL7:
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinselreg_idx++;
+ 124              	 .loc 1 102 0
+ 125 0012 0132     	 addhi r2,r2,#1
+ 126              	.LVL8:
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinselreg_idx) &= ~(0x03UL << (pinnum_t * 2));
+ 127              	 .loc 1 104 0
+ 128 0014 4FEA8202 	 lsl r2,r2,#2
+ 129              	.LVL9:
+ 130 0018 02F18042 	 add r2,r2,#1073741824
+ 131 001c 02F53032 	 add r2,r2,#180224
+ 132 0020 4FEA4303 	 lsl r3,r3,#1
+ 133              	.LVL10:
+ 134 0024 4FF00301 	 mov r1,#3
+ 135 0028 01FA03F1 	 lsl r1,r1,r3
+ 136 002c 1568     	 ldr r5,[r2,#0]
+ 137 002e 25EA0101 	 bic r1,r5,r1
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinselreg_idx) |= ((uint32_t)funcnum) << (pinnum_t * 2);
+ 138              	 .loc 1 105 0
+ 139 0032 04FA03F3 	 lsl r3,r4,r3
+ 140 0036 0B43     	 orrs r3,r3,r1
+ 141 0038 1360     	 str r3,[r2,#0]
+ 142              	.LBE9:
+ 143              	.LBE8:
+ 299:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	set_ResistorMode(PinCfg->Portnum, PinCfg->Pinnum, PinCfg->Pinmode);
+ 144              	 .loc 1 299 0
+ 145 003a C578     	 ldrb r5,[r0,#3]
+ 146              	.LVL11:
+ 147              	.LBB10:
+ 148              	.LBB11:
+ 161:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinnum_t = pinnum;
+ 149              	 .loc 1 161 0
+ 150 003c 4278     	 ldrb r2,[r0,#1]
+ 151              	.LVL12:
+ 162:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	uint32_t pinmodereg_idx = 2 * portnum;
+ 152              	 .loc 1 162 0
+ 153 003e 0378     	 ldrb r3,[r0,#0]
+ 154 0040 4FEA4303 	 lsl r3,r3,#1
+ 155              	.LVL13:
+ 165:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (pinnum_t >= 16) {
+ 156              	 .loc 1 165 0
+ 157 0044 0F2A     	 cmp r2,#15
+ 166:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinnum_t -= 16;
+ 158              	 .loc 1 166 0
+ 159 0046 84BF     	 itt hi
+ 160 0048 103A     	 subhi r2,r2,#16
+ 161              	.LVL14:
+ 167:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		pinmodereg_idx++ ;
+ 162              	 .loc 1 167 0
+ 163 004a 0133     	 addhi r3,r3,#1
+ 164              	.LVL15:
+ 170:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinmodereg_idx) &= ~(0x03UL << (pinnum_t * 2));
+ 165              	 .loc 1 170 0
+ 166 004c 4CF24001 	 movw r1,#49216
+ 167 0050 C4F20201 	 movt r1,16386
+ 168 0054 4FEA4202 	 lsl r2,r2,#1
+ 169              	.LVL16:
+ 170 0058 4FF00304 	 mov r4,#3
+ 171              	.LVL17:
+ 172 005c 04FA02F4 	 lsl r4,r4,r2
+ 173 0060 51F82360 	 ldr r6,[r1,r3,lsl#2]
+ 174 0064 26EA0404 	 bic r4,r6,r4
+ 171:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	*(uint32_t *)(pPinCon + pinmodereg_idx) |= ((uint32_t)modenum) << (pinnum_t * 2);
+ 175              	 .loc 1 171 0
+ 176 0068 05FA02F2 	 lsl r2,r5,r2
+ 177 006c 2243     	 orrs r2,r2,r4
+ 178 006e 41F82320 	 str r2,[r1,r3,lsl#2]
+ 179              	.LBE11:
+ 180              	.LBE10:
+ 300:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	set_OpenDrainMode(PinCfg->Portnum, PinCfg->Pinnum, PinCfg->OpenDrain);
+ 181              	 .loc 1 300 0
+ 182 0072 0278     	 ldrb r2,[r0,#0]
+ 183 0074 4178     	 ldrb r1,[r0,#1]
+ 184              	.LVL18:
+ 185              	.LBB12:
+ 186              	.LBB13:
+ 229:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 	if (modenum == PINSEL_PINMODE_OPENDRAIN){
+ 187              	 .loc 1 229 0
+ 188 0076 0379     	 ldrb r3,[r0,#4]
+ 189              	.LVL19:
+ 190 0078 012B     	 cmp r3,#1
+ 230:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		*(uint32_t *)(pPinCon + portnum) |= (0x01UL << pinnum);
+ 191              	 .loc 1 230 0
+ 192 007a 4CF26803 	 movw r3,#49256
+ 193 007e C4F20203 	 movt r3,16386
+ 194 0082 4FF00100 	 mov r0,#1
+ 195              	.LVL20:
+ 196 0086 00FA01F1 	 lsl r1,r0,r1
+ 197              	.LVL21:
+ 198 008a 53F82200 	 ldr r0,[r3,r2,lsl#2]
+ 199 008e 0CBF     	 ite eq
+ 200 0090 0143     	 orreq r1,r0,r1
+ 232:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** 		*(uint32_t *)(pPinCon + portnum) &= ~(0x01UL << pinnum);
+ 201              	 .loc 1 232 0
+ 202 0092 20EA0101 	 bicne r1,r0,r1
+ 203 0096 43F82210 	 str r1,[r3,r2,lsl#2]
+ 204              	.LBE13:
+ 205              	.LBE12:
+ 301:src/MightyBoard/Motherboard/lib/source/lpc17xx_pinsel.c **** }
+ 206              	 .loc 1 301 0
+ 207 009a 70BC     	 pop {r4,r5,r6}
+ 208 009c 7047     	 bx lr
+ 209              	 .cfi_endproc
+ 210              	.LFE60:
+ 212 009e 00BF     	 .text
+ 213              	.Letext0:
+ 214              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 215              	 .file 3 "src/MightyBoard/Motherboard/system/lpc17xx.h"
+ 216              	 .file 4 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 217              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc17xx_pinsel.h"
+ 218              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_pinsel.c
+    {standard input}:19     .text.PINSEL_ConfigTraceFunc:00000000 $t
+    {standard input}:24     .text.PINSEL_ConfigTraceFunc:00000000 PINSEL_ConfigTraceFunc
+    {standard input}:58     .text.PINSEL_SetI2C0Pins:00000000 $t
+    {standard input}:63     .text.PINSEL_SetI2C0Pins:00000000 PINSEL_SetI2C0Pins
+    {standard input}:87     .text.PINSEL_ConfigPin:00000000 $t
+    {standard input}:92     .text.PINSEL_ConfigPin:00000000 PINSEL_ConfigPin
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,1295 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Packet.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._crc_ibutton_update,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _crc_ibutton_update
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_crc_ibutton_update:
+  25              	.LFB70:
+  26              	 .file 1 "src/MightyBoard/Motherboard/crc16.h"
+   1:src/MightyBoard/Motherboard/crc16.h **** /* Copyright (c) 2002, 2003, 2004  Marek Michalkiewicz
+   2:src/MightyBoard/Motherboard/crc16.h ****    Copyright (c) 2005, 2007 Joerg Wunsch
+   3:src/MightyBoard/Motherboard/crc16.h ****    All rights reserved.
+   4:src/MightyBoard/Motherboard/crc16.h **** 
+   5:src/MightyBoard/Motherboard/crc16.h ****    Redistribution and use in source and binary forms, with or without
+   6:src/MightyBoard/Motherboard/crc16.h ****    modification, are permitted provided that the following conditions are met:
+   7:src/MightyBoard/Motherboard/crc16.h **** 
+   8:src/MightyBoard/Motherboard/crc16.h ****    * Redistributions of source code must retain the above copyright
+   9:src/MightyBoard/Motherboard/crc16.h ****      notice, this list of conditions and the following disclaimer.
+  10:src/MightyBoard/Motherboard/crc16.h **** 
+  11:src/MightyBoard/Motherboard/crc16.h ****    * Redistributions in binary form must reproduce the above copyright
+  12:src/MightyBoard/Motherboard/crc16.h ****      notice, this list of conditions and the following disclaimer in
+  13:src/MightyBoard/Motherboard/crc16.h ****      the documentation and/or other materials provided with the
+  14:src/MightyBoard/Motherboard/crc16.h ****      distribution.
+  15:src/MightyBoard/Motherboard/crc16.h **** 
+  16:src/MightyBoard/Motherboard/crc16.h ****    * Neither the name of the copyright holders nor the names of
+  17:src/MightyBoard/Motherboard/crc16.h ****      contributors may be used to endorse or promote products derived
+  18:src/MightyBoard/Motherboard/crc16.h ****      from this software without specific prior written permission.
+  19:src/MightyBoard/Motherboard/crc16.h **** 
+  20:src/MightyBoard/Motherboard/crc16.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21:src/MightyBoard/Motherboard/crc16.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22:src/MightyBoard/Motherboard/crc16.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23:src/MightyBoard/Motherboard/crc16.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24:src/MightyBoard/Motherboard/crc16.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25:src/MightyBoard/Motherboard/crc16.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26:src/MightyBoard/Motherboard/crc16.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27:src/MightyBoard/Motherboard/crc16.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28:src/MightyBoard/Motherboard/crc16.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29:src/MightyBoard/Motherboard/crc16.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30:src/MightyBoard/Motherboard/crc16.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  31:src/MightyBoard/Motherboard/crc16.h **** 
+  32:src/MightyBoard/Motherboard/crc16.h **** /* $Id: crc16.h,v 1.4 2007/01/23 15:32:48 joerg_wunsch Exp $ */
+  33:src/MightyBoard/Motherboard/crc16.h **** 
+  34:src/MightyBoard/Motherboard/crc16.h **** #ifndef _UTIL_CRC16_H_
+  35:src/MightyBoard/Motherboard/crc16.h **** #define _UTIL_CRC16_H_
+  36:src/MightyBoard/Motherboard/crc16.h **** 
+  37:src/MightyBoard/Motherboard/crc16.h **** #include <stdint.h>
+  38:src/MightyBoard/Motherboard/crc16.h **** 
+  39:src/MightyBoard/Motherboard/crc16.h **** /** \file */
+  40:src/MightyBoard/Motherboard/crc16.h **** /** \defgroup util_crc <util/crc16.h>: CRC Computations
+  41:src/MightyBoard/Motherboard/crc16.h ****     \code#include <util/crc16.h>\endcode
+  42:src/MightyBoard/Motherboard/crc16.h **** 
+  43:src/MightyBoard/Motherboard/crc16.h ****     This header file provides a optimized inline functions for calculating
+  44:src/MightyBoard/Motherboard/crc16.h ****     cyclic redundancy checks (CRC) using common polynomials.
+  45:src/MightyBoard/Motherboard/crc16.h **** 
+  46:src/MightyBoard/Motherboard/crc16.h ****     \par References:
+  47:src/MightyBoard/Motherboard/crc16.h **** 
+  48:src/MightyBoard/Motherboard/crc16.h ****     \par
+  49:src/MightyBoard/Motherboard/crc16.h **** 
+  50:src/MightyBoard/Motherboard/crc16.h ****     See the Dallas Semiconductor app note 27 for 8051 assembler example and
+  51:src/MightyBoard/Motherboard/crc16.h ****     general CRC optimization suggestions. The table on the last page of the
+  52:src/MightyBoard/Motherboard/crc16.h ****     app note is the key to understanding these implementations.
+  53:src/MightyBoard/Motherboard/crc16.h **** 
+  54:src/MightyBoard/Motherboard/crc16.h ****     \par
+  55:src/MightyBoard/Motherboard/crc16.h **** 
+  56:src/MightyBoard/Motherboard/crc16.h ****     Jack Crenshaw's "Implementing CRCs" article in the January 1992 isue of \e
+  57:src/MightyBoard/Motherboard/crc16.h ****     Embedded \e Systems \e Programming. This may be difficult to find, but it
+  58:src/MightyBoard/Motherboard/crc16.h ****     explains CRC's in very clear and concise terms. Well worth the effort to
+  59:src/MightyBoard/Motherboard/crc16.h ****     obtain a copy.
+  60:src/MightyBoard/Motherboard/crc16.h **** 
+  61:src/MightyBoard/Motherboard/crc16.h ****     A typical application would look like:
+  62:src/MightyBoard/Motherboard/crc16.h **** 
+  63:src/MightyBoard/Motherboard/crc16.h ****     \code
+  64:src/MightyBoard/Motherboard/crc16.h ****     // Dallas iButton test vector.
+  65:src/MightyBoard/Motherboard/crc16.h ****     uint8_t serno[] = { 0x02, 0x1c, 0xb8, 0x01, 0, 0, 0, 0xa2 };
+  66:src/MightyBoard/Motherboard/crc16.h **** 
+  67:src/MightyBoard/Motherboard/crc16.h ****     int
+  68:src/MightyBoard/Motherboard/crc16.h ****     checkcrc(void)
+  69:src/MightyBoard/Motherboard/crc16.h ****     {
+  70:src/MightyBoard/Motherboard/crc16.h **** 	uint8_t crc = 0, i;
+  71:src/MightyBoard/Motherboard/crc16.h **** 
+  72:src/MightyBoard/Motherboard/crc16.h **** 	for (i = 0; i < sizeof serno / sizeof serno[0]; i++)
+  73:src/MightyBoard/Motherboard/crc16.h **** 	    crc = _crc_ibutton_update(crc, serno[i]);
+  74:src/MightyBoard/Motherboard/crc16.h **** 
+  75:src/MightyBoard/Motherboard/crc16.h **** 	return crc; // must be 0
+  76:src/MightyBoard/Motherboard/crc16.h ****     }
+  77:src/MightyBoard/Motherboard/crc16.h ****     \endcode
+  78:src/MightyBoard/Motherboard/crc16.h **** */
+  79:src/MightyBoard/Motherboard/crc16.h **** 
+  80:src/MightyBoard/Motherboard/crc16.h **** /** \ingroup util_crc
+  81:src/MightyBoard/Motherboard/crc16.h ****     Optimized CRC-16 calculation.
+  82:src/MightyBoard/Motherboard/crc16.h **** 
+  83:src/MightyBoard/Motherboard/crc16.h ****     Polynomial: x^16 + x^15 + x^2 + 1 (0xa001)<br>
+  84:src/MightyBoard/Motherboard/crc16.h ****     Initial value: 0xffff
+  85:src/MightyBoard/Motherboard/crc16.h **** 
+  86:src/MightyBoard/Motherboard/crc16.h ****     This CRC is normally used in disk-drive controllers.
+  87:src/MightyBoard/Motherboard/crc16.h **** 
+  88:src/MightyBoard/Motherboard/crc16.h ****     The following is the equivalent functionality written in C.
+  89:src/MightyBoard/Motherboard/crc16.h **** 
+  90:src/MightyBoard/Motherboard/crc16.h ****     \code
+  91:src/MightyBoard/Motherboard/crc16.h ****     uint16_t
+  92:src/MightyBoard/Motherboard/crc16.h ****     crc16_update(uint16_t crc, uint8_t a)
+  93:src/MightyBoard/Motherboard/crc16.h ****     {
+  94:src/MightyBoard/Motherboard/crc16.h **** 	int i;
+  95:src/MightyBoard/Motherboard/crc16.h **** 
+  96:src/MightyBoard/Motherboard/crc16.h **** 	crc ^= a;
+  97:src/MightyBoard/Motherboard/crc16.h **** 	for (i = 0; i < 8; ++i)
+  98:src/MightyBoard/Motherboard/crc16.h **** 	{
+  99:src/MightyBoard/Motherboard/crc16.h **** 	    if (crc & 1)
+ 100:src/MightyBoard/Motherboard/crc16.h **** 		crc = (crc >> 1) ^ 0xA001;
+ 101:src/MightyBoard/Motherboard/crc16.h **** 	    else
+ 102:src/MightyBoard/Motherboard/crc16.h **** 		crc = (crc >> 1);
+ 103:src/MightyBoard/Motherboard/crc16.h **** 	}
+ 104:src/MightyBoard/Motherboard/crc16.h **** 
+ 105:src/MightyBoard/Motherboard/crc16.h **** 	return crc;
+ 106:src/MightyBoard/Motherboard/crc16.h ****     }
+ 107:src/MightyBoard/Motherboard/crc16.h **** 
+ 108:src/MightyBoard/Motherboard/crc16.h ****     \endcode */
+ 109:src/MightyBoard/Motherboard/crc16.h **** 
+ 110:src/MightyBoard/Motherboard/crc16.h **** static __inline__ uint16_t
+ 111:src/MightyBoard/Motherboard/crc16.h **** _crc16_update(uint16_t __crc, uint8_t __data)
+ 112:src/MightyBoard/Motherboard/crc16.h **** {
+ 113:src/MightyBoard/Motherboard/crc16.h **** 	uint8_t __tmp;
+ 114:src/MightyBoard/Motherboard/crc16.h **** 	uint16_t __ret;
+ 115:src/MightyBoard/Motherboard/crc16.h **** 
+ 116:src/MightyBoard/Motherboard/crc16.h **** 	__asm__ __volatile__ (
+ 117:src/MightyBoard/Motherboard/crc16.h **** 		"eor %A0,%2" "\n\t"
+ 118:src/MightyBoard/Motherboard/crc16.h **** 		"mov %1,%A0" "\n\t"
+ 119:src/MightyBoard/Motherboard/crc16.h **** 		"swap %1" "\n\t"
+ 120:src/MightyBoard/Motherboard/crc16.h **** 		"eor %1,%A0" "\n\t"
+ 121:src/MightyBoard/Motherboard/crc16.h **** 		"mov __tmp_reg__,%1" "\n\t"
+ 122:src/MightyBoard/Motherboard/crc16.h **** 		"lsr %1" "\n\t"
+ 123:src/MightyBoard/Motherboard/crc16.h **** 		"lsr %1" "\n\t"
+ 124:src/MightyBoard/Motherboard/crc16.h **** 		"eor %1,__tmp_reg__" "\n\t"
+ 125:src/MightyBoard/Motherboard/crc16.h **** 		"mov __tmp_reg__,%1" "\n\t"
+ 126:src/MightyBoard/Motherboard/crc16.h **** 		"lsr %1" "\n\t"
+ 127:src/MightyBoard/Motherboard/crc16.h **** 		"eor %1,__tmp_reg__" "\n\t"
+ 128:src/MightyBoard/Motherboard/crc16.h **** 		"andi %1,0x07" "\n\t"
+ 129:src/MightyBoard/Motherboard/crc16.h **** 		"mov __tmp_reg__,%A0" "\n\t"
+ 130:src/MightyBoard/Motherboard/crc16.h **** 		"mov %A0,%B0" "\n\t"
+ 131:src/MightyBoard/Motherboard/crc16.h **** 		"lsr %1" "\n\t"
+ 132:src/MightyBoard/Motherboard/crc16.h **** 		"ror __tmp_reg__" "\n\t"
+ 133:src/MightyBoard/Motherboard/crc16.h **** 		"ror %1" "\n\t"
+ 134:src/MightyBoard/Motherboard/crc16.h **** 		"mov %B0,__tmp_reg__" "\n\t"
+ 135:src/MightyBoard/Motherboard/crc16.h **** 		"eor %A0,%1" "\n\t"
+ 136:src/MightyBoard/Motherboard/crc16.h **** 		"lsr __tmp_reg__" "\n\t"
+ 137:src/MightyBoard/Motherboard/crc16.h **** 		"ror %1" "\n\t"
+ 138:src/MightyBoard/Motherboard/crc16.h **** 		"eor %B0,__tmp_reg__" "\n\t"
+ 139:src/MightyBoard/Motherboard/crc16.h **** 		"eor %A0,%1"
+ 140:src/MightyBoard/Motherboard/crc16.h **** 		: "=r" (__ret), "=d" (__tmp)
+ 141:src/MightyBoard/Motherboard/crc16.h **** 		: "r" (__data), "0" (__crc)
+ 142:src/MightyBoard/Motherboard/crc16.h **** 		: "r0"
+ 143:src/MightyBoard/Motherboard/crc16.h **** 	);
+ 144:src/MightyBoard/Motherboard/crc16.h **** 	return __ret;
+ 145:src/MightyBoard/Motherboard/crc16.h **** }
+ 146:src/MightyBoard/Motherboard/crc16.h **** 
+ 147:src/MightyBoard/Motherboard/crc16.h **** /** \ingroup util_crc
+ 148:src/MightyBoard/Motherboard/crc16.h ****     Optimized CRC-XMODEM calculation.
+ 149:src/MightyBoard/Motherboard/crc16.h **** 
+ 150:src/MightyBoard/Motherboard/crc16.h ****     Polynomial: x^16 + x^12 + x^5 + 1 (0x1021)<br>
+ 151:src/MightyBoard/Motherboard/crc16.h ****     Initial value: 0x0
+ 152:src/MightyBoard/Motherboard/crc16.h **** 
+ 153:src/MightyBoard/Motherboard/crc16.h ****     This is the CRC used by the Xmodem-CRC protocol.
+ 154:src/MightyBoard/Motherboard/crc16.h **** 
+ 155:src/MightyBoard/Motherboard/crc16.h ****     The following is the equivalent functionality written in C.
+ 156:src/MightyBoard/Motherboard/crc16.h **** 
+ 157:src/MightyBoard/Motherboard/crc16.h ****     \code
+ 158:src/MightyBoard/Motherboard/crc16.h ****     uint16_t
+ 159:src/MightyBoard/Motherboard/crc16.h ****     crc_xmodem_update (uint16_t crc, uint8_t data)
+ 160:src/MightyBoard/Motherboard/crc16.h ****     {
+ 161:src/MightyBoard/Motherboard/crc16.h ****         int i;
+ 162:src/MightyBoard/Motherboard/crc16.h **** 
+ 163:src/MightyBoard/Motherboard/crc16.h ****         crc = crc ^ ((uint16_t)data << 8);
+ 164:src/MightyBoard/Motherboard/crc16.h ****         for (i=0; i<8; i++)
+ 165:src/MightyBoard/Motherboard/crc16.h ****         {
+ 166:src/MightyBoard/Motherboard/crc16.h ****             if (crc & 0x8000)
+ 167:src/MightyBoard/Motherboard/crc16.h ****                 crc = (crc << 1) ^ 0x1021;
+ 168:src/MightyBoard/Motherboard/crc16.h ****             else
+ 169:src/MightyBoard/Motherboard/crc16.h ****                 crc <<= 1;
+ 170:src/MightyBoard/Motherboard/crc16.h ****         }
+ 171:src/MightyBoard/Motherboard/crc16.h **** 
+ 172:src/MightyBoard/Motherboard/crc16.h ****         return crc;
+ 173:src/MightyBoard/Motherboard/crc16.h ****     }
+ 174:src/MightyBoard/Motherboard/crc16.h ****     \endcode */
+ 175:src/MightyBoard/Motherboard/crc16.h **** 
+ 176:src/MightyBoard/Motherboard/crc16.h **** static __inline__ uint16_t
+ 177:src/MightyBoard/Motherboard/crc16.h **** _crc_xmodem_update(uint16_t __crc, uint8_t __data)
+ 178:src/MightyBoard/Motherboard/crc16.h **** {
+ 179:src/MightyBoard/Motherboard/crc16.h ****     uint16_t __ret;             /* %B0:%A0 (alias for __crc) */
+ 180:src/MightyBoard/Motherboard/crc16.h ****     uint8_t __tmp1;             /* %1 */
+ 181:src/MightyBoard/Motherboard/crc16.h ****     uint8_t __tmp2;             /* %2 */
+ 182:src/MightyBoard/Motherboard/crc16.h ****                                 /* %3  __data */
+ 183:src/MightyBoard/Motherboard/crc16.h **** 
+ 184:src/MightyBoard/Motherboard/crc16.h ****     __asm__ __volatile__ (
+ 185:src/MightyBoard/Motherboard/crc16.h ****         "eor    %B0,%3"          "\n\t" /* crc.hi ^ data */
+ 186:src/MightyBoard/Motherboard/crc16.h ****         "mov    __tmp_reg__,%B0" "\n\t"
+ 187:src/MightyBoard/Motherboard/crc16.h ****         "swap   __tmp_reg__"     "\n\t" /* swap(crc.hi ^ data) */
+ 188:src/MightyBoard/Motherboard/crc16.h **** 
+ 189:src/MightyBoard/Motherboard/crc16.h ****         /* Calculate the ret.lo of the CRC. */
+ 190:src/MightyBoard/Motherboard/crc16.h ****         "mov    %1,__tmp_reg__"  "\n\t"
+ 191:src/MightyBoard/Motherboard/crc16.h ****         "andi   %1,0x0f"         "\n\t"
+ 192:src/MightyBoard/Motherboard/crc16.h ****         "eor    %1,%B0"          "\n\t"
+ 193:src/MightyBoard/Motherboard/crc16.h ****         "mov    %2,%B0"          "\n\t"
+ 194:src/MightyBoard/Motherboard/crc16.h ****         "eor    %2,__tmp_reg__"  "\n\t"
+ 195:src/MightyBoard/Motherboard/crc16.h ****         "lsl    %2"              "\n\t"
+ 196:src/MightyBoard/Motherboard/crc16.h ****         "andi   %2,0xe0"         "\n\t"
+ 197:src/MightyBoard/Motherboard/crc16.h ****         "eor    %1,%2"           "\n\t" /* __tmp1 is now ret.lo. */
+ 198:src/MightyBoard/Motherboard/crc16.h **** 
+ 199:src/MightyBoard/Motherboard/crc16.h ****         /* Calculate the ret.hi of the CRC. */
+ 200:src/MightyBoard/Motherboard/crc16.h ****         "mov    %2,__tmp_reg__"  "\n\t"
+ 201:src/MightyBoard/Motherboard/crc16.h ****         "eor    %2,%B0"          "\n\t"
+ 202:src/MightyBoard/Motherboard/crc16.h ****         "andi   %2,0xf0"         "\n\t"
+ 203:src/MightyBoard/Motherboard/crc16.h ****         "lsr    %2"              "\n\t"
+ 204:src/MightyBoard/Motherboard/crc16.h ****         "mov    __tmp_reg__,%B0" "\n\t"
+ 205:src/MightyBoard/Motherboard/crc16.h ****         "lsl    __tmp_reg__"     "\n\t"
+ 206:src/MightyBoard/Motherboard/crc16.h ****         "rol    %2"              "\n\t"
+ 207:src/MightyBoard/Motherboard/crc16.h ****         "lsr    %B0"             "\n\t"
+ 208:src/MightyBoard/Motherboard/crc16.h ****         "lsr    %B0"             "\n\t"
+ 209:src/MightyBoard/Motherboard/crc16.h ****         "lsr    %B0"             "\n\t"
+ 210:src/MightyBoard/Motherboard/crc16.h ****         "andi   %B0,0x1f"        "\n\t"
+ 211:src/MightyBoard/Motherboard/crc16.h ****         "eor    %B0,%2"          "\n\t"
+ 212:src/MightyBoard/Motherboard/crc16.h ****         "eor    %B0,%A0"         "\n\t" /* ret.hi is now ready. */
+ 213:src/MightyBoard/Motherboard/crc16.h ****         "mov    %A0,%1"          "\n\t" /* ret.lo is now ready. */
+ 214:src/MightyBoard/Motherboard/crc16.h ****         : "=d" (__ret), "=d" (__tmp1), "=d" (__tmp2)
+ 215:src/MightyBoard/Motherboard/crc16.h ****         : "r" (__data), "0" (__crc)
+ 216:src/MightyBoard/Motherboard/crc16.h ****         : "r0"
+ 217:src/MightyBoard/Motherboard/crc16.h ****     );
+ 218:src/MightyBoard/Motherboard/crc16.h ****     return __ret;
+ 219:src/MightyBoard/Motherboard/crc16.h **** }
+ 220:src/MightyBoard/Motherboard/crc16.h **** 
+ 221:src/MightyBoard/Motherboard/crc16.h **** /** \ingroup util_crc
+ 222:src/MightyBoard/Motherboard/crc16.h ****     Optimized CRC-CCITT calculation.
+ 223:src/MightyBoard/Motherboard/crc16.h **** 
+ 224:src/MightyBoard/Motherboard/crc16.h ****     Polynomial: x^16 + x^12 + x^5 + 1 (0x8408)<br>
+ 225:src/MightyBoard/Motherboard/crc16.h ****     Initial value: 0xffff
+ 226:src/MightyBoard/Motherboard/crc16.h **** 
+ 227:src/MightyBoard/Motherboard/crc16.h ****     This is the CRC used by PPP and IrDA.
+ 228:src/MightyBoard/Motherboard/crc16.h **** 
+ 229:src/MightyBoard/Motherboard/crc16.h ****     See RFC1171 (PPP protocol) and IrDA IrLAP 1.1
+ 230:src/MightyBoard/Motherboard/crc16.h **** 
+ 231:src/MightyBoard/Motherboard/crc16.h ****     \note Although the CCITT polynomial is the same as that used by the Xmodem
+ 232:src/MightyBoard/Motherboard/crc16.h ****     protocol, they are quite different. The difference is in how the bits are
+ 233:src/MightyBoard/Motherboard/crc16.h ****     shifted through the alorgithm. Xmodem shifts the MSB of the CRC and the
+ 234:src/MightyBoard/Motherboard/crc16.h ****     input first, while CCITT shifts the LSB of the CRC and the input first.
+ 235:src/MightyBoard/Motherboard/crc16.h **** 
+ 236:src/MightyBoard/Motherboard/crc16.h ****     The following is the equivalent functionality written in C.
+ 237:src/MightyBoard/Motherboard/crc16.h **** 
+ 238:src/MightyBoard/Motherboard/crc16.h ****     \code
+ 239:src/MightyBoard/Motherboard/crc16.h ****     uint16_t
+ 240:src/MightyBoard/Motherboard/crc16.h ****     crc_ccitt_update (uint16_t crc, uint8_t data)
+ 241:src/MightyBoard/Motherboard/crc16.h ****     {
+ 242:src/MightyBoard/Motherboard/crc16.h ****         data ^= lo8 (crc);
+ 243:src/MightyBoard/Motherboard/crc16.h ****         data ^= data << 4;
+ 244:src/MightyBoard/Motherboard/crc16.h **** 
+ 245:src/MightyBoard/Motherboard/crc16.h ****         return ((((uint16_t)data << 8) | hi8 (crc)) ^ (uint8_t)(data >> 4) 
+ 246:src/MightyBoard/Motherboard/crc16.h ****                 ^ ((uint16_t)data << 3));
+ 247:src/MightyBoard/Motherboard/crc16.h ****     }
+ 248:src/MightyBoard/Motherboard/crc16.h ****     \endcode */
+ 249:src/MightyBoard/Motherboard/crc16.h **** 
+ 250:src/MightyBoard/Motherboard/crc16.h **** static __inline__ uint16_t
+ 251:src/MightyBoard/Motherboard/crc16.h **** _crc_ccitt_update (uint16_t __crc, uint8_t __data)
+ 252:src/MightyBoard/Motherboard/crc16.h **** {
+ 253:src/MightyBoard/Motherboard/crc16.h ****     uint16_t __ret;
+ 254:src/MightyBoard/Motherboard/crc16.h **** 
+ 255:src/MightyBoard/Motherboard/crc16.h ****     __asm__ __volatile__ (
+ 256:src/MightyBoard/Motherboard/crc16.h ****         "eor    %A0,%1"          "\n\t"
+ 257:src/MightyBoard/Motherboard/crc16.h **** 
+ 258:src/MightyBoard/Motherboard/crc16.h ****         "mov    __tmp_reg__,%A0" "\n\t"
+ 259:src/MightyBoard/Motherboard/crc16.h ****         "swap   %A0"             "\n\t"
+ 260:src/MightyBoard/Motherboard/crc16.h ****         "andi   %A0,0xf0"        "\n\t"
+ 261:src/MightyBoard/Motherboard/crc16.h ****         "eor    %A0,__tmp_reg__" "\n\t"
+ 262:src/MightyBoard/Motherboard/crc16.h **** 
+ 263:src/MightyBoard/Motherboard/crc16.h ****         "mov    __tmp_reg__,%B0" "\n\t"
+ 264:src/MightyBoard/Motherboard/crc16.h **** 
+ 265:src/MightyBoard/Motherboard/crc16.h ****         "mov    %B0,%A0"         "\n\t"
+ 266:src/MightyBoard/Motherboard/crc16.h **** 
+ 267:src/MightyBoard/Motherboard/crc16.h ****         "swap   %A0"             "\n\t"
+ 268:src/MightyBoard/Motherboard/crc16.h ****         "andi   %A0,0x0f"        "\n\t"
+ 269:src/MightyBoard/Motherboard/crc16.h ****         "eor    __tmp_reg__,%A0" "\n\t"
+ 270:src/MightyBoard/Motherboard/crc16.h **** 
+ 271:src/MightyBoard/Motherboard/crc16.h ****         "lsr    %A0"             "\n\t"
+ 272:src/MightyBoard/Motherboard/crc16.h ****         "eor    %B0,%A0"         "\n\t"
+ 273:src/MightyBoard/Motherboard/crc16.h **** 
+ 274:src/MightyBoard/Motherboard/crc16.h ****         "eor    %A0,%B0"         "\n\t"
+ 275:src/MightyBoard/Motherboard/crc16.h ****         "lsl    %A0"             "\n\t"
+ 276:src/MightyBoard/Motherboard/crc16.h ****         "lsl    %A0"             "\n\t"
+ 277:src/MightyBoard/Motherboard/crc16.h ****         "lsl    %A0"             "\n\t"
+ 278:src/MightyBoard/Motherboard/crc16.h ****         "eor    %A0,__tmp_reg__"
+ 279:src/MightyBoard/Motherboard/crc16.h **** 
+ 280:src/MightyBoard/Motherboard/crc16.h ****         : "=d" (__ret)
+ 281:src/MightyBoard/Motherboard/crc16.h ****         : "r" (__data), "0" (__crc)
+ 282:src/MightyBoard/Motherboard/crc16.h ****         : "r0"
+ 283:src/MightyBoard/Motherboard/crc16.h ****     );
+ 284:src/MightyBoard/Motherboard/crc16.h ****     return __ret;
+ 285:src/MightyBoard/Motherboard/crc16.h **** }
+ 286:src/MightyBoard/Motherboard/crc16.h **** 
+ 287:src/MightyBoard/Motherboard/crc16.h **** /** \ingroup util_crc
+ 288:src/MightyBoard/Motherboard/crc16.h ****     Optimized Dallas (now Maxim) iButton 8-bit CRC calculation.
+ 289:src/MightyBoard/Motherboard/crc16.h **** 
+ 290:src/MightyBoard/Motherboard/crc16.h ****     Polynomial: x^8 + x^5 + x^4 + 1 (0x8C)<br>
+ 291:src/MightyBoard/Motherboard/crc16.h ****     Initial value: 0x0
+ 292:src/MightyBoard/Motherboard/crc16.h **** 
+ 293:src/MightyBoard/Motherboard/crc16.h ****     See http://www.maxim-ic.com/appnotes.cfm/appnote_number/27
+ 294:src/MightyBoard/Motherboard/crc16.h **** 
+ 295:src/MightyBoard/Motherboard/crc16.h ****     The following is the equivalent functionality written in C.
+ 296:src/MightyBoard/Motherboard/crc16.h **** 
+ 297:src/MightyBoard/Motherboard/crc16.h ****     \code
+ 298:src/MightyBoard/Motherboard/crc16.h ****  */
+ 299:src/MightyBoard/Motherboard/crc16.h ****     uint8_t
+ 300:src/MightyBoard/Motherboard/crc16.h ****     _crc_ibutton_update(uint8_t crc, uint8_t data)
+ 301:src/MightyBoard/Motherboard/crc16.h ****     {
+  27              	 .loc 1 301 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33              	.LBB14:
+ 302:src/MightyBoard/Motherboard/crc16.h **** 	uint8_t i;
+ 303:src/MightyBoard/Motherboard/crc16.h **** 
+ 304:src/MightyBoard/Motherboard/crc16.h **** 	crc = crc ^ data;
+  34              	 .loc 1 304 0
+  35 0000 4840     	 eors r0,r0,r1
+  36              	.LVL1:
+  37 0002 4FF00803 	 mov r3,#8
+ 305:src/MightyBoard/Motherboard/crc16.h **** 	for (i = 0; i < 8; i++)
+ 306:src/MightyBoard/Motherboard/crc16.h **** 	{
+ 307:src/MightyBoard/Motherboard/crc16.h **** 	    if (crc & 0x01)
+ 308:src/MightyBoard/Motherboard/crc16.h **** 	        crc = (crc >> 1) ^ 0x8C;
+  38              	 .loc 1 308 0
+  39 0006 6FF07302 	 mvn r2,#115
+  40              	.LVL2:
+  41              	.L4:
+ 307:src/MightyBoard/Motherboard/crc16.h **** 	    if (crc & 0x01)
+  42              	 .loc 1 307 0
+  43 000a 10F0010F 	 tst r0,#1
+  44              	 .loc 1 308 0
+  45 000e 1ABF     	 itte ne
+  46 0010 82EA6000 	 eorne r0,r2,r0,asr#1
+  47 0014 C0B2     	 uxtbne r0,r0
+  48              	.LVL3:
+ 309:src/MightyBoard/Motherboard/crc16.h **** 	    else
+ 310:src/MightyBoard/Motherboard/crc16.h **** 	        crc >>= 1;
+  49              	 .loc 1 310 0
+  50 0016 4008     	 lsreq r0,r0,#1
+  51              	.LVL4:
+  52 0018 03F1FF33 	 add r3,r3,#-1
+  53 001c DBB2     	 uxtb r3,r3
+ 305:src/MightyBoard/Motherboard/crc16.h **** 	for (i = 0; i < 8; i++)
+  54              	 .loc 1 305 0
+  55 001e 002B     	 cmp r3,#0
+  56 0020 F3D1     	 bne .L4
+  57              	.LBE14:
+ 311:src/MightyBoard/Motherboard/crc16.h **** 	}
+ 312:src/MightyBoard/Motherboard/crc16.h **** 
+ 313:src/MightyBoard/Motherboard/crc16.h **** 	return crc;
+ 314:src/MightyBoard/Motherboard/crc16.h ****     }
+  58              	 .loc 1 314 0
+  59 0022 7047     	 bx lr
+  60              	 .cfi_endproc
+  61              	.LFE70:
+  63              	 .section .text._ZN6Packet10appendByteEh,"ax",%progbits
+  64              	 .align 2
+  65              	 .global _ZN6Packet10appendByteEh
+  66              	 .thumb
+  67              	 .thumb_func
+  69              	_ZN6Packet10appendByteEh:
+  70              	.LFB71:
+  71              	 .file 2 "src/MightyBoard/shared/Packet.cc"
+   1:src/MightyBoard/shared/Packet.cc **** /*
+   2:src/MightyBoard/shared/Packet.cc ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/Packet.cc ****  *
+   4:src/MightyBoard/shared/Packet.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/Packet.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/Packet.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/Packet.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/Packet.cc ****  *
+   9:src/MightyBoard/shared/Packet.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/Packet.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/Packet.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/Packet.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/Packet.cc ****  *
+  14:src/MightyBoard/shared/Packet.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/Packet.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/Packet.cc ****  */
+  17:src/MightyBoard/shared/Packet.cc **** 
+  18:src/MightyBoard/shared/Packet.cc **** #include "Packet.hh"
+  19:src/MightyBoard/shared/Packet.cc **** //#include <util/crc16.h>
+  20:src/MightyBoard/shared/Packet.cc **** 
+  21:src/MightyBoard/shared/Packet.cc **** extern "C" {
+  22:src/MightyBoard/shared/Packet.cc **** 	#include "crc16.h"
+  23:src/MightyBoard/shared/Packet.cc **** #include "comm.h"
+  24:src/MightyBoard/shared/Packet.cc **** }
+  25:src/MightyBoard/shared/Packet.cc **** 
+  26:src/MightyBoard/shared/Packet.cc **** /// Append a byte and update the CRC
+  27:src/MightyBoard/shared/Packet.cc **** void Packet::appendByte(uint8_t data) {
+  72              	 .loc 2 27 0
+  73              	 .cfi_startproc
+  74              	 
+  75              	 
+  76              	.LVL5:
+  77 0000 38B5     	 push {r3,r4,r5,lr}
+  78              	.LCFI0:
+  79              	 .cfi_def_cfa_offset 16
+  80              	 .cfi_offset 14,-4
+  81              	 .cfi_offset 5,-8
+  82              	 .cfi_offset 4,-12
+  83              	 .cfi_offset 3,-16
+  84 0002 0446     	 mov r4,r0
+  85 0004 0D46     	 mov r5,r1
+  28:src/MightyBoard/shared/Packet.cc **** 	if (length < MAX_PACKET_PAYLOAD) {
+  86              	 .loc 2 28 0
+  87 0006 0378     	 ldrb r3,[r0,#0]
+  88 0008 1F2B     	 cmp r3,#31
+  89 000a 0BD8     	 bhi .L6
+  29:src/MightyBoard/shared/Packet.cc **** 		crc = _crc_ibutton_update(crc, data);
+  90              	 .loc 2 29 0
+  91 000c 4078     	 ldrb r0,[r0,#1]
+  92              	.LVL6:
+  93 000e FFF7FEFF 	 bl _crc_ibutton_update
+  94              	.LVL7:
+  95 0012 6070     	 strb r0,[r4,#1]
+  30:src/MightyBoard/shared/Packet.cc **** 		payload[length] = data;
+  96              	 .loc 2 30 0
+  97 0014 2378     	 ldrb r3,[r4,#0]
+  98 0016 E318     	 adds r3,r4,r3
+  99 0018 9D70     	 strb r5,[r3,#2]
+  31:src/MightyBoard/shared/Packet.cc **** 		length++;
+ 100              	 .loc 2 31 0
+ 101 001a 2378     	 ldrb r3,[r4,#0]
+ 102 001c 03F10103 	 add r3,r3,#1
+ 103 0020 DBB2     	 uxtb r3,r3
+ 104 0022 2370     	 strb r3,[r4,#0]
+ 105              	.L6:
+ 106 0024 38BD     	 pop {r3,r4,r5,pc}
+ 107              	 .cfi_endproc
+ 108              	.LFE71:
+ 110 0026 00BF     	 .section .text._ZN6Packet5resetEv,"ax",%progbits
+ 111              	 .align 2
+ 112              	 .global _ZN6Packet5resetEv
+ 113              	 .thumb
+ 114              	 .thumb_func
+ 116              	_ZN6Packet5resetEv:
+ 117              	.LFB72:
+  32:src/MightyBoard/shared/Packet.cc **** 	}
+  33:src/MightyBoard/shared/Packet.cc **** }
+  34:src/MightyBoard/shared/Packet.cc **** /// Reset this packet to an empty state
+  35:src/MightyBoard/shared/Packet.cc **** void Packet::reset() {
+ 118              	 .loc 2 35 0
+ 119              	 .cfi_startproc
+ 120              	 
+ 121              	 
+ 122              	 
+ 123              	.LVL8:
+  36:src/MightyBoard/shared/Packet.cc **** 	crc = 0;
+ 124              	 .loc 2 36 0
+ 125 0000 4FF00003 	 mov r3,#0
+ 126 0004 4370     	 strb r3,[r0,#1]
+  37:src/MightyBoard/shared/Packet.cc **** 	length = 0;
+ 127              	 .loc 2 37 0
+ 128 0006 0370     	 strb r3,[r0,#0]
+  38:src/MightyBoard/shared/Packet.cc **** #ifdef PARANOID
+  39:src/MightyBoard/shared/Packet.cc **** 	for (uint8_t i = 0; i < MAX_PACKET_PAYLOAD; i++) {
+  40:src/MightyBoard/shared/Packet.cc **** 		payload[i] = 0;
+  41:src/MightyBoard/shared/Packet.cc **** 	}
+  42:src/MightyBoard/shared/Packet.cc **** #endif // PARANOID
+  43:src/MightyBoard/shared/Packet.cc **** 	error_code = PacketError::NO_ERROR;
+ 129              	 .loc 2 43 0
+ 130 0008 80F82230 	 strb r3,[r0,#34]
+  44:src/MightyBoard/shared/Packet.cc **** 	state = PS_START;
+ 131              	 .loc 2 44 0
+ 132 000c 80F82330 	 strb r3,[r0,#35]
+  45:src/MightyBoard/shared/Packet.cc **** }
+ 133              	 .loc 2 45 0
+ 134 0010 7047     	 bx lr
+ 135              	 .cfi_endproc
+ 136              	.LFE72:
+ 138 0012 00BF     	 .section .text._ZN8InPacket5resetEv,"ax",%progbits
+ 139              	 .align 2
+ 140              	 .global _ZN8InPacket5resetEv
+ 141              	 .thumb
+ 142              	 .thumb_func
+ 144              	_ZN8InPacket5resetEv:
+ 145              	.LFB79:
+  46:src/MightyBoard/shared/Packet.cc **** 
+  47:src/MightyBoard/shared/Packet.cc **** InPacket::InPacket() {
+  48:src/MightyBoard/shared/Packet.cc **** 	reset();
+  49:src/MightyBoard/shared/Packet.cc **** }
+  50:src/MightyBoard/shared/Packet.cc **** 
+  51:src/MightyBoard/shared/Packet.cc **** /// Reset the entire packet reception.
+  52:src/MightyBoard/shared/Packet.cc **** void InPacket::reset() {
+ 146              	 .loc 2 52 0
+ 147              	 .cfi_startproc
+ 148              	 
+ 149              	 
+ 150              	.LVL9:
+ 151 0000 08B5     	 push {r3,lr}
+ 152              	.LCFI1:
+ 153              	 .cfi_def_cfa_offset 8
+ 154              	 .cfi_offset 14,-4
+ 155              	 .cfi_offset 3,-8
+  53:src/MightyBoard/shared/Packet.cc **** 	Packet::reset();
+ 156              	 .loc 2 53 0
+ 157 0002 FFF7FEFF 	 bl _ZN6Packet5resetEv
+ 158              	.LVL10:
+  54:src/MightyBoard/shared/Packet.cc **** }
+ 159              	 .loc 2 54 0
+ 160 0006 08BD     	 pop {r3,pc}
+ 161              	 .cfi_endproc
+ 162              	.LFE79:
+ 164              	 .section .text._ZN8InPacketC2Ev,"ax",%progbits
+ 165              	 .align 2
+ 166              	 .global _ZN8InPacketC2Ev
+ 167              	 .thumb
+ 168              	 .thumb_func
+ 170              	_ZN8InPacketC2Ev:
+ 171              	.LFB77:
+  47:src/MightyBoard/shared/Packet.cc **** InPacket::InPacket() {
+ 172              	 .loc 2 47 0
+ 173              	 .cfi_startproc
+ 174              	 
+ 175              	 
+ 176              	.LVL11:
+ 177 0000 10B5     	 push {r4,lr}
+ 178              	.LCFI2:
+ 179              	 .cfi_def_cfa_offset 8
+ 180              	 .cfi_offset 14,-4
+ 181              	 .cfi_offset 4,-8
+ 182 0002 0446     	 mov r4,r0
+ 183              	.LVL12:
+ 184              	.LBB15:
+  48:src/MightyBoard/shared/Packet.cc **** 	reset();
+ 185              	 .loc 2 48 0
+ 186 0004 FFF7FEFF 	 bl _ZN8InPacket5resetEv
+ 187              	.LVL13:
+ 188              	.LBE15:
+  49:src/MightyBoard/shared/Packet.cc **** }
+ 189              	 .loc 2 49 0
+ 190 0008 2046     	 mov r0,r4
+ 191 000a 10BD     	 pop {r4,pc}
+ 192              	 .cfi_endproc
+ 193              	.LFE77:
+ 195              	 .section .text._ZN8InPacket11processByteEh,"ax",%progbits
+ 196              	 .align 2
+ 197              	 .global _ZN8InPacket11processByteEh
+ 198              	 .thumb
+ 199              	 .thumb_func
+ 201              	_ZN8InPacket11processByteEh:
+ 202              	.LFB80:
+  55:src/MightyBoard/shared/Packet.cc **** 
+  56:src/MightyBoard/shared/Packet.cc **** //process a byte for our packet.
+  57:src/MightyBoard/shared/Packet.cc **** void InPacket::processByte(uint8_t b) {
+ 203              	 .loc 2 57 0
+ 204              	 .cfi_startproc
+ 205              	 
+ 206              	 
+ 207              	.LVL14:
+ 208 0000 10B5     	 push {r4,lr}
+ 209              	.LCFI3:
+ 210              	 .cfi_def_cfa_offset 8
+ 211              	 .cfi_offset 14,-4
+ 212              	 .cfi_offset 4,-8
+ 213 0002 0446     	 mov r4,r0
+  58:src/MightyBoard/shared/Packet.cc **** 	if (state == PS_START) {
+ 214              	 .loc 2 58 0
+ 215 0004 90F82330 	 ldrb r3,[r0,#35]
+ 216 0008 6BB9     	 cbnz r3,.L14
+  59:src/MightyBoard/shared/Packet.cc **** 		if (b == START_BYTE) {
+ 217              	 .loc 2 59 0
+ 218 000a D529     	 cmp r1,#213
+ 219 000c 04D1     	 bne .L15
+  60:src/MightyBoard/shared/Packet.cc **** 			state = PS_LEN;
+ 220              	 .loc 2 60 0
+ 221 000e 4FF00103 	 mov r3,#1
+ 222 0012 80F82330 	 strb r3,[r0,#35]
+ 223 0016 10BD     	 pop {r4,pc}
+ 224              	.L15:
+ 225              	.LVL15:
+ 226              	.LBB16:
+ 227              	.LBB17:
+ 228              	 .file 3 "src/MightyBoard/shared/Packet.hh"
+   1:src/MightyBoard/shared/Packet.hh **** /*
+   2:src/MightyBoard/shared/Packet.hh ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/Packet.hh ****  *
+   4:src/MightyBoard/shared/Packet.hh ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/Packet.hh ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/Packet.hh ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/Packet.hh ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/Packet.hh ****  *
+   9:src/MightyBoard/shared/Packet.hh ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/Packet.hh ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/Packet.hh ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/Packet.hh ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/Packet.hh ****  *
+  14:src/MightyBoard/shared/Packet.hh ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/Packet.hh ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/Packet.hh ****  */
+  17:src/MightyBoard/shared/Packet.hh **** 
+  18:src/MightyBoard/shared/Packet.hh **** #ifndef SHARED_PACKET_HH_
+  19:src/MightyBoard/shared/Packet.hh **** #define SHARED_PACKET_HH_
+  20:src/MightyBoard/shared/Packet.hh **** 
+  21:src/MightyBoard/shared/Packet.hh **** #include <stdint.h>
+  22:src/MightyBoard/shared/Packet.hh **** 
+  23:src/MightyBoard/shared/Packet.hh **** extern "C" {
+  24:src/MightyBoard/shared/Packet.hh **** #include "comm.h"
+  25:src/MightyBoard/shared/Packet.hh **** }
+  26:src/MightyBoard/shared/Packet.hh **** 
+  27:src/MightyBoard/shared/Packet.hh **** #define START_BYTE 0xD5
+  28:src/MightyBoard/shared/Packet.hh **** #define MAX_PACKET_PAYLOAD 32
+  29:src/MightyBoard/shared/Packet.hh **** 
+  30:src/MightyBoard/shared/Packet.hh **** #define SLAVE_ID_BROADCAST 127
+  31:src/MightyBoard/shared/Packet.hh **** 
+  32:src/MightyBoard/shared/Packet.hh **** namespace PacketError {
+  33:src/MightyBoard/shared/Packet.hh **** enum {
+  34:src/MightyBoard/shared/Packet.hh **** 	NO_ERROR,
+  35:src/MightyBoard/shared/Packet.hh **** 	NOISE_BYTE,
+  36:src/MightyBoard/shared/Packet.hh **** 	EXCEEDED_MAX_LENGTH,
+  37:src/MightyBoard/shared/Packet.hh **** 	BAD_CRC,
+  38:src/MightyBoard/shared/Packet.hh **** 	PACKET_TIMEOUT,
+  39:src/MightyBoard/shared/Packet.hh **** };
+  40:src/MightyBoard/shared/Packet.hh **** } // namespace PacketError
+  41:src/MightyBoard/shared/Packet.hh **** 
+  42:src/MightyBoard/shared/Packet.hh **** /// These are the response codes returned to the requestor
+  43:src/MightyBoard/shared/Packet.hh **** /// as the first byte of the response payload.  You can find
+  44:src/MightyBoard/shared/Packet.hh **** /// a list of the expected codes in the protocol specification
+  45:src/MightyBoard/shared/Packet.hh **** /// document:
+  46:src/MightyBoard/shared/Packet.hh **** /// http://docs.google.com/Doc?docid=0AcWKwJ2SAxDzZGd6amZyY2NfMmdtODRnZ2Ri&hl=en
+  47:src/MightyBoard/shared/Packet.hh **** typedef enum {
+  48:src/MightyBoard/shared/Packet.hh ****         RC_PACKET_ERROR    = 0x80, /* Generic Error. Is this packet simply discarded? */
+  49:src/MightyBoard/shared/Packet.hh ****         RC_OK               = 0x81,
+  50:src/MightyBoard/shared/Packet.hh ****         RC_BUFFER_OVERFLOW  = 0x82,
+  51:src/MightyBoard/shared/Packet.hh ****         RC_CRC_MISMATCH     = 0x83,
+  52:src/MightyBoard/shared/Packet.hh ****         RC_PACKET_LENGTH    = 0x84,
+  53:src/MightyBoard/shared/Packet.hh ****         RC_CMD_UNSUPPORTED  = 0x85,
+  54:src/MightyBoard/shared/Packet.hh ****         RC_EXPECT_MORE      = 0x86,
+  55:src/MightyBoard/shared/Packet.hh ****         RC_DOWNSTREAM_TIMEOUT = 0x87,
+  56:src/MightyBoard/shared/Packet.hh ****         RC_TOOL_LOCK_TIMEOUT = 0x88,
+  57:src/MightyBoard/shared/Packet.hh ****         RC_CANCEL_BUILD		= 0x89, 
+  58:src/MightyBoard/shared/Packet.hh ****         RC_BOT_BUILDING		= 0x8A,  // this response is returned if the bot is building from SD card 
+  59:src/MightyBoard/shared/Packet.hh ****         RC_BOT_OVERHEAT		= 0x8B,	// if the bot overheats, it will not respond to commands
+  60:src/MightyBoard/shared/Packet.hh ****         RC_PACKET_TIMEOUT	= 0x8C
+  61:src/MightyBoard/shared/Packet.hh **** } ResponseCode;
+  62:src/MightyBoard/shared/Packet.hh **** 
+  63:src/MightyBoard/shared/Packet.hh **** /// Convenience function to accept old response codes
+  64:src/MightyBoard/shared/Packet.hh **** /// (missing the high bits) as well as the new forms.
+  65:src/MightyBoard/shared/Packet.hh **** inline bool rcCompare(uint8_t data, ResponseCode code) {
+  66:src/MightyBoard/shared/Packet.hh **** 	return (data & 0x7f) == (code & 0x7f);
+  67:src/MightyBoard/shared/Packet.hh **** }
+  68:src/MightyBoard/shared/Packet.hh **** 
+  69:src/MightyBoard/shared/Packet.hh **** class Packet {
+  70:src/MightyBoard/shared/Packet.hh **** protected:
+  71:src/MightyBoard/shared/Packet.hh **** 	// packet states
+  72:src/MightyBoard/shared/Packet.hh **** 	typedef enum {
+  73:src/MightyBoard/shared/Packet.hh **** 		PS_START,
+  74:src/MightyBoard/shared/Packet.hh **** 		PS_LEN,
+  75:src/MightyBoard/shared/Packet.hh **** 		PS_PAYLOAD,
+  76:src/MightyBoard/shared/Packet.hh **** 		PS_CRC,
+  77:src/MightyBoard/shared/Packet.hh **** 		PS_LAST
+  78:src/MightyBoard/shared/Packet.hh **** 	} PacketState;
+  79:src/MightyBoard/shared/Packet.hh **** 
+  80:src/MightyBoard/shared/Packet.hh ****     volatile uint8_t length; /// The current length of the payload (data[0] if raw packets)
+  81:src/MightyBoard/shared/Packet.hh ****     volatile uint8_t crc; /// The CRC of the current contents of the payload (data[-1] of raw packe
+  82:src/MightyBoard/shared/Packet.hh ****     volatile uint8_t payload[MAX_PACKET_PAYLOAD]; /// Data payload (starts at data[2] of raw packet
+  83:src/MightyBoard/shared/Packet.hh **** 	volatile uint8_t error_code; // Have any errors cropped up during processing?
+  84:src/MightyBoard/shared/Packet.hh **** 	volatile PacketState state;
+  85:src/MightyBoard/shared/Packet.hh **** 
+  86:src/MightyBoard/shared/Packet.hh **** 
+  87:src/MightyBoard/shared/Packet.hh **** 	/// Append a byte and update the CRC
+  88:src/MightyBoard/shared/Packet.hh **** 	void appendByte(uint8_t data);
+  89:src/MightyBoard/shared/Packet.hh **** 	/// Reset this packet to an empty state
+  90:src/MightyBoard/shared/Packet.hh **** 	void reset();
+  91:src/MightyBoard/shared/Packet.hh **** 
+  92:src/MightyBoard/shared/Packet.hh **** 	void error(uint8_t error_code_in) {
+  93:src/MightyBoard/shared/Packet.hh **** 		reset();
+ 229              	 .loc 3 93 0
+ 230 0018 FFF7FEFF 	 bl _ZN6Packet5resetEv
+ 231              	.LVL16:
+  94:src/MightyBoard/shared/Packet.hh **** 		error_code = error_code_in;
+ 232              	 .loc 3 94 0
+ 233 001c 4FF00103 	 mov r3,#1
+ 234 0020 84F82230 	 strb r3,[r4,#34]
+ 235 0024 10BD     	 pop {r4,pc}
+ 236              	.LVL17:
+ 237              	.L14:
+ 238              	.LBE17:
+ 239              	.LBE16:
+  61:src/MightyBoard/shared/Packet.cc **** 		} else {
+  62:src/MightyBoard/shared/Packet.cc **** 			error(PacketError::NOISE_BYTE);
+  63:src/MightyBoard/shared/Packet.cc **** 		}
+  64:src/MightyBoard/shared/Packet.cc **** 	} else if (state == PS_LEN) {
+ 240              	 .loc 2 64 0
+ 241 0026 90F82330 	 ldrb r3,[r0,#35]
+ 242 002a 012B     	 cmp r3,#1
+ 243 002c 13D1     	 bne .L17
+  65:src/MightyBoard/shared/Packet.cc **** 		if (b <= MAX_PACKET_PAYLOAD) {
+ 244              	 .loc 2 65 0
+ 245 002e 2029     	 cmp r1,#32
+ 246 0030 0AD8     	 bhi .L18
+  66:src/MightyBoard/shared/Packet.cc **** 			expected_length = b;
+ 247              	 .loc 2 66 0
+ 248 0032 80F82410 	 strb r1,[r0,#36]
+  67:src/MightyBoard/shared/Packet.cc **** 			state = (expected_length == 0) ? PS_CRC : PS_PAYLOAD;
+ 249              	 .loc 2 67 0
+ 250 0036 90F82430 	 ldrb r3,[r0,#36]
+ 251 003a 002B     	 cmp r3,#0
+ 252 003c 14BF     	 ite ne
+ 253 003e 0223     	 movne r3,#2
+ 254 0040 0323     	 moveq r3,#3
+ 255 0042 80F82330 	 strb r3,[r0,#35]
+ 256 0046 10BD     	 pop {r4,pc}
+ 257              	.L18:
+ 258              	.LVL18:
+ 259              	.LBB18:
+ 260              	.LBB19:
+  93:src/MightyBoard/shared/Packet.hh **** 		reset();
+ 261              	 .loc 3 93 0
+ 262 0048 FFF7FEFF 	 bl _ZN6Packet5resetEv
+ 263              	.LVL19:
+ 264              	 .loc 3 94 0
+ 265 004c 4FF00203 	 mov r3,#2
+ 266 0050 84F82230 	 strb r3,[r4,#34]
+ 267 0054 10BD     	 pop {r4,pc}
+ 268              	.LVL20:
+ 269              	.L17:
+ 270              	.LBE19:
+ 271              	.LBE18:
+  68:src/MightyBoard/shared/Packet.cc **** 		} else {
+  69:src/MightyBoard/shared/Packet.cc **** 			error(PacketError::EXCEEDED_MAX_LENGTH);
+  70:src/MightyBoard/shared/Packet.cc **** 		}
+  71:src/MightyBoard/shared/Packet.cc **** 	} else if (state == PS_PAYLOAD) {
+ 272              	 .loc 2 71 0
+ 273 0056 90F82330 	 ldrb r3,[r0,#35]
+ 274 005a 022B     	 cmp r3,#2
+ 275 005c 0BD1     	 bne .L20
+  72:src/MightyBoard/shared/Packet.cc **** 		appendByte(b);
+ 276              	 .loc 2 72 0
+ 277 005e FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 278              	.LVL21:
+  73:src/MightyBoard/shared/Packet.cc **** 		if (length >= expected_length) {
+ 279              	 .loc 2 73 0
+ 280 0062 2278     	 ldrb r2,[r4,#0]
+ 281 0064 94F82430 	 ldrb r3,[r4,#36]
+ 282 0068 9A42     	 cmp r2,r3
+ 283 006a 16D3     	 bcc .L13
+  74:src/MightyBoard/shared/Packet.cc **** 			state = PS_CRC;
+ 284              	 .loc 2 74 0
+ 285 006c 4FF00303 	 mov r3,#3
+ 286 0070 84F82330 	 strb r3,[r4,#35]
+ 287 0074 10BD     	 pop {r4,pc}
+ 288              	.LVL22:
+ 289              	.L20:
+  75:src/MightyBoard/shared/Packet.cc **** 		}
+  76:src/MightyBoard/shared/Packet.cc **** 	} else if (state == PS_CRC) {
+ 290              	 .loc 2 76 0
+ 291 0076 90F82330 	 ldrb r3,[r0,#35]
+ 292 007a 032B     	 cmp r3,#3
+ 293 007c 0DD1     	 bne .L13
+  77:src/MightyBoard/shared/Packet.cc **** 		if (crc == b) {
+ 294              	 .loc 2 77 0
+ 295 007e 4378     	 ldrb r3,[r0,#1]
+ 296 0080 9942     	 cmp r1,r3
+ 297 0082 04D1     	 bne .L21
+  78:src/MightyBoard/shared/Packet.cc **** 			state = PS_LAST;
+ 298              	 .loc 2 78 0
+ 299 0084 4FF00403 	 mov r3,#4
+ 300 0088 80F82330 	 strb r3,[r0,#35]
+ 301 008c 10BD     	 pop {r4,pc}
+ 302              	.L21:
+ 303              	.LVL23:
+ 304              	.LBB20:
+ 305              	.LBB21:
+  93:src/MightyBoard/shared/Packet.hh **** 		reset();
+ 306              	 .loc 3 93 0
+ 307 008e FFF7FEFF 	 bl _ZN6Packet5resetEv
+ 308              	.LVL24:
+ 309              	 .loc 3 94 0
+ 310 0092 4FF00303 	 mov r3,#3
+ 311 0096 84F82230 	 strb r3,[r4,#34]
+ 312              	.LVL25:
+ 313              	.L13:
+ 314 009a 10BD     	 pop {r4,pc}
+ 315              	.LBE21:
+ 316              	.LBE20:
+ 317              	 .cfi_endproc
+ 318              	.LFE80:
+ 320              	 .section .text._ZNK6Packet5read8Eh,"ax",%progbits
+ 321              	 .align 2
+ 322              	 .global _ZNK6Packet5read8Eh
+ 323              	 .thumb
+ 324              	 .thumb_func
+ 326              	_ZNK6Packet5read8Eh:
+ 327              	.LFB81:
+  79:src/MightyBoard/shared/Packet.cc **** 		} else {
+  80:src/MightyBoard/shared/Packet.cc **** 			error(PacketError::BAD_CRC);
+  81:src/MightyBoard/shared/Packet.cc **** 		}
+  82:src/MightyBoard/shared/Packet.cc **** 	}
+  83:src/MightyBoard/shared/Packet.cc **** 
+  84:src/MightyBoard/shared/Packet.cc **** }
+  85:src/MightyBoard/shared/Packet.cc **** 
+  86:src/MightyBoard/shared/Packet.cc **** // Reads an 8-bit byte from the specified index of the payload
+  87:src/MightyBoard/shared/Packet.cc **** uint8_t Packet::read8(uint8_t index) const {
+ 328              	 .loc 2 87 0
+ 329              	 .cfi_startproc
+ 330              	 
+ 331              	 
+ 332              	 
+ 333              	.LVL26:
+  88:src/MightyBoard/shared/Packet.cc **** 	return payload[index];
+ 334              	 .loc 2 88 0
+ 335 0000 4118     	 adds r1,r0,r1
+ 336              	.LVL27:
+ 337 0002 8878     	 ldrb r0,[r1,#2]
+ 338              	.LVL28:
+  89:src/MightyBoard/shared/Packet.cc **** }
+ 339              	 .loc 2 89 0
+ 340 0004 7047     	 bx lr
+ 341              	 .cfi_endproc
+ 342              	.LFE81:
+ 344 0006 00BF     	 .section .text._ZNK6Packet6read16Eh,"ax",%progbits
+ 345              	 .align 2
+ 346              	 .global _ZNK6Packet6read16Eh
+ 347              	 .thumb
+ 348              	 .thumb_func
+ 350              	_ZNK6Packet6read16Eh:
+ 351              	.LFB82:
+  90:src/MightyBoard/shared/Packet.cc **** uint16_t Packet::read16(uint8_t index) const {
+ 352              	 .loc 2 90 0
+ 353              	 .cfi_startproc
+ 354              	 
+ 355              	 
+ 356              	 
+ 357              	.LVL29:
+  91:src/MightyBoard/shared/Packet.cc **** 	return payload[index] | (payload[index + 1] << 8);
+ 358              	 .loc 2 91 0
+ 359 0000 4318     	 adds r3,r0,r1
+ 360 0002 9B78     	 ldrb r3,[r3,#2]
+ 361 0004 01F10101 	 add r1,r1,#1
+ 362              	.LVL30:
+ 363 0008 4018     	 adds r0,r0,r1
+ 364              	.LVL31:
+ 365 000a 8078     	 ldrb r0,[r0,#2]
+  92:src/MightyBoard/shared/Packet.cc **** }
+ 366              	 .loc 2 92 0
+ 367 000c 43EA0020 	 orr r0,r3,r0,lsl#8
+ 368 0010 7047     	 bx lr
+ 369              	 .cfi_endproc
+ 370              	.LFE82:
+ 372 0012 00BF     	 .section .text._ZNK6Packet6read32Eh,"ax",%progbits
+ 373              	 .align 2
+ 374              	 .global _ZNK6Packet6read32Eh
+ 375              	 .thumb
+ 376              	 .thumb_func
+ 378              	_ZNK6Packet6read32Eh:
+ 379              	.LFB83:
+  93:src/MightyBoard/shared/Packet.cc **** uint32_t Packet::read32(uint8_t index) const {
+ 380              	 .loc 2 93 0
+ 381              	 .cfi_startproc
+ 382              	 
+ 383              	 
+ 384              	 
+ 385              	.LVL32:
+ 386 0000 0346     	 mov r3,r0
+ 387              	.LBB22:
+  94:src/MightyBoard/shared/Packet.cc **** 	union {
+  95:src/MightyBoard/shared/Packet.cc **** 		// AVR is little-endian
+  96:src/MightyBoard/shared/Packet.cc **** 		int32_t a;
+  97:src/MightyBoard/shared/Packet.cc **** 		struct {
+  98:src/MightyBoard/shared/Packet.cc **** 			uint8_t data[4];
+  99:src/MightyBoard/shared/Packet.cc **** 		} b;
+ 100:src/MightyBoard/shared/Packet.cc **** 	} shared;
+ 101:src/MightyBoard/shared/Packet.cc **** 	shared.b.data[0] = payload[index];
+ 388              	 .loc 2 101 0
+ 389 0002 4218     	 adds r2,r0,r1
+ 390 0004 9278     	 ldrb r2,[r2,#2]
+ 391 0006 4FF00000 	 mov r0,#0
+ 392              	.LVL33:
+ 393 000a 62F30700 	 bfi r0,r2,#0,#8
+ 394              	.LVL34:
+ 102:src/MightyBoard/shared/Packet.cc **** 	shared.b.data[1] = payload[index+1];
+ 395              	 .loc 2 102 0
+ 396 000e 01F10102 	 add r2,r1,#1
+ 397 0012 9A18     	 adds r2,r3,r2
+ 398 0014 9278     	 ldrb r2,[r2,#2]
+ 399 0016 62F30F20 	 bfi r0,r2,#8,#8
+ 103:src/MightyBoard/shared/Packet.cc **** 	shared.b.data[2] = payload[index+2];
+ 400              	 .loc 2 103 0
+ 401 001a 01F10202 	 add r2,r1,#2
+ 402 001e 9A18     	 adds r2,r3,r2
+ 403 0020 9278     	 ldrb r2,[r2,#2]
+ 404 0022 62F31740 	 bfi r0,r2,#16,#8
+ 104:src/MightyBoard/shared/Packet.cc **** 	shared.b.data[3] = payload[index+3];
+ 405              	 .loc 2 104 0
+ 406 0026 01F10301 	 add r1,r1,#3
+ 407              	.LVL35:
+ 408 002a 5B18     	 adds r3,r3,r1
+ 409              	.LVL36:
+ 410 002c 9B78     	 ldrb r3,[r3,#2]
+ 411 002e 63F31F60 	 bfi r0,r3,#24,#8
+ 412              	.LVL37:
+ 413              	.LBE22:
+ 105:src/MightyBoard/shared/Packet.cc **** 
+ 106:src/MightyBoard/shared/Packet.cc **** 	return shared.a;
+ 107:src/MightyBoard/shared/Packet.cc **** }
+ 414              	 .loc 2 107 0
+ 415 0032 7047     	 bx lr
+ 416              	 .cfi_endproc
+ 417              	.LFE83:
+ 419              	 .section .text._ZN9OutPacket5resetEv,"ax",%progbits
+ 420              	 .align 2
+ 421              	 .global _ZN9OutPacket5resetEv
+ 422              	 .thumb
+ 423              	 .thumb_func
+ 425              	_ZN9OutPacket5resetEv:
+ 426              	.LFB87:
+ 108:src/MightyBoard/shared/Packet.cc **** 
+ 109:src/MightyBoard/shared/Packet.cc **** OutPacket::OutPacket() {
+ 110:src/MightyBoard/shared/Packet.cc **** 	reset();
+ 111:src/MightyBoard/shared/Packet.cc **** }
+ 112:src/MightyBoard/shared/Packet.cc **** 
+ 113:src/MightyBoard/shared/Packet.cc **** /// Reset the entire packet transmission.
+ 114:src/MightyBoard/shared/Packet.cc **** void OutPacket::reset() {
+ 427              	 .loc 2 114 0
+ 428              	 .cfi_startproc
+ 429              	 
+ 430              	 
+ 431              	.LVL38:
+ 432 0000 10B5     	 push {r4,lr}
+ 433              	.LCFI4:
+ 434              	 .cfi_def_cfa_offset 8
+ 435              	 .cfi_offset 14,-4
+ 436              	 .cfi_offset 4,-8
+ 437 0002 0446     	 mov r4,r0
+ 115:src/MightyBoard/shared/Packet.cc **** 	Packet::reset();
+ 438              	 .loc 2 115 0
+ 439 0004 FFF7FEFF 	 bl _ZN6Packet5resetEv
+ 440              	.LVL39:
+ 116:src/MightyBoard/shared/Packet.cc **** 	send_payload_index = 0;
+ 441              	 .loc 2 116 0
+ 442 0008 4FF00003 	 mov r3,#0
+ 443 000c 84F82430 	 strb r3,[r4,#36]
+ 117:src/MightyBoard/shared/Packet.cc **** }
+ 444              	 .loc 2 117 0
+ 445 0010 10BD     	 pop {r4,pc}
+ 446              	 .cfi_endproc
+ 447              	.LFE87:
+ 449 0012 00BF     	 .section .text._ZN9OutPacketC2Ev,"ax",%progbits
+ 450              	 .align 2
+ 451              	 .global _ZN9OutPacketC2Ev
+ 452              	 .thumb
+ 453              	 .thumb_func
+ 455              	_ZN9OutPacketC2Ev:
+ 456              	.LFB85:
+ 109:src/MightyBoard/shared/Packet.cc **** OutPacket::OutPacket() {
+ 457              	 .loc 2 109 0
+ 458              	 .cfi_startproc
+ 459              	 
+ 460              	 
+ 461              	.LVL40:
+ 462 0000 10B5     	 push {r4,lr}
+ 463              	.LCFI5:
+ 464              	 .cfi_def_cfa_offset 8
+ 465              	 .cfi_offset 14,-4
+ 466              	 .cfi_offset 4,-8
+ 467 0002 0446     	 mov r4,r0
+ 468              	.LVL41:
+ 469              	.LBB23:
+ 110:src/MightyBoard/shared/Packet.cc **** 	reset();
+ 470              	 .loc 2 110 0
+ 471 0004 FFF7FEFF 	 bl _ZN9OutPacket5resetEv
+ 472              	.LVL42:
+ 473              	.LBE23:
+ 111:src/MightyBoard/shared/Packet.cc **** }
+ 474              	 .loc 2 111 0
+ 475 0008 2046     	 mov r0,r4
+ 476 000a 10BD     	 pop {r4,pc}
+ 477              	 .cfi_endproc
+ 478              	.LFE85:
+ 480              	 .section .text._ZN9OutPacket16prepareForResendEv,"ax",%progbits
+ 481              	 .align 2
+ 482              	 .global _ZN9OutPacket16prepareForResendEv
+ 483              	 .thumb
+ 484              	 .thumb_func
+ 486              	_ZN9OutPacket16prepareForResendEv:
+ 487              	.LFB88:
+ 118:src/MightyBoard/shared/Packet.cc **** 
+ 119:src/MightyBoard/shared/Packet.cc **** void OutPacket::prepareForResend() {
+ 488              	 .loc 2 119 0
+ 489              	 .cfi_startproc
+ 490              	 
+ 491              	 
+ 492              	 
+ 493              	.LVL43:
+ 120:src/MightyBoard/shared/Packet.cc **** 	error_code = PacketError::NO_ERROR;
+ 494              	 .loc 2 120 0
+ 495 0000 4FF00003 	 mov r3,#0
+ 496 0004 80F82230 	 strb r3,[r0,#34]
+ 121:src/MightyBoard/shared/Packet.cc **** 	state = PS_START;
+ 497              	 .loc 2 121 0
+ 498 0008 80F82330 	 strb r3,[r0,#35]
+ 122:src/MightyBoard/shared/Packet.cc **** 	send_payload_index = 0;
+ 499              	 .loc 2 122 0
+ 500 000c 80F82430 	 strb r3,[r0,#36]
+ 123:src/MightyBoard/shared/Packet.cc **** }
+ 501              	 .loc 2 123 0
+ 502 0010 7047     	 bx lr
+ 503              	 .cfi_endproc
+ 504              	.LFE88:
+ 506 0012 00BF     	 .section .text._ZN9OutPacket17getNextByteToSendEv,"ax",%progbits
+ 507              	 .align 2
+ 508              	 .global _ZN9OutPacket17getNextByteToSendEv
+ 509              	 .thumb
+ 510              	 .thumb_func
+ 512              	_ZN9OutPacket17getNextByteToSendEv:
+ 513              	.LFB89:
+ 124:src/MightyBoard/shared/Packet.cc **** uint8_t OutPacket::getNextByteToSend() {
+ 514              	 .loc 2 124 0
+ 515              	 .cfi_startproc
+ 516              	 
+ 517              	 
+ 518              	 
+ 519              	.LVL44:
+ 520 0000 0346     	 mov r3,r0
+ 521              	.LVL45:
+ 522              	.LBB24:
+ 125:src/MightyBoard/shared/Packet.cc **** 	uint8_t next_byte = 0;
+ 126:src/MightyBoard/shared/Packet.cc **** 	if (state == PS_START) {
+ 523              	 .loc 2 126 0
+ 524 0002 90F82320 	 ldrb r2,[r0,#35]
+ 525 0006 32B9     	 cbnz r2,.L32
+ 526              	.LVL46:
+ 127:src/MightyBoard/shared/Packet.cc **** 		next_byte = START_BYTE;
+ 128:src/MightyBoard/shared/Packet.cc **** 		state = PS_LEN;
+ 527              	 .loc 2 128 0
+ 528 0008 4FF00102 	 mov r2,#1
+ 529 000c 80F82320 	 strb r2,[r0,#35]
+ 127:src/MightyBoard/shared/Packet.cc **** 		next_byte = START_BYTE;
+ 530              	 .loc 2 127 0
+ 531 0010 4FF0D500 	 mov r0,#213
+ 532              	.LVL47:
+ 533 0014 7047     	 bx lr
+ 534              	.LVL48:
+ 535              	.L32:
+ 129:src/MightyBoard/shared/Packet.cc **** 	} else if (state == PS_LEN) {
+ 536              	 .loc 2 129 0
+ 537 0016 90F82320 	 ldrb r2,[r0,#35]
+ 538 001a 012A     	 cmp r2,#1
+ 539 001c 08D1     	 bne .L34
+ 130:src/MightyBoard/shared/Packet.cc **** 		next_byte = length;
+ 540              	 .loc 2 130 0
+ 541 001e 0078     	 ldrb r0,[r0,#0]
+ 542              	.LVL49:
+ 131:src/MightyBoard/shared/Packet.cc **** 		state = (length==0)?PS_CRC:PS_PAYLOAD;
+ 543              	 .loc 2 131 0
+ 544 0020 1A78     	 ldrb r2,[r3,#0]
+ 545 0022 002A     	 cmp r2,#0
+ 546 0024 14BF     	 ite ne
+ 547 0026 0222     	 movne r2,#2
+ 548 0028 0322     	 moveq r2,#3
+ 549 002a 83F82320 	 strb r2,[r3,#35]
+ 550 002e 7047     	 bx lr
+ 551              	.LVL50:
+ 552              	.L34:
+ 132:src/MightyBoard/shared/Packet.cc **** 	} else if (state == PS_PAYLOAD) {
+ 553              	 .loc 2 132 0
+ 554 0030 90F82320 	 ldrb r2,[r0,#35]
+ 555 0034 022A     	 cmp r2,#2
+ 556 0036 10D1     	 bne .L36
+ 133:src/MightyBoard/shared/Packet.cc **** 		next_byte= payload[send_payload_index++];
+ 557              	 .loc 2 133 0
+ 558 0038 90F82420 	 ldrb r2,[r0,#36]
+ 559 003c 8118     	 adds r1,r0,r2
+ 560 003e 8878     	 ldrb r0,[r1,#2]
+ 561              	.LVL51:
+ 562 0040 02F10102 	 add r2,r2,#1
+ 563 0044 D2B2     	 uxtb r2,r2
+ 564 0046 83F82420 	 strb r2,[r3,#36]
+ 134:src/MightyBoard/shared/Packet.cc **** 		if (send_payload_index >= length) {
+ 565              	 .loc 2 134 0
+ 566 004a 1978     	 ldrb r1,[r3,#0]
+ 567 004c 8A42     	 cmp r2,r1
+ 568 004e 10D3     	 bcc .L33
+ 135:src/MightyBoard/shared/Packet.cc **** 			state = PS_CRC;
+ 569              	 .loc 2 135 0
+ 570 0050 4FF00302 	 mov r2,#3
+ 571 0054 83F82320 	 strb r2,[r3,#35]
+ 572 0058 7047     	 bx lr
+ 573              	.LVL52:
+ 574              	.L36:
+ 136:src/MightyBoard/shared/Packet.cc **** 		}
+ 137:src/MightyBoard/shared/Packet.cc **** 	} else if (state == PS_CRC) {
+ 575              	 .loc 2 137 0
+ 576 005a 90F82320 	 ldrb r2,[r0,#35]
+ 577 005e 032A     	 cmp r2,#3
+ 125:src/MightyBoard/shared/Packet.cc **** 	uint8_t next_byte = 0;
+ 578              	 .loc 2 125 0
+ 579 0060 18BF     	 it ne
+ 580 0062 0020     	 movne r0,#0
+ 581              	 .loc 2 137 0
+ 582 0064 05D1     	 bne .L33
+ 138:src/MightyBoard/shared/Packet.cc **** 		next_byte = crc;
+ 583              	 .loc 2 138 0
+ 584 0066 5878     	 ldrb r0,[r3,#1]
+ 585              	.LVL53:
+ 139:src/MightyBoard/shared/Packet.cc **** 		state = PS_LAST;
+ 586              	 .loc 2 139 0
+ 587 0068 4FF00402 	 mov r2,#4
+ 588 006c 83F82320 	 strb r2,[r3,#35]
+ 589 0070 7047     	 bx lr
+ 590              	.LVL54:
+ 591              	.L33:
+ 592              	.LBE24:
+ 140:src/MightyBoard/shared/Packet.cc **** 	}
+ 141:src/MightyBoard/shared/Packet.cc **** 	return next_byte;
+ 142:src/MightyBoard/shared/Packet.cc **** }
+ 593              	 .loc 2 142 0
+ 594 0072 7047     	 bx lr
+ 595              	 .cfi_endproc
+ 596              	.LFE89:
+ 598              	 .section .text._ZN9OutPacket7append8Eh,"ax",%progbits
+ 599              	 .align 2
+ 600              	 .global _ZN9OutPacket7append8Eh
+ 601              	 .thumb
+ 602              	 .thumb_func
+ 604              	_ZN9OutPacket7append8Eh:
+ 605              	.LFB90:
+ 143:src/MightyBoard/shared/Packet.cc **** 
+ 144:src/MightyBoard/shared/Packet.cc **** // Add an 8-bit byte to the end of the payload
+ 145:src/MightyBoard/shared/Packet.cc **** void OutPacket::append8(uint8_t value) {
+ 606              	 .loc 2 145 0
+ 607              	 .cfi_startproc
+ 608              	 
+ 609              	 
+ 610              	.LVL55:
+ 611 0000 08B5     	 push {r3,lr}
+ 612              	.LCFI6:
+ 613              	 .cfi_def_cfa_offset 8
+ 614              	 .cfi_offset 14,-4
+ 615              	 .cfi_offset 3,-8
+ 146:src/MightyBoard/shared/Packet.cc **** 	appendByte(value);
+ 616              	 .loc 2 146 0
+ 617 0002 FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 618              	.LVL56:
+ 147:src/MightyBoard/shared/Packet.cc **** }
+ 619              	 .loc 2 147 0
+ 620 0006 08BD     	 pop {r3,pc}
+ 621              	 .cfi_endproc
+ 622              	.LFE90:
+ 624              	 .section .text._ZN9OutPacket8append16Et,"ax",%progbits
+ 625              	 .align 2
+ 626              	 .global _ZN9OutPacket8append16Et
+ 627              	 .thumb
+ 628              	 .thumb_func
+ 630              	_ZN9OutPacket8append16Et:
+ 631              	.LFB91:
+ 148:src/MightyBoard/shared/Packet.cc **** void OutPacket::append16(uint16_t value) {
+ 632              	 .loc 2 148 0
+ 633              	 .cfi_startproc
+ 634              	 
+ 635              	 
+ 636              	.LVL57:
+ 637 0000 38B5     	 push {r3,r4,r5,lr}
+ 638              	.LCFI7:
+ 639              	 .cfi_def_cfa_offset 16
+ 640              	 .cfi_offset 14,-4
+ 641              	 .cfi_offset 5,-8
+ 642              	 .cfi_offset 4,-12
+ 643              	 .cfi_offset 3,-16
+ 644 0002 0546     	 mov r5,r0
+ 645 0004 0C46     	 mov r4,r1
+ 149:src/MightyBoard/shared/Packet.cc **** 	appendByte(value&0xff);
+ 646              	 .loc 2 149 0
+ 647 0006 C9B2     	 uxtb r1,r1
+ 648              	.LVL58:
+ 649 0008 FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 650              	.LVL59:
+ 150:src/MightyBoard/shared/Packet.cc **** 	appendByte((value>>8)&0xff);
+ 651              	 .loc 2 150 0
+ 652 000c 2846     	 mov r0,r5
+ 653 000e 4FEA1421 	 lsr r1,r4,#8
+ 654 0012 FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 151:src/MightyBoard/shared/Packet.cc **** }
+ 655              	 .loc 2 151 0
+ 656 0016 38BD     	 pop {r3,r4,r5,pc}
+ 657              	 .cfi_endproc
+ 658              	.LFE91:
+ 660              	 .section .text._ZN9OutPacket8append32Em,"ax",%progbits
+ 661              	 .align 2
+ 662              	 .global _ZN9OutPacket8append32Em
+ 663              	 .thumb
+ 664              	 .thumb_func
+ 666              	_ZN9OutPacket8append32Em:
+ 667              	.LFB92:
+ 152:src/MightyBoard/shared/Packet.cc **** void OutPacket::append32(uint32_t value) {
+ 668              	 .loc 2 152 0
+ 669              	 .cfi_startproc
+ 670              	 
+ 671              	 
+ 672              	.LVL60:
+ 673 0000 38B5     	 push {r3,r4,r5,lr}
+ 674              	.LCFI8:
+ 675              	 .cfi_def_cfa_offset 16
+ 676              	 .cfi_offset 14,-4
+ 677              	 .cfi_offset 5,-8
+ 678              	 .cfi_offset 4,-12
+ 679              	 .cfi_offset 3,-16
+ 680 0002 0546     	 mov r5,r0
+ 681 0004 0C46     	 mov r4,r1
+ 153:src/MightyBoard/shared/Packet.cc **** 	appendByte(value&0xff);
+ 682              	 .loc 2 153 0
+ 683 0006 C9B2     	 uxtb r1,r1
+ 684              	.LVL61:
+ 685 0008 FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 686              	.LVL62:
+ 154:src/MightyBoard/shared/Packet.cc **** 	appendByte((value>>8)&0xff);
+ 687              	 .loc 2 154 0
+ 688 000c 2846     	 mov r0,r5
+ 689 000e C4F30721 	 ubfx r1,r4,#8,#8
+ 690 0012 FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 155:src/MightyBoard/shared/Packet.cc **** 	appendByte((value>>16)&0xff);
+ 691              	 .loc 2 155 0
+ 692 0016 2846     	 mov r0,r5
+ 693 0018 C4F30741 	 ubfx r1,r4,#16,#8
+ 694 001c FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 156:src/MightyBoard/shared/Packet.cc **** 	appendByte((value>>24)&0xff);
+ 695              	 .loc 2 156 0
+ 696 0020 2846     	 mov r0,r5
+ 697 0022 4FEA1461 	 lsr r1,r4,#24
+ 698 0026 FFF7FEFF 	 bl _ZN6Packet10appendByteEh
+ 157:src/MightyBoard/shared/Packet.cc **** }
+ 699              	 .loc 2 157 0
+ 700 002a 38BD     	 pop {r3,r4,r5,pc}
+ 701              	 .cfi_endproc
+ 702              	.LFE92:
+ 704              	 .global _ZN8InPacketC1Ev
+ 705              	 .thumb_set _ZN8InPacketC1Ev,_ZN8InPacketC2Ev
+ 706              	 .global _ZN9OutPacketC1Ev
+ 707              	 .thumb_set _ZN9OutPacketC1Ev,_ZN9OutPacketC2Ev
+ 708              	 .text
+ 709              	.Letext0:
+ 710              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 711              	 .file 5 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Packet.cc
+    {standard input}:19     .text._crc_ibutton_update:00000000 $t
+    {standard input}:24     .text._crc_ibutton_update:00000000 _crc_ibutton_update
+    {standard input}:64     .text._ZN6Packet10appendByteEh:00000000 $t
+    {standard input}:69     .text._ZN6Packet10appendByteEh:00000000 _ZN6Packet10appendByteEh
+    {standard input}:111    .text._ZN6Packet5resetEv:00000000 $t
+    {standard input}:116    .text._ZN6Packet5resetEv:00000000 _ZN6Packet5resetEv
+    {standard input}:139    .text._ZN8InPacket5resetEv:00000000 $t
+    {standard input}:144    .text._ZN8InPacket5resetEv:00000000 _ZN8InPacket5resetEv
+    {standard input}:165    .text._ZN8InPacketC2Ev:00000000 $t
+    {standard input}:170    .text._ZN8InPacketC2Ev:00000000 _ZN8InPacketC2Ev
+    {standard input}:196    .text._ZN8InPacket11processByteEh:00000000 $t
+    {standard input}:201    .text._ZN8InPacket11processByteEh:00000000 _ZN8InPacket11processByteEh
+    {standard input}:321    .text._ZNK6Packet5read8Eh:00000000 $t
+    {standard input}:326    .text._ZNK6Packet5read8Eh:00000000 _ZNK6Packet5read8Eh
+    {standard input}:345    .text._ZNK6Packet6read16Eh:00000000 $t
+    {standard input}:350    .text._ZNK6Packet6read16Eh:00000000 _ZNK6Packet6read16Eh
+    {standard input}:373    .text._ZNK6Packet6read32Eh:00000000 $t
+    {standard input}:378    .text._ZNK6Packet6read32Eh:00000000 _ZNK6Packet6read32Eh
+    {standard input}:420    .text._ZN9OutPacket5resetEv:00000000 $t
+    {standard input}:425    .text._ZN9OutPacket5resetEv:00000000 _ZN9OutPacket5resetEv
+    {standard input}:450    .text._ZN9OutPacketC2Ev:00000000 $t
+    {standard input}:455    .text._ZN9OutPacketC2Ev:00000000 _ZN9OutPacketC2Ev
+    {standard input}:481    .text._ZN9OutPacket16prepareForResendEv:00000000 $t
+    {standard input}:486    .text._ZN9OutPacket16prepareForResendEv:00000000 _ZN9OutPacket16prepareForResendEv
+    {standard input}:507    .text._ZN9OutPacket17getNextByteToSendEv:00000000 $t
+    {standard input}:512    .text._ZN9OutPacket17getNextByteToSendEv:00000000 _ZN9OutPacket17getNextByteToSendEv
+    {standard input}:599    .text._ZN9OutPacket7append8Eh:00000000 $t
+    {standard input}:604    .text._ZN9OutPacket7append8Eh:00000000 _ZN9OutPacket7append8Eh
+    {standard input}:625    .text._ZN9OutPacket8append16Et:00000000 $t
+    {standard input}:630    .text._ZN9OutPacket8append16Et:00000000 _ZN9OutPacket8append16Et
+    {standard input}:661    .text._ZN9OutPacket8append32Em:00000000 $t
+    {standard input}:666    .text._ZN9OutPacket8append32Em:00000000 _ZN9OutPacket8append32Em
+    {standard input}:170    .text._ZN8InPacketC2Ev:00000000 _ZN8InPacketC1Ev
+    {standard input}:455    .text._ZN9OutPacketC2Ev:00000000 _ZN9OutPacketC1Ev
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

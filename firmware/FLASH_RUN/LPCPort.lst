@@ -1,0 +1,499 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "LPCPort.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN7LPCPortC2Ev,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN7LPCPortC2Ev
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN7LPCPortC2Ev:
+  25              	.LFB56:
+  26              	 .file 1 "src/MightyBoard/shared/LPCPort.cc"
+   1:src/MightyBoard/shared/LPCPort.cc **** /*
+   2:src/MightyBoard/shared/LPCPort.cc ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.cc ****  *
+   4:src/MightyBoard/shared/LPCPort.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.cc ****  *
+   9:src/MightyBoard/shared/LPCPort.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.cc ****  *
+  14:src/MightyBoard/shared/LPCPort.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.cc ****  */
+  17:src/MightyBoard/shared/LPCPort.cc **** 
+  18:src/MightyBoard/shared/LPCPort.cc **** 
+  19:src/MightyBoard/shared/LPCPort.cc **** #include "LPCPort.hh"
+  20:src/MightyBoard/shared/LPCPort.cc **** /*
+  21:src/MightyBoard/shared/LPCPort.cc **** extern const LPCPort Port0(0);
+  22:src/MightyBoard/shared/LPCPort.cc **** extern const LPCPort Port1(1);
+  23:src/MightyBoard/shared/LPCPort.cc **** extern const LPCPort Port2(2);
+  24:src/MightyBoard/shared/LPCPort.cc **** extern const LPCPort Port3(3);
+  25:src/MightyBoard/shared/LPCPort.cc **** extern const LPCPort Port4(4);
+  26:src/MightyBoard/shared/LPCPort.cc **** 
+  27:src/MightyBoard/shared/LPCPort.cc **** extern const LPCPort NullPort(NULL_PORT);
+  28:src/MightyBoard/shared/LPCPort.cc **** */
+  29:src/MightyBoard/shared/LPCPort.cc **** LPCPort::LPCPort() : port_base(NULL_PORT) {};
+  27              	 .loc 1 29 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33              	.LBB2:
+  34              	 .loc 1 29 0
+  35 0000 4FF0FF03 	 mov r3,#255
+  36 0004 0370     	 strb r3,[r0,#0]
+  37              	.LBE2:
+  38 0006 7047     	 bx lr
+  39              	 .cfi_endproc
+  40              	.LFE56:
+  42              	 .section .text._ZN7LPCPortC2Eh,"ax",%progbits
+  43              	 .align 2
+  44              	 .global _ZN7LPCPortC2Eh
+  45              	 .thumb
+  46              	 .thumb_func
+  48              	_ZN7LPCPortC2Eh:
+  49              	.LFB59:
+  30:src/MightyBoard/shared/LPCPort.cc **** 
+  31:src/MightyBoard/shared/LPCPort.cc **** LPCPort::LPCPort(uint8_t port_base_in) : port_base(port_base_in) {
+  50              	 .loc 1 31 0
+  51              	 .cfi_startproc
+  52              	 
+  53              	 
+  54              	 
+  55              	.LVL1:
+  56              	.LBB3:
+  57              	 .loc 1 31 0
+  58 0000 0170     	 strb r1,[r0,#0]
+  59              	.LBE3:
+  32:src/MightyBoard/shared/LPCPort.cc **** };
+  60              	 .loc 1 32 0
+  61 0002 7047     	 bx lr
+  62              	 .cfi_endproc
+  63              	.LFE59:
+  65              	 .section .text._ZNK7LPCPort6isNullEv,"ax",%progbits
+  66              	 .align 2
+  67              	 .global _ZNK7LPCPort6isNullEv
+  68              	 .thumb
+  69              	 .thumb_func
+  71              	_ZNK7LPCPort6isNullEv:
+  72              	.LFB61:
+  33:src/MightyBoard/shared/LPCPort.cc **** 
+  34:src/MightyBoard/shared/LPCPort.cc **** bool LPCPort::isNull() const {
+  73              	 .loc 1 34 0
+  74              	 .cfi_startproc
+  75              	 
+  76              	 
+  77              	 
+  78              	.LVL2:
+  35:src/MightyBoard/shared/LPCPort.cc **** 	return port_base == NULL_PORT;
+  79              	 .loc 1 35 0
+  80 0000 0078     	 ldrb r0,[r0,#0]
+  81              	.LVL3:
+  36:src/MightyBoard/shared/LPCPort.cc **** };
+  82              	 .loc 1 36 0
+  83 0002 FF28     	 cmp r0,#255
+  84 0004 14BF     	 ite ne
+  85 0006 0020     	 movne r0,#0
+  86 0008 0120     	 moveq r0,#1
+  87 000a 7047     	 bx lr
+  88              	 .cfi_endproc
+  89              	.LFE61:
+  91              	 .section .text._ZNK7LPCPort18setPinDirectionOutEh,"ax",%progbits
+  92              	 .align 2
+  93              	 .global _ZNK7LPCPort18setPinDirectionOutEh
+  94              	 .thumb
+  95              	 .thumb_func
+  97              	_ZNK7LPCPort18setPinDirectionOutEh:
+  98              	.LFB62:
+  37:src/MightyBoard/shared/LPCPort.cc **** 
+  38:src/MightyBoard/shared/LPCPort.cc **** void LPCPort::setPinDirectionOut(uint8_t pin_index) const {
+  99              	 .loc 1 38 0
+ 100              	 .cfi_startproc
+ 101              	 
+ 102              	 
+ 103              	.LVL4:
+ 104 0000 08B5     	 push {r3,lr}
+ 105              	.LCFI0:
+ 106              	 .cfi_def_cfa_offset 8
+ 107              	 .cfi_offset 14,-4
+ 108              	 .cfi_offset 3,-8
+  39:src/MightyBoard/shared/LPCPort.cc **** //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+  40:src/MightyBoard/shared/LPCPort.cc **** //		DDRx |= (uint8_t)pin_mask;
+  41:src/MightyBoard/shared/LPCPort.cc **** //	}
+  42:src/MightyBoard/shared/LPCPort.cc **** 	GPIO_SetDir(port_base, _BV(pin_index), 1);
+ 109              	 .loc 1 42 0
+ 110 0002 4FF00102 	 mov r2,#1
+ 111 0006 0078     	 ldrb r0,[r0,#0]
+ 112              	.LVL5:
+ 113 0008 02FA01F1 	 lsl r1,r2,r1
+ 114              	.LVL6:
+ 115 000c FFF7FEFF 	 bl GPIO_SetDir
+  43:src/MightyBoard/shared/LPCPort.cc **** };
+ 116              	 .loc 1 43 0
+ 117 0010 08BD     	 pop {r3,pc}
+ 118              	 .cfi_endproc
+ 119              	.LFE62:
+ 121 0012 00BF     	 .section .text._ZNK7LPCPort17setPinDirectionInEh,"ax",%progbits
+ 122              	 .align 2
+ 123              	 .global _ZNK7LPCPort17setPinDirectionInEh
+ 124              	 .thumb
+ 125              	 .thumb_func
+ 127              	_ZNK7LPCPort17setPinDirectionInEh:
+ 128              	.LFB63:
+  44:src/MightyBoard/shared/LPCPort.cc **** 
+  45:src/MightyBoard/shared/LPCPort.cc **** void LPCPort::setPinDirectionIn(uint8_t pin_index) const {
+ 129              	 .loc 1 45 0
+ 130              	 .cfi_startproc
+ 131              	 
+ 132              	 
+ 133              	.LVL7:
+ 134 0000 08B5     	 push {r3,lr}
+ 135              	.LCFI1:
+ 136              	 .cfi_def_cfa_offset 8
+ 137              	 .cfi_offset 14,-4
+ 138              	 .cfi_offset 3,-8
+  46:src/MightyBoard/shared/LPCPort.cc **** //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+  47:src/MightyBoard/shared/LPCPort.cc **** //		DDRx &= (uint8_t)pin_mask_inverted;
+  48:src/MightyBoard/shared/LPCPort.cc **** //	}
+  49:src/MightyBoard/shared/LPCPort.cc **** 	GPIO_SetDir(port_base, _BV(pin_index), 0);
+ 139              	 .loc 1 49 0
+ 140 0002 0078     	 ldrb r0,[r0,#0]
+ 141              	.LVL8:
+ 142 0004 4FF00103 	 mov r3,#1
+ 143 0008 03FA01F1 	 lsl r1,r3,r1
+ 144              	.LVL9:
+ 145 000c 4FF00002 	 mov r2,#0
+ 146 0010 FFF7FEFF 	 bl GPIO_SetDir
+  50:src/MightyBoard/shared/LPCPort.cc **** };
+ 147              	 .loc 1 50 0
+ 148 0014 08BD     	 pop {r3,pc}
+ 149              	 .cfi_endproc
+ 150              	.LFE63:
+ 152 0016 00BF     	 .section .text._ZNK7LPCPort6getPinEh,"ax",%progbits
+ 153              	 .align 2
+ 154              	 .global _ZNK7LPCPort6getPinEh
+ 155              	 .thumb
+ 156              	 .thumb_func
+ 158              	_ZNK7LPCPort6getPinEh:
+ 159              	.LFB64:
+  51:src/MightyBoard/shared/LPCPort.cc **** 
+  52:src/MightyBoard/shared/LPCPort.cc **** bool LPCPort::getPin(uint8_t pin_index) const {
+ 160              	 .loc 1 52 0
+ 161              	 .cfi_startproc
+ 162              	 
+ 163              	 
+ 164              	.LVL10:
+ 165 0000 10B5     	 push {r4,lr}
+ 166              	.LCFI2:
+ 167              	 .cfi_def_cfa_offset 8
+ 168              	 .cfi_offset 14,-4
+ 169              	 .cfi_offset 4,-8
+ 170 0002 0C46     	 mov r4,r1
+  53:src/MightyBoard/shared/LPCPort.cc **** //	return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  54:src/MightyBoard/shared/LPCPort.cc **** 	return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 171              	 .loc 1 54 0
+ 172 0004 0078     	 ldrb r0,[r0,#0]
+ 173              	.LVL11:
+ 174 0006 FFF7FEFF 	 bl FIO_ReadValue
+ 175              	.LVL12:
+ 176 000a 4FF00103 	 mov r3,#1
+ 177 000e 03FA04F4 	 lsl r4,r3,r4
+ 178 0012 0440     	 ands r4,r4,r0
+ 179 0014 14F0FF0F 	 tst r4,#255
+  55:src/MightyBoard/shared/LPCPort.cc **** };
+ 180              	 .loc 1 55 0
+ 181 0018 0CBF     	 ite eq
+ 182 001a 0020     	 moveq r0,#0
+ 183 001c 0120     	 movne r0,#1
+ 184 001e 10BD     	 pop {r4,pc}
+ 185              	 .cfi_endproc
+ 186              	.LFE64:
+ 188              	 .section .text._ZNK7LPCPort8setPinOnEh,"ax",%progbits
+ 189              	 .align 2
+ 190              	 .global _ZNK7LPCPort8setPinOnEh
+ 191              	 .thumb
+ 192              	 .thumb_func
+ 194              	_ZNK7LPCPort8setPinOnEh:
+ 195              	.LFB65:
+  56:src/MightyBoard/shared/LPCPort.cc **** 
+  57:src/MightyBoard/shared/LPCPort.cc **** void LPCPort::setPinOn(uint8_t pin_index) const {
+ 196              	 .loc 1 57 0
+ 197              	 .cfi_startproc
+ 198              	 
+ 199              	 
+ 200              	.LVL13:
+ 201 0000 08B5     	 push {r3,lr}
+ 202              	.LCFI3:
+ 203              	 .cfi_def_cfa_offset 8
+ 204              	 .cfi_offset 14,-4
+ 205              	 .cfi_offset 3,-8
+  58:src/MightyBoard/shared/LPCPort.cc **** //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+  59:src/MightyBoard/shared/LPCPort.cc **** //		PORTx |= (uint8_t)pin_mask;
+  60:src/MightyBoard/shared/LPCPort.cc **** //	}
+  61:src/MightyBoard/shared/LPCPort.cc **** 	GPIO_SetValue(port_base, _BV(pin_index));
+ 206              	 .loc 1 61 0
+ 207 0002 0078     	 ldrb r0,[r0,#0]
+ 208              	.LVL14:
+ 209 0004 4FF00103 	 mov r3,#1
+ 210 0008 03FA01F1 	 lsl r1,r3,r1
+ 211              	.LVL15:
+ 212 000c FFF7FEFF 	 bl GPIO_SetValue
+  62:src/MightyBoard/shared/LPCPort.cc **** };
+ 213              	 .loc 1 62 0
+ 214 0010 08BD     	 pop {r3,pc}
+ 215              	 .cfi_endproc
+ 216              	.LFE65:
+ 218 0012 00BF     	 .section .text._ZNK7LPCPort9setPinOffEh,"ax",%progbits
+ 219              	 .align 2
+ 220              	 .global _ZNK7LPCPort9setPinOffEh
+ 221              	 .thumb
+ 222              	 .thumb_func
+ 224              	_ZNK7LPCPort9setPinOffEh:
+ 225              	.LFB66:
+  63:src/MightyBoard/shared/LPCPort.cc **** 
+  64:src/MightyBoard/shared/LPCPort.cc **** void LPCPort::setPinOff(uint8_t pin_index) const {
+ 226              	 .loc 1 64 0
+ 227              	 .cfi_startproc
+ 228              	 
+ 229              	 
+ 230              	.LVL16:
+ 231 0000 08B5     	 push {r3,lr}
+ 232              	.LCFI4:
+ 233              	 .cfi_def_cfa_offset 8
+ 234              	 .cfi_offset 14,-4
+ 235              	 .cfi_offset 3,-8
+  65:src/MightyBoard/shared/LPCPort.cc **** //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+  66:src/MightyBoard/shared/LPCPort.cc **** //		PORTx &= (uint8_t)pin_mask_inverted;
+  67:src/MightyBoard/shared/LPCPort.cc **** //	}
+  68:src/MightyBoard/shared/LPCPort.cc **** 	GPIO_ClearValue(port_base, _BV(pin_index));
+ 236              	 .loc 1 68 0
+ 237 0002 0078     	 ldrb r0,[r0,#0]
+ 238              	.LVL17:
+ 239 0004 4FF00103 	 mov r3,#1
+ 240 0008 03FA01F1 	 lsl r1,r3,r1
+ 241              	.LVL18:
+ 242 000c FFF7FEFF 	 bl GPIO_ClearValue
+  69:src/MightyBoard/shared/LPCPort.cc **** };
+ 243              	 .loc 1 69 0
+ 244 0010 08BD     	 pop {r3,pc}
+ 245              	 .cfi_endproc
+ 246              	.LFE66:
+ 248 0012 00BF     	 .section .text._GLOBAL__sub_I__ZN7LPCPortC2Ev,"ax",%progbits
+ 249              	 .align 2
+ 250              	 .thumb
+ 251              	 .thumb_func
+ 253              	_GLOBAL__sub_I__ZN7LPCPortC2Ev:
+ 254              	.LFB68:
+ 255              	 .loc 1 69 0
+ 256              	 .cfi_startproc
+ 257              	 
+ 258              	 
+ 259 0000 08B5     	 push {r3,lr}
+ 260              	.LCFI5:
+ 261              	 .cfi_def_cfa_offset 8
+ 262              	 .cfi_offset 14,-4
+ 263              	 .cfi_offset 3,-8
+ 264              	.LVL19:
+ 265              	.LBB6:
+ 266              	.LBB7:
+ 267              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 268              	 .loc 2 49 0
+ 269 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 270 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 271 000a 4FF00001 	 mov r1,#0
+ 272 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 273              	 .loc 2 50 0
+ 274 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 275 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 276 001a 4FF00101 	 mov r1,#1
+ 277 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 278              	 .loc 2 51 0
+ 279 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 280 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 281 002a 4FF00201 	 mov r1,#2
+ 282 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 283              	 .loc 2 52 0
+ 284 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 285 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 286 003a 4FF00301 	 mov r1,#3
+ 287 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 288              	 .loc 2 53 0
+ 289 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 290 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 291 004a 4FF00401 	 mov r1,#4
+ 292 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 293              	 .loc 2 55 0
+ 294 0052 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 295 0056 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 296 005a 4FF0FF01 	 mov r1,#255
+ 297 005e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 298              	.LBE7:
+ 299              	.LBE6:
+ 300              	 .loc 1 69 0
+ 301 0062 08BD     	 pop {r3,pc}
+ 302              	 .cfi_endproc
+ 303              	.LFE68:
+ 305              	 .section .init_array,"aw",%init_array
+ 306              	 .align 2
+ 307 0000 00000000 	 .word _GLOBAL__sub_I__ZN7LPCPortC2Ev(target1)
+ 308              	 .global _ZN7LPCPortC1Ev
+ 309              	 .thumb_set _ZN7LPCPortC1Ev,_ZN7LPCPortC2Ev
+ 310              	 .global _ZN7LPCPortC1Eh
+ 311              	 .thumb_set _ZN7LPCPortC1Eh,_ZN7LPCPortC2Eh
+ 312              	 .section .bss._ZL5Port0,"aw",%nobits
+ 313              	 .align 2
+ 314              	 .set .LANCHOR0,.+0
+ 317              	_ZL5Port0:
+ 318 0000 00       	 .space 1
+ 319 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 320              	 .align 2
+ 321              	 .set .LANCHOR1,.+0
+ 324              	_ZL5Port1:
+ 325 0000 00       	 .space 1
+ 326 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 327              	 .align 2
+ 328              	 .set .LANCHOR2,.+0
+ 331              	_ZL5Port2:
+ 332 0000 00       	 .space 1
+ 333 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 334              	 .align 2
+ 335              	 .set .LANCHOR3,.+0
+ 338              	_ZL5Port3:
+ 339 0000 00       	 .space 1
+ 340 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 341              	 .align 2
+ 342              	 .set .LANCHOR4,.+0
+ 345              	_ZL5Port4:
+ 346 0000 00       	 .space 1
+ 347 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 348              	 .align 2
+ 349              	 .set .LANCHOR5,.+0
+ 352              	_ZL8NullPort:
+ 353 0000 00       	 .space 1
+ 354 0001 000000   	 .text
+ 355              	.Letext0:
+ 356              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 357              	 .file 4 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 LPCPort.cc
+    {standard input}:19     .text._ZN7LPCPortC2Ev:00000000 $t
+    {standard input}:24     .text._ZN7LPCPortC2Ev:00000000 _ZN7LPCPortC2Ev
+    {standard input}:43     .text._ZN7LPCPortC2Eh:00000000 $t
+    {standard input}:48     .text._ZN7LPCPortC2Eh:00000000 _ZN7LPCPortC2Eh
+    {standard input}:66     .text._ZNK7LPCPort6isNullEv:00000000 $t
+    {standard input}:71     .text._ZNK7LPCPort6isNullEv:00000000 _ZNK7LPCPort6isNullEv
+    {standard input}:92     .text._ZNK7LPCPort18setPinDirectionOutEh:00000000 $t
+    {standard input}:97     .text._ZNK7LPCPort18setPinDirectionOutEh:00000000 _ZNK7LPCPort18setPinDirectionOutEh
+    {standard input}:122    .text._ZNK7LPCPort17setPinDirectionInEh:00000000 $t
+    {standard input}:127    .text._ZNK7LPCPort17setPinDirectionInEh:00000000 _ZNK7LPCPort17setPinDirectionInEh
+    {standard input}:153    .text._ZNK7LPCPort6getPinEh:00000000 $t
+    {standard input}:158    .text._ZNK7LPCPort6getPinEh:00000000 _ZNK7LPCPort6getPinEh
+    {standard input}:189    .text._ZNK7LPCPort8setPinOnEh:00000000 $t
+    {standard input}:194    .text._ZNK7LPCPort8setPinOnEh:00000000 _ZNK7LPCPort8setPinOnEh
+    {standard input}:219    .text._ZNK7LPCPort9setPinOffEh:00000000 $t
+    {standard input}:224    .text._ZNK7LPCPort9setPinOffEh:00000000 _ZNK7LPCPort9setPinOffEh
+    {standard input}:249    .text._GLOBAL__sub_I__ZN7LPCPortC2Ev:00000000 $t
+    {standard input}:253    .text._GLOBAL__sub_I__ZN7LPCPortC2Ev:00000000 _GLOBAL__sub_I__ZN7LPCPortC2Ev
+    {standard input}:314    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:48     .text._ZN7LPCPortC2Eh:00000000 _ZN7LPCPortC1Eh
+    {standard input}:321    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:328    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:335    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:342    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:349    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:306    .init_array:00000000 $d
+    {standard input}:24     .text._ZN7LPCPortC2Ev:00000000 _ZN7LPCPortC1Ev
+    {standard input}:313    .bss._ZL5Port0:00000000 $d
+    {standard input}:317    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:320    .bss._ZL5Port1:00000000 $d
+    {standard input}:324    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:327    .bss._ZL5Port2:00000000 $d
+    {standard input}:331    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:334    .bss._ZL5Port3:00000000 $d
+    {standard input}:338    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:341    .bss._ZL5Port4:00000000 $d
+    {standard input}:345    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:348    .bss._ZL8NullPort:00000000 $d
+    {standard input}:352    .bss._ZL8NullPort:00000000 _ZL8NullPort
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+GPIO_SetDir
+FIO_ReadValue
+GPIO_SetValue
+GPIO_ClearValue

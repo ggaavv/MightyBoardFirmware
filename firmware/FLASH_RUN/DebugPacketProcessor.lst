@@ -1,0 +1,840 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "DebugPacketProcessor.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._Z18processDebugPacketRK8InPacketR9OutPacket,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _Z18processDebugPacketRK8InPacketR9OutPacket
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_Z18processDebugPacketRK8InPacketR9OutPacket:
+  25              	.LFB101:
+  26              	 .file 1 "src/MightyBoard/Motherboard/DebugPacketProcessor.cc"
+   1:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** /*
+   2:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * Copyright 2010 by Adam Mayer <adam@makerbot.com>
+   3:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  *
+   4:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  *
+   9:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  *
+  14:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/Motherboard/DebugPacketProcessor.cc ****  */
+  17:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  18:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** #include "DebugPacketProcessor.hh"
+  19:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** #include "UART.hh"
+  20:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** #include "Timeout.hh"
+  21:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** #include "Configuration.hh"
+  22:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** #include "Motherboard.hh"
+  23:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** #include "Errors.hh"
+  24:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** //#include "Tool.hh"
+  25:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** #include "Command.hh"
+  26:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  27:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** namespace CommandCode {
+  28:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** enum {
+  29:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_ECHO = 0x70,
+  30:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_GENERATE_BAD_PACKET = 0x71,
+  31:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_SIMULATE_BAD_PACKET = 0x72,
+  32:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_SLAVE_PASSTHRU = 0x73,
+  33:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_CLEAR_COMMAND_QUEUE = 0x74,
+  34:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_NO_SUCH_COMMAND = 0x75,
+  35:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_SET_DEBUG_CODE = 0x76,
+  36:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_GET_DEBUG_CODE = 0x77,
+  37:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	DEBUG_COMMAND_QUEUE_FILLER = 0xF0
+  38:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** };
+  39:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** }
+  40:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  41:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** namespace BadReceptionCode {
+  42:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** enum {
+  43:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	RECEIVED_NOISE = 1,
+  44:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	BAD_PACKET_LENGTH = 2,
+  45:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	BAD_CRC = 3,
+  46:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	TIMEOUT = 4
+  47:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** };
+  48:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** }
+  49:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  50:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** namespace BadResponseCode {
+  51:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** enum {
+  52:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	NO_RESPONSE = 1,
+  53:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	SKIP_START_BYTE = 2,
+  54:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	BAD_PACKET_LENGTH = 3,
+  55:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	BAD_CRC = 4,
+  56:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	TIMEOUT = 5
+  57:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** };
+  58:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  59:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** }
+  60:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  61:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** OutPacket debugSlaveOut;
+  62:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  63:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** /// Identify a debug packet, and process it.  If the packet is a debug
+  64:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** /// packet, return true, indicating that no further processing should
+  65:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** /// be done.  Otherwise, processing of this packet should drop through
+  66:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** /// to the next processing level.
+  67:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** bool processDebugPacket(const InPacket& from_host, OutPacket& to_host) {
+  27              	 .loc 1 67 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 24
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 7,-8
+  37              	 .cfi_offset 6,-12
+  38              	 .cfi_offset 5,-16
+  39              	 .cfi_offset 4,-20
+  40              	 .cfi_offset 3,-24
+  41 0002 0446     	 mov r4,r0
+  42 0004 0D46     	 mov r5,r1
+  43              	.LVL1:
+  44              	.LBB29:
+  45              	.LBB30:
+  46              	.LBB31:
+  47              	 .file 2 "src/MightyBoard/shared/Packet.hh"
+   1:src/MightyBoard/shared/Packet.hh **** /*
+   2:src/MightyBoard/shared/Packet.hh ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/Packet.hh ****  *
+   4:src/MightyBoard/shared/Packet.hh ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/Packet.hh ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/Packet.hh ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/Packet.hh ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/Packet.hh ****  *
+   9:src/MightyBoard/shared/Packet.hh ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/Packet.hh ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/Packet.hh ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/Packet.hh ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/Packet.hh ****  *
+  14:src/MightyBoard/shared/Packet.hh ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/Packet.hh ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/Packet.hh ****  */
+  17:src/MightyBoard/shared/Packet.hh **** 
+  18:src/MightyBoard/shared/Packet.hh **** #ifndef SHARED_PACKET_HH_
+  19:src/MightyBoard/shared/Packet.hh **** #define SHARED_PACKET_HH_
+  20:src/MightyBoard/shared/Packet.hh **** 
+  21:src/MightyBoard/shared/Packet.hh **** #include <stdint.h>
+  22:src/MightyBoard/shared/Packet.hh **** 
+  23:src/MightyBoard/shared/Packet.hh **** extern "C" {
+  24:src/MightyBoard/shared/Packet.hh **** #include "comm.h"
+  25:src/MightyBoard/shared/Packet.hh **** }
+  26:src/MightyBoard/shared/Packet.hh **** 
+  27:src/MightyBoard/shared/Packet.hh **** #define START_BYTE 0xD5
+  28:src/MightyBoard/shared/Packet.hh **** #define MAX_PACKET_PAYLOAD 32
+  29:src/MightyBoard/shared/Packet.hh **** 
+  30:src/MightyBoard/shared/Packet.hh **** #define SLAVE_ID_BROADCAST 127
+  31:src/MightyBoard/shared/Packet.hh **** 
+  32:src/MightyBoard/shared/Packet.hh **** namespace PacketError {
+  33:src/MightyBoard/shared/Packet.hh **** enum {
+  34:src/MightyBoard/shared/Packet.hh **** 	NO_ERROR,
+  35:src/MightyBoard/shared/Packet.hh **** 	NOISE_BYTE,
+  36:src/MightyBoard/shared/Packet.hh **** 	EXCEEDED_MAX_LENGTH,
+  37:src/MightyBoard/shared/Packet.hh **** 	BAD_CRC,
+  38:src/MightyBoard/shared/Packet.hh **** 	PACKET_TIMEOUT,
+  39:src/MightyBoard/shared/Packet.hh **** };
+  40:src/MightyBoard/shared/Packet.hh **** } // namespace PacketError
+  41:src/MightyBoard/shared/Packet.hh **** 
+  42:src/MightyBoard/shared/Packet.hh **** /// These are the response codes returned to the requestor
+  43:src/MightyBoard/shared/Packet.hh **** /// as the first byte of the response payload.  You can find
+  44:src/MightyBoard/shared/Packet.hh **** /// a list of the expected codes in the protocol specification
+  45:src/MightyBoard/shared/Packet.hh **** /// document:
+  46:src/MightyBoard/shared/Packet.hh **** /// http://docs.google.com/Doc?docid=0AcWKwJ2SAxDzZGd6amZyY2NfMmdtODRnZ2Ri&hl=en
+  47:src/MightyBoard/shared/Packet.hh **** typedef enum {
+  48:src/MightyBoard/shared/Packet.hh ****         RC_PACKET_ERROR    = 0x80, /* Generic Error. Is this packet simply discarded? */
+  49:src/MightyBoard/shared/Packet.hh ****         RC_OK               = 0x81,
+  50:src/MightyBoard/shared/Packet.hh ****         RC_BUFFER_OVERFLOW  = 0x82,
+  51:src/MightyBoard/shared/Packet.hh ****         RC_CRC_MISMATCH     = 0x83,
+  52:src/MightyBoard/shared/Packet.hh ****         RC_PACKET_LENGTH    = 0x84,
+  53:src/MightyBoard/shared/Packet.hh ****         RC_CMD_UNSUPPORTED  = 0x85,
+  54:src/MightyBoard/shared/Packet.hh ****         RC_EXPECT_MORE      = 0x86,
+  55:src/MightyBoard/shared/Packet.hh ****         RC_DOWNSTREAM_TIMEOUT = 0x87,
+  56:src/MightyBoard/shared/Packet.hh ****         RC_TOOL_LOCK_TIMEOUT = 0x88,
+  57:src/MightyBoard/shared/Packet.hh ****         RC_CANCEL_BUILD		= 0x89, 
+  58:src/MightyBoard/shared/Packet.hh ****         RC_BOT_BUILDING		= 0x8A,  // this response is returned if the bot is building from SD card 
+  59:src/MightyBoard/shared/Packet.hh ****         RC_BOT_OVERHEAT		= 0x8B,	// if the bot overheats, it will not respond to commands
+  60:src/MightyBoard/shared/Packet.hh ****         RC_PACKET_TIMEOUT	= 0x8C
+  61:src/MightyBoard/shared/Packet.hh **** } ResponseCode;
+  62:src/MightyBoard/shared/Packet.hh **** 
+  63:src/MightyBoard/shared/Packet.hh **** /// Convenience function to accept old response codes
+  64:src/MightyBoard/shared/Packet.hh **** /// (missing the high bits) as well as the new forms.
+  65:src/MightyBoard/shared/Packet.hh **** inline bool rcCompare(uint8_t data, ResponseCode code) {
+  66:src/MightyBoard/shared/Packet.hh **** 	return (data & 0x7f) == (code & 0x7f);
+  67:src/MightyBoard/shared/Packet.hh **** }
+  68:src/MightyBoard/shared/Packet.hh **** 
+  69:src/MightyBoard/shared/Packet.hh **** class Packet {
+  70:src/MightyBoard/shared/Packet.hh **** protected:
+  71:src/MightyBoard/shared/Packet.hh **** 	// packet states
+  72:src/MightyBoard/shared/Packet.hh **** 	typedef enum {
+  73:src/MightyBoard/shared/Packet.hh **** 		PS_START,
+  74:src/MightyBoard/shared/Packet.hh **** 		PS_LEN,
+  75:src/MightyBoard/shared/Packet.hh **** 		PS_PAYLOAD,
+  76:src/MightyBoard/shared/Packet.hh **** 		PS_CRC,
+  77:src/MightyBoard/shared/Packet.hh **** 		PS_LAST
+  78:src/MightyBoard/shared/Packet.hh **** 	} PacketState;
+  79:src/MightyBoard/shared/Packet.hh **** 
+  80:src/MightyBoard/shared/Packet.hh ****     volatile uint8_t length; /// The current length of the payload (data[0] if raw packets)
+  81:src/MightyBoard/shared/Packet.hh ****     volatile uint8_t crc; /// The CRC of the current contents of the payload (data[-1] of raw packe
+  82:src/MightyBoard/shared/Packet.hh ****     volatile uint8_t payload[MAX_PACKET_PAYLOAD]; /// Data payload (starts at data[2] of raw packet
+  83:src/MightyBoard/shared/Packet.hh **** 	volatile uint8_t error_code; // Have any errors cropped up during processing?
+  84:src/MightyBoard/shared/Packet.hh **** 	volatile PacketState state;
+  85:src/MightyBoard/shared/Packet.hh **** 
+  86:src/MightyBoard/shared/Packet.hh **** 
+  87:src/MightyBoard/shared/Packet.hh **** 	/// Append a byte and update the CRC
+  88:src/MightyBoard/shared/Packet.hh **** 	void appendByte(uint8_t data);
+  89:src/MightyBoard/shared/Packet.hh **** 	/// Reset this packet to an empty state
+  90:src/MightyBoard/shared/Packet.hh **** 	void reset();
+  91:src/MightyBoard/shared/Packet.hh **** 
+  92:src/MightyBoard/shared/Packet.hh **** 	void error(uint8_t error_code_in) {
+  93:src/MightyBoard/shared/Packet.hh **** 		reset();
+  94:src/MightyBoard/shared/Packet.hh **** 		error_code = error_code_in;
+  95:src/MightyBoard/shared/Packet.hh **** 	}
+  96:src/MightyBoard/shared/Packet.hh **** public:
+  97:src/MightyBoard/shared/Packet.hh **** 	uint8_t getLength() const { return length; }
+  48              	 .loc 2 97 0
+  49 0006 0378     	 ldrb r3,[r0,#0]
+  50              	.LBE31:
+  51              	.LBE30:
+  68:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	if (from_host.getLength() == 0) {
+  52              	 .loc 1 68 0
+  53 0008 002B     	 cmp r3,#0
+  54 000a 72D0     	 beq .L9
+  69:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		return false;
+  70:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	} // drop through on a nop packet
+  71:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	uint8_t command = from_host.read8(0);
+  55              	 .loc 1 71 0
+  56 000c 0746     	 mov r7,r0
+  57 000e 4FF00001 	 mov r1,#0
+  58              	.LVL2:
+  59 0012 FFF7FEFF 	 bl _ZNK6Packet5read8Eh
+  60              	.LVL3:
+  61              	.LBB32:
+  72:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  73:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	if ((command & 0x70) == 0x70) {
+  62              	 .loc 1 73 0
+  63 0016 00F07003 	 and r3,r0,#112
+  64 001a 702B     	 cmp r3,#112
+  65 001c 6CD1     	 bne .L10
+  66              	.LBB33:
+  74:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		// This is a debug packet
+  75:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		if (command == CommandCode::DEBUG_ECHO) {
+  67              	 .loc 1 75 0
+  68 001e 7028     	 cmp r0,#112
+  69 0020 17D1     	 bne .L3
+  70              	.LBB34:
+  76:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			// We start from 1 so we can skip the debug command byte.
+  77:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			to_host.reset();
+  71              	 .loc 1 77 0
+  72 0022 2846     	 mov r0,r5
+  73              	.LVL4:
+  74 0024 FFF7FEFF 	 bl _ZN9OutPacket5resetEv
+  75              	.LVL5:
+  76              	.LBB35:
+  77              	.LBB36:
+  78              	.LBB37:
+  79              	 .loc 2 97 0
+  80 0028 2378     	 ldrb r3,[r4,#0]
+  81              	.LBE37:
+  82              	.LBE36:
+  78:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			for (int i = 1; i < from_host.getLength(); i++) {
+  83              	 .loc 1 78 0
+  84 002a 012B     	 cmp r3,#1
+  85 002c 67DD     	 ble .L11
+  86 002e 4FF00106 	 mov r6,#1
+  87              	.LVL6:
+  88              	.L4:
+  79:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				to_host.append8(from_host.read8(i));
+  89              	 .loc 1 79 0 discriminator 2
+  90 0032 3846     	 mov r0,r7
+  91 0034 F1B2     	 uxtb r1,r6
+  92 0036 FFF7FEFF 	 bl _ZNK6Packet5read8Eh
+  93 003a 0146     	 mov r1,r0
+  94 003c 2846     	 mov r0,r5
+  95 003e FFF7FEFF 	 bl _ZN9OutPacket7append8Eh
+  78:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			for (int i = 1; i < from_host.getLength(); i++) {
+  96              	 .loc 1 78 0 discriminator 2
+  97 0042 06F10106 	 add r6,r6,#1
+  98              	.LVL7:
+  99              	.LBB39:
+ 100              	.LBB38:
+ 101              	 .loc 2 97 0 discriminator 2
+ 102 0046 2378     	 ldrb r3,[r4,#0]
+ 103              	.LBE38:
+ 104              	.LBE39:
+  78:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			for (int i = 1; i < from_host.getLength(); i++) {
+ 105              	 .loc 1 78 0 discriminator 2
+ 106 0048 B342     	 cmp r3,r6
+ 107 004a F2DC     	 bgt .L4
+  80:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			}
+  81:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			return true;
+ 108              	 .loc 1 81 0
+ 109 004c 4FF00100 	 mov r0,#1
+ 110 0050 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 111              	.LVL8:
+ 112              	.L3:
+ 113              	.LBE35:
+ 114              	.LBE34:
+ 115              	.LBB41:
+  82:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		} else if (command == CommandCode::DEBUG_GENERATE_BAD_PACKET) {
+ 116              	 .loc 1 82 0
+ 117 0052 7128     	 cmp r0,#113
+ 118 0054 56D0     	 beq .L12
+ 119              	.LBB42:
+  83:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			// TODO
+  84:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		} else if (command == CommandCode::DEBUG_SIMULATE_BAD_PACKET) {
+ 120              	 .loc 1 84 0
+ 121 0056 7228     	 cmp r0,#114
+ 122 0058 57D0     	 beq .L13
+ 123              	.LBB43:
+  85:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			// TODO
+  86:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		}/* else if (command == CommandCode::DEBUG_SLAVE_PASSTHRU) {
+  87:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			// BLOCK: wait until sent
+  88:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			{
+  89:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				OutPacket& out = tool::getOutPacket();
+  90:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				InPacket& in = tool::getInPacket();
+  91:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				out.reset();
+  92:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				for (int i = 1; i < from_host.getLength(); i++) {
+  93:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 					out.append8(from_host.read8(i));
+  94:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				}
+  95:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+  96:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				Timeout acquire_lock_timeout;
+  97:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				acquire_lock_timeout.start(50000); // 50 ms timeout
+  98:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				while (!tool::getLock()) {
+  99:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 					if (acquire_lock_timeout.hasElapsed()) {
+ 100:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 						to_host.append8(RC_TOOL_LOCK_TIMEOUT);
+ 101:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 						Motherboard::getBoard().indicateError(ERR_SLAVE_LOCK_TIMEOUT);
+ 102:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 						return true;
+ 103:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 					}
+ 104:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				}
+ 105:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				Timeout t;
+ 106:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				t.start(50000); // 50 ms timeout
+ 107:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 
+ 108:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				tool::startTransaction();
+ 109:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				tool::releaseLock();
+ 110:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				while (!tool::isTransactionDone()) {
+ 111:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 					if (t.hasElapsed()) {
+ 112:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 						to_host.append8(RC_DOWNSTREAM_TIMEOUT);
+ 113:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 						Motherboard::getBoard().indicateError(ERR_SLAVE_PACKET_TIMEOUT);
+ 114:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 						return true;
+ 115:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 					}
+ 116:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 					tool::runToolSlice();
+ 117:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				}
+ 118:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				// Copy payload back. Start from 0-- we need the response code.
+ 119:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				for (int i = 0; i < in.getLength(); i++) {
+ 120:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 					to_host.append8(in.read8(i));
+ 121:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				}
+ 122:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			}
+ 123:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			return true;
+ 124:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		} */else if (command == CommandCode::DEBUG_CLEAR_COMMAND_QUEUE) {
+ 124              	 .loc 1 124 0
+ 125 005a 7428     	 cmp r0,#116
+ 126 005c 09D1     	 bne .L5
+ 125:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			command::reset();
+ 127              	 .loc 1 125 0
+ 128 005e FFF7FEFF 	 bl _ZN7command5resetEv
+ 129              	.LVL9:
+ 126:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			to_host.append8(RC_OK);
+ 130              	 .loc 1 126 0
+ 131 0062 2846     	 mov r0,r5
+ 132 0064 4FF08101 	 mov r1,#129
+ 133 0068 FFF7FEFF 	 bl _ZN9OutPacket7append8Eh
+ 127:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			return true;
+ 134              	 .loc 1 127 0
+ 135 006c 4FF00100 	 mov r0,#1
+ 136 0070 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 137              	.LVL10:
+ 138              	.L5:
+ 139              	.LBB44:
+ 128:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		} else if (command == CommandCode::DEBUG_SET_DEBUG_CODE ) {
+ 140              	 .loc 1 128 0
+ 141 0072 7628     	 cmp r0,#118
+ 142 0074 1AD1     	 bne .L6
+ 143              	.LBB45:
+ 129:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			uint8_t debug_register = from_host.read8(1);
+ 144              	 .loc 1 129 0
+ 145 0076 2046     	 mov r0,r4
+ 146              	.LVL11:
+ 147 0078 4FF00101 	 mov r1,#1
+ 148 007c FFF7FEFF 	 bl _ZNK6Packet5read8Eh
+ 149 0080 0646     	 mov r6,r0
+ 150              	.LVL12:
+ 130:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			uint8_t value = from_host.read8(2);
+ 151              	 .loc 1 130 0
+ 152 0082 2046     	 mov r0,r4
+ 153              	.LVL13:
+ 154 0084 4FF00201 	 mov r1,#2
+ 155 0088 FFF7FEFF 	 bl _ZNK6Packet5read8Eh
+ 156 008c 0146     	 mov r1,r0
+ 157              	.LVL14:
+ 131:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			if (debug_register == 0) {
+ 158              	 .loc 1 131 0
+ 159 008e 2EB9     	 cbnz r6,.L7
+ 132:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				Motherboard::getBoard().indicateError(value);
+ 160              	 .loc 1 132 0
+ 161 0090 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+ 162              	.LVL15:
+ 163 0094 C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+ 164 0098 FFF7FEFF 	 bl _ZN11Motherboard13indicateErrorEi
+ 165              	.LVL16:
+ 166              	.L7:
+ 133:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			}
+ 134:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			to_host.append8(RC_OK);
+ 167              	 .loc 1 134 0
+ 168 009c 2846     	 mov r0,r5
+ 169 009e 4FF08101 	 mov r1,#129
+ 170 00a2 FFF7FEFF 	 bl _ZN9OutPacket7append8Eh
+ 135:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		} else if (command == CommandCode::DEBUG_GET_DEBUG_CODE ) {
+ 136:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			uint8_t debug_register = from_host.read8(1);
+ 137:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			to_host.append8(RC_OK);
+ 138:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			if (debug_register == 0) {
+ 139:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				to_host.append8(Motherboard::getBoard().getCurrentError());
+ 140:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			} else {
+ 141:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				to_host.append8(0);
+ 142:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			}
+ 143:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		}
+ 144:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		return false;
+ 171              	 .loc 1 144 0
+ 172 00a6 4FF00000 	 mov r0,#0
+ 173 00aa F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 174              	.LVL17:
+ 175              	.L6:
+ 176              	.LBE45:
+ 177              	.LBB46:
+ 135:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		} else if (command == CommandCode::DEBUG_GET_DEBUG_CODE ) {
+ 178              	 .loc 1 135 0
+ 179 00ac 7728     	 cmp r0,#119
+ 180 00ae 2FD1     	 bne .L14
+ 181              	.LBB47:
+ 136:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			uint8_t debug_register = from_host.read8(1);
+ 182              	 .loc 1 136 0
+ 183 00b0 2046     	 mov r0,r4
+ 184              	.LVL18:
+ 185 00b2 4FF00101 	 mov r1,#1
+ 186 00b6 FFF7FEFF 	 bl _ZNK6Packet5read8Eh
+ 187 00ba 0446     	 mov r4,r0
+ 188              	.LVL19:
+ 137:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			to_host.append8(RC_OK);
+ 189              	 .loc 1 137 0
+ 190 00bc 2846     	 mov r0,r5
+ 191              	.LVL20:
+ 192 00be 4FF08101 	 mov r1,#129
+ 193 00c2 FFF7FEFF 	 bl _ZN9OutPacket7append8Eh
+ 138:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			if (debug_register == 0) {
+ 194              	 .loc 1 138 0
+ 195 00c6 64B9     	 cbnz r4,.L8
+ 139:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				to_host.append8(Motherboard::getBoard().getCurrentError());
+ 196              	 .loc 1 139 0
+ 197 00c8 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+ 198 00cc C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+ 199 00d0 FFF7FEFF 	 bl _ZN11Motherboard15getCurrentErrorEv
+ 200 00d4 0146     	 mov r1,r0
+ 201 00d6 2846     	 mov r0,r5
+ 202 00d8 FFF7FEFF 	 bl _ZN9OutPacket7append8Eh
+ 203              	 .loc 1 144 0
+ 204 00dc 4FF00000 	 mov r0,#0
+ 205 00e0 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 206              	.L8:
+ 141:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 				to_host.append8(0);
+ 207              	 .loc 1 141 0
+ 208 00e2 2846     	 mov r0,r5
+ 209 00e4 4FF00001 	 mov r1,#0
+ 210 00e8 FFF7FEFF 	 bl _ZN9OutPacket7append8Eh
+ 211              	 .loc 1 144 0
+ 212 00ec 4FF00000 	 mov r0,#0
+ 213 00f0 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 214              	.LVL21:
+ 215              	.L9:
+ 216              	.LBE47:
+ 217              	.LBE46:
+ 218              	.LBE44:
+ 219              	.LBE43:
+ 220              	.LBE42:
+ 221              	.LBE41:
+ 222              	.LBE33:
+ 223              	.LBE32:
+  69:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		return false;
+ 224              	 .loc 1 69 0
+ 225 00f2 4FF00000 	 mov r0,#0
+ 226              	.LVL22:
+ 227 00f6 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 228              	.LVL23:
+ 229              	.L10:
+ 230              	.LBB55:
+ 145:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	} else {
+ 146:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		// This is not a debug packet
+ 147:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		return false;
+ 231              	 .loc 1 147 0
+ 232 00f8 4FF00000 	 mov r0,#0
+ 233              	.LVL24:
+ 234 00fc F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 235              	.LVL25:
+ 236              	.L11:
+ 237              	.LBB54:
+ 238              	.LBB52:
+ 239              	.LBB40:
+  81:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 			return true;
+ 240              	 .loc 1 81 0
+ 241 00fe 4FF00100 	 mov r0,#1
+ 242 0102 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 243              	.LVL26:
+ 244              	.L12:
+ 245              	.LBE40:
+ 246              	.LBE52:
+ 247              	.LBB53:
+ 144:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 		return false;
+ 248              	 .loc 1 144 0
+ 249 0104 4FF00000 	 mov r0,#0
+ 250              	.LVL27:
+ 251 0108 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 252              	.LVL28:
+ 253              	.L13:
+ 254              	.LBB51:
+ 255 010a 4FF00000 	 mov r0,#0
+ 256              	.LVL29:
+ 257 010e F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 258              	.LVL30:
+ 259              	.L14:
+ 260              	.LBB50:
+ 261              	.LBB49:
+ 262              	.LBB48:
+ 263 0110 4FF00000 	 mov r0,#0
+ 264              	.LVL31:
+ 265              	.LBE48:
+ 266              	.LBE49:
+ 267              	.LBE50:
+ 268              	.LBE51:
+ 269              	.LBE53:
+ 270              	.LBE54:
+ 271              	.LBE55:
+ 272              	.LBE29:
+ 148:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** 	}
+ 149:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** }
+ 273              	 .loc 1 149 0
+ 274 0114 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 275              	 .cfi_endproc
+ 276              	.LFE101:
+ 278 0116 00BF     	 .section .text._GLOBAL__sub_I_debugSlaveOut,"ax",%progbits
+ 279              	 .align 2
+ 280              	 .thumb
+ 281              	 .thumb_func
+ 283              	_GLOBAL__sub_I_debugSlaveOut:
+ 284              	.LFB103:
+ 285              	 .loc 1 149 0
+ 286              	 .cfi_startproc
+ 287              	 
+ 288              	 
+ 289 0000 10B5     	 push {r4,lr}
+ 290              	.LCFI1:
+ 291              	 .cfi_def_cfa_offset 8
+ 292              	 .cfi_offset 14,-4
+ 293              	 .cfi_offset 4,-8
+ 294              	.LVL32:
+ 295              	.LBB58:
+ 296              	.LBB59:
+ 297              	 .file 3 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 298              	 .loc 3 49 0
+ 299 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 300 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 301 000a 4FF00001 	 mov r1,#0
+ 302 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 303              	 .loc 3 50 0
+ 304 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 305 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 306 001a 4FF00101 	 mov r1,#1
+ 307 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 308              	 .loc 3 51 0
+ 309 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 310 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 311 002a 4FF00201 	 mov r1,#2
+ 312 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 313              	 .loc 3 52 0
+ 314 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 315 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 316 003a 4FF00301 	 mov r1,#3
+ 317 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 318              	 .loc 3 53 0
+ 319 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 320 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 321 004a 4FF00401 	 mov r1,#4
+ 322 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 323              	 .loc 3 55 0
+ 324 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 325 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 326 005a 2046     	 mov r0,r4
+ 327 005c 4FF0FF01 	 mov r1,#255
+ 328 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 329              	 .file 4 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 330              	 .loc 4 76 0
+ 331 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 332 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 333 006c 2146     	 mov r1,r4
+ 334 006e 4FF00002 	 mov r2,#0
+ 335 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  61:src/MightyBoard/Motherboard/DebugPacketProcessor.cc **** OutPacket debugSlaveOut;
+ 336              	 .loc 1 61 0
+ 337 0076 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 338 007a C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 339 007e FFF7FEFF 	 bl _ZN9OutPacketC1Ev
+ 340              	.LBE59:
+ 341              	.LBE58:
+ 342              	 .loc 1 149 0
+ 343 0082 10BD     	 pop {r4,pc}
+ 344              	 .cfi_endproc
+ 345              	.LFE103:
+ 347              	 .section .init_array,"aw",%init_array
+ 348              	 .align 2
+ 349 0000 00000000 	 .word _GLOBAL__sub_I_debugSlaveOut(target1)
+ 350              	 .global debugSlaveOut
+ 351              	 .section .bss._ZL5Port0,"aw",%nobits
+ 352              	 .align 2
+ 353              	 .set .LANCHOR0,.+0
+ 356              	_ZL5Port0:
+ 357 0000 00       	 .space 1
+ 358 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 359              	 .align 2
+ 360              	 .set .LANCHOR1,.+0
+ 363              	_ZL5Port1:
+ 364 0000 00       	 .space 1
+ 365 0001 000000   	 .section .bss.debugSlaveOut,"aw",%nobits
+ 366              	 .align 2
+ 367              	 .set .LANCHOR7,.+0
+ 370              	debugSlaveOut:
+ 371 0000 00000000 	 .space 37
+ 371      00000000 
+ 371      00000000 
+ 371      00000000 
+ 371      00000000 
+ 372 0025 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 373              	 .align 2
+ 374              	 .set .LANCHOR3,.+0
+ 377              	_ZL5Port3:
+ 378 0000 00       	 .space 1
+ 379 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 380              	 .align 2
+ 381              	 .set .LANCHOR2,.+0
+ 384              	_ZL5Port2:
+ 385 0000 00       	 .space 1
+ 386 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 387              	 .align 2
+ 388              	 .set .LANCHOR4,.+0
+ 391              	_ZL5Port4:
+ 392 0000 00       	 .space 1
+ 393 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 394              	 .align 2
+ 395              	 .set .LANCHOR5,.+0
+ 398              	_ZL8NullPort:
+ 399 0000 00       	 .space 1
+ 400 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 401              	 .align 2
+ 402              	 .set .LANCHOR6,.+0
+ 405              	_ZL7NullPin:
+ 406 0000 00000000 	 .space 5
+ 406      00
+ 407 0005 000000   	 .text
+ 408              	.Letext0:
+ 409              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 410              	 .file 6 "src/MightyBoard/shared/Types.hh"
+ 411              	 .file 7 "src/MightyBoard/shared/Timeout.hh"
+ 412              	 .file 8 "src/MightyBoard/shared/TemperatureSensor.hh"
+ 413              	 .file 9 "src/MightyBoard/shared/PID.hh"
+ 414              	 .file 10 "src/MightyBoard/shared/Heater.hh"
+ 415              	 .file 11 "src/MightyBoard/shared/HeatingElement.hh"
+ 416              	 .file 12 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 417              	 .file 13 "src/MightyBoard/shared/CoolingFan.hh"
+ 418              	 .file 14 "src/MightyBoard/Motherboard/ExtruderBoard.hh"
+ 419              	 .file 15 "src/MightyBoard/Motherboard/Cutoff.hh"
+ 420              	 .file 16 "src/MightyBoard/Motherboard/Motherboard.hh"
+ 421              	 .file 17 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 422              	 .file 18 "src/MightyBoard/Motherboard/Command.hh"
+DEFINED SYMBOLS
+                            *ABS*:00000000 DebugPacketProcessor.cc
+    {standard input}:19     .text._Z18processDebugPacketRK8InPacketR9OutPacket:00000000 $t
+    {standard input}:24     .text._Z18processDebugPacketRK8InPacketR9OutPacket:00000000 _Z18processDebugPacketRK8InPacketR9OutPacket
+    {standard input}:279    .text._GLOBAL__sub_I_debugSlaveOut:00000000 $t
+    {standard input}:283    .text._GLOBAL__sub_I_debugSlaveOut:00000000 _GLOBAL__sub_I_debugSlaveOut
+    {standard input}:353    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:360    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:381    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:374    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:388    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:395    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:402    .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:367    .bss.debugSlaveOut:00000000 .LANCHOR7
+    {standard input}:348    .init_array:00000000 $d
+    {standard input}:370    .bss.debugSlaveOut:00000000 debugSlaveOut
+    {standard input}:352    .bss._ZL5Port0:00000000 $d
+    {standard input}:356    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:359    .bss._ZL5Port1:00000000 $d
+    {standard input}:363    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:366    .bss.debugSlaveOut:00000000 $d
+    {standard input}:373    .bss._ZL5Port3:00000000 $d
+    {standard input}:377    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:380    .bss._ZL5Port2:00000000 $d
+    {standard input}:384    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:387    .bss._ZL5Port4:00000000 $d
+    {standard input}:391    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:394    .bss._ZL8NullPort:00000000 $d
+    {standard input}:398    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:401    .bss._ZL7NullPin:00000000 $d
+    {standard input}:405    .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZNK6Packet5read8Eh
+_ZN9OutPacket5resetEv
+_ZN9OutPacket7append8Eh
+_ZN7command5resetEv
+_ZN11Motherboard11motherboardE
+_ZN11Motherboard13indicateErrorEi
+_ZN11Motherboard15getCurrentErrorEv
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth
+_ZN9OutPacketC1Ev

@@ -1,0 +1,1309 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "SoftI2cManager.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN14SoftI2cManagerC2Ev,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN14SoftI2cManagerC2Ev
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN14SoftI2cManagerC2Ev:
+  25              	.LFB61:
+  26              	 .file 1 "src/MightyBoard/Motherboard/SoftI2cManager.cc"
+   1:src/MightyBoard/Motherboard/SoftI2cManager.cc **** /* Copyright 2011 by Alison Leonard alison@makerbot.com
+   2:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * adapted for avr and MCP4018 digital i2c pot from:
+   3:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * Arduino SoftI2cManager Library
+   4:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * Copyright (C) 2009 by William Greiman
+   5:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  *
+   6:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  *
+   7:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * This program is free software: you can redistribute it and/or modify
+   8:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * it under the terms of the GNU General Public License as published by
+   9:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * the Free Software Foundation, either version 3 of the License, or
+  10:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * (at your option) any later version.
+  11:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  *
+  12:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * This program is distributed in the hope that it will be useful,
+  13:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  14:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  15:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * GNU General Public License for more details.
+  16:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  *
+  17:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * You should have received a copy of the GNU General Public License
+  18:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  19:src/MightyBoard/Motherboard/SoftI2cManager.cc ****  */
+  20:src/MightyBoard/Motherboard/SoftI2cManager.cc **** 
+  21:src/MightyBoard/Motherboard/SoftI2cManager.cc **** #include "SoftI2cManager.hh"
+  22:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //#include <util/delay.h>
+  23:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //#include <util/atomic.h>
+  24:src/MightyBoard/Motherboard/SoftI2cManager.cc **** 
+  25:src/MightyBoard/Motherboard/SoftI2cManager.cc **** #include "Delay.hh"
+  26:src/MightyBoard/Motherboard/SoftI2cManager.cc **** extern "C" {
+  27:src/MightyBoard/Motherboard/SoftI2cManager.cc **** #include "comm.h"
+  28:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+  29:src/MightyBoard/Motherboard/SoftI2cManager.cc **** 
+  30:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // initiate static i2cManager instance
+  31:src/MightyBoard/Motherboard/SoftI2cManager.cc **** SoftI2cManager SoftI2cManager::i2cManager;
+  32:src/MightyBoard/Motherboard/SoftI2cManager.cc **** 
+  33:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // constructor
+  34:src/MightyBoard/Motherboard/SoftI2cManager.cc **** SoftI2cManager::SoftI2cManager():
+  27              	 .loc 1 34 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 70B5     	 push {r4,r5,r6,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 16
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 6,-8
+  37              	 .cfi_offset 5,-12
+  38              	 .cfi_offset 4,-16
+  39 0002 90B0     	 sub sp,sp,#64
+  40              	.LCFI1:
+  41              	 .cfi_def_cfa_offset 80
+  42 0004 0646     	 mov r6,r0
+  43              	 .loc 1 34 0
+  44 0006 0446     	 mov r4,r0
+  45 0008 00F11405 	 add r5,r0,#20
+  46              	.LVL1:
+  47              	.L2:
+  48              	.LBB2:
+  35:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     numPins(STEPPER_COUNT),
+  36:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sclPin(POTS_SCL)
+  49              	 .loc 1 36 0 discriminator 2
+  50 000c 2046     	 mov r0,r4
+  51 000e FFF7FEFF 	 bl _ZN3PinC1Ev
+  52 0012 04F10504 	 add r4,r4,#5
+  53 0016 AC42     	 cmp r4,r5
+  54 0018 F8D1     	 bne .L2
+  55              	 .loc 1 36 0 is_stmt 0 discriminator 3
+  56 001a 6846     	 mov r0,sp
+  57 001c 4FF0FF01 	 mov r1,#255
+  58 0020 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  59 0024 06F11404 	 add r4,r6,#20
+  60 0028 2046     	 mov r0,r4
+  61 002a 6946     	 mov r1,sp
+  62 002c 4FF0FF02 	 mov r2,#255
+  63 0030 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  64 0034 4FF00403 	 mov r3,#4
+  65 0038 7376     	 strb r3,[r6,#25]
+  37:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+  38:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sdaPins[0] = X_POT_PIN;
+  66              	 .loc 1 38 0 is_stmt 1 discriminator 3
+  67 003a 03A8     	 add r0,sp,#12
+  68 003c 4FF0FF01 	 mov r1,#255
+  69 0040 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  70 0044 01A8     	 add r0,sp,#4
+  71 0046 03A9     	 add r1,sp,#12
+  72 0048 4FF0FF02 	 mov r2,#255
+  73 004c FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  74 0050 0198     	 ldr r0,[sp,#4]
+  75 0052 3060     	 str r0,[r6,#0]
+  76 0054 9DF80830 	 ldrb r3,[sp,#8]
+  77 0058 3371     	 strb r3,[r6,#4]
+  39:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sdaPins[1] = Y_POT_PIN;
+  78              	 .loc 1 39 0 discriminator 3
+  79 005a 06A8     	 add r0,sp,#24
+  80 005c 4FF0FF01 	 mov r1,#255
+  81 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  82 0064 04A8     	 add r0,sp,#16
+  83 0066 06A9     	 add r1,sp,#24
+  84 0068 4FF0FF02 	 mov r2,#255
+  85 006c FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  86 0070 0498     	 ldr r0,[sp,#16]
+  87 0072 C6F80500 	 str r0,[r6,#5]
+  88 0076 9DF81430 	 ldrb r3,[sp,#20]
+  89 007a 7372     	 strb r3,[r6,#9]
+  40:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sdaPins[2] = Z_POT_PIN;
+  90              	 .loc 1 40 0 discriminator 3
+  91 007c 09A8     	 add r0,sp,#36
+  92 007e 4FF0FF01 	 mov r1,#255
+  93 0082 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  94 0086 07A8     	 add r0,sp,#28
+  95 0088 09A9     	 add r1,sp,#36
+  96 008a 4FF0FF02 	 mov r2,#255
+  97 008e FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  98 0092 0798     	 ldr r0,[sp,#28]
+  99 0094 C6F80A00 	 str r0,[r6,#10]
+ 100 0098 9DF82030 	 ldrb r3,[sp,#32]
+ 101 009c B373     	 strb r3,[r6,#14]
+  41:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sdaPins[3] = A_POT_PIN;
+ 102              	 .loc 1 41 0 discriminator 3
+ 103 009e 0CA8     	 add r0,sp,#48
+ 104 00a0 4FF0FF01 	 mov r1,#255
+ 105 00a4 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 106 00a8 0AA8     	 add r0,sp,#40
+ 107 00aa 0CA9     	 add r1,sp,#48
+ 108 00ac 4FF0FF02 	 mov r2,#255
+ 109 00b0 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 110 00b4 0A98     	 ldr r0,[sp,#40]
+ 111 00b6 C6F80F00 	 str r0,[r6,#15]
+ 112 00ba 9DF82C30 	 ldrb r3,[sp,#44]
+ 113 00be F374     	 strb r3,[r6,#19]
+  42:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sdaPins[4] = B_POT_PIN;
+ 114              	 .loc 1 42 0 discriminator 3
+ 115 00c0 0FA8     	 add r0,sp,#60
+ 116 00c2 4FF0FF01 	 mov r1,#255
+ 117 00c6 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 118 00ca 0DA8     	 add r0,sp,#52
+ 119 00cc 0FA9     	 add r1,sp,#60
+ 120 00ce 4FF0FF02 	 mov r2,#255
+ 121 00d2 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 122 00d6 0D98     	 ldr r0,[sp,#52]
+ 123 00d8 7061     	 str r0,[r6,#20]
+ 124 00da 9DF83830 	 ldrb r3,[sp,#56]
+ 125 00de 3376     	 strb r3,[r6,#24]
+ 126              	.LBE2:
+  43:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     
+  44:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+ 127              	 .loc 1 44 0 discriminator 3
+ 128 00e0 3046     	 mov r0,r6
+ 129 00e2 10B0     	 add sp,sp,#64
+ 130 00e4 70BD     	 pop {r4,r5,r6,pc}
+ 131              	 .cfi_endproc
+ 132              	.LFE61:
+ 134 00e6 00BF     	 .section .text._ZN14SoftI2cManager4initEv,"ax",%progbits
+ 135              	 .align 2
+ 136              	 .global _ZN14SoftI2cManager4initEv
+ 137              	 .thumb
+ 138              	 .thumb_func
+ 140              	_ZN14SoftI2cManager4initEv:
+ 141              	.LFB63:
+  45:src/MightyBoard/Motherboard/SoftI2cManager.cc **** 
+  46:src/MightyBoard/Motherboard/SoftI2cManager.cc **** 
+  47:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // init pins and set bus high
+  48:src/MightyBoard/Motherboard/SoftI2cManager.cc **** void SoftI2cManager::init()
+  49:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+ 142              	 .loc 1 49 0
+ 143              	 .cfi_startproc
+ 144              	 
+ 145              	 
+ 146              	.LVL2:
+ 147 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 148              	.LCFI2:
+ 149              	 .cfi_def_cfa_offset 24
+ 150              	 .cfi_offset 14,-4
+ 151              	 .cfi_offset 8,-8
+ 152              	 .cfi_offset 7,-12
+ 153              	 .cfi_offset 6,-16
+ 154              	 .cfi_offset 5,-20
+ 155              	 .cfi_offset 4,-24
+ 156 0004 0646     	 mov r6,r0
+ 157              	.LVL3:
+ 158              	.LBB9:
+ 159              	.LBB10:
+  50:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     for (uint8_t i = 0; i < numPins; i++)
+ 160              	 .loc 1 50 0
+ 161 0006 437E     	 ldrb r3,[r0,#25]
+ 162 0008 C3B1     	 cbz r3,.L6
+ 163 000a 4FF00004 	 mov r4,#0
+  51:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     {
+  52:src/MightyBoard/Motherboard/SoftI2cManager.cc ****         sdaPins[i].setDirection(true);
+ 164              	 .loc 1 52 0
+ 165 000e 4FF00108 	 mov r8,#1
+ 166              	.LVL4:
+ 167              	.L8:
+ 168              	 .loc 1 52 0 is_stmt 0 discriminator 2
+ 169 0012 04EB8407 	 add r7,r4,r4,lsl#2
+ 170 0016 F519     	 adds r5,r6,r7
+ 171 0018 2846     	 mov r0,r5
+ 172 001a 4146     	 mov r1,r8
+ 173 001c FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 174              	.LVL5:
+ 175              	.LBB11:
+ 176              	.LBB12:
+ 177              	 .file 2 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 178              	 .loc 2 35 0 is_stmt 1 discriminator 2
+ 179 0020 6B78     	 ldrb r3,[r5,#1]
+ 180 0022 2BB9     	 cbnz r3,.L7
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 181              	 .loc 2 44 0
+ 182 0024 A978     	 ldrb r1,[r5,#2]
+ 183 0026 F05D     	 ldrb r0,[r6,r7]
+ 184 0028 08FA01F1 	 lsl r1,r8,r1
+ 185 002c FFF7FEFF 	 bl GPIO_SetValue
+ 186              	.L7:
+ 187              	.LBE12:
+ 188              	.LBE11:
+  50:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     for (uint8_t i = 0; i < numPins; i++)
+ 189              	 .loc 1 50 0 discriminator 2
+ 190 0030 04F10104 	 add r4,r4,#1
+ 191 0034 E4B2     	 uxtb r4,r4
+ 192              	.LVL6:
+ 193 0036 737E     	 ldrb r3,[r6,#25]
+ 194 0038 A342     	 cmp r3,r4
+ 195 003a EAD8     	 bhi .L8
+ 196              	.LVL7:
+ 197              	.L6:
+ 198              	.LBE10:
+  53:src/MightyBoard/Motherboard/SoftI2cManager.cc ****         sdaPins[i].setValue(true);
+  54:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     }
+  55:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sclPin.setDirection(true);
+ 199              	 .loc 1 55 0
+ 200 003c 06F11400 	 add r0,r6,#20
+ 201 0040 4FF00101 	 mov r1,#1
+ 202 0044 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 203              	.LVL8:
+ 204              	.LBB13:
+ 205              	.LBB14:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 206              	 .loc 2 35 0
+ 207 0048 737D     	 ldrb r3,[r6,#21]
+ 208 004a 3BB9     	 cbnz r3,.L5
+ 209              	 .loc 2 44 0
+ 210 004c B37D     	 ldrb r3,[r6,#22]
+ 211 004e 307D     	 ldrb r0,[r6,#20]
+ 212 0050 4FF00101 	 mov r1,#1
+ 213 0054 01FA03F1 	 lsl r1,r1,r3
+ 214 0058 FFF7FEFF 	 bl GPIO_SetValue
+ 215              	.L5:
+ 216 005c BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 217              	.LBE14:
+ 218              	.LBE13:
+ 219              	.LBE9:
+ 220              	 .cfi_endproc
+ 221              	.LFE63:
+ 223              	 .section .text._ZN14SoftI2cManager4readEbRK3Pin,"ax",%progbits
+ 224              	 .align 2
+ 225              	 .global _ZN14SoftI2cManager4readEbRK3Pin
+ 226              	 .thumb
+ 227              	 .thumb_func
+ 229              	_ZN14SoftI2cManager4readEbRK3Pin:
+ 230              	.LFB64:
+  56:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sclPin.setValue(true);
+  57:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     
+  58:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+  59:src/MightyBoard/Motherboard/SoftI2cManager.cc **** 
+  60:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //------------------------------------------------------------------------------
+  61:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // read a byte and send Ack if last is false else Nak to terminate read
+  62:src/MightyBoard/Motherboard/SoftI2cManager.cc **** uint8_t SoftI2cManager::read(bool last, const Pin &sdaPin)
+  63:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+ 231              	 .loc 1 63 0
+ 232              	 .cfi_startproc
+ 233              	 
+ 234              	 
+ 235              	.LVL9:
+ 236 0000 2DE9F843 	 push {r3,r4,r5,r6,r7,r8,r9,lr}
+ 237              	.LCFI3:
+ 238              	 .cfi_def_cfa_offset 32
+ 239              	 .cfi_offset 14,-4
+ 240              	 .cfi_offset 9,-8
+ 241              	 .cfi_offset 8,-12
+ 242              	 .cfi_offset 7,-16
+ 243              	 .cfi_offset 6,-20
+ 244              	 .cfi_offset 5,-24
+ 245              	 .cfi_offset 4,-28
+ 246              	 .cfi_offset 3,-32
+ 247 0004 0446     	 mov r4,r0
+ 248 0006 8946     	 mov r9,r1
+ 249 0008 1746     	 mov r7,r2
+ 250              	.LVL10:
+ 251              	.LBB33:
+ 252              	.LBB34:
+ 253              	.LBB35:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 254              	 .loc 2 35 0
+ 255 000a 5378     	 ldrb r3,[r2,#1]
+ 256 000c 3BB9     	 cbnz r3,.L12
+ 257              	 .loc 2 44 0
+ 258 000e 9378     	 ldrb r3,[r2,#2]
+ 259 0010 1078     	 ldrb r0,[r2,#0]
+ 260              	.LVL11:
+ 261 0012 4FF00101 	 mov r1,#1
+ 262              	.LVL12:
+ 263 0016 01FA03F1 	 lsl r1,r1,r3
+ 264 001a FFF7FEFF 	 bl GPIO_SetValue
+ 265              	.LVL13:
+ 266              	.L12:
+ 267              	.LBE35:
+ 268              	.LBE34:
+  64:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   uint8_t b = 0;
+  65:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   // make sure pullup enabled
+  66:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sdaPin.setValue(true);
+  67:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sdaPin.setDirection(false);
+ 269              	 .loc 1 67 0
+ 270 001e 3846     	 mov r0,r7
+ 271 0020 4FF00001 	 mov r1,#0
+ 272 0024 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 273              	.LVL14:
+ 274 0028 4FF00806 	 mov r6,#8
+  64:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   uint8_t b = 0;
+ 275              	 .loc 1 64 0
+ 276 002c 4FF00005 	 mov r5,#0
+ 277              	.LBB36:
+ 278              	.LBB37:
+ 279              	.LBB38:
+ 280              	 .loc 2 44 0
+ 281 0030 4FF00108 	 mov r8,#1
+ 282              	.LVL15:
+ 283              	.L16:
+ 284              	.LBE38:
+ 285              	.LBE37:
+  68:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   // read byte
+  69:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   for (uint8_t i = 0; i < 8; i++) {
+  70:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     // don't change this loop unless you verify the change with a scope
+  71:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     b <<= 1;
+ 286              	 .loc 1 71 0
+ 287 0034 4FEA4505 	 lsl r5,r5,#1
+ 288 0038 EDB2     	 uxtb r5,r5
+ 289              	.LVL16:
+ 290              	.LBB40:
+ 291              	.LBB39:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 292              	 .loc 2 35 0
+ 293 003a 637D     	 ldrb r3,[r4,#21]
+ 294 003c 2BB9     	 cbnz r3,.L13
+ 295              	 .loc 2 44 0
+ 296 003e A17D     	 ldrb r1,[r4,#22]
+ 297 0040 207D     	 ldrb r0,[r4,#20]
+ 298 0042 08FA01F1 	 lsl r1,r8,r1
+ 299 0046 FFF7FEFF 	 bl GPIO_SetValue
+ 300              	.L13:
+ 301              	.LVL17:
+ 302              	.LBE39:
+ 303              	.LBE40:
+ 304              	.LBB41:
+ 305              	.LBB42:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 306              	 .loc 2 28 0
+ 307 004a 7B78     	 ldrb r3,[r7,#1]
+ 308 004c 5BB9     	 cbnz r3,.L14
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 309              	 .loc 2 30 0
+ 310 004e 3878     	 ldrb r0,[r7,#0]
+ 311 0050 FFF7FEFF 	 bl FIO_ReadValue
+ 312 0054 BB78     	 ldrb r3,[r7,#2]
+ 313 0056 08FA03F3 	 lsl r3,r8,r3
+ 314              	.LBE42:
+ 315              	.LBE41:
+  72:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //    _delay_us(I2C_DELAY_USEC);
+  73:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sclPin.setValue(true);
+  74:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     if (sdaPin.getValue()) b |= 1;
+ 316              	 .loc 1 74 0
+ 317 005a 0340     	 ands r3,r3,r0
+ 318 005c 13F0FF0F 	 tst r3,#255
+ 319 0060 18BF     	 it ne
+ 320 0062 45F00105 	 orrne r5,r5,#1
+ 321              	.LVL18:
+ 322              	.L14:
+ 323              	.LBB43:
+ 324              	.LBB44:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 325              	 .loc 2 35 0
+ 326 0066 637D     	 ldrb r3,[r4,#21]
+ 327 0068 2BB9     	 cbnz r3,.L15
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+ 328              	 .loc 2 48 0
+ 329 006a A17D     	 ldrb r1,[r4,#22]
+ 330 006c 207D     	 ldrb r0,[r4,#20]
+ 331 006e 08FA01F1 	 lsl r1,r8,r1
+ 332 0072 FFF7FEFF 	 bl GPIO_ClearValue
+ 333              	.L15:
+ 334 0076 06F1FF36 	 add r6,r6,#-1
+ 335 007a F6B2     	 uxtb r6,r6
+ 336              	.LBE44:
+ 337              	.LBE43:
+  69:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   for (uint8_t i = 0; i < 8; i++) {
+ 338              	 .loc 1 69 0
+ 339 007c 002E     	 cmp r6,#0
+ 340 007e D9D1     	 bne .L16
+ 341              	.LBE36:
+  75:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     sclPin.setValue(false);
+  76:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   }
+  77:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   // send Ack or Nak
+  78:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sdaPin.setDirection(true);
+ 342              	 .loc 1 78 0
+ 343 0080 3846     	 mov r0,r7
+ 344 0082 4FF00101 	 mov r1,#1
+ 345 0086 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 346              	.LVL19:
+ 347              	.LBB45:
+ 348              	.LBB46:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 349              	 .loc 2 35 0
+ 350 008a 7B78     	 ldrb r3,[r7,#1]
+ 351 008c 9BB9     	 cbnz r3,.L17
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+ 352              	 .loc 2 41 0
+ 353 008e B9F1000F 	 cmp r9,#0
+ 354 0092 08D0     	 beq .L18
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 355              	 .loc 2 44 0
+ 356 0094 BB78     	 ldrb r3,[r7,#2]
+ 357 0096 3878     	 ldrb r0,[r7,#0]
+ 358 0098 4FF00101 	 mov r1,#1
+ 359 009c 01FA03F1 	 lsl r1,r1,r3
+ 360 00a0 FFF7FEFF 	 bl GPIO_SetValue
+ 361 00a4 07E0     	 b .L17
+ 362              	.L18:
+ 363              	 .loc 2 48 0
+ 364 00a6 BB78     	 ldrb r3,[r7,#2]
+ 365 00a8 3878     	 ldrb r0,[r7,#0]
+ 366 00aa 4FF00101 	 mov r1,#1
+ 367 00ae 01FA03F1 	 lsl r1,r1,r3
+ 368 00b2 FFF7FEFF 	 bl GPIO_ClearValue
+ 369              	.L17:
+ 370              	.LVL20:
+ 371              	.LBE46:
+ 372              	.LBE45:
+ 373              	.LBB47:
+ 374              	.LBB48:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 375              	 .loc 2 35 0
+ 376 00b6 637D     	 ldrb r3,[r4,#21]
+ 377 00b8 8BB9     	 cbnz r3,.L19
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 378              	 .loc 2 44 0
+ 379 00ba A37D     	 ldrb r3,[r4,#22]
+ 380 00bc 207D     	 ldrb r0,[r4,#20]
+ 381 00be 4FF00101 	 mov r1,#1
+ 382 00c2 01FA03F1 	 lsl r1,r1,r3
+ 383 00c6 FFF7FEFF 	 bl GPIO_SetValue
+ 384              	.LVL21:
+ 385              	.LBE48:
+ 386              	.LBE47:
+ 387              	.LBB49:
+ 388              	.LBB50:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 389              	 .loc 2 35 0
+ 390 00ca 637D     	 ldrb r3,[r4,#21]
+ 391 00cc 3BB9     	 cbnz r3,.L19
+ 392              	 .loc 2 48 0
+ 393 00ce A37D     	 ldrb r3,[r4,#22]
+ 394 00d0 207D     	 ldrb r0,[r4,#20]
+ 395 00d2 4FF00101 	 mov r1,#1
+ 396 00d6 01FA03F1 	 lsl r1,r1,r3
+ 397 00da FFF7FEFF 	 bl GPIO_ClearValue
+ 398              	.LVL22:
+ 399              	.L19:
+ 400              	.LBE50:
+ 401              	.LBE49:
+ 402              	.LBB51:
+ 403              	.LBB52:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 404              	 .loc 2 35 0
+ 405 00de 7B78     	 ldrb r3,[r7,#1]
+ 406 00e0 3BB9     	 cbnz r3,.L20
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 407              	 .loc 2 44 0
+ 408 00e2 BB78     	 ldrb r3,[r7,#2]
+ 409 00e4 3878     	 ldrb r0,[r7,#0]
+ 410 00e6 4FF00101 	 mov r1,#1
+ 411 00ea 01FA03F1 	 lsl r1,r1,r3
+ 412 00ee FFF7FEFF 	 bl GPIO_SetValue
+ 413              	.L20:
+ 414              	.LBE52:
+ 415              	.LBE51:
+ 416              	.LBE33:
+  79:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sdaPin.setValue(last);
+  80:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sclPin.setValue(true);
+  81:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //  _delay_us(I2C_DELAY_USEC);
+  82:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sclPin.setValue(false);
+  83:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sdaPin.setValue(true);
+  84:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     
+  85:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   return b;
+  86:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+ 417              	 .loc 1 86 0
+ 418 00f2 2846     	 mov r0,r5
+ 419 00f4 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 420              	 .cfi_endproc
+ 421              	.LFE64:
+ 423              	 .section .text._ZN14SoftI2cManager4stopEv,"ax",%progbits
+ 424              	 .align 2
+ 425              	 .global _ZN14SoftI2cManager4stopEv
+ 426              	 .thumb
+ 427              	 .thumb_func
+ 429              	_ZN14SoftI2cManager4stopEv:
+ 430              	.LFB67:
+  87:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //------------------------------------------------------------------------------
+  88:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // send new address and read/write without stop
+  89:src/MightyBoard/Motherboard/SoftI2cManager.cc **** uint8_t SoftI2cManager::restart(uint8_t addressRW, const Pin &sdaPin)
+  90:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+  91:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sclPin.setValue(true);
+  92:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   return start(addressRW, sdaPin);
+  93:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+  94:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //------------------------------------------------------------------------------
+  95:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // issue a start condition for i2c address with read/write bit
+  96:src/MightyBoard/Motherboard/SoftI2cManager.cc **** uint8_t SoftI2cManager::start(uint8_t addressRW, const Pin &sdaPin)
+  97:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+  98:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     for(uint8_t i = 0; i < numPins; i++)
+  99:src/MightyBoard/Motherboard/SoftI2cManager.cc ****         sdaPins[i].setValue(false);
+ 100:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //  _delay_us(I2C_DELAY_USEC);
+ 101:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   sclPin.setValue(false);
+ 102:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   return write(addressRW, sdaPin);
+ 103:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+ 104:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //------------------------------------------------------------------------------
+ 105:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // issue a stop condition
+ 106:src/MightyBoard/Motherboard/SoftI2cManager.cc **** void SoftI2cManager::stop()
+ 107:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+ 431              	 .loc 1 107 0
+ 432              	 .cfi_startproc
+ 433              	 
+ 434              	 
+ 435              	.LVL23:
+ 436 0000 70B5     	 push {r4,r5,r6,lr}
+ 437              	.LCFI4:
+ 438              	 .cfi_def_cfa_offset 16
+ 439              	 .cfi_offset 14,-4
+ 440              	 .cfi_offset 6,-8
+ 441              	 .cfi_offset 5,-12
+ 442              	 .cfi_offset 4,-16
+ 443 0002 0546     	 mov r5,r0
+ 444              	.LVL24:
+ 445              	.LBB59:
+ 446              	.LBB60:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 447              	 .loc 2 35 0
+ 448 0004 437D     	 ldrb r3,[r0,#21]
+ 449 0006 3BB9     	 cbnz r3,.L23
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 450              	 .loc 2 44 0
+ 451 0008 837D     	 ldrb r3,[r0,#22]
+ 452 000a 007D     	 ldrb r0,[r0,#20]
+ 453              	.LVL25:
+ 454 000c 4FF00101 	 mov r1,#1
+ 455 0010 01FA03F1 	 lsl r1,r1,r3
+ 456 0014 FFF7FEFF 	 bl GPIO_SetValue
+ 457              	.L23:
+ 458              	.LVL26:
+ 459              	.LBE60:
+ 460              	.LBE59:
+ 461              	.LBB61:
+ 108:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //  _delay_us(I2C_DELAY_USEC);
+ 109:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    sclPin.setValue(true);  
+ 110:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //  _delay_us(I2C_DELAY_USEC);
+ 111:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     for(uint8_t i = 0; i < numPins; i++)
+ 462              	 .loc 1 111 0 discriminator 1
+ 463 0018 6B7E     	 ldrb r3,[r5,#25]
+ 464 001a A3B1     	 cbz r3,.L22
+ 465              	 .loc 1 111 0 is_stmt 0
+ 466 001c 4FF00004 	 mov r4,#0
+ 467              	.LBB62:
+ 468              	.LBB63:
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 469              	 .loc 2 44 0 is_stmt 1
+ 470 0020 4FF00106 	 mov r6,#1
+ 471              	.LVL27:
+ 472              	.L26:
+ 473              	.LBE63:
+ 474              	.LBE62:
+ 112:src/MightyBoard/Motherboard/SoftI2cManager.cc ****         sdaPins[i].setValue(true);  
+ 475              	 .loc 1 112 0 discriminator 2
+ 476 0024 04EB8403 	 add r3,r4,r4,lsl#2
+ 477 0028 EA18     	 adds r2,r5,r3
+ 478              	.LVL28:
+ 479              	.LBB65:
+ 480              	.LBB64:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 481              	 .loc 2 35 0 discriminator 2
+ 482 002a 5178     	 ldrb r1,[r2,#1]
+ 483 002c 29B9     	 cbnz r1,.L25
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 484              	 .loc 2 44 0
+ 485 002e 9178     	 ldrb r1,[r2,#2]
+ 486 0030 E85C     	 ldrb r0,[r5,r3]
+ 487 0032 06FA01F1 	 lsl r1,r6,r1
+ 488 0036 FFF7FEFF 	 bl GPIO_SetValue
+ 489              	.LVL29:
+ 490              	.L25:
+ 491              	.LBE64:
+ 492              	.LBE65:
+ 111:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     for(uint8_t i = 0; i < numPins; i++)
+ 493              	 .loc 1 111 0 discriminator 2
+ 494 003a 04F10104 	 add r4,r4,#1
+ 495 003e E4B2     	 uxtb r4,r4
+ 496              	.LVL30:
+ 497 0040 6B7E     	 ldrb r3,[r5,#25]
+ 498 0042 A342     	 cmp r3,r4
+ 499 0044 EED8     	 bhi .L26
+ 500              	.LVL31:
+ 501              	.L22:
+ 502 0046 70BD     	 pop {r4,r5,r6,pc}
+ 503              	.LBE61:
+ 504              	 .cfi_endproc
+ 505              	.LFE67:
+ 507              	 .section .text._ZN14SoftI2cManager5writeEhRK3Pin,"ax",%progbits
+ 508              	 .align 2
+ 509              	 .global _ZN14SoftI2cManager5writeEhRK3Pin
+ 510              	 .thumb
+ 511              	 .thumb_func
+ 513              	_ZN14SoftI2cManager5writeEhRK3Pin:
+ 514              	.LFB68:
+ 113:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //  _delay_us(I2C_DELAY_USEC);
+ 114:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+ 115:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //------------------------------------------------------------------------------
+ 116:src/MightyBoard/Motherboard/SoftI2cManager.cc **** // write byte and return true for Ack or false for Nak
+ 117:src/MightyBoard/Motherboard/SoftI2cManager.cc **** bool SoftI2cManager::write(uint8_t b, const Pin &sdaPin)
+ 118:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+ 515              	 .loc 1 118 0
+ 516              	 .cfi_startproc
+ 517              	 
+ 518              	 
+ 519              	.LVL32:
+ 520 0000 2DE9F843 	 push {r3,r4,r5,r6,r7,r8,r9,lr}
+ 521              	.LCFI5:
+ 522              	 .cfi_def_cfa_offset 32
+ 523              	 .cfi_offset 14,-4
+ 524              	 .cfi_offset 9,-8
+ 525              	 .cfi_offset 8,-12
+ 526              	 .cfi_offset 7,-16
+ 527              	 .cfi_offset 6,-20
+ 528              	 .cfi_offset 5,-24
+ 529              	 .cfi_offset 4,-28
+ 530              	 .cfi_offset 3,-32
+ 531 0004 0446     	 mov r4,r0
+ 532 0006 8946     	 mov r9,r1
+ 533 0008 1546     	 mov r5,r2
+ 534              	.LVL33:
+ 535              	 .loc 1 118 0
+ 536 000a 4FF00807 	 mov r7,#8
+ 119:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   // write byte
+ 120:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   for (uint8_t m = 0X80; m != 0; m >>= 1) {
+ 537              	 .loc 1 120 0
+ 538 000e 4FF08006 	 mov r6,#128
+ 539              	.LBB82:
+ 540              	.LBB83:
+ 541              	.LBB84:
+ 542              	.LBB85:
+ 543              	 .loc 2 48 0
+ 544 0012 4FF00108 	 mov r8,#1
+ 545              	.LVL34:
+ 546              	.L32:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 547              	 .loc 2 35 0 discriminator 2
+ 548 0016 6B78     	 ldrb r3,[r5,#1]
+ 549 0018 7BB9     	 cbnz r3,.L29
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+ 550              	 .loc 2 41 0
+ 551 001a 16EA090F 	 tst r6,r9
+ 552 001e 06D0     	 beq .L30
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 553              	 .loc 2 44 0
+ 554 0020 A978     	 ldrb r1,[r5,#2]
+ 555 0022 2878     	 ldrb r0,[r5,#0]
+ 556 0024 08FA01F1 	 lsl r1,r8,r1
+ 557 0028 FFF7FEFF 	 bl GPIO_SetValue
+ 558 002c 05E0     	 b .L29
+ 559              	.L30:
+ 560              	 .loc 2 48 0
+ 561 002e A978     	 ldrb r1,[r5,#2]
+ 562 0030 2878     	 ldrb r0,[r5,#0]
+ 563 0032 08FA01F1 	 lsl r1,r8,r1
+ 564 0036 FFF7FEFF 	 bl GPIO_ClearValue
+ 565              	.L29:
+ 566              	.LVL35:
+ 567              	.LBE85:
+ 568              	.LBE84:
+ 569              	.LBB86:
+ 570              	.LBB87:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 571              	 .loc 2 35 0 discriminator 2
+ 572 003a 637D     	 ldrb r3,[r4,#21]
+ 573 003c 6BB9     	 cbnz r3,.L31
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 574              	 .loc 2 44 0
+ 575 003e A17D     	 ldrb r1,[r4,#22]
+ 576 0040 207D     	 ldrb r0,[r4,#20]
+ 577 0042 08FA01F1 	 lsl r1,r8,r1
+ 578 0046 FFF7FEFF 	 bl GPIO_SetValue
+ 579              	.LVL36:
+ 580              	.LBE87:
+ 581              	.LBE86:
+ 582              	.LBB88:
+ 583              	.LBB89:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 584              	 .loc 2 35 0
+ 585 004a 637D     	 ldrb r3,[r4,#21]
+ 586 004c 2BB9     	 cbnz r3,.L31
+ 587              	 .loc 2 48 0
+ 588 004e A17D     	 ldrb r1,[r4,#22]
+ 589 0050 207D     	 ldrb r0,[r4,#20]
+ 590 0052 08FA01F1 	 lsl r1,r8,r1
+ 591 0056 FFF7FEFF 	 bl GPIO_ClearValue
+ 592              	.LVL37:
+ 593              	.L31:
+ 594              	.LBE89:
+ 595              	.LBE88:
+ 596              	 .loc 1 120 0 discriminator 2
+ 597 005a 4FEA5606 	 lsr r6,r6,#1
+ 598              	.LVL38:
+ 599 005e 013F     	 subs r7,r7,#1
+ 600 0060 D9D1     	 bne .L32
+ 601              	.LVL39:
+ 602              	.LBE83:
+ 603              	.LBB90:
+ 604              	.LBB91:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 605              	 .loc 2 35 0
+ 606 0062 6B78     	 ldrb r3,[r5,#1]
+ 607 0064 3BB9     	 cbnz r3,.L33
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 608              	 .loc 2 44 0
+ 609 0066 AB78     	 ldrb r3,[r5,#2]
+ 610 0068 2878     	 ldrb r0,[r5,#0]
+ 611 006a 4FF00101 	 mov r1,#1
+ 612 006e 01FA03F1 	 lsl r1,r1,r3
+ 613 0072 FFF7FEFF 	 bl GPIO_SetValue
+ 614              	.L33:
+ 615              	.LBE91:
+ 616              	.LBE90:
+ 121:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     // don't change this loop unless you verivy the change with a scope
+ 122:src/MightyBoard/Motherboard/SoftI2cManager.cc ****      sdaPin.setValue((m & b) != 0);
+ 123:src/MightyBoard/Motherboard/SoftI2cManager.cc ****      sclPin.setValue(true);  
+ 124:src/MightyBoard/Motherboard/SoftI2cManager.cc **** //    _delay_us(I2C_DELAY_USEC);
+ 125:src/MightyBoard/Motherboard/SoftI2cManager.cc ****      sclPin.setValue(false);  
+ 126:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   }
+ 127:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   // get Ack or Nak
+ 128:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    sdaPin.setValue(true);  
+ 129:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    sdaPin.setDirection(false); 
+ 617              	 .loc 1 129 0
+ 618 0076 2846     	 mov r0,r5
+ 619 0078 4FF00001 	 mov r1,#0
+ 620 007c FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 621              	.LVL40:
+ 622              	.LBB92:
+ 623              	.LBB93:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 624              	 .loc 2 35 0
+ 625 0080 637D     	 ldrb r3,[r4,#21]
+ 626 0082 3BB9     	 cbnz r3,.L34
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 627              	 .loc 2 44 0
+ 628 0084 A37D     	 ldrb r3,[r4,#22]
+ 629 0086 207D     	 ldrb r0,[r4,#20]
+ 630 0088 4FF00101 	 mov r1,#1
+ 631 008c 01FA03F1 	 lsl r1,r1,r3
+ 632 0090 FFF7FEFF 	 bl GPIO_SetValue
+ 633              	.L34:
+ 634              	.LVL41:
+ 635              	.LBE93:
+ 636              	.LBE92:
+ 637              	.LBB94:
+ 638              	.LBB95:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 639              	 .loc 2 28 0
+ 640 0094 6B78     	 ldrb r3,[r5,#1]
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+ 641              	 .loc 2 29 0
+ 642 0096 4FF00006 	 mov r6,#0
+ 643              	.LVL42:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 644              	 .loc 2 28 0
+ 645 009a 6BB9     	 cbnz r3,.L35
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 646              	 .loc 2 30 0
+ 647 009c 2878     	 ldrb r0,[r5,#0]
+ 648 009e FFF7FEFF 	 bl FIO_ReadValue
+ 649 00a2 AB78     	 ldrb r3,[r5,#2]
+ 650 00a4 4FF00102 	 mov r2,#1
+ 651 00a8 02FA03F3 	 lsl r3,r2,r3
+ 652 00ac 0340     	 ands r3,r3,r0
+ 653 00ae 13F0FF0F 	 tst r3,#255
+ 654 00b2 0CBF     	 ite eq
+ 655 00b4 0026     	 moveq r6,#0
+ 656 00b6 0126     	 movne r6,#1
+ 657              	.L35:
+ 658              	.LVL43:
+ 659              	.LBE95:
+ 660              	.LBE94:
+ 661              	.LBB96:
+ 662              	.LBB97:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 663              	 .loc 2 35 0
+ 664 00b8 637D     	 ldrb r3,[r4,#21]
+ 665 00ba 3BB9     	 cbnz r3,.L36
+ 666              	 .loc 2 48 0
+ 667 00bc A37D     	 ldrb r3,[r4,#22]
+ 668 00be 207D     	 ldrb r0,[r4,#20]
+ 669 00c0 4FF00101 	 mov r1,#1
+ 670 00c4 01FA03F1 	 lsl r1,r1,r3
+ 671 00c8 FFF7FEFF 	 bl GPIO_ClearValue
+ 672              	.L36:
+ 673              	.LBE97:
+ 674              	.LBE96:
+ 130:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    sclPin.setValue(true);  
+ 131:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    b = sdaPin.getValue();
+ 132:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    sclPin.setValue(false); 
+ 133:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    sdaPin.setDirection(true);
+ 675              	 .loc 1 133 0
+ 676 00cc 2846     	 mov r0,r5
+ 677 00ce 4FF00101 	 mov r1,#1
+ 678 00d2 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 679              	.LBE82:
+ 134:src/MightyBoard/Motherboard/SoftI2cManager.cc ****    return b == 0;
+ 135:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+ 680              	 .loc 1 135 0
+ 681 00d6 86F00100 	 eor r0,r6,#1
+ 682 00da BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 683              	 .cfi_endproc
+ 684              	.LFE68:
+ 686 00de 00BF     	 .section .text._ZN14SoftI2cManager5startEhRK3Pin,"ax",%progbits
+ 687              	 .align 2
+ 688              	 .global _ZN14SoftI2cManager5startEhRK3Pin
+ 689              	 .thumb
+ 690              	 .thumb_func
+ 692              	_ZN14SoftI2cManager5startEhRK3Pin:
+ 693              	.LFB66:
+  97:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+ 694              	 .loc 1 97 0
+ 695              	 .cfi_startproc
+ 696              	 
+ 697              	 
+ 698              	.LVL44:
+ 699 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 700              	.LCFI6:
+ 701              	 .cfi_def_cfa_offset 24
+ 702              	 .cfi_offset 14,-4
+ 703              	 .cfi_offset 8,-8
+ 704              	 .cfi_offset 7,-12
+ 705              	 .cfi_offset 6,-16
+ 706              	 .cfi_offset 5,-20
+ 707              	 .cfi_offset 4,-24
+ 708 0004 0546     	 mov r5,r0
+ 709 0006 0F46     	 mov r7,r1
+ 710 0008 9046     	 mov r8,r2
+ 711              	.LVL45:
+ 712              	.LBB104:
+ 713              	.LBB105:
+  98:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     for(uint8_t i = 0; i < numPins; i++)
+ 714              	 .loc 1 98 0
+ 715 000a 437E     	 ldrb r3,[r0,#25]
+ 716 000c A3B1     	 cbz r3,.L40
+ 717 000e 4FF00004 	 mov r4,#0
+ 718              	.LBB106:
+ 719              	.LBB107:
+ 720              	 .loc 2 48 0
+ 721 0012 4FF00106 	 mov r6,#1
+ 722              	.LVL46:
+ 723              	.L42:
+ 724              	.LBE107:
+ 725              	.LBE106:
+  99:src/MightyBoard/Motherboard/SoftI2cManager.cc ****         sdaPins[i].setValue(false);
+ 726              	 .loc 1 99 0 discriminator 2
+ 727 0016 04EB8403 	 add r3,r4,r4,lsl#2
+ 728 001a EA18     	 adds r2,r5,r3
+ 729              	.LVL47:
+ 730              	.LBB109:
+ 731              	.LBB108:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 732              	 .loc 2 35 0 discriminator 2
+ 733 001c 5178     	 ldrb r1,[r2,#1]
+ 734 001e 29B9     	 cbnz r1,.L41
+ 735              	 .loc 2 48 0
+ 736 0020 9178     	 ldrb r1,[r2,#2]
+ 737 0022 E85C     	 ldrb r0,[r5,r3]
+ 738 0024 06FA01F1 	 lsl r1,r6,r1
+ 739 0028 FFF7FEFF 	 bl GPIO_ClearValue
+ 740              	.LVL48:
+ 741              	.L41:
+ 742              	.LBE108:
+ 743              	.LBE109:
+  98:src/MightyBoard/Motherboard/SoftI2cManager.cc ****     for(uint8_t i = 0; i < numPins; i++)
+ 744              	 .loc 1 98 0 discriminator 2
+ 745 002c 04F10104 	 add r4,r4,#1
+ 746 0030 E4B2     	 uxtb r4,r4
+ 747              	.LVL49:
+ 748 0032 6B7E     	 ldrb r3,[r5,#25]
+ 749 0034 A342     	 cmp r3,r4
+ 750 0036 EED8     	 bhi .L42
+ 751              	.LVL50:
+ 752              	.L40:
+ 753              	.LBE105:
+ 754              	.LBB110:
+ 755              	.LBB111:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 756              	 .loc 2 35 0
+ 757 0038 6B7D     	 ldrb r3,[r5,#21]
+ 758 003a 3BB9     	 cbnz r3,.L43
+ 759              	 .loc 2 48 0
+ 760 003c AB7D     	 ldrb r3,[r5,#22]
+ 761 003e 287D     	 ldrb r0,[r5,#20]
+ 762 0040 4FF00101 	 mov r1,#1
+ 763 0044 01FA03F1 	 lsl r1,r1,r3
+ 764 0048 FFF7FEFF 	 bl GPIO_ClearValue
+ 765              	.L43:
+ 766              	.LBE111:
+ 767              	.LBE110:
+ 102:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   return write(addressRW, sdaPin);
+ 768              	 .loc 1 102 0
+ 769 004c 2846     	 mov r0,r5
+ 770 004e 3946     	 mov r1,r7
+ 771 0050 4246     	 mov r2,r8
+ 772 0052 FFF7FEFF 	 bl _ZN14SoftI2cManager5writeEhRK3Pin
+ 773              	.LBE104:
+ 103:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+ 774              	 .loc 1 103 0
+ 775 0056 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 776              	 .cfi_endproc
+ 777              	.LFE66:
+ 779 005a 00BF     	 .section .text._ZN14SoftI2cManager7restartEhRK3Pin,"ax",%progbits
+ 780              	 .align 2
+ 781              	 .global _ZN14SoftI2cManager7restartEhRK3Pin
+ 782              	 .thumb
+ 783              	 .thumb_func
+ 785              	_ZN14SoftI2cManager7restartEhRK3Pin:
+ 786              	.LFB65:
+  90:src/MightyBoard/Motherboard/SoftI2cManager.cc **** {
+ 787              	 .loc 1 90 0
+ 788              	 .cfi_startproc
+ 789              	 
+ 790              	 
+ 791              	.LVL51:
+ 792 0000 70B5     	 push {r4,r5,r6,lr}
+ 793              	.LCFI7:
+ 794              	 .cfi_def_cfa_offset 16
+ 795              	 .cfi_offset 14,-4
+ 796              	 .cfi_offset 6,-8
+ 797              	 .cfi_offset 5,-12
+ 798              	 .cfi_offset 4,-16
+ 799 0002 0446     	 mov r4,r0
+ 800 0004 0D46     	 mov r5,r1
+ 801 0006 1646     	 mov r6,r2
+ 802              	.LVL52:
+ 803              	.LBB114:
+ 804              	.LBB115:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 805              	 .loc 2 35 0
+ 806 0008 437D     	 ldrb r3,[r0,#21]
+ 807 000a 3BB9     	 cbnz r3,.L46
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 808              	 .loc 2 44 0
+ 809 000c 837D     	 ldrb r3,[r0,#22]
+ 810 000e 007D     	 ldrb r0,[r0,#20]
+ 811              	.LVL53:
+ 812 0010 4FF00101 	 mov r1,#1
+ 813              	.LVL54:
+ 814 0014 01FA03F1 	 lsl r1,r1,r3
+ 815 0018 FFF7FEFF 	 bl GPIO_SetValue
+ 816              	.LVL55:
+ 817              	.L46:
+ 818              	.LBE115:
+ 819              	.LBE114:
+  92:src/MightyBoard/Motherboard/SoftI2cManager.cc ****   return start(addressRW, sdaPin);
+ 820              	 .loc 1 92 0
+ 821 001c 2046     	 mov r0,r4
+ 822 001e 2946     	 mov r1,r5
+ 823 0020 3246     	 mov r2,r6
+ 824 0022 FFF7FEFF 	 bl _ZN14SoftI2cManager5startEhRK3Pin
+  93:src/MightyBoard/Motherboard/SoftI2cManager.cc **** }
+ 825              	 .loc 1 93 0
+ 826 0026 70BD     	 pop {r4,r5,r6,pc}
+ 827              	 .cfi_endproc
+ 828              	.LFE65:
+ 830              	 .section .text._GLOBAL__sub_I__ZN14SoftI2cManager10i2cManagerE,"ax",%progbits
+ 831              	 .align 2
+ 832              	 .thumb
+ 833              	 .thumb_func
+ 835              	_GLOBAL__sub_I__ZN14SoftI2cManager10i2cManagerE:
+ 836              	.LFB70:
+ 837              	 .loc 1 135 0
+ 838              	 .cfi_startproc
+ 839              	 
+ 840              	 
+ 841 0000 10B5     	 push {r4,lr}
+ 842              	.LCFI8:
+ 843              	 .cfi_def_cfa_offset 8
+ 844              	 .cfi_offset 14,-4
+ 845              	 .cfi_offset 4,-8
+ 846              	.LVL56:
+ 847              	.LBB118:
+ 848              	.LBB119:
+ 849              	 .file 3 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 850              	 .loc 3 49 0
+ 851 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 852 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 853 000a 4FF00001 	 mov r1,#0
+ 854 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 855              	 .loc 3 50 0
+ 856 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 857 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 858 001a 4FF00101 	 mov r1,#1
+ 859 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 860              	 .loc 3 51 0
+ 861 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 862 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 863 002a 4FF00201 	 mov r1,#2
+ 864 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 865              	 .loc 3 52 0
+ 866 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 867 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 868 003a 4FF00301 	 mov r1,#3
+ 869 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 870              	 .loc 3 53 0
+ 871 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 872 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 873 004a 4FF00401 	 mov r1,#4
+ 874 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 875              	 .loc 3 55 0
+ 876 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 877 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 878 005a 2046     	 mov r0,r4
+ 879 005c 4FF0FF01 	 mov r1,#255
+ 880 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 881              	 .loc 2 76 0
+ 882 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 883 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 884 006c 2146     	 mov r1,r4
+ 885 006e 4FF00002 	 mov r2,#0
+ 886 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  31:src/MightyBoard/Motherboard/SoftI2cManager.cc **** SoftI2cManager SoftI2cManager::i2cManager;
+ 887              	 .loc 1 31 0
+ 888 0076 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 889 007a C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 890 007e FFF7FEFF 	 bl _ZN14SoftI2cManagerC1Ev
+ 891              	.LBE119:
+ 892              	.LBE118:
+ 893              	 .loc 1 135 0
+ 894 0082 10BD     	 pop {r4,pc}
+ 895              	 .cfi_endproc
+ 896              	.LFE70:
+ 898              	 .section .init_array,"aw",%init_array
+ 899              	 .align 2
+ 900 0000 00000000 	 .word _GLOBAL__sub_I__ZN14SoftI2cManager10i2cManagerE(target1)
+ 901              	 .global _ZN14SoftI2cManager10i2cManagerE
+ 902              	 .global _ZN14SoftI2cManagerC1Ev
+ 903              	 .thumb_set _ZN14SoftI2cManagerC1Ev,_ZN14SoftI2cManagerC2Ev
+ 904              	 .section .bss._ZL5Port0,"aw",%nobits
+ 905              	 .align 2
+ 906              	 .set .LANCHOR0,.+0
+ 909              	_ZL5Port0:
+ 910 0000 00       	 .space 1
+ 911 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 912              	 .align 2
+ 913              	 .set .LANCHOR1,.+0
+ 916              	_ZL5Port1:
+ 917 0000 00       	 .space 1
+ 918 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 919              	 .align 2
+ 920              	 .set .LANCHOR2,.+0
+ 923              	_ZL5Port2:
+ 924 0000 00       	 .space 1
+ 925 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 926              	 .align 2
+ 927              	 .set .LANCHOR3,.+0
+ 930              	_ZL5Port3:
+ 931 0000 00       	 .space 1
+ 932 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 933              	 .align 2
+ 934              	 .set .LANCHOR4,.+0
+ 937              	_ZL5Port4:
+ 938 0000 00       	 .space 1
+ 939 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 940              	 .align 2
+ 941              	 .set .LANCHOR5,.+0
+ 944              	_ZL8NullPort:
+ 945 0000 00       	 .space 1
+ 946 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 947              	 .align 2
+ 948              	 .set .LANCHOR6,.+0
+ 951              	_ZL7NullPin:
+ 952 0000 00000000 	 .space 5
+ 952      00
+ 953 0005 000000   	 .section .bss._ZN14SoftI2cManager10i2cManagerE,"aw",%nobits
+ 954              	 .align 2
+ 955              	 .set .LANCHOR7,.+0
+ 958              	_ZN14SoftI2cManager10i2cManagerE:
+ 959 0000 00000000 	 .space 26
+ 959      00000000 
+ 959      00000000 
+ 959      00000000 
+ 959      00000000 
+ 960 001a 0000     	 .text
+ 961              	.Letext0:
+ 962              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 963              	 .file 5 "src/MightyBoard/Motherboard/SoftI2cManager.hh"
+ 964              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 SoftI2cManager.cc
+    {standard input}:19     .text._ZN14SoftI2cManagerC2Ev:00000000 $t
+    {standard input}:24     .text._ZN14SoftI2cManagerC2Ev:00000000 _ZN14SoftI2cManagerC2Ev
+    {standard input}:135    .text._ZN14SoftI2cManager4initEv:00000000 $t
+    {standard input}:140    .text._ZN14SoftI2cManager4initEv:00000000 _ZN14SoftI2cManager4initEv
+    {standard input}:224    .text._ZN14SoftI2cManager4readEbRK3Pin:00000000 $t
+    {standard input}:229    .text._ZN14SoftI2cManager4readEbRK3Pin:00000000 _ZN14SoftI2cManager4readEbRK3Pin
+    {standard input}:424    .text._ZN14SoftI2cManager4stopEv:00000000 $t
+    {standard input}:429    .text._ZN14SoftI2cManager4stopEv:00000000 _ZN14SoftI2cManager4stopEv
+    {standard input}:508    .text._ZN14SoftI2cManager5writeEhRK3Pin:00000000 $t
+    {standard input}:513    .text._ZN14SoftI2cManager5writeEhRK3Pin:00000000 _ZN14SoftI2cManager5writeEhRK3Pin
+    {standard input}:687    .text._ZN14SoftI2cManager5startEhRK3Pin:00000000 $t
+    {standard input}:692    .text._ZN14SoftI2cManager5startEhRK3Pin:00000000 _ZN14SoftI2cManager5startEhRK3Pin
+    {standard input}:780    .text._ZN14SoftI2cManager7restartEhRK3Pin:00000000 $t
+    {standard input}:785    .text._ZN14SoftI2cManager7restartEhRK3Pin:00000000 _ZN14SoftI2cManager7restartEhRK3Pin
+    {standard input}:831    .text._GLOBAL__sub_I__ZN14SoftI2cManager10i2cManagerE:00000000 $t
+    {standard input}:835    .text._GLOBAL__sub_I__ZN14SoftI2cManager10i2cManagerE:00000000 _GLOBAL__sub_I__ZN14SoftI2cManager10i2cManagerE
+    {standard input}:906    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:913    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:920    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:927    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:934    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:941    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:948    .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:955    .bss._ZN14SoftI2cManager10i2cManagerE:00000000 .LANCHOR7
+    {standard input}:24     .text._ZN14SoftI2cManagerC2Ev:00000000 _ZN14SoftI2cManagerC1Ev
+    {standard input}:899    .init_array:00000000 $d
+    {standard input}:958    .bss._ZN14SoftI2cManager10i2cManagerE:00000000 _ZN14SoftI2cManager10i2cManagerE
+    {standard input}:905    .bss._ZL5Port0:00000000 $d
+    {standard input}:909    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:912    .bss._ZL5Port1:00000000 $d
+    {standard input}:916    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:919    .bss._ZL5Port2:00000000 $d
+    {standard input}:923    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:926    .bss._ZL5Port3:00000000 $d
+    {standard input}:930    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:933    .bss._ZL5Port4:00000000 $d
+    {standard input}:937    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:940    .bss._ZL8NullPort:00000000 $d
+    {standard input}:944    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:947    .bss._ZL7NullPin:00000000 $d
+    {standard input}:951    .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:954    .bss._ZN14SoftI2cManager10i2cManagerE:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN3PinC1Ev
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth
+_ZNK3Pin12setDirectionEb
+GPIO_SetValue
+FIO_ReadValue
+GPIO_ClearValue

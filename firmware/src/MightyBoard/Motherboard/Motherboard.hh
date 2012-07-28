@@ -64,10 +64,12 @@ public:
 private:
 
 	/// Microseconds since board initialization
-	volatile micros_t micros;
+   	volatile micros_t micros;
 
 	/// Private constructor; use the singleton
 	Motherboard();
+	
+	void initClocks();
 
         // TODO: Move this to an interface board slice.
 	Timeout interface_update_timeout;

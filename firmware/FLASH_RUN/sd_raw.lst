@@ -1,0 +1,2662 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "sd_raw.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.sd_raw_send_byte,"ax",%progbits
+  19              	 .align 2
+  20              	 .thumb
+  21              	 .thumb_func
+  23              	sd_raw_send_byte:
+  24              	.LFB58:
+  25              	 .file 1 "src/MightyBoard/Motherboard/lib_sd/sd_raw.c"
+   1:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+   2:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /*
+   3:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
+   4:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+   5:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * This file is free software; you can redistribute it and/or modify
+   6:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * it under the terms of either the GNU General Public License version 2
+   7:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * or the GNU Lesser General Public License version 2.1, both as
+   8:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * published by the Free Software Foundation.
+   9:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+  10:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+  11:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #include <string.h>
+  12:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //#include <avr/io.h>
+  13:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #include "sd_raw.h"
+  14:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #include "lpc17xx_spi.h"
+  15:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+  16:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+  17:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \addtogroup sd_raw MMC/SD/SDHC card raw access
+  18:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+  19:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * This module implements read and write access to MMC, SD
+  20:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * and SDHC cards. It serves as a low-level driver for the
+  21:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * higher level modules such as partition and file system
+  22:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * access.
+  23:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+  24:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * @{
+  25:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+  26:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+  27:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \file
+  28:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * MMC/SD/SDHC raw access implementation (license: GPLv2 or LGPLv2.1)
+  29:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+  30:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \author Roland Riegel
+  31:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+  32:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+  33:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+  34:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \addtogroup sd_raw_config MMC/SD configuration
+  35:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Preprocessor defines to configure the MMC/SD support.
+  36:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+  37:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+  38:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+  39:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * @}
+  40:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+  41:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+  42:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* commands available in SPI mode */
+  43:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+  44:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD0: response R1 */
+  45:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_GO_IDLE_STATE 0x00
+  46:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD1: response R1 */
+  47:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SEND_OP_COND 0x01
+  48:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD8: response R7 */
+  49:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SEND_IF_COND 0x08
+  50:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD9: response R1 */
+  51:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SEND_CSD 0x09
+  52:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD10: response R1 */
+  53:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SEND_CID 0x0a
+  54:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD12: response R1 */
+  55:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_STOP_TRANSMISSION 0x0c
+  56:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD13: response R2 */
+  57:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SEND_STATUS 0x0d
+  58:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD16: arg0[31:0]: block length, response R1 */
+  59:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SET_BLOCKLEN 0x10
+  60:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD17: arg0[31:0]: data address, response R1 */
+  61:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_READ_SINGLE_BLOCK 0x11
+  62:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD18: arg0[31:0]: data address, response R1 */
+  63:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_READ_MULTIPLE_BLOCK 0x12
+  64:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD24: arg0[31:0]: data address, response R1 */
+  65:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_WRITE_SINGLE_BLOCK 0x18
+  66:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD25: arg0[31:0]: data address, response R1 */
+  67:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_WRITE_MULTIPLE_BLOCK 0x19
+  68:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD27: response R1 */
+  69:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_PROGRAM_CSD 0x1b
+  70:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD28: arg0[31:0]: data address, response R1b */
+  71:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SET_WRITE_PROT 0x1c
+  72:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD29: arg0[31:0]: data address, response R1b */
+  73:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_CLR_WRITE_PROT 0x1d
+  74:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD30: arg0[31:0]: write protect data address, response R1 */
+  75:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SEND_WRITE_PROT 0x1e
+  76:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD32: arg0[31:0]: data address, response R1 */
+  77:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_TAG_SECTOR_START 0x20
+  78:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD33: arg0[31:0]: data address, response R1 */
+  79:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_TAG_SECTOR_END 0x21
+  80:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD34: arg0[31:0]: data address, response R1 */
+  81:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_UNTAG_SECTOR 0x22
+  82:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD35: arg0[31:0]: data address, response R1 */
+  83:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_TAG_ERASE_GROUP_START 0x23
+  84:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD36: arg0[31:0]: data address, response R1 */
+  85:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_TAG_ERASE_GROUP_END 0x24
+  86:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD37: arg0[31:0]: data address, response R1 */
+  87:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_UNTAG_ERASE_GROUP 0x25
+  88:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD38: arg0[31:0]: stuff bits, response R1b */
+  89:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_ERASE 0x26
+  90:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* ACMD41: arg0[31:0]: OCR contents, response R1 */
+  91:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_SD_SEND_OP_COND 0x29
+  92:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD42: arg0[31:0]: stuff bits, response R1b */
+  93:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_LOCK_UNLOCK 0x2a
+  94:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD55: arg0[31:0]: stuff bits, response R1 */
+  95:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_APP 0x37
+  96:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD58: arg0[31:0]: stuff bits, response R3 */
+  97:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_READ_OCR 0x3a
+  98:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* CMD59: arg0[31:1]: stuff bits, arg0[0:0]: crc option, response R1 */
+  99:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define CMD_CRC_ON_OFF 0x3b
+ 100:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 101:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* command responses */
+ 102:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* R1: size 1 byte */
+ 103:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R1_IDLE_STATE 0
+ 104:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R1_ERASE_RESET 1
+ 105:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R1_ILL_COMMAND 2
+ 106:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R1_COM_CRC_ERR 3
+ 107:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R1_ERASE_SEQ_ERR 4
+ 108:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R1_ADDR_ERR 5
+ 109:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R1_PARAM_ERR 6
+ 110:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* R1b: equals R1, additional busy bytes */
+ 111:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* R2: size 2 bytes */
+ 112:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_CARD_LOCKED 0
+ 113:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_WP_ERASE_SKIP 1
+ 114:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_ERR 2
+ 115:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_CARD_ERR 3
+ 116:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_CARD_ECC_FAIL 4
+ 117:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_WP_VIOLATION 5
+ 118:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_INVAL_ERASE 6
+ 119:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_OUT_OF_RANGE 7
+ 120:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_CSD_OVERWRITE 7
+ 121:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_IDLE_STATE (R1_IDLE_STATE + 8)
+ 122:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_ERASE_RESET (R1_ERASE_RESET + 8)
+ 123:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_ILL_COMMAND (R1_ILL_COMMAND + 8)
+ 124:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_COM_CRC_ERR (R1_COM_CRC_ERR + 8)
+ 125:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_ERASE_SEQ_ERR (R1_ERASE_SEQ_ERR + 8)
+ 126:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_ADDR_ERR (R1_ADDR_ERR + 8)
+ 127:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R2_PARAM_ERR (R1_PARAM_ERR + 8)
+ 128:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* R3: size 5 bytes */
+ 129:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_OCR_MASK (0xffffffffUL)
+ 130:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_IDLE_STATE (R1_IDLE_STATE + 32)
+ 131:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_ERASE_RESET (R1_ERASE_RESET + 32)
+ 132:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_ILL_COMMAND (R1_ILL_COMMAND + 32)
+ 133:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_COM_CRC_ERR (R1_COM_CRC_ERR + 32)
+ 134:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_ERASE_SEQ_ERR (R1_ERASE_SEQ_ERR + 32)
+ 135:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_ADDR_ERR (R1_ADDR_ERR + 32)
+ 136:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define R3_PARAM_ERR (R1_PARAM_ERR + 32)
+ 137:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* Data Response: size 1 byte */
+ 138:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define DR_STATUS_MASK 0x0e
+ 139:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define DR_STATUS_ACCEPTED 0x05
+ 140:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define DR_STATUS_CRC_ERR 0x0a
+ 141:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define DR_STATUS_WRITE_ERR 0x0c
+ 142:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 143:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* status bits for card types */
+ 144:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define SD_RAW_SPEC_1 0
+ 145:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define SD_RAW_SPEC_2 1
+ 146:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #define SD_RAW_SPEC_SDHC 2
+ 147:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 148:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if !SD_RAW_SAVE_RAM
+ 149:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* static data buffer for acceleration */
+ 150:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** static uint8_t raw_block[512];
+ 151:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* offset where the data within raw_block lies on the card */
+ 152:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** static offset_t raw_block_address;
+ 153:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_WRITE_BUFFERING
+ 154:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* flag to remember if raw_block was written to the card */
+ 155:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** static uint8_t raw_block_written;
+ 156:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 157:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 158:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 159:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* card type state */
+ 160:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** static uint8_t sd_raw_card_type;
+ 161:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 162:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /* private helper functions */
+ 163:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** static void sd_raw_send_byte(uint8_t b);
+ 164:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** static uint8_t sd_raw_rec_byte();
+ 165:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
+ 166:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 167:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 168:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 169:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Initializes memory card communication.
+ 170:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 171:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 0 on failure, 1 on success.
+ 172:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 173:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_init()
+ 174:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 175:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* enable inputs for reading card status */
+ 176:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_available();
+ 177:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_locked();
+ 178:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 179:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* enable outputs for MOSI, SCK, SS, input for MISO */
+ 180:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_mosi();
+ 181:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_sck();
+ 182:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_ss();
+ 183:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_miso();
+ 184:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 185:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     unselect_card();
+ 186:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 187:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     SPI_CFG_Type spi_cfg;
+ 188:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.Databit = SPI_DATABIT_8;
+ 189:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.CPHA = SPI_CPHA_FIRST;
+ 190:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.CPOL = SPI_CPOL_HI;
+ 191:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.Mode = SPI_MASTER_MODE;
+ 192:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.DataOrder = SPI_DATA_MSB_FIRST;
+ 193:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.ClockRate = 50000000/128;
+ 194:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 195:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     SPI_Init((LPC_SPI_TypeDef *)LPC_SPI, &spi_cfg);
+ 196:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 197:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* initialize SPI with lowest frequency; max. 400kHz during identification mode of card */
+ 198:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPCR = (0 << SPIE) | /* SPI Interrupt Enable */
+ 199:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //           (1 << SPE)  | /* SPI Enable */
+ 200:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //           (0 << DORD) | /* Data Order: MSB first */
+ 201:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //           (1 << MSTR) | /* Master mode */
+ 202:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //           (0 << CPOL) | /* Clock Polarity: SCK low when idle */
+ 203:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //           (0 << CPHA) | /* Clock Phase: sample on rising SCK edge */
+ 204:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //           (1 << SPR1) | /* Clock Frequency: f_OSC / 128 */
+ 205:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //           (1 << SPR0);
+ 206:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPSR &= ~(1 << SPI2X); /* No doubled clock frequency */
+ 207:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 208:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* initialization procedure */
+ 209:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_card_type = 0;
+ 210:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     
+ 211:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!sd_raw_available())
+ 212:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 213:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 214:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* card needs 74 cycles minimum to start up */
+ 215:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t i;
+ 216:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 10; ++i)
+ 217:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 218:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* wait 8 clock cycles */
+ 219:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 220:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 221:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 222:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* address card */
+ 223:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     select_card();
+ 224:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 225:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* reset card */
+ 226:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t response;
+ 227:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; ; ++i)
+ 228:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 229:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         response = sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
+ 230:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(response == (1 << R1_IDLE_STATE))
+ 231:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             break;
+ 232:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 233:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(i == 0x1ff)
+ 234:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 235:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             unselect_card();
+ 236:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 237:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 238:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 239:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 240:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 241:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* check for version of SD card specification */
+ 242:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     response = sd_raw_send_command(CMD_SEND_IF_COND, 0x100 /* 2.7V - 3.6V */ | 0xaa /* test pattern
+ 243:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if((response & (1 << R1_ILL_COMMAND)) == 0)
+ 244:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 245:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 246:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 247:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if((sd_raw_rec_byte() & 0x01) == 0)
+ 248:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0; /* card operation voltage range doesn't match */
+ 249:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_rec_byte() != 0xaa)
+ 250:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0; /* wrong test pattern */
+ 251:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 252:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* card conforms to SD 2 card specification */
+ 253:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_card_type |= (1 << SD_RAW_SPEC_2);
+ 254:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 255:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     else
+ 256:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 257:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 258:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* determine SD/MMC card type */
+ 259:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_send_command(CMD_APP, 0);
+ 260:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         response = sd_raw_send_command(CMD_SD_SEND_OP_COND, 0);
+ 261:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if((response & (1 << R1_ILL_COMMAND)) == 0)
+ 262:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 263:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* card conforms to SD 1 card specification */
+ 264:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_card_type |= (1 << SD_RAW_SPEC_1);
+ 265:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 266:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         else
+ 267:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 268:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* MMC card */
+ 269:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 270:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 271:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 272:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* wait for card to get ready */
+ 273:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; ; ++i)
+ 274:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 275:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_card_type & ((1 << SD_RAW_SPEC_1) | (1 << SD_RAW_SPEC_2)))
+ 276:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 277:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             uint32_t arg = 0;
+ 278:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 279:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(sd_raw_card_type & (1 << SD_RAW_SPEC_2))
+ 280:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 arg = 0x40000000;
+ 281:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 282:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_send_command(CMD_APP, 0);
+ 283:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             response = sd_raw_send_command(CMD_SD_SEND_OP_COND, arg);
+ 284:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 285:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         else
+ 286:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 287:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             response = sd_raw_send_command(CMD_SEND_OP_COND, 0);
+ 288:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 289:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 290:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if((response & (1 << R1_IDLE_STATE)) == 0)
+ 291:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             break;
+ 292:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 293:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(i == 0x7fff)
+ 294:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 295:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             unselect_card();
+ 296:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 297:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 298:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 299:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 300:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 301:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(sd_raw_card_type & (1 << SD_RAW_SPEC_2))
+ 302:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 303:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_send_command(CMD_READ_OCR, 0))
+ 304:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 305:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             unselect_card();
+ 306:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 307:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 308:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 309:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_rec_byte() & 0x40)
+ 310:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_card_type |= (1 << SD_RAW_SPEC_SDHC);
+ 311:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 312:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 313:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 314:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 315:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 316:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 317:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 318:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* set block size to 512 bytes */
+ 319:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(sd_raw_send_command(CMD_SET_BLOCKLEN, 512))
+ 320:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 321:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         unselect_card();
+ 322:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 323:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 324:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 325:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* deaddress card */
+ 326:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     unselect_card();
+ 327:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 328:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* switch to highest SPI frequency possible */
+ 329:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPCR &= ~((1 << SPR1) | (1 << SPR0)); /* Clock Frequency: f_OSC / 4 */
+ 330:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPSR |= (1 << SPI2X); /* Doubled Clock Frequency: f_OSC / 2 */
+ 331:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     SPI_SetClock ((LPC_SPI_TypeDef *)LPC_SPI, 50000000/4);
+ 332:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 333:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if !SD_RAW_SAVE_RAM
+ 334:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* the first block is likely to be accessed first, so precache it here */
+ 335:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     raw_block_address = (offset_t) -1;
+ 336:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_WRITE_BUFFERING
+ 337:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     raw_block_written = 1;
+ 338:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 339:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!sd_raw_read(0, raw_block, sizeof(raw_block)))
+ 340:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 341:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 342:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 343:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 344:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 345:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 346:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 347:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 348:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Checks wether a memory card is located in the slot.
+ 349:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 350:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 1 if the card is available, 0 if it is not.
+ 351:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 352:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_available()
+ 353:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 354:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return get_pin_available() == 0x00;
+ 355:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 356:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 357:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 358:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 359:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Checks wether the memory card is locked for write access.
+ 360:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 361:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 1 if the card is locked, 0 if it is not.
+ 362:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 363:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_locked()
+ 364:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 365:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return get_pin_locked() == 0x00;
+ 366:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 367:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 368:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 369:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 370:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Sends a raw byte to the memory card.
+ 371:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 372:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] b The byte to sent.
+ 373:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \see sd_raw_rec_byte
+ 374:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 375:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** void sd_raw_send_byte(uint8_t b)
+ 376:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+  26              	 .loc 1 376 0
+  27              	 .cfi_startproc
+  28              	 
+  29              	 
+  30              	.LVL0:
+  31 0000 00B5     	 push {lr}
+  32              	.LCFI0:
+  33              	 .cfi_def_cfa_offset 4
+  34              	 .cfi_offset 14,-4
+  35 0002 87B0     	 sub sp,sp,#28
+  36              	.LCFI1:
+  37              	 .cfi_def_cfa_offset 32
+ 377:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	uint8_t tx_buf[0];
+ 378:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	tx_buf[0] = b;
+  38              	 .loc 1 378 0
+  39 0004 8DF81800 	 strb r0,[sp,#24]
+ 379:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     SPI_DATA_SETUP_Type  xferConfig;
+ 380:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	xferConfig.tx_data = tx_buf;
+  40              	 .loc 1 380 0
+  41 0008 06AB     	 add r3,sp,#24
+  42 000a 0193     	 str r3,[sp,#4]
+ 381:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     xferConfig.length = 1;
+  43              	 .loc 1 381 0
+  44 000c 4FF00103 	 mov r3,#1
+  45 0010 0393     	 str r3,[sp,#12]
+ 382:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	SPI_ReadWrite((LPC_SPI_TypeDef *)LPC_SPI, &xferConfig, SPI_TRANSFER_POLLING);
+  46              	 .loc 1 382 0
+  47 0012 4FF00000 	 mov r0,#0
+  48              	.LVL1:
+  49 0016 C4F20200 	 movt r0,16386
+  50 001a 01A9     	 add r1,sp,#4
+  51              	.LVL2:
+  52 001c 4FF00002 	 mov r2,#0
+  53 0020 FFF7FEFF 	 bl SPI_ReadWrite
+  54              	.LVL3:
+ 383:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPDR = b;
+ 384:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* wait for byte to be shifted out */
+ 385:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    while(!(SPSR & (1 << SPIF)));
+ 386:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPSR &= ~(1 << SPIF);
+ 387:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+  55              	 .loc 1 387 0
+  56 0024 07B0     	 add sp,sp,#28
+  57 0026 00BD     	 pop {pc}
+  58              	 .cfi_endproc
+  59              	.LFE58:
+  61              	 .section .text.sd_raw_rec_byte,"ax",%progbits
+  62              	 .align 2
+  63              	 .thumb
+  64              	 .thumb_func
+  66              	sd_raw_rec_byte:
+  67              	.LFB59:
+ 388:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 389:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 390:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 391:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Receives a raw byte from the memory card.
+ 392:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 393:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns The byte which should be read.
+ 394:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \see sd_raw_send_byte
+ 395:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 396:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_rec_byte()
+ 397:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+  68              	 .loc 1 397 0
+  69              	 .cfi_startproc
+  70              	 
+  71              	 
+  72 0000 00B5     	 push {lr}
+  73              	.LCFI2:
+  74              	 .cfi_def_cfa_offset 4
+  75              	 .cfi_offset 14,-4
+  76 0002 87B0     	 sub sp,sp,#28
+  77              	.LCFI3:
+  78              	 .cfi_def_cfa_offset 32
+ 398:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	uint8_t rx_buf[0];
+ 399:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     SPI_DATA_SETUP_Type  xferConfig;
+ 400:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	xferConfig.rx_data = rx_buf;
+  79              	 .loc 1 400 0
+  80 0004 06AB     	 add r3,sp,#24
+  81 0006 0293     	 str r3,[sp,#8]
+ 401:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     xferConfig.length = 1;
+  82              	 .loc 1 401 0
+  83 0008 4FF00103 	 mov r3,#1
+  84 000c 0393     	 str r3,[sp,#12]
+ 402:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	SPI_ReadWrite((LPC_SPI_TypeDef *)LPC_SPI, &xferConfig, SPI_TRANSFER_POLLING);
+  85              	 .loc 1 402 0
+  86 000e 4FF00000 	 mov r0,#0
+  87 0012 C4F20200 	 movt r0,16386
+  88 0016 01A9     	 add r1,sp,#4
+  89 0018 4FF00002 	 mov r2,#0
+  90 001c FFF7FEFF 	 bl SPI_ReadWrite
+ 403:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 	return rx_buf[0];
+ 404:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* send dummy data for receiving some */
+ 405:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPDR = 0xff;
+ 406:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    while(!(SPSR & (1 << SPIF)));
+ 407:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    SPSR &= ~(1 << SPIF);
+ 408:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** //    return SPDR;
+ 409:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+  91              	 .loc 1 409 0
+  92 0020 9DF81800 	 ldrb r0,[sp,#24]
+  93 0024 07B0     	 add sp,sp,#28
+  94 0026 00BD     	 pop {pc}
+  95              	 .cfi_endproc
+  96              	.LFE59:
+  98              	 .section .text.sd_raw_send_command,"ax",%progbits
+  99              	 .align 2
+ 100              	 .thumb
+ 101              	 .thumb_func
+ 103              	sd_raw_send_command:
+ 104              	.LFB60:
+ 410:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 411:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 412:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 413:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Send a command to the memory card which responses with a R1 response (and possibly others).
+ 414:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 415:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] command The command to send.
+ 416:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] arg The argument for command.
+ 417:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns The command answer.
+ 418:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 419:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_send_command(uint8_t command, uint32_t arg)
+ 420:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 105              	 .loc 1 420 0
+ 106              	 .cfi_startproc
+ 107              	 
+ 108              	 
+ 109              	.LVL4:
+ 110 0000 38B5     	 push {r3,r4,r5,lr}
+ 111              	.LCFI4:
+ 112              	 .cfi_def_cfa_offset 16
+ 113              	 .cfi_offset 14,-4
+ 114              	 .cfi_offset 5,-8
+ 115              	 .cfi_offset 4,-12
+ 116              	 .cfi_offset 3,-16
+ 117 0002 0546     	 mov r5,r0
+ 118 0004 0C46     	 mov r4,r1
+ 421:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t response;
+ 422:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 423:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* wait some clock cycles */
+ 424:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_rec_byte();
+ 119              	 .loc 1 424 0
+ 120 0006 FFF7FEFF 	 bl sd_raw_rec_byte
+ 121              	.LVL5:
+ 425:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 426:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* send command via SPI */
+ 427:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_send_byte(0x40 | command);
+ 122              	 .loc 1 427 0
+ 123 000a 45F04000 	 orr r0,r5,#64
+ 124 000e FFF7FEFF 	 bl sd_raw_send_byte
+ 428:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_send_byte((arg >> 24) & 0xff);
+ 125              	 .loc 1 428 0
+ 126 0012 4FEA1460 	 lsr r0,r4,#24
+ 127 0016 FFF7FEFF 	 bl sd_raw_send_byte
+ 429:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_send_byte((arg >> 16) & 0xff);
+ 128              	 .loc 1 429 0
+ 129 001a C4F30740 	 ubfx r0,r4,#16,#8
+ 130 001e FFF7FEFF 	 bl sd_raw_send_byte
+ 430:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_send_byte((arg >> 8) & 0xff);
+ 131              	 .loc 1 430 0
+ 132 0022 C4F30720 	 ubfx r0,r4,#8,#8
+ 133 0026 FFF7FEFF 	 bl sd_raw_send_byte
+ 431:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_send_byte((arg >> 0) & 0xff);
+ 134              	 .loc 1 431 0
+ 135 002a E0B2     	 uxtb r0,r4
+ 136 002c FFF7FEFF 	 bl sd_raw_send_byte
+ 432:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     switch(command)
+ 137              	 .loc 1 432 0
+ 138 0030 15B1     	 cbz r5,.L5
+ 139 0032 082D     	 cmp r5,#8
+ 140 0034 0CD1     	 bne .L11
+ 141 0036 06E0     	 b .L12
+ 142              	.L5:
+ 433:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 434:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         case CMD_GO_IDLE_STATE:
+ 435:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****            sd_raw_send_byte(0x95);
+ 143              	 .loc 1 435 0
+ 144 0038 4FF09500 	 mov r0,#149
+ 145 003c FFF7FEFF 	 bl sd_raw_send_byte
+ 146              	.L8:
+ 147              	.LVL6:
+ 420:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 148              	 .loc 1 420 0 discriminator 1
+ 149 0040 4FF00A04 	 mov r4,#10
+ 150              	.LVL7:
+ 151 0044 09E0     	 b .L7
+ 152              	.LVL8:
+ 153              	.L12:
+ 436:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****            break;
+ 437:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         case CMD_SEND_IF_COND:
+ 438:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****            sd_raw_send_byte(0x87);
+ 154              	 .loc 1 438 0
+ 155 0046 4FF08700 	 mov r0,#135
+ 156 004a FFF7FEFF 	 bl sd_raw_send_byte
+ 439:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****            break;
+ 157              	 .loc 1 439 0
+ 158 004e F7E7     	 b .L8
+ 159              	.L11:
+ 440:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         default:
+ 441:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****            sd_raw_send_byte(0xff);
+ 160              	 .loc 1 441 0
+ 161 0050 4FF0FF00 	 mov r0,#255
+ 162 0054 FFF7FEFF 	 bl sd_raw_send_byte
+ 442:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****            break;
+ 163              	 .loc 1 442 0
+ 164 0058 F2E7     	 b .L8
+ 165              	.LVL9:
+ 166              	.L7:
+ 443:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 444:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     
+ 445:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* receive response */
+ 446:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t i;
+ 447:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 10; ++i)
+ 448:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 449:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         response = sd_raw_rec_byte();
+ 167              	 .loc 1 449 0
+ 168 005a FFF7FEFF 	 bl sd_raw_rec_byte
+ 169              	.LVL10:
+ 450:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(response != 0xff)
+ 170              	 .loc 1 450 0
+ 171 005e FF28     	 cmp r0,#255
+ 172 0060 04D1     	 bne .L9
+ 173              	.LVL11:
+ 174 0062 04F1FF34 	 add r4,r4,#-1
+ 175 0066 E4B2     	 uxtb r4,r4
+ 447:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 10; ++i)
+ 176              	 .loc 1 447 0
+ 177 0068 002C     	 cmp r4,#0
+ 178 006a F6D1     	 bne .L7
+ 179              	.LVL12:
+ 180              	.L9:
+ 451:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             break;
+ 452:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 453:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 454:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return response;
+ 455:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 181              	 .loc 1 455 0
+ 182 006c 38BD     	 pop {r3,r4,r5,pc}
+ 183              	 .cfi_endproc
+ 184              	.LFE60:
+ 186 006e 00BF     	 .section .text.sd_raw_available,"ax",%progbits
+ 187              	 .align 2
+ 188              	 .global sd_raw_available
+ 189              	 .thumb
+ 190              	 .thumb_func
+ 192              	sd_raw_available:
+ 193              	.LFB56:
+ 353:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 194              	 .loc 1 353 0
+ 195              	 .cfi_startproc
+ 196              	 
+ 197              	 
+ 198 0000 08B5     	 push {r3,lr}
+ 199              	.LCFI5:
+ 200              	 .cfi_def_cfa_offset 8
+ 201              	 .cfi_offset 14,-4
+ 202              	 .cfi_offset 3,-8
+ 354:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return get_pin_available() == 0x00;
+ 203              	 .loc 1 354 0
+ 204 0002 4FF00100 	 mov r0,#1
+ 205 0006 FFF7FEFF 	 bl GPIO_ReadValue
+ 355:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 206              	 .loc 1 355 0
+ 207 000a 4FF00100 	 mov r0,#1
+ 208 000e 08BD     	 pop {r3,pc}
+ 209              	 .cfi_endproc
+ 210              	.LFE56:
+ 212              	 .section .text.sd_raw_locked,"ax",%progbits
+ 213              	 .align 2
+ 214              	 .global sd_raw_locked
+ 215              	 .thumb
+ 216              	 .thumb_func
+ 218              	sd_raw_locked:
+ 219              	.LFB57:
+ 364:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 220              	 .loc 1 364 0
+ 221              	 .cfi_startproc
+ 222              	 
+ 223              	 
+ 224 0000 08B5     	 push {r3,lr}
+ 225              	.LCFI6:
+ 226              	 .cfi_def_cfa_offset 8
+ 227              	 .cfi_offset 14,-4
+ 228              	 .cfi_offset 3,-8
+ 365:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return get_pin_locked() == 0x00;
+ 229              	 .loc 1 365 0
+ 230 0002 4FF00100 	 mov r0,#1
+ 231 0006 FFF7FEFF 	 bl GPIO_ReadValue
+ 366:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 232              	 .loc 1 366 0
+ 233 000a 4FF00000 	 mov r0,#0
+ 234 000e 08BD     	 pop {r3,pc}
+ 235              	 .cfi_endproc
+ 236              	.LFE57:
+ 238              	 .section .text.sd_raw_sync,"ax",%progbits
+ 239              	 .align 2
+ 240              	 .global sd_raw_sync
+ 241              	 .thumb
+ 242              	 .thumb_func
+ 244              	sd_raw_sync:
+ 245              	.LFB65:
+ 456:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 457:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 458:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 459:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Reads raw data from the card.
+ 460:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 461:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] offset The offset from which to read.
+ 462:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[out] buffer The buffer into which to write the data.
+ 463:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] length The number of bytes to read.
+ 464:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 0 on failure, 1 on success.
+ 465:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \see sd_raw_read_interval, sd_raw_write, sd_raw_write_interval
+ 466:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 467:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_read(offset_t offset, uint8_t* buffer, uintptr_t length)
+ 468:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 469:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     offset_t block_address;
+ 470:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint16_t block_offset;
+ 471:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint16_t read_length;
+ 472:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length > 0)
+ 473:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 474:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* determine byte count to read at once */
+ 475:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_offset = offset & 0x01ff;
+ 476:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_address = offset - block_offset;
+ 477:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         read_length = 512 - block_offset; /* read up to block border */
+ 478:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(read_length > length)
+ 479:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             read_length = length;
+ 480:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         
+ 481:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if !SD_RAW_SAVE_RAM
+ 482:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* check if the requested data is cached */
+ 483:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(block_address != raw_block_address)
+ 484:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 485:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 486:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_WRITE_BUFFERING
+ 487:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(!sd_raw_sync())
+ 488:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 0;
+ 489:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 490:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 491:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* address card */
+ 492:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             select_card();
+ 493:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 494:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* send single block request */
+ 495:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 496:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDH
+ 497:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #else
+ 498:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, block_address))
+ 499:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 500:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             {
+ 501:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 unselect_card();
+ 502:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 0;
+ 503:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             }
+ 504:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 505:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* wait for data block (start byte 0xfe) */
+ 506:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             while(sd_raw_rec_byte() != 0xfe);
+ 507:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 508:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SAVE_RAM
+ 509:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* read byte block */
+ 510:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             uint16_t read_to = block_offset + read_length;
+ 511:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             for(i = 0; i < 512; ++i)
+ 512:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             {
+ 513:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 uint8_t b = sd_raw_rec_byte();
+ 514:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 if(i >= block_offset && i < read_to)
+ 515:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     *buffer++ = b;
+ 516:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             }
+ 517:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #else
+ 518:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* read byte block */
+ 519:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             uint8_t* cache = raw_block;
+ 520:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             uint8_t i;
+ 521:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             for(i = 0; i < 512; ++i)
+ 522:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 *cache++ = sd_raw_rec_byte();
+ 523:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             raw_block_address = block_address;
+ 524:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 525:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             memcpy(buffer, raw_block + block_offset, read_length);
+ 526:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             buffer += read_length;
+ 527:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 528:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 529:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* read crc16 */
+ 530:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_rec_byte();
+ 531:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_rec_byte();
+ 532:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             
+ 533:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* deaddress card */
+ 534:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             unselect_card();
+ 535:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 536:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* let card some time to finish */
+ 537:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_rec_byte();
+ 538:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 539:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if !SD_RAW_SAVE_RAM
+ 540:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         else
+ 541:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 542:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             /* use cached data */
+ 543:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             memcpy(buffer, raw_block + block_offset, read_length);
+ 544:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             buffer += read_length;
+ 545:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 546:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 547:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 548:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         length -= read_length;
+ 549:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset += read_length;
+ 550:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 551:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 552:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 553:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 554:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 555:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 556:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 557:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Continuously reads units of \c interval bytes and calls a callback function.
+ 558:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 559:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * This function starts reading at the specified offset. Every \c interval bytes,
+ 560:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * it calls the callback function with the associated data buffer.
+ 561:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 562:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * By returning zero, the callback may stop reading.
+ 563:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 564:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \note Within the callback function, you can not start another read or
+ 565:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       write operation.
+ 566:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \note This function only works if the following conditions are met:
+ 567:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       - (offset - (offset % 512)) % interval == 0
+ 568:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       - length % interval == 0
+ 569:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 570:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] offset Offset from which to start reading.
+ 571:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] buffer Pointer to a buffer which is at least interval bytes in size.
+ 572:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] interval Number of bytes to read before calling the callback function.
+ 573:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] length Number of bytes to read altogether.
+ 574:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] callback The function to call every interval bytes.
+ 575:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] p An opaque pointer directly passed to the callback function.
+ 576:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 0 on failure, 1 on success
+ 577:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \see sd_raw_write_interval, sd_raw_read, sd_raw_write
+ 578:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 579:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_read_interval(offset_t offset, uint8_t* buffer, uintptr_t interval, uintptr_t length
+ 580:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 581:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!buffer || interval == 0 || length < interval || !callback)
+ 582:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 583:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 584:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if !SD_RAW_SAVE_RAM
+ 585:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length >= interval)
+ 586:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 587:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* as reading is now buffered, we directly
+ 588:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****          * hand over the request to sd_raw_read()
+ 589:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****          */
+ 590:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!sd_raw_read(offset, buffer, interval))
+ 591:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 592:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!callback(buffer, offset, p))
+ 593:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             break;
+ 594:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset += interval;
+ 595:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         length -= interval;
+ 596:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 597:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 598:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 599:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #else
+ 600:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* address card */
+ 601:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     select_card();
+ 602:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 603:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint16_t block_offset;
+ 604:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint16_t read_length;
+ 605:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t* buffer_cur;
+ 606:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t finished = 0;
+ 607:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     do
+ 608:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 609:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* determine byte count to read at once */
+ 610:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_offset = offset & 0x01ff;
+ 611:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         read_length = 512 - block_offset;
+ 612:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         
+ 613:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* send single block request */
+ 614:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 615:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) ?
+ 616:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #else
+ 617:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, offset - block_offset))
+ 618:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 619:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 620:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             unselect_card();
+ 621:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 622:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 623:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 624:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* wait for data block (start byte 0xfe) */
+ 625:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         while(sd_raw_rec_byte() != 0xfe);
+ 626:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 627:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* read up to the data of interest */
+ 628:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint8_t i;
+ 629:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         for(i = 0; i < block_offset; ++i)
+ 630:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_rec_byte();
+ 631:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 632:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* read interval bytes of data and execute the callback */
+ 633:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         do
+ 634:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 635:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(read_length < interval || length < interval)
+ 636:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 637:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 638:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             buffer_cur = buffer;
+ 639:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             for(i = 0; i < interval; ++i)
+ 640:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 *buffer_cur++ = sd_raw_rec_byte();
+ 641:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 642:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(!callback(buffer, offset + (512 - read_length), p))
+ 643:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             {
+ 644:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 finished = 1;
+ 645:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 646:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             }
+ 647:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 648:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             read_length -= interval;
+ 649:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             length -= interval;
+ 650:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 651:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         } while(read_length > 0 && length > 0);
+ 652:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         
+ 653:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* read rest of data block */
+ 654:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         while(read_length-- > 0)
+ 655:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_rec_byte();
+ 656:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         
+ 657:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* read crc16 */
+ 658:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 659:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 660:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 661:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(length < interval)
+ 662:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             break;
+ 663:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 664:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset = offset - block_offset + 512;
+ 665:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 666:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     } while(!finished);
+ 667:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     
+ 668:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* deaddress card */
+ 669:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     unselect_card();
+ 670:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 671:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* let card some time to finish */
+ 672:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_rec_byte();
+ 673:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 674:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 675:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 676:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 677:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 678:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if DOXYGEN || SD_RAW_WRITE_SUPPORT
+ 679:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 680:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 681:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Writes raw data to the card.
+ 682:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 683:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \note If write buffering is enabled, you might have to
+ 684:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       call sd_raw_sync() before disconnecting the card
+ 685:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       to ensure all remaining data has been written.
+ 686:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 687:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] offset The offset where to start writing.
+ 688:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] buffer The buffer containing the data to be written.
+ 689:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] length The number of bytes to write.
+ 690:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 0 on failure, 1 on success.
+ 691:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \see sd_raw_write_interval, sd_raw_read, sd_raw_read_interval
+ 692:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 693:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_write(offset_t offset, const uint8_t* buffer, uintptr_t length)
+ 694:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 695:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(sd_raw_locked())
+ 696:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 697:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 698:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     offset_t block_address;
+ 699:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint16_t block_offset;
+ 700:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint16_t write_length;
+ 701:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length > 0)
+ 702:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 703:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* determine byte count to write at once */
+ 704:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_offset = offset & 0x01ff;
+ 705:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_address = offset - block_offset;
+ 706:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         write_length = 512 - block_offset; /* write up to block border */
+ 707:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(write_length > length)
+ 708:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             write_length = length;
+ 709:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         
+ 710:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* Merge the data to write with the content of the block.
+ 711:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****          * Use the cached block if available.
+ 712:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****          */
+ 713:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(block_address != raw_block_address)
+ 714:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 715:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_WRITE_BUFFERING
+ 716:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(!sd_raw_sync())
+ 717:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 0;
+ 718:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 719:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 720:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(block_offset || write_length < 512)
+ 721:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             {
+ 722:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 if(!sd_raw_read(block_address, raw_block, sizeof(raw_block)))
+ 723:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     return 0;
+ 724:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             }
+ 725:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             raw_block_address = block_address;
+ 726:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 727:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 728:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(buffer != raw_block)
+ 729:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 730:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             memcpy(raw_block + block_offset, buffer, write_length);
+ 731:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 732:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_WRITE_BUFFERING
+ 733:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             raw_block_written = 0;
+ 734:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 735:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(length == write_length)
+ 736:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 1;
+ 737:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 738:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 739:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 740:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* address card */
+ 741:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         select_card();
+ 742:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 743:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* send single block request */
+ 744:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 745:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_send_command(CMD_WRITE_SINGLE_BLOCK, (sd_raw_card_type & (1 << SD_RAW_SPEC_SDHC) 
+ 746:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #else
+ 747:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_send_command(CMD_WRITE_SINGLE_BLOCK, block_address))
+ 748:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 749:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 750:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             unselect_card();
+ 751:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 752:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 753:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 754:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* send start byte */
+ 755:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_send_byte(0xfe);
+ 756:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 757:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* write byte block */
+ 758:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint8_t* cache = raw_block;
+ 759:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint8_t i;
+ 760:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         for(i = 0; i < 512; ++i)
+ 761:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_send_byte(*cache++);
+ 762:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 763:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* write dummy crc16 */
+ 764:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_send_byte(0xff);
+ 765:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_send_byte(0xff);
+ 766:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 767:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* wait while card is busy */
+ 768:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         while(sd_raw_rec_byte() != 0xff);
+ 769:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 770:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 771:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* deaddress card */
+ 772:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         unselect_card();
+ 773:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 774:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         buffer += write_length;
+ 775:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset += write_length;
+ 776:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         length -= write_length;
+ 777:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 778:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_WRITE_BUFFERING
+ 779:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         raw_block_written = 1;
+ 780:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 781:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 782:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 783:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 784:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 785:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 786:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 787:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if DOXYGEN || SD_RAW_WRITE_SUPPORT
+ 788:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 789:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 790:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Writes a continuous data stream obtained from a callback function.
+ 791:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 792:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * This function starts writing at the specified offset. To obtain the
+ 793:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * next bytes to write, it calls the callback function. The callback fills the
+ 794:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * provided data buffer and returns the number of bytes it has put into the buffer.
+ 795:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 796:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * By returning zero, the callback may stop writing.
+ 797:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 798:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] offset Offset where to start writing.
+ 799:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] buffer Pointer to a buffer which is used for the callback function.
+ 800:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] length Number of bytes to write in total. May be zero for endless writes.
+ 801:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] callback The function used to obtain the bytes to write.
+ 802:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] p An opaque pointer directly passed to the callback function.
+ 803:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 0 on failure, 1 on success
+ 804:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \see sd_raw_read_interval, sd_raw_write, sd_raw_read
+ 805:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 806:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_write_interval(offset_t offset, uint8_t* buffer, uintptr_t length, sd_raw_write_inte
+ 807:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 808:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SAVE_RAM
+ 809:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     #error "SD_RAW_WRITE_SUPPORT is not supported together with SD_RAW_SAVE_RAM"
+ 810:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 811:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 812:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!buffer || !callback)
+ 813:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 814:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 815:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t endless = (length == 0);
+ 816:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(endless || length > 0)
+ 817:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 818:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint16_t bytes_to_write = callback(buffer, offset, p);
+ 819:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!bytes_to_write)
+ 820:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             break;
+ 821:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!endless && bytes_to_write > length)
+ 822:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 823:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 824:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         /* as writing is always buffered, we directly
+ 825:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****          * hand over the request to sd_raw_write()
+ 826:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****          */
+ 827:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!sd_raw_write(offset, buffer, bytes_to_write))
+ 828:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 829:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 830:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset += bytes_to_write;
+ 831:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         length -= bytes_to_write;
+ 832:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 833:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 834:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 835:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 836:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 837:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 838:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if DOXYGEN || SD_RAW_WRITE_SUPPORT
+ 839:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 840:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 841:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Writes the write buffer's content to the card.
+ 842:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 843:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \note When write buffering is enabled, you should
+ 844:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       call this function before disconnecting the
+ 845:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       card to ensure all remaining data has been
+ 846:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *       written.
+ 847:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 848:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 0 on failure, 1 on success.
+ 849:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \see sd_raw_write
+ 850:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 851:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_sync()
+ 852:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 246              	 .loc 1 852 0
+ 247              	 .cfi_startproc
+ 248              	 
+ 249              	 
+ 250 0000 08B5     	 push {r3,lr}
+ 251              	.LCFI7:
+ 252              	 .cfi_def_cfa_offset 8
+ 253              	 .cfi_offset 14,-4
+ 254              	 .cfi_offset 3,-8
+ 853:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_WRITE_BUFFERING
+ 854:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(raw_block_written)
+ 255              	 .loc 1 854 0
+ 256 0002 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 257 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 258 000a 1B78     	 ldrb r3,[r3,#0]
+ 259 000c ABB9     	 cbnz r3,.L17
+ 855:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 1;
+ 856:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!sd_raw_write(raw_block_address, raw_block, sizeof(raw_block)))
+ 260              	 .loc 1 856 0
+ 261 000e 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 262 0012 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 263 0016 1868     	 ldr r0,[r3,#0]
+ 264 0018 40F20001 	 movw r1,#:lower16:.LANCHOR2
+ 265 001c C0F20001 	 movt r1,#:upper16:.LANCHOR2
+ 266 0020 4FF40072 	 mov r2,#512
+ 267 0024 FFF7FEFF 	 bl sd_raw_write
+ 268 0028 50B1     	 cbz r0,.L18
+ 857:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 858:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     raw_block_written = 1;
+ 269              	 .loc 1 858 0
+ 270 002a 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 271 002e C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 272 0032 4FF00100 	 mov r0,#1
+ 273 0036 1870     	 strb r0,[r3,#0]
+ 859:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 860:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 274              	 .loc 1 860 0
+ 275 0038 08BD     	 pop {r3,pc}
+ 276              	.L17:
+ 855:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 1;
+ 277              	 .loc 1 855 0
+ 278 003a 4FF00100 	 mov r0,#1
+ 279 003e 08BD     	 pop {r3,pc}
+ 280              	.L18:
+ 857:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 281              	 .loc 1 857 0
+ 282 0040 4FF00000 	 mov r0,#0
+ 861:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 283              	 .loc 1 861 0
+ 284 0044 08BD     	 pop {r3,pc}
+ 285              	 .cfi_endproc
+ 286              	.LFE65:
+ 288 0046 00BF     	 .section .text.sd_raw_read,"ax",%progbits
+ 289              	 .align 2
+ 290              	 .global sd_raw_read
+ 291              	 .thumb
+ 292              	 .thumb_func
+ 294              	sd_raw_read:
+ 295              	.LFB61:
+ 468:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 296              	 .loc 1 468 0
+ 297              	 .cfi_startproc
+ 298              	 
+ 299              	 
+ 300              	.LVL13:
+ 301 0000 2DE9F843 	 push {r3,r4,r5,r6,r7,r8,r9,lr}
+ 302              	.LCFI8:
+ 303              	 .cfi_def_cfa_offset 32
+ 304              	 .cfi_offset 14,-4
+ 305              	 .cfi_offset 9,-8
+ 306              	 .cfi_offset 8,-12
+ 307              	 .cfi_offset 7,-16
+ 308              	 .cfi_offset 6,-20
+ 309              	 .cfi_offset 5,-24
+ 310              	 .cfi_offset 4,-28
+ 311              	 .cfi_offset 3,-32
+ 312 0004 0546     	 mov r5,r0
+ 313 0006 0846     	 mov r0,r1
+ 314              	.LVL14:
+ 472:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length > 0)
+ 315              	 .loc 1 472 0
+ 316 0008 1646     	 mov r6,r2
+ 317 000a 002A     	 cmp r2,#0
+ 318 000c 5FD0     	 beq .L26
+ 319              	.LVL15:
+ 483:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(block_address != raw_block_address)
+ 320              	 .loc 1 483 0
+ 321 000e 40F20007 	 movw r7,#:lower16:.LANCHOR1
+ 322 0012 C0F20007 	 movt r7,#:upper16:.LANCHOR1
+ 543:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             memcpy(buffer, raw_block + block_offset, read_length);
+ 323              	 .loc 1 543 0
+ 324 0016 40F20009 	 movw r9,#:lower16:.LANCHOR2
+ 325 001a C0F20009 	 movt r9,#:upper16:.LANCHOR2
+ 326              	.LVL16:
+ 327              	.L29:
+ 475:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_offset = offset & 0x01ff;
+ 328              	 .loc 1 475 0
+ 329 001e 4FEAC551 	 lsl r1,r5,#23
+ 330 0022 4FEAD151 	 lsr r1,r1,#23
+ 476:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_address = offset - block_offset;
+ 331              	 .loc 1 476 0
+ 332 0026 C1EB0508 	 rsb r8,r1,r5
+ 333              	.LVL17:
+ 477:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         read_length = 512 - block_offset; /* read up to block border */
+ 334              	 .loc 1 477 0
+ 335 002a C1F50074 	 rsb r4,r1,#512
+ 336 002e A4B2     	 uxth r4,r4
+ 337              	.LVL18:
+ 478:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(read_length > length)
+ 338              	 .loc 1 478 0
+ 339 0030 B442     	 cmp r4,r6
+ 479:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             read_length = length;
+ 340              	 .loc 1 479 0
+ 341 0032 88BF     	 it hi
+ 342 0034 B4B2     	 uxthhi r4,r6
+ 343              	.LVL19:
+ 483:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(block_address != raw_block_address)
+ 344              	 .loc 1 483 0
+ 345 0036 3B68     	 ldr r3,[r7,#0]
+ 346 0038 9845     	 cmp r8,r3
+ 347 003a 3CD0     	 beq .L22
+ 348              	.LBB2:
+ 487:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(!sd_raw_sync())
+ 349              	 .loc 1 487 0
+ 350 003c FFF7FEFF 	 bl sd_raw_sync
+ 351              	.LVL20:
+ 352 0040 0028     	 cmp r0,#0
+ 353 0042 48D0     	 beq .L27
+ 492:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             select_card();
+ 354              	 .loc 1 492 0
+ 355 0044 4FF00100 	 mov r0,#1
+ 356 0048 4FF00001 	 mov r1,#0
+ 357 004c 0246     	 mov r2,r0
+ 358 004e FFF7FEFF 	 bl GPIO_SetDir
+ 359 0052 4FF00100 	 mov r0,#1
+ 360 0056 FFF7FEFF 	 bl GPIO_ReadValue
+ 361 005a 4FF00100 	 mov r0,#1
+ 362 005e 4FF00001 	 mov r1,#0
+ 363 0062 FFF7FEFF 	 bl GPIO_SetValue
+ 498:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(sd_raw_send_command(CMD_READ_SINGLE_BLOCK, block_address))
+ 364              	 .loc 1 498 0
+ 365 0066 4FF01100 	 mov r0,#17
+ 366 006a 4146     	 mov r1,r8
+ 367 006c FFF7FEFF 	 bl sd_raw_send_command
+ 368 0070 A0B1     	 cbz r0,.L28
+ 501:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 unselect_card();
+ 369              	 .loc 1 501 0
+ 370 0072 4FF00100 	 mov r0,#1
+ 371 0076 4FF00001 	 mov r1,#0
+ 372 007a 0246     	 mov r2,r0
+ 373 007c FFF7FEFF 	 bl GPIO_SetDir
+ 374 0080 4FF00100 	 mov r0,#1
+ 375 0084 FFF7FEFF 	 bl GPIO_ReadValue
+ 376 0088 4FF00100 	 mov r0,#1
+ 377 008c 4FF00001 	 mov r1,#0
+ 378 0090 FFF7FEFF 	 bl GPIO_SetValue
+ 502:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 0;
+ 379              	 .loc 1 502 0
+ 380 0094 4FF00000 	 mov r0,#0
+ 381 0098 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 382              	.L28:
+ 506:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             while(sd_raw_rec_byte() != 0xfe);
+ 383              	 .loc 1 506 0 discriminator 1
+ 384 009c FFF7FEFF 	 bl sd_raw_rec_byte
+ 385 00a0 FE28     	 cmp r0,#254
+ 386 00a2 FBD1     	 bne .L28
+ 519:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             uint8_t* cache = raw_block;
+ 387              	 .loc 1 519 0
+ 388 00a4 40F20004 	 movw r4,#:lower16:.LANCHOR2
+ 389              	.LVL21:
+ 390 00a8 C0F20004 	 movt r4,#:upper16:.LANCHOR2
+ 391              	.L24:
+ 392              	.LVL22:
+ 522:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 *cache++ = sd_raw_rec_byte();
+ 393              	 .loc 1 522 0 discriminator 1
+ 394 00ac FFF7FEFF 	 bl sd_raw_rec_byte
+ 395 00b0 04F8010B 	 strb r0,[r4],#1
+ 396              	.LVL23:
+ 397 00b4 FAE7     	 b .L24
+ 398              	.LVL24:
+ 399              	.L22:
+ 400              	.LBE2:
+ 543:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             memcpy(buffer, raw_block + block_offset, read_length);
+ 401              	 .loc 1 543 0
+ 402 00b6 4944     	 add r1,r9,r1
+ 403 00b8 2246     	 mov r2,r4
+ 404 00ba FFF7FEFF 	 bl memcpy
+ 405              	.LVL25:
+ 544:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             buffer += read_length;
+ 406              	 .loc 1 544 0
+ 407 00be 0019     	 adds r0,r0,r4
+ 408              	.LVL26:
+ 549:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset += read_length;
+ 409              	 .loc 1 549 0
+ 410 00c0 2D19     	 adds r5,r5,r4
+ 411              	.LVL27:
+ 472:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length > 0)
+ 412              	 .loc 1 472 0
+ 413 00c2 361B     	 subs r6,r6,r4
+ 414              	.LVL28:
+ 415 00c4 ABD1     	 bne .L29
+ 552:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 416              	 .loc 1 552 0
+ 417 00c6 4FF00100 	 mov r0,#1
+ 418              	.LVL29:
+ 419 00ca BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 420              	.LVL30:
+ 421              	.L26:
+ 422 00ce 4FF00100 	 mov r0,#1
+ 423              	.LVL31:
+ 424 00d2 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 425              	.LVL32:
+ 426              	.L27:
+ 427              	.LBB3:
+ 488:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 0;
+ 428              	 .loc 1 488 0
+ 429 00d6 4FF00000 	 mov r0,#0
+ 430              	.LBE3:
+ 553:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 431              	 .loc 1 553 0
+ 432 00da BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 433              	 .cfi_endproc
+ 434              	.LFE61:
+ 436 00de 00BF     	 .section .text.sd_raw_read_interval,"ax",%progbits
+ 437              	 .align 2
+ 438              	 .global sd_raw_read_interval
+ 439              	 .thumb
+ 440              	 .thumb_func
+ 442              	sd_raw_read_interval:
+ 443              	.LFB62:
+ 580:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 444              	 .loc 1 580 0
+ 445              	 .cfi_startproc
+ 446              	 
+ 447              	 
+ 448              	.LVL33:
+ 449 0000 2DE9F843 	 push {r3,r4,r5,r6,r7,r8,r9,lr}
+ 450              	.LCFI9:
+ 451              	 .cfi_def_cfa_offset 32
+ 452              	 .cfi_offset 14,-4
+ 453              	 .cfi_offset 9,-8
+ 454              	 .cfi_offset 8,-12
+ 455              	 .cfi_offset 7,-16
+ 456              	 .cfi_offset 6,-20
+ 457              	 .cfi_offset 5,-24
+ 458              	 .cfi_offset 4,-28
+ 459              	 .cfi_offset 3,-32
+ 460 0004 0546     	 mov r5,r0
+ 461 0006 1E46     	 mov r6,r3
+ 462 0008 DDF82080 	 ldr r8,[sp,#32]
+ 463 000c DDF82490 	 ldr r9,[sp,#36]
+ 581:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!buffer || interval == 0 || length < interval || !callback)
+ 464              	 .loc 1 581 0
+ 465 0010 0F46     	 mov r7,r1
+ 466 0012 1446     	 mov r4,r2
+ 467 0014 D2F10102 	 rsbs r2,r2,#1
+ 468              	.LVL34:
+ 469 0018 38BF     	 it cc
+ 470 001a 0022     	 movcc r2,#0
+ 471 001c 0029     	 cmp r1,#0
+ 472 001e 08BF     	 it eq
+ 473 0020 42F00102 	 orreq r2,r2,#1
+ 474 0024 EAB9     	 cbnz r2,.L35
+ 581:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!buffer || interval == 0 || length < interval || !callback)
+ 475              	 .loc 1 581 0 is_stmt 0 discriminator 1
+ 476 0026 D8F10103 	 rsbs r3,r8,#1
+ 477              	.LVL35:
+ 478 002a 38BF     	 it cc
+ 479 002c 0023     	 movcc r3,#0
+ 480 002e A642     	 cmp r6,r4
+ 481 0030 38BF     	 it cc
+ 482 0032 43F00103 	 orrcc r3,r3,#1
+ 483 0036 C3B9     	 cbnz r3,.L36
+ 585:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length >= interval)
+ 484              	 .loc 1 585 0 is_stmt 1 discriminator 1
+ 485 0038 B442     	 cmp r4,r6
+ 486 003a 1AD8     	 bhi .L37
+ 487              	.LVL36:
+ 488              	.L40:
+ 590:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!sd_raw_read(offset, buffer, interval))
+ 489              	 .loc 1 590 0
+ 490 003c 2846     	 mov r0,r5
+ 491 003e 3946     	 mov r1,r7
+ 492 0040 2246     	 mov r2,r4
+ 493 0042 FFF7FEFF 	 bl sd_raw_read
+ 494 0046 C0B1     	 cbz r0,.L38
+ 592:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!callback(buffer, offset, p))
+ 495              	 .loc 1 592 0
+ 496 0048 3846     	 mov r0,r7
+ 497 004a 2946     	 mov r1,r5
+ 498 004c 4A46     	 mov r2,r9
+ 499 004e C047     	 blx r8
+ 500 0050 B8B1     	 cbz r0,.L39
+ 594:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset += interval;
+ 501              	 .loc 1 594 0
+ 502 0052 2D19     	 adds r5,r5,r4
+ 503              	.LVL37:
+ 595:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         length -= interval;
+ 504              	 .loc 1 595 0
+ 505 0054 361B     	 subs r6,r6,r4
+ 506              	.LVL38:
+ 585:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length >= interval)
+ 507              	 .loc 1 585 0
+ 508 0056 B442     	 cmp r4,r6
+ 509 0058 F0D9     	 bls .L40
+ 598:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 510              	 .loc 1 598 0
+ 511 005a 4FF00100 	 mov r0,#1
+ 512 005e BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 513              	.LVL39:
+ 514              	.L35:
+ 582:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 515              	 .loc 1 582 0
+ 516 0062 4FF00000 	 mov r0,#0
+ 517              	.LVL40:
+ 518 0066 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 519              	.LVL41:
+ 520              	.L36:
+ 521 006a 4FF00000 	 mov r0,#0
+ 522 006e BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 523              	.L37:
+ 598:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 524              	 .loc 1 598 0
+ 525 0072 4FF00100 	 mov r0,#1
+ 526 0076 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 527              	.L38:
+ 591:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 528              	 .loc 1 591 0
+ 529 007a 4FF00000 	 mov r0,#0
+ 530 007e BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 531              	.L39:
+ 598:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 532              	 .loc 1 598 0
+ 533 0082 4FF00100 	 mov r0,#1
+ 676:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 534              	 .loc 1 676 0
+ 535 0086 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 536              	 .cfi_endproc
+ 537              	.LFE62:
+ 539 008a 00BF     	 .section .text.sd_raw_init,"ax",%progbits
+ 540              	 .align 2
+ 541              	 .global sd_raw_init
+ 542              	 .thumb
+ 543              	 .thumb_func
+ 545              	sd_raw_init:
+ 546              	.LFB55:
+ 174:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 547              	 .loc 1 174 0
+ 548              	 .cfi_startproc
+ 549              	 
+ 550              	 
+ 551 0000 70B5     	 push {r4,r5,r6,lr}
+ 552              	.LCFI10:
+ 553              	 .cfi_def_cfa_offset 16
+ 554              	 .cfi_offset 14,-4
+ 555              	 .cfi_offset 6,-8
+ 556              	 .cfi_offset 5,-12
+ 557              	 .cfi_offset 4,-16
+ 558 0002 86B0     	 sub sp,sp,#24
+ 559              	.LCFI11:
+ 560              	 .cfi_def_cfa_offset 40
+ 176:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_available();
+ 561              	 .loc 1 176 0
+ 562 0004 4FF00100 	 mov r0,#1
+ 563 0008 4FF00001 	 mov r1,#0
+ 564 000c 0A46     	 mov r2,r1
+ 565 000e FFF7FEFF 	 bl GPIO_SetDir
+ 177:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_locked();
+ 566              	 .loc 1 177 0
+ 567 0012 4FF00100 	 mov r0,#1
+ 568 0016 4FF00001 	 mov r1,#0
+ 569 001a 0A46     	 mov r2,r1
+ 570 001c FFF7FEFF 	 bl GPIO_SetDir
+ 180:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_mosi();
+ 571              	 .loc 1 180 0
+ 572 0020 4FF00100 	 mov r0,#1
+ 573 0024 4FF00001 	 mov r1,#0
+ 574 0028 0246     	 mov r2,r0
+ 575 002a FFF7FEFF 	 bl GPIO_SetDir
+ 181:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_sck();
+ 576              	 .loc 1 181 0
+ 577 002e 4FF00100 	 mov r0,#1
+ 578 0032 4FF00001 	 mov r1,#0
+ 579 0036 0246     	 mov r2,r0
+ 580 0038 FFF7FEFF 	 bl GPIO_SetDir
+ 182:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_ss();
+ 581              	 .loc 1 182 0
+ 582 003c 4FF00100 	 mov r0,#1
+ 583 0040 4FF00001 	 mov r1,#0
+ 584 0044 0246     	 mov r2,r0
+ 585 0046 FFF7FEFF 	 bl GPIO_SetDir
+ 183:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     configure_pin_miso();
+ 586              	 .loc 1 183 0
+ 587 004a 4FF00100 	 mov r0,#1
+ 588 004e 4FF00001 	 mov r1,#0
+ 589 0052 0246     	 mov r2,r0
+ 590 0054 FFF7FEFF 	 bl GPIO_SetDir
+ 185:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     unselect_card();
+ 591              	 .loc 1 185 0
+ 592 0058 4FF00100 	 mov r0,#1
+ 593 005c 4FF00001 	 mov r1,#0
+ 594 0060 0246     	 mov r2,r0
+ 595 0062 FFF7FEFF 	 bl GPIO_SetDir
+ 596 0066 4FF00100 	 mov r0,#1
+ 597 006a FFF7FEFF 	 bl GPIO_ReadValue
+ 598 006e 4FF00100 	 mov r0,#1
+ 599 0072 4FF00001 	 mov r1,#0
+ 600 0076 FFF7FEFF 	 bl GPIO_SetValue
+ 188:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.Databit = SPI_DATABIT_8;
+ 601              	 .loc 1 188 0
+ 602 007a 4FF40063 	 mov r3,#2048
+ 603 007e 0093     	 str r3,[sp,#0]
+ 189:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.CPHA = SPI_CPHA_FIRST;
+ 604              	 .loc 1 189 0
+ 605 0080 4FF00004 	 mov r4,#0
+ 606 0084 0194     	 str r4,[sp,#4]
+ 190:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.CPOL = SPI_CPOL_HI;
+ 607              	 .loc 1 190 0
+ 608 0086 0294     	 str r4,[sp,#8]
+ 191:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.Mode = SPI_MASTER_MODE;
+ 609              	 .loc 1 191 0
+ 610 0088 4FF02003 	 mov r3,#32
+ 611 008c 0393     	 str r3,[sp,#12]
+ 192:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.DataOrder = SPI_DATA_MSB_FIRST;
+ 612              	 .loc 1 192 0
+ 613 008e 0494     	 str r4,[sp,#16]
+ 193:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     spi_cfg.ClockRate = 50000000/128;
+ 614              	 .loc 1 193 0
+ 615 0090 4FF2E153 	 movw r3,#62945
+ 616 0094 C0F20503 	 movt r3,5
+ 617 0098 0593     	 str r3,[sp,#20]
+ 195:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     SPI_Init((LPC_SPI_TypeDef *)LPC_SPI, &spi_cfg);
+ 618              	 .loc 1 195 0
+ 619 009a 2046     	 mov r0,r4
+ 620 009c C4F20200 	 movt r0,16386
+ 621 00a0 6946     	 mov r1,sp
+ 622 00a2 FFF7FEFF 	 bl SPI_Init
+ 209:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     sd_raw_card_type = 0;
+ 623              	 .loc 1 209 0
+ 624 00a6 40F20003 	 movw r3,#:lower16:.LANCHOR3
+ 625 00aa C0F20003 	 movt r3,#:upper16:.LANCHOR3
+ 626 00ae 1C70     	 strb r4,[r3,#0]
+ 211:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!sd_raw_available())
+ 627              	 .loc 1 211 0
+ 628 00b0 FFF7FEFF 	 bl sd_raw_available
+ 629 00b4 0028     	 cmp r0,#0
+ 630 00b6 00F0A880 	 beq .L51
+ 631 00ba 4FF00A04 	 mov r4,#10
+ 632              	.L44:
+ 219:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_rec_byte();
+ 633              	 .loc 1 219 0 discriminator 2
+ 634 00be FFF7FEFF 	 bl sd_raw_rec_byte
+ 635 00c2 04F1FF34 	 add r4,r4,#-1
+ 636 00c6 E4B2     	 uxtb r4,r4
+ 216:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 10; ++i)
+ 637              	 .loc 1 216 0 discriminator 2
+ 638 00c8 002C     	 cmp r4,#0
+ 639 00ca F8D1     	 bne .L44
+ 223:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     select_card();
+ 640              	 .loc 1 223 0
+ 641 00cc 4FF00100 	 mov r0,#1
+ 642 00d0 4FF00001 	 mov r1,#0
+ 643 00d4 0246     	 mov r2,r0
+ 644 00d6 FFF7FEFF 	 bl GPIO_SetDir
+ 645 00da 4FF00100 	 mov r0,#1
+ 646 00de FFF7FEFF 	 bl GPIO_ReadValue
+ 647 00e2 4FF00100 	 mov r0,#1
+ 648 00e6 4FF00001 	 mov r1,#0
+ 649 00ea FFF7FEFF 	 bl GPIO_SetValue
+ 650              	.LVL42:
+ 651              	.L45:
+ 229:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         response = sd_raw_send_command(CMD_GO_IDLE_STATE, 0);
+ 652              	 .loc 1 229 0
+ 653 00ee 2046     	 mov r0,r4
+ 654 00f0 2146     	 mov r1,r4
+ 655 00f2 FFF7FEFF 	 bl sd_raw_send_command
+ 656              	.LVL43:
+ 230:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(response == (1 << R1_IDLE_STATE))
+ 657              	 .loc 1 230 0
+ 658 00f6 0128     	 cmp r0,#1
+ 659 00f8 F9D1     	 bne .L45
+ 259:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_send_command(CMD_APP, 0);
+ 660              	 .loc 1 259 0
+ 661 00fa 4FF03700 	 mov r0,#55
+ 662              	.LVL44:
+ 663 00fe 4FF00001 	 mov r1,#0
+ 664 0102 FFF7FEFF 	 bl sd_raw_send_command
+ 260:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         response = sd_raw_send_command(CMD_SD_SEND_OP_COND, 0);
+ 665              	 .loc 1 260 0
+ 666 0106 4FF02900 	 mov r0,#41
+ 667 010a 4FF00001 	 mov r1,#0
+ 668 010e FFF7FEFF 	 bl sd_raw_send_command
+ 669              	.LVL45:
+ 261:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if((response & (1 << R1_ILL_COMMAND)) == 0)
+ 670              	 .loc 1 261 0
+ 671 0112 10F0040F 	 tst r0,#4
+ 264:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_card_type |= (1 << SD_RAW_SPEC_1);
+ 672              	 .loc 1 264 0
+ 673 0116 01BF     	 itttt eq
+ 674 0118 40F20003 	 movweq r3,#:lower16:.LANCHOR3
+ 675 011c C0F20003 	 movteq r3,#:upper16:.LANCHOR3
+ 676 0120 1A78     	 ldrbeq r2,[r3,#0]
+ 677 0122 42F00102 	 orreq r2,r2,#1
+ 678 0126 08BF     	 it eq
+ 679 0128 1A70     	 strbeq r2,[r3,#0]
+ 275:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_card_type & ((1 << SD_RAW_SPEC_1) | (1 << SD_RAW_SPEC_2)))
+ 680              	 .loc 1 275 0
+ 681 012a 40F20005 	 movw r5,#:lower16:.LANCHOR3
+ 682 012e C0F20005 	 movt r5,#:upper16:.LANCHOR3
+ 683              	.LBB4:
+ 282:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_send_command(CMD_APP, 0);
+ 684              	 .loc 1 282 0
+ 685 0132 4FF03706 	 mov r6,#55
+ 686 0136 4FF00004 	 mov r4,#0
+ 687              	.LVL46:
+ 688              	.L52:
+ 689              	.LBE4:
+ 275:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_card_type & ((1 << SD_RAW_SPEC_1) | (1 << SD_RAW_SPEC_2)))
+ 690              	 .loc 1 275 0
+ 691 013a 2B78     	 ldrb r3,[r5,#0]
+ 692 013c 13F0030F 	 tst r3,#3
+ 693 0140 09D0     	 beq .L47
+ 694              	.LVL47:
+ 695              	.LBB5:
+ 282:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_send_command(CMD_APP, 0);
+ 696              	 .loc 1 282 0
+ 697 0142 3046     	 mov r0,r6
+ 698 0144 2146     	 mov r1,r4
+ 699 0146 FFF7FEFF 	 bl sd_raw_send_command
+ 283:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             response = sd_raw_send_command(CMD_SD_SEND_OP_COND, arg);
+ 700              	 .loc 1 283 0
+ 701 014a 4FF02900 	 mov r0,#41
+ 702 014e 2146     	 mov r1,r4
+ 703 0150 FFF7FEFF 	 bl sd_raw_send_command
+ 704              	.LVL48:
+ 705 0154 04E0     	 b .L48
+ 706              	.LVL49:
+ 707              	.L47:
+ 708              	.LBE5:
+ 287:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             response = sd_raw_send_command(CMD_SEND_OP_COND, 0);
+ 709              	 .loc 1 287 0
+ 710 0156 4FF00100 	 mov r0,#1
+ 711 015a 2146     	 mov r1,r4
+ 712 015c FFF7FEFF 	 bl sd_raw_send_command
+ 713              	.LVL50:
+ 714              	.L48:
+ 290:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if((response & (1 << R1_IDLE_STATE)) == 0)
+ 715              	 .loc 1 290 0
+ 716 0160 10F0010F 	 tst r0,#1
+ 717 0164 E9D1     	 bne .L52
+ 319:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(sd_raw_send_command(CMD_SET_BLOCKLEN, 512))
+ 718              	 .loc 1 319 0
+ 719 0166 4FF01000 	 mov r0,#16
+ 720              	.LVL51:
+ 721 016a 4FF40071 	 mov r1,#512
+ 722 016e FFF7FEFF 	 bl sd_raw_send_command
+ 723 0172 98B1     	 cbz r0,.L50
+ 321:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         unselect_card();
+ 724              	 .loc 1 321 0
+ 725 0174 4FF00100 	 mov r0,#1
+ 726 0178 4FF00001 	 mov r1,#0
+ 727 017c 0246     	 mov r2,r0
+ 728 017e FFF7FEFF 	 bl GPIO_SetDir
+ 729 0182 4FF00100 	 mov r0,#1
+ 730 0186 FFF7FEFF 	 bl GPIO_ReadValue
+ 731 018a 4FF00100 	 mov r0,#1
+ 732 018e 4FF00001 	 mov r1,#0
+ 733 0192 FFF7FEFF 	 bl GPIO_SetValue
+ 322:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 734              	 .loc 1 322 0
+ 735 0196 4FF00000 	 mov r0,#0
+ 736 019a 38E0     	 b .L43
+ 737              	.L50:
+ 326:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     unselect_card();
+ 738              	 .loc 1 326 0
+ 739 019c 4FF00100 	 mov r0,#1
+ 740 01a0 4FF00001 	 mov r1,#0
+ 741 01a4 0246     	 mov r2,r0
+ 742 01a6 FFF7FEFF 	 bl GPIO_SetDir
+ 743 01aa 4FF00100 	 mov r0,#1
+ 744 01ae FFF7FEFF 	 bl GPIO_ReadValue
+ 745 01b2 4FF00100 	 mov r0,#1
+ 746 01b6 4FF00001 	 mov r1,#0
+ 747 01ba FFF7FEFF 	 bl GPIO_SetValue
+ 331:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     SPI_SetClock ((LPC_SPI_TypeDef *)LPC_SPI, 50000000/4);
+ 748              	 .loc 1 331 0
+ 749 01be 4FF00000 	 mov r0,#0
+ 750 01c2 C4F20200 	 movt r0,16386
+ 751 01c6 4BF62041 	 movw r1,#48160
+ 752 01ca C0F2BE01 	 movt r1,190
+ 753 01ce FFF7FEFF 	 bl SPI_SetClock
+ 335:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     raw_block_address = (offset_t) -1;
+ 754              	 .loc 1 335 0
+ 755 01d2 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 756 01d6 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 757 01da 4FF0FF32 	 mov r2,#-1
+ 758 01de 1A60     	 str r2,[r3,#0]
+ 337:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     raw_block_written = 1;
+ 759              	 .loc 1 337 0
+ 760 01e0 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 761 01e4 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 762 01e8 4FF00102 	 mov r2,#1
+ 763 01ec 1A70     	 strb r2,[r3,#0]
+ 339:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!sd_raw_read(0, raw_block, sizeof(raw_block)))
+ 764              	 .loc 1 339 0
+ 765 01ee 4FF00000 	 mov r0,#0
+ 766 01f2 40F20001 	 movw r1,#:lower16:.LANCHOR2
+ 767 01f6 C0F20001 	 movt r1,#:upper16:.LANCHOR2
+ 768 01fa 4FF40072 	 mov r2,#512
+ 769 01fe FFF7FEFF 	 bl sd_raw_read
+ 212:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 770              	 .loc 1 212 0
+ 771 0202 0030     	 adds r0,r0,#0
+ 772 0204 18BF     	 it ne
+ 773 0206 0120     	 movne r0,#1
+ 774 0208 01E0     	 b .L43
+ 775              	.L51:
+ 776 020a 4FF00000 	 mov r0,#0
+ 777              	.L43:
+ 344:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 778              	 .loc 1 344 0
+ 779 020e 06B0     	 add sp,sp,#24
+ 780 0210 70BD     	 pop {r4,r5,r6,pc}
+ 781              	 .cfi_endproc
+ 782              	.LFE55:
+ 784 0212 00BF     	 .section .text.sd_raw_write,"ax",%progbits
+ 785              	 .align 2
+ 786              	 .global sd_raw_write
+ 787              	 .thumb
+ 788              	 .thumb_func
+ 790              	sd_raw_write:
+ 791              	.LFB63:
+ 694:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 792              	 .loc 1 694 0
+ 793              	 .cfi_startproc
+ 794              	 
+ 795              	 
+ 796              	.LVL52:
+ 797 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 798              	.LCFI12:
+ 799              	 .cfi_def_cfa_offset 24
+ 800              	 .cfi_offset 14,-4
+ 801              	 .cfi_offset 8,-8
+ 802              	 .cfi_offset 7,-12
+ 803              	 .cfi_offset 6,-16
+ 804              	 .cfi_offset 5,-20
+ 805              	 .cfi_offset 4,-24
+ 806 0004 0646     	 mov r6,r0
+ 807 0006 8846     	 mov r8,r1
+ 808 0008 1746     	 mov r7,r2
+ 695:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(sd_raw_locked())
+ 809              	 .loc 1 695 0
+ 810 000a FFF7FEFF 	 bl sd_raw_locked
+ 811              	.LVL53:
+ 812 000e 0028     	 cmp r0,#0
+ 813 0010 7DD0     	 beq .L70
+ 814 0012 82E0     	 b .L71
+ 815              	.L65:
+ 816              	.LBB6:
+ 704:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_offset = offset & 0x01ff;
+ 817              	 .loc 1 704 0
+ 818 0014 4FEAC654 	 lsl r4,r6,#23
+ 819 0018 4FEAD454 	 lsr r4,r4,#23
+ 820              	.LVL54:
+ 705:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         block_address = offset - block_offset;
+ 821              	 .loc 1 705 0
+ 822 001c 361B     	 subs r6,r6,r4
+ 823              	.LVL55:
+ 706:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         write_length = 512 - block_offset; /* write up to block border */
+ 824              	 .loc 1 706 0
+ 825 001e C4F50075 	 rsb r5,r4,#512
+ 826 0022 ADB2     	 uxth r5,r5
+ 827              	.LVL56:
+ 707:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(write_length > length)
+ 828              	 .loc 1 707 0
+ 829 0024 AF42     	 cmp r7,r5
+ 708:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             write_length = length;
+ 830              	 .loc 1 708 0
+ 831 0026 38BF     	 it cc
+ 832 0028 BDB2     	 uxthcc r5,r7
+ 833              	.LVL57:
+ 713:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(block_address != raw_block_address)
+ 834              	 .loc 1 713 0
+ 835 002a 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 836 002e C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 837 0032 1B68     	 ldr r3,[r3,#0]
+ 838 0034 9E42     	 cmp r6,r3
+ 839 0036 1DD0     	 beq .L60
+ 716:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(!sd_raw_sync())
+ 840              	 .loc 1 716 0
+ 841 0038 FFF7FEFF 	 bl sd_raw_sync
+ 842 003c 0028     	 cmp r0,#0
+ 843 003e 70D0     	 beq .L67
+ 720:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(block_offset || write_length < 512)
+ 844              	 .loc 1 720 0
+ 845 0040 B5F5007F 	 cmp r5,#512
+ 846 0044 2CBF     	 ite cs
+ 847 0046 0023     	 movcs r3,#0
+ 848 0048 0123     	 movcc r3,#1
+ 849 004a 002C     	 cmp r4,#0
+ 850 004c 18BF     	 it ne
+ 851 004e 43F00103 	 orrne r3,r3,#1
+ 852 0052 53B1     	 cbz r3,.L61
+ 722:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 if(!sd_raw_read(block_address, raw_block, sizeof(raw_block)))
+ 853              	 .loc 1 722 0
+ 854 0054 3046     	 mov r0,r6
+ 855 0056 40F20001 	 movw r1,#:lower16:.LANCHOR2
+ 856 005a C0F20001 	 movt r1,#:upper16:.LANCHOR2
+ 857 005e 4FF40072 	 mov r2,#512
+ 858 0062 FFF7FEFF 	 bl sd_raw_read
+ 859 0066 0028     	 cmp r0,#0
+ 860 0068 5FD0     	 beq .L68
+ 861              	.L61:
+ 725:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             raw_block_address = block_address;
+ 862              	 .loc 1 725 0
+ 863 006a 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 864 006e C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 865 0072 1E60     	 str r6,[r3,#0]
+ 866              	.L60:
+ 728:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(buffer != raw_block)
+ 867              	 .loc 1 728 0
+ 868 0074 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 869 0078 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 870 007c 9845     	 cmp r8,r3
+ 871 007e 0DD0     	 beq .L62
+ 730:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             memcpy(raw_block + block_offset, buffer, write_length);
+ 872              	 .loc 1 730 0
+ 873 0080 1819     	 adds r0,r3,r4
+ 874 0082 4146     	 mov r1,r8
+ 875 0084 2A46     	 mov r2,r5
+ 876 0086 FFF7FEFF 	 bl memcpy
+ 733:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             raw_block_written = 0;
+ 877              	 .loc 1 733 0
+ 878 008a 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 879 008e C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 880 0092 4FF00002 	 mov r2,#0
+ 881 0096 1A70     	 strb r2,[r3,#0]
+ 735:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(length == write_length)
+ 882              	 .loc 1 735 0
+ 883 0098 AF42     	 cmp r7,r5
+ 884 009a 4AD0     	 beq .L69
+ 885              	.L62:
+ 741:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         select_card();
+ 886              	 .loc 1 741 0
+ 887 009c 4FF00100 	 mov r0,#1
+ 888 00a0 4FF00001 	 mov r1,#0
+ 889 00a4 0246     	 mov r2,r0
+ 890 00a6 FFF7FEFF 	 bl GPIO_SetDir
+ 891 00aa 4FF00100 	 mov r0,#1
+ 892 00ae FFF7FEFF 	 bl GPIO_ReadValue
+ 893 00b2 4FF00100 	 mov r0,#1
+ 894 00b6 4FF00001 	 mov r1,#0
+ 895 00ba FFF7FEFF 	 bl GPIO_SetValue
+ 747:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(sd_raw_send_command(CMD_WRITE_SINGLE_BLOCK, block_address))
+ 896              	 .loc 1 747 0
+ 897 00be 4FF01800 	 mov r0,#24
+ 898 00c2 3146     	 mov r1,r6
+ 899 00c4 FFF7FEFF 	 bl sd_raw_send_command
+ 900 00c8 A0B1     	 cbz r0,.L63
+ 750:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             unselect_card();
+ 901              	 .loc 1 750 0
+ 902 00ca 4FF00100 	 mov r0,#1
+ 903 00ce 4FF00001 	 mov r1,#0
+ 904 00d2 0246     	 mov r2,r0
+ 905 00d4 FFF7FEFF 	 bl GPIO_SetDir
+ 906 00d8 4FF00100 	 mov r0,#1
+ 907 00dc FFF7FEFF 	 bl GPIO_ReadValue
+ 908 00e0 4FF00100 	 mov r0,#1
+ 909 00e4 4FF00001 	 mov r1,#0
+ 910 00e8 FFF7FEFF 	 bl GPIO_SetValue
+ 751:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 911              	 .loc 1 751 0
+ 912 00ec 4FF00000 	 mov r0,#0
+ 913 00f0 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 914              	.L63:
+ 755:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         sd_raw_send_byte(0xfe);
+ 915              	 .loc 1 755 0
+ 916 00f4 4FF0FE00 	 mov r0,#254
+ 917 00f8 FFF7FEFF 	 bl sd_raw_send_byte
+ 918              	.LVL58:
+ 758:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint8_t* cache = raw_block;
+ 919              	 .loc 1 758 0
+ 920 00fc 40F20004 	 movw r4,#:lower16:.LANCHOR2
+ 921              	.LVL59:
+ 922 0100 C0F20004 	 movt r4,#:upper16:.LANCHOR2
+ 923              	.LVL60:
+ 924              	.L64:
+ 761:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             sd_raw_send_byte(*cache++);
+ 925              	 .loc 1 761 0 discriminator 1
+ 926 0104 14F8010B 	 ldrb r0,[r4],#1
+ 927              	.LVL61:
+ 928 0108 FFF7FEFF 	 bl sd_raw_send_byte
+ 929 010c FAE7     	 b .L64
+ 930              	.LVL62:
+ 931              	.L70:
+ 932              	.LBE6:
+ 701:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(length > 0)
+ 933              	 .loc 1 701 0 discriminator 1
+ 934 010e 002F     	 cmp r7,#0
+ 935 0110 80D1     	 bne .L65
+ 783:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 936              	 .loc 1 783 0
+ 937 0112 4FF00100 	 mov r0,#1
+ 938 0116 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 939              	.L71:
+ 696:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 940              	 .loc 1 696 0
+ 941 011a 4FF00000 	 mov r0,#0
+ 942 011e BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 943              	.LVL63:
+ 944              	.L67:
+ 945              	.LBB7:
+ 717:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 0;
+ 946              	 .loc 1 717 0
+ 947 0122 4FF00000 	 mov r0,#0
+ 948 0126 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 949              	.L68:
+ 723:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     return 0;
+ 950              	 .loc 1 723 0
+ 951 012a 4FF00000 	 mov r0,#0
+ 952 012e BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 953              	.L69:
+ 736:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 return 1;
+ 954              	 .loc 1 736 0
+ 955 0132 4FF00100 	 mov r0,#1
+ 956              	.LBE7:
+ 784:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 957              	 .loc 1 784 0
+ 958 0136 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 959              	 .cfi_endproc
+ 960              	.LFE63:
+ 962 013a 00BF     	 .section .text.sd_raw_write_interval,"ax",%progbits
+ 963              	 .align 2
+ 964              	 .global sd_raw_write_interval
+ 965              	 .thumb
+ 966              	 .thumb_func
+ 968              	sd_raw_write_interval:
+ 969              	.LFB64:
+ 807:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 970              	 .loc 1 807 0
+ 971              	 .cfi_startproc
+ 972              	 
+ 973              	 
+ 974              	.LVL64:
+ 975 0000 2DE9F84F 	 push {r3,r4,r5,r6,r7,r8,r9,sl,fp,lr}
+ 976              	.LCFI13:
+ 977              	 .cfi_def_cfa_offset 40
+ 978              	 .cfi_offset 14,-4
+ 979              	 .cfi_offset 11,-8
+ 980              	 .cfi_offset 10,-12
+ 981              	 .cfi_offset 9,-16
+ 982              	 .cfi_offset 8,-20
+ 983              	 .cfi_offset 7,-24
+ 984              	 .cfi_offset 6,-28
+ 985              	 .cfi_offset 5,-32
+ 986              	 .cfi_offset 4,-36
+ 987              	 .cfi_offset 3,-40
+ 988 0004 0546     	 mov r5,r0
+ 989 0006 1646     	 mov r6,r2
+ 990 0008 DDF828B0 	 ldr fp,[sp,#40]
+ 812:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!buffer || !callback)
+ 991              	 .loc 1 812 0
+ 992 000c 0F46     	 mov r7,r1
+ 993 000e 9946     	 mov r9,r3
+ 994 0010 D3F10103 	 rsbs r3,r3,#1
+ 995              	.LVL65:
+ 996 0014 38BF     	 it cc
+ 997 0016 0023     	 movcc r3,#0
+ 998 0018 0029     	 cmp r1,#0
+ 999 001a 08BF     	 it eq
+ 1000 001c 43F00103 	 orreq r3,r3,#1
+ 1001 0020 43BB     	 cbnz r3,.L76
+ 815:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t endless = (length == 0);
+ 1002              	 .loc 1 815 0
+ 1003 0022 D2F10108 	 rsbs r8,r2,#1
+ 1004 0026 38BF     	 it cc
+ 1005 0028 4FF00008 	 movcc r8,#0
+ 1006              	.LVL66:
+ 816:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(endless || length > 0)
+ 1007              	 .loc 1 816 0
+ 1008 002c C246     	 mov sl,r8
+ 1009 002e 002A     	 cmp r2,#0
+ 1010 0030 0CBF     	 ite eq
+ 1011 0032 4346     	 moveq r3,r8
+ 1012 0034 48F00103 	 orrne r3,r8,#1
+ 1013 0038 03B3     	 cbz r3,.L77
+ 1014              	.LVL67:
+ 1015              	.L81:
+ 1016              	.LBB8:
+ 818:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint16_t bytes_to_write = callback(buffer, offset, p);
+ 1017              	 .loc 1 818 0
+ 1018 003a 3846     	 mov r0,r7
+ 1019 003c 2946     	 mov r1,r5
+ 1020 003e 5A46     	 mov r2,fp
+ 1021 0040 C847     	 blx r9
+ 1022 0042 84B2     	 uxth r4,r0
+ 1023              	.LVL68:
+ 819:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!bytes_to_write)
+ 1024              	 .loc 1 819 0
+ 1025 0044 F4B1     	 cbz r4,.L78
+ 821:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!endless && bytes_to_write > length)
+ 1026              	 .loc 1 821 0
+ 1027 0046 B8F1000F 	 cmp r8,#0
+ 1028 004a 01D1     	 bne .L74
+ 821:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!endless && bytes_to_write > length)
+ 1029              	 .loc 1 821 0 is_stmt 0 discriminator 1
+ 1030 004c B442     	 cmp r4,r6
+ 1031 004e 1DD8     	 bhi .L79
+ 1032              	.L74:
+ 827:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(!sd_raw_write(offset, buffer, bytes_to_write))
+ 1033              	 .loc 1 827 0 is_stmt 1
+ 1034 0050 2846     	 mov r0,r5
+ 1035 0052 3946     	 mov r1,r7
+ 1036 0054 2246     	 mov r2,r4
+ 1037 0056 FFF7FEFF 	 bl sd_raw_write
+ 1038 005a D8B1     	 cbz r0,.L80
+ 830:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         offset += bytes_to_write;
+ 1039              	 .loc 1 830 0
+ 1040 005c 2D19     	 adds r5,r5,r4
+ 1041              	.LVL69:
+ 1042              	.LBE8:
+ 816:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(endless || length > 0)
+ 1043              	 .loc 1 816 0
+ 1044 005e 361B     	 subs r6,r6,r4
+ 1045              	.LVL70:
+ 1046 0060 0CBF     	 ite eq
+ 1047 0062 5346     	 moveq r3,sl
+ 1048 0064 4AF00103 	 orrne r3,sl,#1
+ 1049 0068 002B     	 cmp r3,#0
+ 1050 006a E6D1     	 bne .L81
+ 834:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 1051              	 .loc 1 834 0
+ 1052 006c 4FF00100 	 mov r0,#1
+ 1053 0070 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1054              	.LVL71:
+ 1055              	.L76:
+ 813:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 1056              	 .loc 1 813 0
+ 1057 0074 4FF00000 	 mov r0,#0
+ 1058              	.LVL72:
+ 1059 0078 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1060              	.LVL73:
+ 1061              	.L77:
+ 834:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 1062              	 .loc 1 834 0
+ 1063 007c 4FF00100 	 mov r0,#1
+ 1064 0080 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1065              	.LVL74:
+ 1066              	.L78:
+ 1067              	.LBB9:
+ 1068 0084 4FF00100 	 mov r0,#1
+ 1069 0088 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1070              	.L79:
+ 822:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 1071              	 .loc 1 822 0
+ 1072 008c 4FF00000 	 mov r0,#0
+ 1073 0090 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1074              	.L80:
+ 828:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             return 0;
+ 1075              	 .loc 1 828 0
+ 1076 0094 4FF00000 	 mov r0,#0
+ 1077              	.LBE9:
+ 835:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 1078              	 .loc 1 835 0
+ 1079 0098 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1080              	 .cfi_endproc
+ 1081              	.LFE64:
+ 1083              	 .section .text.sd_raw_get_info,"ax",%progbits
+ 1084              	 .align 2
+ 1085              	 .global sd_raw_get_info
+ 1086              	 .thumb
+ 1087              	 .thumb_func
+ 1089              	sd_raw_get_info:
+ 1090              	.LFB66:
+ 862:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 863:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 864:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** /**
+ 865:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \ingroup sd_raw
+ 866:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * Reads informational data from the card.
+ 867:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 868:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * This function reads and returns the card's registers
+ 869:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * containing manufacturing and status information.
+ 870:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 871:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \note: The information retrieved by this function is
+ 872:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *        not required in any way to operate on the card,
+ 873:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *        but it might be nice to display some of the data
+ 874:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *        to the user.
+ 875:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  *
+ 876:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \param[in] info A pointer to the structure into which to save the information.
+ 877:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  * \returns 0 on failure, 1 on success.
+ 878:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****  */
+ 879:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** uint8_t sd_raw_get_info(struct sd_raw_info* info)
+ 880:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** {
+ 1091              	 .loc 1 880 0
+ 1092              	 .cfi_startproc
+ 1093              	 
+ 1094              	 
+ 1095              	.LVL75:
+ 1096 0000 2DE9F84F 	 push {r3,r4,r5,r6,r7,r8,r9,sl,fp,lr}
+ 1097              	.LCFI14:
+ 1098              	 .cfi_def_cfa_offset 40
+ 1099              	 .cfi_offset 14,-4
+ 1100              	 .cfi_offset 11,-8
+ 1101              	 .cfi_offset 10,-12
+ 1102              	 .cfi_offset 9,-16
+ 1103              	 .cfi_offset 8,-20
+ 1104              	 .cfi_offset 7,-24
+ 1105              	 .cfi_offset 6,-28
+ 1106              	 .cfi_offset 5,-32
+ 1107              	 .cfi_offset 4,-36
+ 1108              	 .cfi_offset 3,-40
+ 881:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(!info || !sd_raw_available())
+ 1109              	 .loc 1 881 0
+ 1110 0004 0646     	 mov r6,r0
+ 1111 0006 0028     	 cmp r0,#0
+ 1112 0008 00F00081 	 beq .L114
+ 1113              	 .loc 1 881 0 is_stmt 0 discriminator 1
+ 1114 000c FFF7FEFF 	 bl sd_raw_available
+ 1115              	.LVL76:
+ 1116 0010 0028     	 cmp r0,#0
+ 1117 0012 00F0FF80 	 beq .L115
+ 882:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 883:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 884:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     memset(info, 0, sizeof(*info));
+ 1118              	 .loc 1 884 0 is_stmt 1
+ 1119 0016 3046     	 mov r0,r6
+ 1120 0018 4FF00001 	 mov r1,#0
+ 1121 001c 4FF01C02 	 mov r2,#28
+ 1122 0020 FFF7FEFF 	 bl memset
+ 885:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 886:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     select_card();
+ 1123              	 .loc 1 886 0
+ 1124 0024 4FF00100 	 mov r0,#1
+ 1125 0028 4FF00001 	 mov r1,#0
+ 1126 002c 0246     	 mov r2,r0
+ 1127 002e FFF7FEFF 	 bl GPIO_SetDir
+ 1128 0032 4FF00100 	 mov r0,#1
+ 1129 0036 FFF7FEFF 	 bl GPIO_ReadValue
+ 1130 003a 4FF00100 	 mov r0,#1
+ 1131 003e 4FF00001 	 mov r1,#0
+ 1132 0042 FFF7FEFF 	 bl GPIO_SetValue
+ 887:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 888:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* read cid register */
+ 889:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(sd_raw_send_command(CMD_SEND_CID, 0))
+ 1133              	 .loc 1 889 0
+ 1134 0046 4FF00A00 	 mov r0,#10
+ 1135 004a 4FF00001 	 mov r1,#0
+ 1136 004e FFF7FEFF 	 bl sd_raw_send_command
+ 1137 0052 A0B1     	 cbz r0,.L117
+ 890:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 891:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         unselect_card();
+ 1138              	 .loc 1 891 0
+ 1139 0054 4FF00100 	 mov r0,#1
+ 1140 0058 4FF00001 	 mov r1,#0
+ 1141 005c 0246     	 mov r2,r0
+ 1142 005e FFF7FEFF 	 bl GPIO_SetDir
+ 1143 0062 4FF00100 	 mov r0,#1
+ 1144 0066 FFF7FEFF 	 bl GPIO_ReadValue
+ 1145 006a 4FF00100 	 mov r0,#1
+ 1146 006e 4FF00001 	 mov r1,#0
+ 1147 0072 FFF7FEFF 	 bl GPIO_SetValue
+ 892:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 1148              	 .loc 1 892 0
+ 1149 0076 4FF00000 	 mov r0,#0
+ 1150 007a BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1151              	.L117:
+ 893:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 894:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(sd_raw_rec_byte() != 0xfe);
+ 1152              	 .loc 1 894 0 discriminator 1
+ 1153 007e FFF7FEFF 	 bl sd_raw_rec_byte
+ 1154 0082 FE28     	 cmp r0,#254
+ 1155 0084 FBD1     	 bne .L117
+ 1156              	 .loc 1 894 0 is_stmt 0
+ 1157 0086 4FF00104 	 mov r4,#1
+ 1158 008a 02E0     	 b .L86
+ 1159              	.L97:
+ 1160 008c 04F10104 	 add r4,r4,#1
+ 1161 0090 E4B2     	 uxtb r4,r4
+ 1162              	.LVL77:
+ 1163              	.L86:
+ 1164 0092 04F1FF35 	 add r5,r4,#-1
+ 1165 0096 EDB2     	 uxtb r5,r5
+ 1166              	.LBB10:
+ 895:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t i;
+ 896:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 18; ++i)
+ 897:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 898:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint8_t b = sd_raw_rec_byte();
+ 1167              	 .loc 1 898 0 is_stmt 1
+ 1168 0098 FFF7FEFF 	 bl sd_raw_rec_byte
+ 1169              	.LVL78:
+ 899:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 900:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         switch(i)
+ 1170              	 .loc 1 900 0
+ 1171 009c 0E2D     	 cmp r5,#14
+ 1172 009e 28D8     	 bhi .L87
+ 1173 00a0 DFE805F0 	 tbb [pc,r5]
+ 1174              	.L95:
+ 1175 00a4 08       	 .byte (.L88-.L95)/2
+ 1176 00a5 0A       	 .byte (.L89-.L95)/2
+ 1177 00a6 0A       	 .byte (.L89-.L95)/2
+ 1178 00a7 0C       	 .byte (.L90-.L95)/2
+ 1179 00a8 0C       	 .byte (.L90-.L95)/2
+ 1180 00a9 0C       	 .byte (.L90-.L95)/2
+ 1181 00aa 0C       	 .byte (.L90-.L95)/2
+ 1182 00ab 0C       	 .byte (.L90-.L95)/2
+ 1183 00ac 0F       	 .byte (.L91-.L95)/2
+ 1184 00ad 11       	 .byte (.L92-.L95)/2
+ 1185 00ae 11       	 .byte (.L92-.L95)/2
+ 1186 00af 11       	 .byte (.L92-.L95)/2
+ 1187 00b0 11       	 .byte (.L92-.L95)/2
+ 1188 00b1 1B       	 .byte (.L93-.L95)/2
+ 1189 00b2 1F       	 .byte (.L94-.L95)/2
+ 1190 00b3 00       	 .align 1
+ 1191              	.L88:
+ 901:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 902:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 0:
+ 903:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->manufacturer = b;
+ 1192              	 .loc 1 903 0
+ 1193 00b4 3070     	 strb r0,[r6,#0]
+ 904:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 1194              	 .loc 1 904 0
+ 1195 00b6 E9E7     	 b .L97
+ 1196              	.L89:
+ 905:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 1:
+ 906:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 2:
+ 907:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->oem[i - 1] = b;
+ 1197              	 .loc 1 907 0
+ 1198 00b8 7055     	 strb r0,[r6,r5]
+ 908:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 1199              	 .loc 1 908 0
+ 1200 00ba 1AE0     	 b .L87
+ 1201              	.L90:
+ 909:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 3:
+ 910:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 4:
+ 911:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 5:
+ 912:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 6:
+ 913:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 7:
+ 914:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->product[i - 3] = b;
+ 1202              	 .loc 1 914 0
+ 1203 00bc 7519     	 adds r5,r6,r5
+ 1204 00be 6870     	 strb r0,[r5,#1]
+ 915:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 1205              	 .loc 1 915 0
+ 1206 00c0 17E0     	 b .L87
+ 1207              	.L91:
+ 916:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 8:
+ 917:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->revision = b;
+ 1208              	 .loc 1 917 0
+ 1209 00c2 B072     	 strb r0,[r6,#10]
+ 918:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 1210              	 .loc 1 918 0
+ 1211 00c4 E2E7     	 b .L97
+ 1212              	.L92:
+ 919:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 9:
+ 920:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 10:
+ 921:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 11:
+ 922:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 12:
+ 923:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->serial |= (uint32_t) b << ((12 - i) * 8);
+ 1213              	 .loc 1 923 0
+ 1214 00c6 C5F10C05 	 rsb r5,r5,#12
+ 1215 00ca 4FEAC505 	 lsl r5,r5,#3
+ 1216 00ce 00FA05F0 	 lsl r0,r0,r5
+ 1217              	.LVL79:
+ 1218 00d2 F368     	 ldr r3,[r6,#12]
+ 1219 00d4 1843     	 orrs r0,r0,r3
+ 1220 00d6 F060     	 str r0,[r6,#12]
+ 924:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 1221              	 .loc 1 924 0
+ 1222 00d8 0BE0     	 b .L87
+ 1223              	.LVL80:
+ 1224              	.L93:
+ 925:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 13:
+ 926:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->manufacturing_year = b << 4;
+ 1225              	 .loc 1 926 0
+ 1226 00da 4FEA0010 	 lsl r0,r0,#4
+ 1227              	.LVL81:
+ 1228 00de 3074     	 strb r0,[r6,#16]
+ 927:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 1229              	 .loc 1 927 0
+ 1230 00e0 D4E7     	 b .L97
+ 1231              	.LVL82:
+ 1232              	.L94:
+ 928:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             case 14:
+ 929:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->manufacturing_year |= b >> 4;
+ 1233              	 .loc 1 929 0
+ 1234 00e2 337C     	 ldrb r3,[r6,#16]
+ 1235 00e4 43EA1013 	 orr r3,r3,r0,lsr#4
+ 1236 00e8 3374     	 strb r3,[r6,#16]
+ 930:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->manufacturing_month = b & 0x0f;
+ 1237              	 .loc 1 930 0
+ 1238 00ea 00F00F00 	 and r0,r0,#15
+ 1239              	.LVL83:
+ 1240 00ee 7074     	 strb r0,[r6,#17]
+ 1241              	.LVL84:
+ 931:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 break;
+ 1242              	 .loc 1 931 0
+ 1243 00f0 CCE7     	 b .L97
+ 1244              	.LVL85:
+ 1245              	.L87:
+ 1246              	.LBE10:
+ 896:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 18; ++i)
+ 1247              	 .loc 1 896 0
+ 1248 00f2 112C     	 cmp r4,#17
+ 1249 00f4 CAD9     	 bls .L97
+ 1250              	.LVL86:
+ 932:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 933:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 934:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 935:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     /* read csd register */
+ 936:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t csd_read_bl_len = 0;
+ 937:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint8_t csd_c_size_mult = 0;
+ 938:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 939:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint16_t csd_c_size = 0;
+ 940:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #else
+ 941:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     uint32_t csd_c_size = 0;
+ 942:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 943:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     if(sd_raw_send_command(CMD_SEND_CSD, 0))
+ 1251              	 .loc 1 943 0
+ 1252 00f6 4FF00900 	 mov r0,#9
+ 1253 00fa 4FF00001 	 mov r1,#0
+ 1254 00fe FFF7FEFF 	 bl sd_raw_send_command
+ 1255 0102 A0B1     	 cbz r0,.L116
+ 944:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 945:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         unselect_card();
+ 1256              	 .loc 1 945 0
+ 1257 0104 4FF00100 	 mov r0,#1
+ 1258 0108 4FF00001 	 mov r1,#0
+ 1259 010c 0246     	 mov r2,r0
+ 1260 010e FFF7FEFF 	 bl GPIO_SetDir
+ 1261 0112 4FF00100 	 mov r0,#1
+ 1262 0116 FFF7FEFF 	 bl GPIO_ReadValue
+ 1263 011a 4FF00100 	 mov r0,#1
+ 1264 011e 4FF00001 	 mov r1,#0
+ 1265 0122 FFF7FEFF 	 bl GPIO_SetValue
+ 946:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 1266              	 .loc 1 946 0
+ 1267 0126 4FF00000 	 mov r0,#0
+ 1268 012a BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1269              	.L116:
+ 947:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+ 948:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(sd_raw_rec_byte() != 0xfe);
+ 1270              	 .loc 1 948 0 discriminator 1
+ 1271 012e FFF7FEFF 	 bl sd_raw_rec_byte
+ 1272 0132 FE28     	 cmp r0,#254
+ 1273 0134 FBD1     	 bne .L116
+ 1274              	 .loc 1 948 0 is_stmt 0
+ 1275 0136 4FF00107 	 mov r7,#1
+ 1276 013a 4FF00004 	 mov r4,#0
+ 1277              	.LVL87:
+ 1278 013e A046     	 mov r8,r4
+ 1279 0140 A246     	 mov sl,r4
+ 1280 0142 A346     	 mov fp,r4
+ 1281              	.LBB11:
+ 949:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 18; ++i)
+ 950:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     {
+ 951:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint8_t b = sd_raw_rec_byte();
+ 952:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+ 953:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(i == 14)
+ 954:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 955:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(b & 0x40)
+ 956:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->flag_copy = 1;
+ 957:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(b & 0x20)
+ 958:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->flag_write_protect = 1;
+ 959:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(b & 0x10)
+ 960:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->flag_write_protect_temp = 1;
+ 1282              	 .loc 1 960 0 is_stmt 1
+ 1283 0144 B946     	 mov r9,r7
+ 1284 0146 04E0     	 b .L99
+ 1285              	.LVL88:
+ 1286              	.L113:
+ 1287              	.LBE11:
+ 948:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     while(sd_raw_rec_byte() != 0xfe);
+ 1288              	 .loc 1 948 0
+ 1289 0148 04F10104 	 add r4,r4,#1
+ 1290 014c 07F10107 	 add r7,r7,#1
+ 1291 0150 FFB2     	 uxtb r7,r7
+ 1292              	.LVL89:
+ 1293              	.L99:
+ 1294 0152 E5B2     	 uxtb r5,r4
+ 1295              	.LBB12:
+ 951:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         uint8_t b = sd_raw_rec_byte();
+ 1296              	 .loc 1 951 0
+ 1297 0154 FFF7FEFF 	 bl sd_raw_rec_byte
+ 1298              	.LVL90:
+ 953:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         if(i == 14)
+ 1299              	 .loc 1 953 0
+ 1300 0158 0E2D     	 cmp r5,#14
+ 1301 015a 12D1     	 bne .L100
+ 955:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(b & 0x40)
+ 1302              	 .loc 1 955 0
+ 1303 015c 10F0400F 	 tst r0,#64
+ 956:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->flag_copy = 1;
+ 1304              	 .loc 1 956 0
+ 1305 0160 18BF     	 it ne
+ 1306 0162 86F81890 	 strbne r9,[r6,#24]
+ 957:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(b & 0x20)
+ 1307              	 .loc 1 957 0
+ 1308 0166 10F0200F 	 tst r0,#32
+ 958:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 info->flag_write_protect = 1;
+ 1309              	 .loc 1 958 0
+ 1310 016a 18BF     	 it ne
+ 1311 016c 86F81990 	 strbne r9,[r6,#25]
+ 959:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(b & 0x10)
+ 1312              	 .loc 1 959 0
+ 1313 0170 10F0100F 	 tst r0,#16
+ 1314              	 .loc 1 960 0
+ 1315 0174 18BF     	 it ne
+ 1316 0176 86F81A90 	 strbne r9,[r6,#26]
+ 961:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             info->format = (b & 0x0c) >> 2;
+ 1317              	 .loc 1 961 0
+ 1318 017a C0F38100 	 ubfx r0,r0,#2,#2
+ 1319              	.LVL91:
+ 1320 017e F076     	 strb r0,[r6,#27]
+ 1321 0180 2DE0     	 b .L104
+ 1322              	.LVL92:
+ 1323              	.L100:
+ 962:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+ 963:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         else
+ 964:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         {
+ 965:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #if SD_RAW_SDHC
+ 966:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             if(sd_raw_card_type & (1 << SD_RAW_SPEC_2))
+ 967:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             {
+ 968:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 switch(i)
+ 969:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 {
+ 970:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 7:
+ 971:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         b &= 0x3f;
+ 972:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 8:
+ 973:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 9:
+ 974:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size <<= 8;
+ 975:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size |= b;
+ 976:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         break;
+ 977:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 }
+ 978:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 if(i == 9)
+ 979:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 {
+ 980:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     ++csd_c_size;
+ 981:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     info->capacity = (offset_t) csd_c_size * 512 * 1024;
+ 982:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 }
+ 983:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             }
+ 984:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             else
+ 985:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** #endif
+ 986:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             {
+ 987:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 switch(i)
+ 1324              	 .loc 1 987 0
+ 1325 0182 A5F10505 	 sub r5,r5,#5
+ 1326 0186 052D     	 cmp r5,#5
+ 1327 0188 29D8     	 bhi .L104
+ 1328 018a DFE805F0 	 tbb [pc,r5]
+ 1329              	.L111:
+ 1330 018e 03       	 .byte (.L105-.L111)/2
+ 1331 018f 06       	 .byte (.L106-.L111)/2
+ 1332 0190 0B       	 .byte (.L107-.L111)/2
+ 1333 0191 10       	 .byte (.L108-.L111)/2
+ 1334 0192 17       	 .byte (.L109-.L111)/2
+ 1335 0193 1C       	 .byte (.L110-.L111)/2
+ 1336              	 .align 1
+ 1337              	.L105:
+ 988:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 {
+ 989:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 5:
+ 990:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_read_bl_len = b & 0x0f;
+ 1338              	 .loc 1 990 0
+ 1339 0194 00F00F0B 	 and fp,r0,#15
+ 1340              	.LVL93:
+ 991:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         break;
+ 1341              	 .loc 1 991 0
+ 1342 0198 D6E7     	 b .L113
+ 1343              	.LVL94:
+ 1344              	.L106:
+ 992:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 6:
+ 993:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size = b & 0x03;
+ 1345              	 .loc 1 993 0
+ 1346 019a 00F00308 	 and r8,r0,#3
+ 1347              	.LVL95:
+ 994:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size <<= 8;
+ 1348              	 .loc 1 994 0
+ 1349 019e 4FEA0828 	 lsl r8,r8,#8
+ 1350              	.LVL96:
+ 995:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         break;
+ 1351              	 .loc 1 995 0
+ 1352 01a2 D1E7     	 b .L113
+ 1353              	.LVL97:
+ 1354              	.L107:
+ 996:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 7:
+ 997:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size |= b;
+ 1355              	 .loc 1 997 0
+ 1356 01a4 40EA0808 	 orr r8,r0,r8
+ 1357              	.LVL98:
+ 998:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size <<= 2;
+ 1358              	 .loc 1 998 0
+ 1359 01a8 4FEA8808 	 lsl r8,r8,#2
+ 1360              	.LVL99:
+ 999:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         break;
+ 1361              	 .loc 1 999 0
+ 1362 01ac CCE7     	 b .L113
+ 1363              	.LVL100:
+ 1364              	.L108:
+1000:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 8:
+1001:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size |= b >> 6;
+ 1365              	 .loc 1 1001 0
+ 1366 01ae C0F38710 	 ubfx r0,r0,#6,#8
+ 1367              	.LVL101:
+ 1368 01b2 40EA0808 	 orr r8,r0,r8
+ 1369              	.LVL102:
+1002:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         ++csd_c_size;
+ 1370              	 .loc 1 1002 0
+ 1371 01b6 08F10108 	 add r8,r8,#1
+ 1372              	.LVL103:
+1003:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         break;
+ 1373              	 .loc 1 1003 0
+ 1374 01ba C5E7     	 b .L113
+ 1375              	.LVL104:
+ 1376              	.L109:
+1004:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 9:
+1005:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size_mult = b & 0x03;
+ 1377              	 .loc 1 1005 0
+ 1378 01bc 00F0030A 	 and sl,r0,#3
+ 1379              	.LVL105:
+1006:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size_mult <<= 1;
+ 1380              	 .loc 1 1006 0
+ 1381 01c0 4FEA4A0A 	 lsl sl,sl,#1
+ 1382              	.LVL106:
+1007:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         break;
+ 1383              	 .loc 1 1007 0
+ 1384 01c4 C0E7     	 b .L113
+ 1385              	.LVL107:
+ 1386              	.L110:
+1008:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                     case 10:
+1009:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         csd_c_size_mult |= b >> 7;
+ 1387              	 .loc 1 1009 0
+ 1388 01c6 4AEAD01A 	 orr sl,sl,r0,lsr#7
+ 1389 01ca 5FFA8AFA 	 uxtb sl,sl
+ 1390              	.LVL108:
+1010:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+1011:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         info->capacity = (uint32_t) csd_c_size << (csd_c_size_mult + csd_read_bl_le
+ 1391              	 .loc 1 1011 0
+ 1392 01ce 0AEB0B03 	 add r3,sl,fp
+ 1393 01d2 03F10203 	 add r3,r3,#2
+ 1394 01d6 08FA03F3 	 lsl r3,r8,r3
+ 1395 01da 7361     	 str r3,[r6,#20]
+ 1396              	.LVL109:
+1012:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+1013:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                         break;
+ 1397              	 .loc 1 1013 0
+ 1398 01dc B4E7     	 b .L113
+ 1399              	.LVL110:
+ 1400              	.L104:
+ 1401              	.LBE12:
+ 949:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     for(i = 0; i < 18; ++i)
+ 1402              	 .loc 1 949 0
+ 1403 01de 112F     	 cmp r7,#17
+ 1404 01e0 B2D9     	 bls .L113
+1014:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****                 }
+1015:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****             }
+1016:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         }
+1017:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     }
+1018:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+1019:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     unselect_card();
+ 1405              	 .loc 1 1019 0
+ 1406 01e2 4FF00100 	 mov r0,#1
+ 1407 01e6 4FF00001 	 mov r1,#0
+ 1408 01ea 0246     	 mov r2,r0
+ 1409 01ec FFF7FEFF 	 bl GPIO_SetDir
+ 1410 01f0 4FF00100 	 mov r0,#1
+ 1411 01f4 FFF7FEFF 	 bl GPIO_ReadValue
+ 1412 01f8 4FF00100 	 mov r0,#1
+ 1413 01fc 4FF00001 	 mov r1,#0
+ 1414 0200 FFF7FEFF 	 bl GPIO_SetValue
+1020:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** 
+1021:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****     return 1;
+ 1415              	 .loc 1 1021 0
+ 1416 0204 4FF00100 	 mov r0,#1
+ 1417 0208 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1418              	.LVL111:
+ 1419              	.L114:
+ 882:src/MightyBoard/Motherboard/lib_sd/sd_raw.c ****         return 0;
+ 1420              	 .loc 1 882 0
+ 1421 020c 4FF00000 	 mov r0,#0
+ 1422 0210 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1423              	.L115:
+ 1424 0214 4FF00000 	 mov r0,#0
+1022:src/MightyBoard/Motherboard/lib_sd/sd_raw.c **** }
+ 1425              	 .loc 1 1022 0
+ 1426 0218 BDE8F88F 	 pop {r3,r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1427              	 .cfi_endproc
+ 1428              	.LFE66:
+ 1430              	 .section .bss.sd_raw_card_type,"aw",%nobits
+ 1431              	 .set .LANCHOR3,.+0
+ 1434              	sd_raw_card_type:
+ 1435 0000 00       	 .space 1
+ 1436              	 .section .bss.raw_block_address,"aw",%nobits
+ 1437              	 .align 2
+ 1438              	 .set .LANCHOR1,.+0
+ 1441              	raw_block_address:
+ 1442 0000 00000000 	 .space 4
+ 1443              	 .section .bss.raw_block_written,"aw",%nobits
+ 1444              	 .set .LANCHOR0,.+0
+ 1447              	raw_block_written:
+ 1448 0000 00       	 .space 1
+ 1449              	 .section .bss.raw_block,"aw",%nobits
+ 1450              	 .align 2
+ 1451              	 .set .LANCHOR2,.+0
+ 1454              	raw_block:
+ 1455 0000 00000000 	 .space 512
+ 1455      00000000 
+ 1455      00000000 
+ 1455      00000000 
+ 1455      00000000 
+ 1456              	 .text
+ 1457              	.Letext0:
+ 1458              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1459              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 1460              	 .file 4 "src/MightyBoard/Motherboard/lib_sd/sd_raw_config.h"
+ 1461              	 .file 5 "src/MightyBoard/Motherboard/lib_sd/sd_raw.h"
+ 1462              	 .file 6 "src/MightyBoard/Motherboard/lib/include/lpc17xx_spi.h"
+ 1463              	 .file 7 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 sd_raw.c
+    {standard input}:19     .text.sd_raw_send_byte:00000000 $t
+    {standard input}:23     .text.sd_raw_send_byte:00000000 sd_raw_send_byte
+    {standard input}:62     .text.sd_raw_rec_byte:00000000 $t
+    {standard input}:66     .text.sd_raw_rec_byte:00000000 sd_raw_rec_byte
+    {standard input}:99     .text.sd_raw_send_command:00000000 $t
+    {standard input}:103    .text.sd_raw_send_command:00000000 sd_raw_send_command
+    {standard input}:187    .text.sd_raw_available:00000000 $t
+    {standard input}:192    .text.sd_raw_available:00000000 sd_raw_available
+    {standard input}:213    .text.sd_raw_locked:00000000 $t
+    {standard input}:218    .text.sd_raw_locked:00000000 sd_raw_locked
+    {standard input}:239    .text.sd_raw_sync:00000000 $t
+    {standard input}:244    .text.sd_raw_sync:00000000 sd_raw_sync
+    {standard input}:1444   .bss.raw_block_written:00000000 .LANCHOR0
+    {standard input}:1438   .bss.raw_block_address:00000000 .LANCHOR1
+    {standard input}:1451   .bss.raw_block:00000000 .LANCHOR2
+    {standard input}:790    .text.sd_raw_write:00000000 sd_raw_write
+    {standard input}:289    .text.sd_raw_read:00000000 $t
+    {standard input}:294    .text.sd_raw_read:00000000 sd_raw_read
+    {standard input}:437    .text.sd_raw_read_interval:00000000 $t
+    {standard input}:442    .text.sd_raw_read_interval:00000000 sd_raw_read_interval
+    {standard input}:540    .text.sd_raw_init:00000000 $t
+    {standard input}:545    .text.sd_raw_init:00000000 sd_raw_init
+    {standard input}:1431   .bss.sd_raw_card_type:00000000 .LANCHOR3
+    {standard input}:785    .text.sd_raw_write:00000000 $t
+    {standard input}:963    .text.sd_raw_write_interval:00000000 $t
+    {standard input}:968    .text.sd_raw_write_interval:00000000 sd_raw_write_interval
+    {standard input}:1084   .text.sd_raw_get_info:00000000 $t
+    {standard input}:1089   .text.sd_raw_get_info:00000000 sd_raw_get_info
+    {standard input}:1175   .text.sd_raw_get_info:000000a4 $d
+    {standard input}:1330   .text.sd_raw_get_info:0000018e $d
+    {standard input}:1336   .text.sd_raw_get_info:00000194 $t
+    {standard input}:1434   .bss.sd_raw_card_type:00000000 sd_raw_card_type
+    {standard input}:1435   .bss.sd_raw_card_type:00000000 $d
+    {standard input}:1437   .bss.raw_block_address:00000000 $d
+    {standard input}:1441   .bss.raw_block_address:00000000 raw_block_address
+    {standard input}:1447   .bss.raw_block_written:00000000 raw_block_written
+    {standard input}:1448   .bss.raw_block_written:00000000 $d
+    {standard input}:1450   .bss.raw_block:00000000 $d
+    {standard input}:1454   .bss.raw_block:00000000 raw_block
+                     .debug_frame:00000010 $d
+    {standard input}:1190   .text.sd_raw_get_info:000000b3 $d
+    {standard input}:1190   .text.sd_raw_get_info:000000b4 $t
+
+UNDEFINED SYMBOLS
+SPI_ReadWrite
+GPIO_ReadValue
+GPIO_SetDir
+GPIO_SetValue
+memcpy
+SPI_Init
+SPI_SetClock
+memset

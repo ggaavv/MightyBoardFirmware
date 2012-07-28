@@ -1,0 +1,668 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "ThermistorTable.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._Z19thermistorToCelsiussa,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _Z19thermistorToCelsiussa
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_Z19thermistorToCelsiussa:
+  25              	.LFB56:
+  26              	 .file 1 "src/MightyBoard/shared/ThermistorTable.cc"
+   1:src/MightyBoard/shared/ThermistorTable.cc **** /*
+   2:src/MightyBoard/shared/ThermistorTable.cc ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/ThermistorTable.cc ****  *
+   4:src/MightyBoard/shared/ThermistorTable.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/ThermistorTable.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/ThermistorTable.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/ThermistorTable.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/ThermistorTable.cc ****  *
+   9:src/MightyBoard/shared/ThermistorTable.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/ThermistorTable.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/ThermistorTable.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/ThermistorTable.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/ThermistorTable.cc ****  *
+  14:src/MightyBoard/shared/ThermistorTable.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/ThermistorTable.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/ThermistorTable.cc ****  */
+  17:src/MightyBoard/shared/ThermistorTable.cc **** 
+  18:src/MightyBoard/shared/ThermistorTable.cc **** #include "ThermistorTable.hh"
+  19:src/MightyBoard/shared/ThermistorTable.cc **** #include "Configuration.hh"
+  20:src/MightyBoard/shared/ThermistorTable.cc **** #include "EepromMap.hh"
+  21:src/MightyBoard/shared/ThermistorTable.cc **** //#include <avr/eeprom.h>
+  22:src/MightyBoard/shared/ThermistorTable.cc **** #include <stdint.h>
+  23:src/MightyBoard/shared/ThermistorTable.cc **** //#include <avr/pgmspace.h>
+  24:src/MightyBoard/shared/ThermistorTable.cc **** 
+  25:src/MightyBoard/shared/ThermistorTable.cc **** extern "C" {
+  26:src/MightyBoard/shared/ThermistorTable.cc **** 	#include "comm.h"
+  27:src/MightyBoard/shared/ThermistorTable.cc **** }
+  28:src/MightyBoard/shared/ThermistorTable.cc **** 
+  29:src/MightyBoard/shared/ThermistorTable.cc **** // TODO: Clean this up...
+  30:src/MightyBoard/shared/ThermistorTable.cc **** #if defined HAS_THERMISTOR_TABLES
+  31:src/MightyBoard/shared/ThermistorTable.cc **** 
+  32:src/MightyBoard/shared/ThermistorTable.cc **** 
+  33:src/MightyBoard/shared/ThermistorTable.cc **** // Default thermistor table.  If no thermistor table is loaded into eeprom,
+  34:src/MightyBoard/shared/ThermistorTable.cc **** // this will be copied in by the initTable() method.
+  35:src/MightyBoard/shared/ThermistorTable.cc **** //
+  36:src/MightyBoard/shared/ThermistorTable.cc **** // Thermistor lookup table for RepRap Temperature Sensor Boards (http://make.rrrf.org/ts)
+  37:src/MightyBoard/shared/ThermistorTable.cc **** // Made with createTemperatureLookup.py (http://svn.reprap.org/trunk/reprap/firmware/Arduino/utilit
+  38:src/MightyBoard/shared/ThermistorTable.cc **** // ./createTemperatureLookup.py --r0=100000 --t0=25 --r1=0 --r2=4700 --beta=4066 --max-adc=1023
+  39:src/MightyBoard/shared/ThermistorTable.cc **** // r0: 100000
+  40:src/MightyBoard/shared/ThermistorTable.cc **** // t0: 25
+  41:src/MightyBoard/shared/ThermistorTable.cc **** // r1: 0
+  42:src/MightyBoard/shared/ThermistorTable.cc **** // r2: 4700
+  43:src/MightyBoard/shared/ThermistorTable.cc **** // beta: 4066
+  44:src/MightyBoard/shared/ThermistorTable.cc **** // max adc: 1023
+  45:src/MightyBoard/shared/ThermistorTable.cc **** 
+  46:src/MightyBoard/shared/ThermistorTable.cc **** /*TempTable const default_therm_table = {
+  47:src/MightyBoard/shared/ThermistorTable.cc ****   {1, 841},
+  48:src/MightyBoard/shared/ThermistorTable.cc ****   {54, 255},
+  49:src/MightyBoard/shared/ThermistorTable.cc ****   {107, 209},
+  50:src/MightyBoard/shared/ThermistorTable.cc ****   {160, 184},
+  51:src/MightyBoard/shared/ThermistorTable.cc ****   {213, 166},
+  52:src/MightyBoard/shared/ThermistorTable.cc ****   {266, 153},
+  53:src/MightyBoard/shared/ThermistorTable.cc ****   {319, 142},
+  54:src/MightyBoard/shared/ThermistorTable.cc ****   {372, 132},
+  55:src/MightyBoard/shared/ThermistorTable.cc ****   {425, 124},
+  56:src/MightyBoard/shared/ThermistorTable.cc ****   {478, 116},
+  57:src/MightyBoard/shared/ThermistorTable.cc ****   {531, 108},
+  58:src/MightyBoard/shared/ThermistorTable.cc ****   {584, 101},
+  59:src/MightyBoard/shared/ThermistorTable.cc ****   {637, 93},
+  60:src/MightyBoard/shared/ThermistorTable.cc ****   {690, 86},
+  61:src/MightyBoard/shared/ThermistorTable.cc ****   {743, 78},
+  62:src/MightyBoard/shared/ThermistorTable.cc ****   {796, 70},
+  63:src/MightyBoard/shared/ThermistorTable.cc ****   {849, 61},
+  64:src/MightyBoard/shared/ThermistorTable.cc ****   {902, 50},
+  65:src/MightyBoard/shared/ThermistorTable.cc ****   {955, 34},
+  66:src/MightyBoard/shared/ThermistorTable.cc ****   {1008, 3}
+  67:src/MightyBoard/shared/ThermistorTable.cc **** };*/
+  68:src/MightyBoard/shared/ThermistorTable.cc **** TempTable const default_therm_table = {
+  69:src/MightyBoard/shared/ThermistorTable.cc ****   /* {ADC value Extruder0, temperature} */
+  70:src/MightyBoard/shared/ThermistorTable.cc **** 		{	92	,	300	}	,
+  71:src/MightyBoard/shared/ThermistorTable.cc **** 		{	105	,	290	}	,
+  72:src/MightyBoard/shared/ThermistorTable.cc **** 		{	121	,	280	}	,
+  73:src/MightyBoard/shared/ThermistorTable.cc **** 		{	140	,	270	}	,
+  74:src/MightyBoard/shared/ThermistorTable.cc **** 		{	162	,	260	}	,
+  75:src/MightyBoard/shared/ThermistorTable.cc **** 		{	189	,	250	}	,
+  76:src/MightyBoard/shared/ThermistorTable.cc **** 		{	222	,	240	}	,
+  77:src/MightyBoard/shared/ThermistorTable.cc **** 		{	261	,	230	}	,
+  78:src/MightyBoard/shared/ThermistorTable.cc **** 		{	308	,	220	}	,
+  79:src/MightyBoard/shared/ThermistorTable.cc **** 		{	365	,	210	}	,
+  80:src/MightyBoard/shared/ThermistorTable.cc **** 		{	434	,	200	}	,
+  81:src/MightyBoard/shared/ThermistorTable.cc **** 		{	519	,	190	}	,
+  82:src/MightyBoard/shared/ThermistorTable.cc **** 		{	621	,	180	}	,
+  83:src/MightyBoard/shared/ThermistorTable.cc **** 		{	744	,	170	}	,
+  84:src/MightyBoard/shared/ThermistorTable.cc **** 		{	891	,	160	}	,
+  85:src/MightyBoard/shared/ThermistorTable.cc **** 		{	1067	,	150	}	,
+  86:src/MightyBoard/shared/ThermistorTable.cc **** 		{	1272	,	140	}	,
+  87:src/MightyBoard/shared/ThermistorTable.cc **** 		{	1507	,	130	}	,
+  88:src/MightyBoard/shared/ThermistorTable.cc **** 		{	1771	,	120	}	,
+  89:src/MightyBoard/shared/ThermistorTable.cc **** 		{	2058	,	110	}	,
+  90:src/MightyBoard/shared/ThermistorTable.cc **** 		{	2357	,	100	}	,
+  91:src/MightyBoard/shared/ThermistorTable.cc **** 		{	2657	,	90	}	,
+  92:src/MightyBoard/shared/ThermistorTable.cc **** 		{	2943	,	80	}	,
+  93:src/MightyBoard/shared/ThermistorTable.cc **** 		{	3204	,	70	}	,
+  94:src/MightyBoard/shared/ThermistorTable.cc **** 		{	3429	,	60	}	,
+  95:src/MightyBoard/shared/ThermistorTable.cc **** 		{	3614	,	50	}	,
+  96:src/MightyBoard/shared/ThermistorTable.cc **** 		{	3760	,	40	}	,
+  97:src/MightyBoard/shared/ThermistorTable.cc **** 		{	3869	,	30	}	,
+  98:src/MightyBoard/shared/ThermistorTable.cc **** 		{	3948	,	20	}	,
+  99:src/MightyBoard/shared/ThermistorTable.cc **** 		{	4003	,	10	}	,
+ 100:src/MightyBoard/shared/ThermistorTable.cc **** 		{	4039	,	0	}
+ 101:src/MightyBoard/shared/ThermistorTable.cc **** };
+ 102:src/MightyBoard/shared/ThermistorTable.cc **** 
+ 103:src/MightyBoard/shared/ThermistorTable.cc **** bool has_table[2];//TODO: using just a single bool for MightyBoard
+ 104:src/MightyBoard/shared/ThermistorTable.cc **** 
+ 105:src/MightyBoard/shared/ThermistorTable.cc **** inline Entry getEntry(int8_t entryIdx, int8_t which) {
+ 106:src/MightyBoard/shared/ThermistorTable.cc **** //	xprintf("%d" " (%s:%d)\n",entryIdx,_F_,_L_);
+ 107:src/MightyBoard/shared/ThermistorTable.cc **** 	Entry rv;
+ 108:src/MightyBoard/shared/ThermistorTable.cc **** 	if (0){//has_table[which]) {
+ 109:src/MightyBoard/shared/ThermistorTable.cc **** 		// get from eeprom
+ 110:src/MightyBoard/shared/ThermistorTable.cc **** 		uint16_t offset = eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA_OFFSET;
+ 111:src/MightyBoard/shared/ThermistorTable.cc **** /// for MightBoard just use one thermistor table
+ 112:src/MightyBoard/shared/ThermistorTable.cc **** //		if (which == 0) {
+ 113:src/MightyBoard/shared/ThermistorTable.cc **** //			offset = eeprom::THERM_TABLE_0 + eeprom::THERM_DATA_OFFSET;
+ 114:src/MightyBoard/shared/ThermistorTable.cc **** //		}
+ 115:src/MightyBoard/shared/ThermistorTable.cc **** //		else {
+ 116:src/MightyBoard/shared/ThermistorTable.cc **** //			offset = eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET;
+ 117:src/MightyBoard/shared/ThermistorTable.cc **** //		}
+ 118:src/MightyBoard/shared/ThermistorTable.cc **** //		offset += sizeof(Entry) * entryIdx;				//TODO: Fix if if(0) changes
+ 119:src/MightyBoard/shared/ThermistorTable.cc **** //		eeprom_read_block(&rv,(const void*)offset,sizeof(Entry)); //TODO: Fix if if(0) changes
+ 120:src/MightyBoard/shared/ThermistorTable.cc **** 	} else {
+ 121:src/MightyBoard/shared/ThermistorTable.cc **** 		// get from progmem
+ 122:src/MightyBoard/shared/ThermistorTable.cc **** 		rv.adc = default_therm_table[entryIdx].adc;
+ 123:src/MightyBoard/shared/ThermistorTable.cc **** 		rv.value = default_therm_table[entryIdx].value;
+ 124:src/MightyBoard/shared/ThermistorTable.cc **** //		xprintf("%d" " (%s:%d)\n",rv.adc,_F_,_L_);
+ 125:src/MightyBoard/shared/ThermistorTable.cc **** //		xprintf("%d" " (%s:%d)\n",rv.value,_F_,_L_);
+ 126:src/MightyBoard/shared/ThermistorTable.cc **** //		memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
+ 127:src/MightyBoard/shared/ThermistorTable.cc **** 	}
+ 128:src/MightyBoard/shared/ThermistorTable.cc **** 	return rv;
+ 129:src/MightyBoard/shared/ThermistorTable.cc **** }
+ 130:src/MightyBoard/shared/ThermistorTable.cc **** 
+ 131:src/MightyBoard/shared/ThermistorTable.cc **** int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
+  27              	 .loc 1 131 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33 0000 F0B4     	 push {r4,r5,r6,r7}
+  34              	.LCFI0:
+  35              	 .cfi_def_cfa_offset 16
+  36              	 .cfi_offset 7,-4
+  37              	 .cfi_offset 6,-8
+  38              	 .cfi_offset 5,-12
+  39              	 .cfi_offset 4,-16
+  40              	.LVL1:
+ 132:src/MightyBoard/shared/ThermistorTable.cc ****   int8_t bottom = 0;
+ 133:src/MightyBoard/shared/ThermistorTable.cc ****   int8_t top = NUMTEMPS-1;
+ 134:src/MightyBoard/shared/ThermistorTable.cc ****   int8_t mid = (bottom+top)/2;
+  41              	 .loc 1 134 0
+  42 0002 4FF00F03 	 mov r3,#15
+ 133:src/MightyBoard/shared/ThermistorTable.cc ****   int8_t top = NUMTEMPS-1;
+  43              	 .loc 1 133 0
+  44 0006 4FF01E06 	 mov r6,#30
+ 132:src/MightyBoard/shared/ThermistorTable.cc ****   int8_t bottom = 0;
+  45              	 .loc 1 132 0
+  46 000a 4FF00001 	 mov r1,#0
+  47              	.LVL2:
+  48              	.LBB15:
+  49              	.LBB16:
+  50              	.LBB17:
+  51              	.LBB18:
+ 122:src/MightyBoard/shared/ThermistorTable.cc **** 		rv.adc = default_therm_table[entryIdx].adc;
+  52              	 .loc 1 122 0
+  53 000e 40F20005 	 movw r5,#:lower16:.LANCHOR0
+  54 0012 C0F20005 	 movt r5,#:upper16:.LANCHOR0
+  55              	.LVL3:
+  56              	.L4:
+  57 0016 5AB2     	 sxtb r2,r3
+  58              	.LVL4:
+  59              	.LBE18:
+  60              	.LBE17:
+  61              	.LBE16:
+ 135:src/MightyBoard/shared/ThermistorTable.cc ****   int8_t t;
+ 136:src/MightyBoard/shared/ThermistorTable.cc ****   Entry e;
+ 137:src/MightyBoard/shared/ThermistorTable.cc ****   while (mid > bottom) {
+ 138:src/MightyBoard/shared/ThermistorTable.cc **** 	  t = mid;
+ 139:src/MightyBoard/shared/ThermistorTable.cc **** 	  e = getEntry(mid,table_idx);
+ 140:src/MightyBoard/shared/ThermistorTable.cc **** 	  if (reading < e.adc) {
+  62              	 .loc 1 140 0
+  63 0018 35F92240 	 ldrsh r4,[r5,r2,lsl#2]
+  64 001c 8442     	 cmp r4,r0
+  65              	.LVL5:
+ 141:src/MightyBoard/shared/ThermistorTable.cc **** 		  top = mid;
+ 142:src/MightyBoard/shared/ThermistorTable.cc **** 		  mid = (bottom+top)/2;
+  66              	 .loc 1 142 0
+  67 001e C1BF     	 itttt gt
+  68 0020 4CB2     	 sxtbgt r4,r1
+  69 0022 A218     	 addgt r2,r4,r2
+  70              	.LVL6:
+  71 0024 02EBD272 	 addgt r2,r2,r2,lsr#31
+  72              	.LVL7:
+  73 0028 1E46     	 movgt r6,r3
+  74              	.LVL8:
+ 143:src/MightyBoard/shared/ThermistorTable.cc **** 	  } else {
+ 144:src/MightyBoard/shared/ThermistorTable.cc **** 		  bottom = mid;
+ 145:src/MightyBoard/shared/ThermistorTable.cc **** 		  mid = (bottom+top)/2;
+  75              	 .loc 1 145 0
+  76 002a DFBF     	 itttt le
+  77 002c 71B2     	 sxtble r1,r6
+  78 002e 8A18     	 addle r2,r1,r2
+  79              	.LVL9:
+  80 0030 02EBD272 	 addle r2,r2,r2,lsr#31
+  81              	.LVL10:
+  82 0034 1946     	 movle r1,r3
+  83 0036 C2F34703 	 ubfx r3,r2,#1,#8
+  84              	.LVL11:
+ 137:src/MightyBoard/shared/ThermistorTable.cc ****   while (mid > bottom) {
+  85              	 .loc 1 137 0
+  86 003a 5CB2     	 sxtb r4,r3
+  87 003c 4AB2     	 sxtb r2,r1
+  88              	.LVL12:
+  89 003e 9442     	 cmp r4,r2
+  90 0040 E9DC     	 bgt .L4
+  91              	.LVL13:
+  92              	.LBB19:
+  93              	.LBB20:
+  94              	.LBB21:
+ 122:src/MightyBoard/shared/ThermistorTable.cc **** 		rv.adc = default_therm_table[entryIdx].adc;
+  95              	 .loc 1 122 0
+  96 0042 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  97 0046 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  98 004a 33F82250 	 ldrh r5,[r3,r2,lsl#2]
+  99              	.LVL14:
+ 123:src/MightyBoard/shared/ThermistorTable.cc **** 		rv.value = default_therm_table[entryIdx].value;
+ 100              	 .loc 1 123 0
+ 101 004e 03EB8202 	 add r2,r3,r2,lsl#2
+ 102 0052 5488     	 ldrh r4,[r2,#2]
+ 103              	.LVL15:
+ 104              	.LBE21:
+ 105              	.LBE20:
+ 106              	.LBE19:
+ 107              	.LBB22:
+ 108              	.LBB23:
+ 109              	.LBB24:
+ 122:src/MightyBoard/shared/ThermistorTable.cc **** 		rv.adc = default_therm_table[entryIdx].adc;
+ 110              	 .loc 1 122 0
+ 111 0054 72B2     	 sxtb r2,r6
+ 112 0056 33F82270 	 ldrh r7,[r3,r2,lsl#2]
+ 113              	.LVL16:
+ 123:src/MightyBoard/shared/ThermistorTable.cc **** 		rv.value = default_therm_table[entryIdx].value;
+ 114              	 .loc 1 123 0
+ 115 005a 03EB8203 	 add r3,r3,r2,lsl#2
+ 116 005e 5B88     	 ldrh r3,[r3,#2]
+ 117              	.LVL17:
+ 118              	.LBE24:
+ 119              	.LBE23:
+ 120              	.LBE22:
+ 146:src/MightyBoard/shared/ThermistorTable.cc **** 	  }
+ 147:src/MightyBoard/shared/ThermistorTable.cc ****   }
+ 148:src/MightyBoard/shared/ThermistorTable.cc ****   Entry eb = getEntry(bottom,table_idx);
+ 149:src/MightyBoard/shared/ThermistorTable.cc ****   Entry et = getEntry(top,table_idx);
+ 150:src/MightyBoard/shared/ThermistorTable.cc ****   if (bottom == 0 && reading < eb.adc) {
+ 121              	 .loc 1 150 0
+ 122 0060 21B9     	 cbnz r1,.L5
+ 123              	 .loc 1 150 0 is_stmt 0 discriminator 1
+ 124 0062 2AB2     	 sxth r2,r5
+ 125 0064 9042     	 cmp r0,r2
+ 151:src/MightyBoard/shared/ThermistorTable.cc **** 	  // out of scale; safety mode
+ 152:src/MightyBoard/shared/ThermistorTable.cc **** 	  return 255;
+ 126              	 .loc 1 152 0 is_stmt 1 discriminator 1
+ 127 0066 B8BF     	 it lt
+ 128 0068 FF20     	 movlt r0,#255
+ 129              	.LVL18:
+ 150:src/MightyBoard/shared/ThermistorTable.cc ****   if (bottom == 0 && reading < eb.adc) {
+ 130              	 .loc 1 150 0 discriminator 1
+ 131 006a 18DB     	 blt .L6
+ 132              	.L5:
+ 153:src/MightyBoard/shared/ThermistorTable.cc ****   }
+ 154:src/MightyBoard/shared/ThermistorTable.cc ****   if (top == NUMTEMPS-1 && reading > et.adc) {
+ 133              	 .loc 1 154 0
+ 134 006c 76B2     	 sxtb r6,r6
+ 135              	.LVL19:
+ 136 006e 1E2E     	 cmp r6,#30
+ 137 0070 04D1     	 bne .L7
+ 138              	 .loc 1 154 0 is_stmt 0 discriminator 1
+ 139 0072 3AB2     	 sxth r2,r7
+ 140 0074 9042     	 cmp r0,r2
+ 155:src/MightyBoard/shared/ThermistorTable.cc **** 	  // out of scale; safety mode
+ 156:src/MightyBoard/shared/ThermistorTable.cc **** 	  return 255;
+ 141              	 .loc 1 156 0 is_stmt 1 discriminator 1
+ 142 0076 C8BF     	 it gt
+ 143 0078 FF20     	 movgt r0,#255
+ 154:src/MightyBoard/shared/ThermistorTable.cc ****   if (top == NUMTEMPS-1 && reading > et.adc) {
+ 144              	 .loc 1 154 0 discriminator 1
+ 145 007a 10DC     	 bgt .L6
+ 146              	.L7:
+ 157:src/MightyBoard/shared/ThermistorTable.cc ****   }
+ 158:src/MightyBoard/shared/ThermistorTable.cc **** 
+ 159:src/MightyBoard/shared/ThermistorTable.cc ****   int16_t celsius  = eb.value +
+ 160:src/MightyBoard/shared/ThermistorTable.cc **** 		  ((reading - eb.adc) * (et.value - eb.value)) / (et.adc - eb.adc);
+ 147              	 .loc 1 160 0
+ 148 007c 2DB2     	 sxth r5,r5
+ 149              	.LVL20:
+ 150 007e 401B     	 subs r0,r0,r5
+ 151 0080 1BB2     	 sxth r3,r3
+ 152              	.LVL21:
+ 153 0082 22B2     	 sxth r2,r4
+ 154 0084 9B1A     	 subs r3,r3,r2
+ 155 0086 03FB00F0 	 mul r0,r3,r0
+ 156 008a 3FB2     	 sxth r7,r7
+ 157              	.LVL22:
+ 158 008c 7D1B     	 subs r5,r7,r5
+ 159 008e 90FBF5F0 	 sdiv r0,r0,r5
+ 160 0092 0019     	 adds r0,r0,r4
+ 161              	.LVL23:
+ 162 0094 00B2     	 sxth r0,r0
+ 163              	.LVL24:
+ 164 0096 FF28     	 cmp r0,#255
+ 165 0098 A8BF     	 it ge
+ 166 009a FF20     	 movge r0,#255
+ 167 009c 80B2     	 uxth r0,r0
+ 168              	.L6:
+ 169              	.LBE15:
+ 161:src/MightyBoard/shared/ThermistorTable.cc ****   if (celsius > 255)
+ 162:src/MightyBoard/shared/ThermistorTable.cc **** 	  celsius = 255;
+ 163:src/MightyBoard/shared/ThermistorTable.cc ****   return celsius;
+ 164:src/MightyBoard/shared/ThermistorTable.cc **** }
+ 170              	 .loc 1 164 0
+ 171 009e 00B2     	 sxth r0,r0
+ 172 00a0 F0BC     	 pop {r4,r5,r6,r7}
+ 173 00a2 7047     	 bx lr
+ 174              	 .cfi_endproc
+ 175              	.LFE56:
+ 177              	 .section .text._Z10isTableSett,"ax",%progbits
+ 178              	 .align 2
+ 179              	 .global _Z10isTableSett
+ 180              	 .thumb
+ 181              	 .thumb_func
+ 183              	_Z10isTableSett:
+ 184              	.LFB57:
+ 165:src/MightyBoard/shared/ThermistorTable.cc **** 
+ 166:src/MightyBoard/shared/ThermistorTable.cc **** bool isTableSet(uint16_t off) {
+ 185              	 .loc 1 166 0
+ 186              	 .cfi_startproc
+ 187              	 
+ 188              	 
+ 189              	 
+ 190              	.LVL25:
+ 167:src/MightyBoard/shared/ThermistorTable.cc **** //	const void* offset = (const void*)off;
+ 168:src/MightyBoard/shared/ThermistorTable.cc **** 	uint8_t first_byte;
+ 169:src/MightyBoard/shared/ThermistorTable.cc **** //	first_byte = (uint8_t)(eeprom_address(EEPROM_START_ADDRESS, off));
+ 170:src/MightyBoard/shared/ThermistorTable.cc **** //	eeprom_read_block(&first_byte,offset,1);
+ 171:src/MightyBoard/shared/ThermistorTable.cc **** 	return first_byte != 0xff;
+ 172:src/MightyBoard/shared/ThermistorTable.cc **** }
+ 191              	 .loc 1 172 0
+ 192 0000 4FF00100 	 mov r0,#1
+ 193              	.LVL26:
+ 194 0004 7047     	 bx lr
+ 195              	 .cfi_endproc
+ 196              	.LFE57:
+ 198 0006 00BF     	 .section .text._Z20initThermistorTablesv,"ax",%progbits
+ 199              	 .align 2
+ 200              	 .global _Z20initThermistorTablesv
+ 201              	 .thumb
+ 202              	 .thumb_func
+ 204              	_Z20initThermistorTablesv:
+ 205              	.LFB58:
+ 173:src/MightyBoard/shared/ThermistorTable.cc **** 
+ 174:src/MightyBoard/shared/ThermistorTable.cc **** 
+ 175:src/MightyBoard/shared/ThermistorTable.cc **** void initThermistorTables() {
+ 206              	 .loc 1 175 0
+ 207              	 .cfi_startproc
+ 208              	 
+ 209              	 
+ 210 0000 08B5     	 push {r3,lr}
+ 211              	.LCFI1:
+ 212              	 .cfi_def_cfa_offset 8
+ 213              	 .cfi_offset 14,-4
+ 214              	 .cfi_offset 3,-8
+ 176:src/MightyBoard/shared/ThermistorTable.cc **** 	has_table[0] = isTableSet(eeprom_offsets::THERM_TABLE + therm_eeprom_offsets::THERM_DATA_OFFSET);
+ 215              	 .loc 1 176 0
+ 216 0002 4FF08400 	 mov r0,#132
+ 217 0006 FFF7FEFF 	 bl _Z10isTableSett
+ 218 000a 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 219 000e C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 220 0012 1870     	 strb r0,[r3,#0]
+ 177:src/MightyBoard/shared/ThermistorTable.cc **** 	//has_table[1] = isTableSet(eeprom::THERM_TABLE_1 + eeprom::THERM_DATA_OFFSET);
+ 178:src/MightyBoard/shared/ThermistorTable.cc **** }
+ 221              	 .loc 1 178 0
+ 222 0014 08BD     	 pop {r3,pc}
+ 223              	 .cfi_endproc
+ 224              	.LFE58:
+ 226 0016 00BF     	 .section .text._GLOBAL__sub_I_default_therm_table,"ax",%progbits
+ 227              	 .align 2
+ 228              	 .thumb
+ 229              	 .thumb_func
+ 231              	_GLOBAL__sub_I_default_therm_table:
+ 232              	.LFB60:
+ 233              	 .loc 1 178 0
+ 234              	 .cfi_startproc
+ 235              	 
+ 236              	 
+ 237 0000 08B5     	 push {r3,lr}
+ 238              	.LCFI2:
+ 239              	 .cfi_def_cfa_offset 8
+ 240              	 .cfi_offset 14,-4
+ 241              	 .cfi_offset 3,-8
+ 242              	.LVL27:
+ 243              	.LBB27:
+ 244              	.LBB28:
+ 245              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 246              	 .loc 2 49 0
+ 247 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 248 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 249 000a 4FF00001 	 mov r1,#0
+ 250 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 251              	 .loc 2 50 0
+ 252 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 253 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 254 001a 4FF00101 	 mov r1,#1
+ 255 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 256              	 .loc 2 51 0
+ 257 0022 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 258 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 259 002a 4FF00201 	 mov r1,#2
+ 260 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 261              	 .loc 2 52 0
+ 262 0032 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 263 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 264 003a 4FF00301 	 mov r1,#3
+ 265 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 266              	 .loc 2 53 0
+ 267 0042 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 268 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 269 004a 4FF00401 	 mov r1,#4
+ 270 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 271              	 .loc 2 55 0
+ 272 0052 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 273 0056 C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 274 005a 4FF0FF01 	 mov r1,#255
+ 275 005e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 276              	.LBE28:
+ 277              	.LBE27:
+ 278              	 .loc 1 178 0
+ 279 0062 08BD     	 pop {r3,pc}
+ 280              	 .cfi_endproc
+ 281              	.LFE60:
+ 283              	 .section .init_array,"aw",%init_array
+ 284              	 .align 2
+ 285 0000 00000000 	 .word _GLOBAL__sub_I_default_therm_table(target1)
+ 286              	 .global has_table
+ 287              	 .global default_therm_table
+ 288              	 .section .bss._ZL5Port0,"aw",%nobits
+ 289              	 .align 2
+ 290              	 .set .LANCHOR2,.+0
+ 293              	_ZL5Port0:
+ 294 0000 00       	 .space 1
+ 295 0001 000000   	 .section .bss.has_table,"aw",%nobits
+ 296              	 .align 2
+ 297              	 .set .LANCHOR1,.+0
+ 300              	has_table:
+ 301 0000 0000     	 .space 2
+ 302 0002 0000     	 .section .bss._ZL5Port1,"aw",%nobits
+ 303              	 .align 2
+ 304              	 .set .LANCHOR3,.+0
+ 307              	_ZL5Port1:
+ 308 0000 00       	 .space 1
+ 309 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 310              	 .align 2
+ 311              	 .set .LANCHOR4,.+0
+ 314              	_ZL5Port2:
+ 315 0000 00       	 .space 1
+ 316 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 317              	 .align 2
+ 318              	 .set .LANCHOR5,.+0
+ 321              	_ZL5Port3:
+ 322 0000 00       	 .space 1
+ 323 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 324              	 .align 2
+ 325              	 .set .LANCHOR6,.+0
+ 328              	_ZL5Port4:
+ 329 0000 00       	 .space 1
+ 330 0001 000000   	 .section .rodata.default_therm_table,"a",%progbits
+ 331              	 .align 2
+ 332              	 .set .LANCHOR0,.+0
+ 335              	default_therm_table:
+ 336 0000 5C00     	 .short 92
+ 337 0002 2C01     	 .short 300
+ 338 0004 6900     	 .short 105
+ 339 0006 2201     	 .short 290
+ 340 0008 7900     	 .short 121
+ 341 000a 1801     	 .short 280
+ 342 000c 8C00     	 .short 140
+ 343 000e 0E01     	 .short 270
+ 344 0010 A200     	 .short 162
+ 345 0012 0401     	 .short 260
+ 346 0014 BD00     	 .short 189
+ 347 0016 FA00     	 .short 250
+ 348 0018 DE00     	 .short 222
+ 349 001a F000     	 .short 240
+ 350 001c 0501     	 .short 261
+ 351 001e E600     	 .short 230
+ 352 0020 3401     	 .short 308
+ 353 0022 DC00     	 .short 220
+ 354 0024 6D01     	 .short 365
+ 355 0026 D200     	 .short 210
+ 356 0028 B201     	 .short 434
+ 357 002a C800     	 .short 200
+ 358 002c 0702     	 .short 519
+ 359 002e BE00     	 .short 190
+ 360 0030 6D02     	 .short 621
+ 361 0032 B400     	 .short 180
+ 362 0034 E802     	 .short 744
+ 363 0036 AA00     	 .short 170
+ 364 0038 7B03     	 .short 891
+ 365 003a A000     	 .short 160
+ 366 003c 2B04     	 .short 1067
+ 367 003e 9600     	 .short 150
+ 368 0040 F804     	 .short 1272
+ 369 0042 8C00     	 .short 140
+ 370 0044 E305     	 .short 1507
+ 371 0046 8200     	 .short 130
+ 372 0048 EB06     	 .short 1771
+ 373 004a 7800     	 .short 120
+ 374 004c 0A08     	 .short 2058
+ 375 004e 6E00     	 .short 110
+ 376 0050 3509     	 .short 2357
+ 377 0052 6400     	 .short 100
+ 378 0054 610A     	 .short 2657
+ 379 0056 5A00     	 .short 90
+ 380 0058 7F0B     	 .short 2943
+ 381 005a 5000     	 .short 80
+ 382 005c 840C     	 .short 3204
+ 383 005e 4600     	 .short 70
+ 384 0060 650D     	 .short 3429
+ 385 0062 3C00     	 .short 60
+ 386 0064 1E0E     	 .short 3614
+ 387 0066 3200     	 .short 50
+ 388 0068 B00E     	 .short 3760
+ 389 006a 2800     	 .short 40
+ 390 006c 1D0F     	 .short 3869
+ 391 006e 1E00     	 .short 30
+ 392 0070 6C0F     	 .short 3948
+ 393 0072 1400     	 .short 20
+ 394 0074 A30F     	 .short 4003
+ 395 0076 0A00     	 .short 10
+ 396 0078 C70F     	 .short 4039
+ 397 007a 0000     	 .short 0
+ 398              	 .section .bss._ZL8NullPort,"aw",%nobits
+ 399              	 .align 2
+ 400              	 .set .LANCHOR7,.+0
+ 403              	_ZL8NullPort:
+ 404 0000 00       	 .space 1
+ 405 0001 000000   	 .text
+ 406              	.Letext0:
+ 407              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 408              	 .file 4 "src/MightyBoard/shared/ThermistorTable.hh"
+ 409              	 .file 5 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 410              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 ThermistorTable.cc
+    {standard input}:19     .text._Z19thermistorToCelsiussa:00000000 $t
+    {standard input}:24     .text._Z19thermistorToCelsiussa:00000000 _Z19thermistorToCelsiussa
+    {standard input}:332    .rodata.default_therm_table:00000000 .LANCHOR0
+    {standard input}:178    .text._Z10isTableSett:00000000 $t
+    {standard input}:183    .text._Z10isTableSett:00000000 _Z10isTableSett
+    {standard input}:199    .text._Z20initThermistorTablesv:00000000 $t
+    {standard input}:204    .text._Z20initThermistorTablesv:00000000 _Z20initThermistorTablesv
+    {standard input}:297    .bss.has_table:00000000 .LANCHOR1
+    {standard input}:227    .text._GLOBAL__sub_I_default_therm_table:00000000 $t
+    {standard input}:231    .text._GLOBAL__sub_I_default_therm_table:00000000 _GLOBAL__sub_I_default_therm_table
+    {standard input}:290    .bss._ZL5Port0:00000000 .LANCHOR2
+    {standard input}:304    .bss._ZL5Port1:00000000 .LANCHOR3
+    {standard input}:311    .bss._ZL5Port2:00000000 .LANCHOR4
+    {standard input}:318    .bss._ZL5Port3:00000000 .LANCHOR5
+    {standard input}:325    .bss._ZL5Port4:00000000 .LANCHOR6
+    {standard input}:400    .bss._ZL8NullPort:00000000 .LANCHOR7
+    {standard input}:284    .init_array:00000000 $d
+    {standard input}:300    .bss.has_table:00000000 has_table
+    {standard input}:335    .rodata.default_therm_table:00000000 default_therm_table
+    {standard input}:289    .bss._ZL5Port0:00000000 $d
+    {standard input}:293    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:296    .bss.has_table:00000000 $d
+    {standard input}:303    .bss._ZL5Port1:00000000 $d
+    {standard input}:307    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:310    .bss._ZL5Port2:00000000 $d
+    {standard input}:314    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:317    .bss._ZL5Port3:00000000 $d
+    {standard input}:321    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:324    .bss._ZL5Port4:00000000 $d
+    {standard input}:328    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:331    .rodata.default_therm_table:00000000 $d
+    {standard input}:399    .bss._ZL8NullPort:00000000 $d
+    {standard input}:403    .bss._ZL8NullPort:00000000 _ZL8NullPort
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN7LPCPortC1Eh

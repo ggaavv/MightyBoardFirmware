@@ -1,0 +1,816 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "CoolingFan.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN10CoolingFan11setSetpointEi,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN10CoolingFan11setSetpointEi
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN10CoolingFan11setSetpointEi:
+  25              	.LFB81:
+  26              	 .file 1 "src/MightyBoard/shared/CoolingFan.cc"
+   1:src/MightyBoard/shared/CoolingFan.cc **** #include "CoolingFan.hh"
+   2:src/MightyBoard/shared/CoolingFan.cc **** //#include "ExtruderMotor.hh"
+   3:src/MightyBoard/shared/CoolingFan.cc **** #include "Eeprom.hh"
+   4:src/MightyBoard/shared/CoolingFan.cc **** #include "EepromMap.hh"
+   5:src/MightyBoard/shared/CoolingFan.cc **** #ifdef IS_EXTRUDER_BOARD
+   6:src/MightyBoard/shared/CoolingFan.cc **** #include "ExtruderBoard.hh"
+   7:src/MightyBoard/shared/CoolingFan.cc **** #endif
+   8:src/MightyBoard/shared/CoolingFan.cc **** 
+   9:src/MightyBoard/shared/CoolingFan.cc **** #define FAN_ENABLED 1
+  10:src/MightyBoard/shared/CoolingFan.cc **** #define FAN_DISABLED 0
+  11:src/MightyBoard/shared/CoolingFan.cc **** 
+  12:src/MightyBoard/shared/CoolingFan.cc **** 
+  13:src/MightyBoard/shared/CoolingFan.cc **** 
+  14:src/MightyBoard/shared/CoolingFan.cc **** // TODO: Come up with a unified strategy for these.
+  15:src/MightyBoard/shared/CoolingFan.cc **** // EEPROM map
+  16:src/MightyBoard/shared/CoolingFan.cc **** 
+  17:src/MightyBoard/shared/CoolingFan.cc **** 
+  18:src/MightyBoard/shared/CoolingFan.cc **** CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in, const Pin &fan) :
+  19:src/MightyBoard/shared/CoolingFan.cc ****         heater(heater_in),
+  20:src/MightyBoard/shared/CoolingFan.cc ****         eeprom_base(eeprom_base_in),
+  21:src/MightyBoard/shared/CoolingFan.cc ****         Fan_Pin(fan)
+  22:src/MightyBoard/shared/CoolingFan.cc **** {
+  23:src/MightyBoard/shared/CoolingFan.cc **** 	reset();
+  24:src/MightyBoard/shared/CoolingFan.cc **** }
+  25:src/MightyBoard/shared/CoolingFan.cc **** 
+  26:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::reset() {
+  27:src/MightyBoard/shared/CoolingFan.cc **** 	uint16_t offset = eeprom_base + cooler_eeprom_offsets::SETPOINT_C_OFFSET;
+  28:src/MightyBoard/shared/CoolingFan.cc **** 	setSetpoint(eeprom::getEeprom8(offset, DEFAULT_COOLING_FAN_SETPOINT_C));
+  29:src/MightyBoard/shared/CoolingFan.cc **** 
+  30:src/MightyBoard/shared/CoolingFan.cc **** 	Fan_Pin.setValue(false);
+  31:src/MightyBoard/shared/CoolingFan.cc **** 	Fan_Pin.setDirection(true);
+  32:src/MightyBoard/shared/CoolingFan.cc **** 
+  33:src/MightyBoard/shared/CoolingFan.cc **** 	offset = eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET;
+  34:src/MightyBoard/shared/CoolingFan.cc **** 	if (eeprom::getEeprom8(offset ,DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
+  35:src/MightyBoard/shared/CoolingFan.cc **** 		enable();
+  36:src/MightyBoard/shared/CoolingFan.cc **** 	}
+  37:src/MightyBoard/shared/CoolingFan.cc **** 	else {
+  38:src/MightyBoard/shared/CoolingFan.cc **** 		disable();
+  39:src/MightyBoard/shared/CoolingFan.cc **** 	}
+  40:src/MightyBoard/shared/CoolingFan.cc **** 	fan_on = false;
+  41:src/MightyBoard/shared/CoolingFan.cc **** }
+  42:src/MightyBoard/shared/CoolingFan.cc **** 
+  43:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::setSetpoint(int temperature) {
+  27              	 .loc 1 43 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  44:src/MightyBoard/shared/CoolingFan.cc **** 	setPoint = temperature;
+  33              	 .loc 1 44 0
+  34 0000 C160     	 str r1,[r0,#12]
+  45:src/MightyBoard/shared/CoolingFan.cc **** 	midSetPoint = temperature;
+  35              	 .loc 1 45 0
+  36 0002 0161     	 str r1,[r0,#16]
+  46:src/MightyBoard/shared/CoolingFan.cc **** 	lowSetPoint = temperature - 10;
+  37              	 .loc 1 46 0
+  38 0004 A1F10A03 	 sub r3,r1,#10
+  39 0008 4361     	 str r3,[r0,#20]
+  47:src/MightyBoard/shared/CoolingFan.cc **** 	highSetPoint = temperature + 10;
+  40              	 .loc 1 47 0
+  41 000a 01F10A01 	 add r1,r1,#10
+  42              	.LVL1:
+  43 000e 8161     	 str r1,[r0,#24]
+  48:src/MightyBoard/shared/CoolingFan.cc **** }
+  44              	 .loc 1 48 0
+  45 0010 7047     	 bx lr
+  46              	 .cfi_endproc
+  47              	.LFE81:
+  49 0012 00BF     	 .section .text._ZN10CoolingFan6enableEv,"ax",%progbits
+  50              	 .align 2
+  51              	 .global _ZN10CoolingFan6enableEv
+  52              	 .thumb
+  53              	 .thumb_func
+  55              	_ZN10CoolingFan6enableEv:
+  56              	.LFB82:
+  49:src/MightyBoard/shared/CoolingFan.cc **** 
+  50:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::enable() {
+  57              	 .loc 1 50 0
+  58              	 .cfi_startproc
+  59              	 
+  60              	 
+  61              	 
+  62              	.LVL2:
+  51:src/MightyBoard/shared/CoolingFan.cc **** 	enabled = true;
+  63              	 .loc 1 51 0
+  64 0000 4FF00103 	 mov r3,#1
+  65 0004 4372     	 strb r3,[r0,#9]
+  52:src/MightyBoard/shared/CoolingFan.cc **** }
+  66              	 .loc 1 52 0
+  67 0006 7047     	 bx lr
+  68              	 .cfi_endproc
+  69              	.LFE82:
+  71              	 .section .text._ZN10CoolingFan9enableFanEv,"ax",%progbits
+  72              	 .align 2
+  73              	 .global _ZN10CoolingFan9enableFanEv
+  74              	 .thumb
+  75              	 .thumb_func
+  77              	_ZN10CoolingFan9enableFanEv:
+  78              	.LFB85:
+  53:src/MightyBoard/shared/CoolingFan.cc **** 
+  54:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::disable() {
+  55:src/MightyBoard/shared/CoolingFan.cc **** 	enabled = false;
+  56:src/MightyBoard/shared/CoolingFan.cc **** 	disableFan();
+  57:src/MightyBoard/shared/CoolingFan.cc **** }
+  58:src/MightyBoard/shared/CoolingFan.cc **** 
+  59:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::manageCoolingFan() {
+  60:src/MightyBoard/shared/CoolingFan.cc **** 	// TODO: only change the state if necessary
+  61:src/MightyBoard/shared/CoolingFan.cc **** 	if (enabled) {
+  62:src/MightyBoard/shared/CoolingFan.cc **** 		int temp = heater.get_current_temperature();
+  63:src/MightyBoard/shared/CoolingFan.cc **** 		
+  64:src/MightyBoard/shared/CoolingFan.cc **** 		if ((temp > setPoint) && (temp != DEFAULT_THERMOCOUPLE_VAL)){
+  65:src/MightyBoard/shared/CoolingFan.cc **** 			enableFan();
+  66:src/MightyBoard/shared/CoolingFan.cc **** 			// hysteresis in fan on/off behavior
+  67:src/MightyBoard/shared/CoolingFan.cc **** 			if(!fan_on && temp < highSetPoint){
+  68:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = lowSetPoint;
+  69:src/MightyBoard/shared/CoolingFan.cc **** 			}
+  70:src/MightyBoard/shared/CoolingFan.cc **** 			else{
+  71:src/MightyBoard/shared/CoolingFan.cc **** 				fan_on = true;
+  72:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = midSetPoint;
+  73:src/MightyBoard/shared/CoolingFan.cc **** 			}
+  74:src/MightyBoard/shared/CoolingFan.cc **** 			
+  75:src/MightyBoard/shared/CoolingFan.cc **** 		}
+  76:src/MightyBoard/shared/CoolingFan.cc **** 		else {
+  77:src/MightyBoard/shared/CoolingFan.cc **** 			disableFan();
+  78:src/MightyBoard/shared/CoolingFan.cc **** 			// hysteresis in fan on/off behavior
+  79:src/MightyBoard/shared/CoolingFan.cc **** 			if(fan_on && temp > lowSetPoint){
+  80:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = highSetPoint;
+  81:src/MightyBoard/shared/CoolingFan.cc **** 			}
+  82:src/MightyBoard/shared/CoolingFan.cc **** 			else{
+  83:src/MightyBoard/shared/CoolingFan.cc **** 				fan_on = false;
+  84:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = midSetPoint;
+  85:src/MightyBoard/shared/CoolingFan.cc **** 			}
+  86:src/MightyBoard/shared/CoolingFan.cc **** 		}
+  87:src/MightyBoard/shared/CoolingFan.cc **** 	}
+  88:src/MightyBoard/shared/CoolingFan.cc **** }
+  89:src/MightyBoard/shared/CoolingFan.cc **** 
+  90:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::enableFan() {
+  79              	 .loc 1 90 0
+  80              	 .cfi_startproc
+  81              	 
+  82              	 
+  83              	.LVL3:
+  84 0000 08B5     	 push {r3,lr}
+  85              	.LCFI0:
+  86              	 .cfi_def_cfa_offset 8
+  87              	 .cfi_offset 14,-4
+  88              	 .cfi_offset 3,-8
+  89              	.LVL4:
+  90              	.LBB10:
+  91              	.LBB11:
+  92              	 .file 2 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  93              	 .loc 2 35 0
+  94 0002 4379     	 ldrb r3,[r0,#5]
+  95 0004 3BB9     	 cbnz r3,.L3
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  96              	 .loc 2 44 0
+  97 0006 8379     	 ldrb r3,[r0,#6]
+  98 0008 0079     	 ldrb r0,[r0,#4]
+  99              	.LVL5:
+ 100 000a 4FF00101 	 mov r1,#1
+ 101 000e 01FA03F1 	 lsl r1,r1,r3
+ 102 0012 FFF7FEFF 	 bl GPIO_SetValue
+ 103              	.L3:
+ 104 0016 08BD     	 pop {r3,pc}
+ 105              	.LBE11:
+ 106              	.LBE10:
+ 107              	 .cfi_endproc
+ 108              	.LFE85:
+ 110              	 .section .text._ZN10CoolingFan10disableFanEv,"ax",%progbits
+ 111              	 .align 2
+ 112              	 .global _ZN10CoolingFan10disableFanEv
+ 113              	 .thumb
+ 114              	 .thumb_func
+ 116              	_ZN10CoolingFan10disableFanEv:
+ 117              	.LFB86:
+  91:src/MightyBoard/shared/CoolingFan.cc **** //#ifdef IS_EXTRUDER_BOARD
+  92:src/MightyBoard/shared/CoolingFan.cc **** 	Fan_Pin.setValue(true);
+  93:src/MightyBoard/shared/CoolingFan.cc **** //#else
+  94:src/MightyBoard/shared/CoolingFan.cc **** //	#warning cooling fan feature disabled
+  95:src/MightyBoard/shared/CoolingFan.cc **** //#endif
+  96:src/MightyBoard/shared/CoolingFan.cc **** }
+  97:src/MightyBoard/shared/CoolingFan.cc **** 
+  98:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::disableFan() {
+ 118              	 .loc 1 98 0
+ 119              	 .cfi_startproc
+ 120              	 
+ 121              	 
+ 122              	.LVL6:
+ 123 0000 08B5     	 push {r3,lr}
+ 124              	.LCFI1:
+ 125              	 .cfi_def_cfa_offset 8
+ 126              	 .cfi_offset 14,-4
+ 127              	 .cfi_offset 3,-8
+ 128              	.LVL7:
+ 129              	.LBB14:
+ 130              	.LBB15:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 131              	 .loc 2 35 0
+ 132 0002 4379     	 ldrb r3,[r0,#5]
+ 133 0004 3BB9     	 cbnz r3,.L5
+ 134              	.LVL8:
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+ 135              	 .loc 2 48 0
+ 136 0006 8379     	 ldrb r3,[r0,#6]
+ 137 0008 0079     	 ldrb r0,[r0,#4]
+ 138              	.LVL9:
+ 139 000a 4FF00101 	 mov r1,#1
+ 140 000e 01FA03F1 	 lsl r1,r1,r3
+ 141 0012 FFF7FEFF 	 bl GPIO_ClearValue
+ 142              	.L5:
+ 143 0016 08BD     	 pop {r3,pc}
+ 144              	.LBE15:
+ 145              	.LBE14:
+ 146              	 .cfi_endproc
+ 147              	.LFE86:
+ 149              	 .section .text._ZN10CoolingFan16manageCoolingFanEv,"ax",%progbits
+ 150              	 .align 2
+ 151              	 .global _ZN10CoolingFan16manageCoolingFanEv
+ 152              	 .thumb
+ 153              	 .thumb_func
+ 155              	_ZN10CoolingFan16manageCoolingFanEv:
+ 156              	.LFB84:
+  59:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::manageCoolingFan() {
+ 157              	 .loc 1 59 0
+ 158              	 .cfi_startproc
+ 159              	 
+ 160              	 
+ 161              	.LVL10:
+ 162 0000 38B5     	 push {r3,r4,r5,lr}
+ 163              	.LCFI2:
+ 164              	 .cfi_def_cfa_offset 16
+ 165              	 .cfi_offset 14,-4
+ 166              	 .cfi_offset 5,-8
+ 167              	 .cfi_offset 4,-12
+ 168              	 .cfi_offset 3,-16
+ 169 0002 0446     	 mov r4,r0
+ 170              	.LBB16:
+  61:src/MightyBoard/shared/CoolingFan.cc **** 	if (enabled) {
+ 171              	 .loc 1 61 0
+ 172 0004 437A     	 ldrb r3,[r0,#9]
+ 173 0006 002B     	 cmp r3,#0
+ 174 0008 2FD0     	 beq .L7
+ 175              	.LBB17:
+  62:src/MightyBoard/shared/CoolingFan.cc **** 		int temp = heater.get_current_temperature();
+ 176              	 .loc 1 62 0
+ 177 000a 0068     	 ldr r0,[r0,#0]
+ 178              	.LVL11:
+ 179 000c FFF7FEFF 	 bl _ZN6Heater23get_current_temperatureEv
+ 180 0010 0546     	 mov r5,r0
+ 181              	.LVL12:
+  64:src/MightyBoard/shared/CoolingFan.cc **** 		if ((temp > setPoint) && (temp != DEFAULT_THERMOCOUPLE_VAL)){
+ 182              	 .loc 1 64 0
+ 183 0012 E268     	 ldr r2,[r4,#12]
+ 184 0014 B0F58063 	 subs r3,r0,#1024
+ 185 0018 18BF     	 it ne
+ 186 001a 0123     	 movne r3,#1
+ 187 001c 8242     	 cmp r2,r0
+ 188 001e ACBF     	 ite ge
+ 189 0020 0023     	 movge r3,#0
+ 190 0022 03F00103 	 andlt r3,r3,#1
+ 191 0026 83B1     	 cbz r3,.L9
+  65:src/MightyBoard/shared/CoolingFan.cc **** 			enableFan();
+ 192              	 .loc 1 65 0
+ 193 0028 2046     	 mov r0,r4
+ 194              	.LVL13:
+ 195 002a FFF7FEFF 	 bl _ZN10CoolingFan9enableFanEv
+  67:src/MightyBoard/shared/CoolingFan.cc **** 			if(!fan_on && temp < highSetPoint){
+ 196              	 .loc 1 67 0
+ 197 002e 237F     	 ldrb r3,[r4,#28]
+ 198 0030 2BB9     	 cbnz r3,.L10
+  67:src/MightyBoard/shared/CoolingFan.cc **** 			if(!fan_on && temp < highSetPoint){
+ 199              	 .loc 1 67 0 is_stmt 0 discriminator 1
+ 200 0032 A369     	 ldr r3,[r4,#24]
+ 201 0034 9D42     	 cmp r5,r3
+ 202 0036 02DA     	 bge .L10
+  68:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = lowSetPoint;
+ 203              	 .loc 1 68 0 is_stmt 1
+ 204 0038 6369     	 ldr r3,[r4,#20]
+ 205 003a E360     	 str r3,[r4,#12]
+ 206 003c 38BD     	 pop {r3,r4,r5,pc}
+ 207              	.L10:
+  71:src/MightyBoard/shared/CoolingFan.cc **** 				fan_on = true;
+ 208              	 .loc 1 71 0
+ 209 003e 4FF00103 	 mov r3,#1
+ 210 0042 2377     	 strb r3,[r4,#28]
+  72:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = midSetPoint;
+ 211              	 .loc 1 72 0
+ 212 0044 2369     	 ldr r3,[r4,#16]
+ 213 0046 E360     	 str r3,[r4,#12]
+ 214 0048 38BD     	 pop {r3,r4,r5,pc}
+ 215              	.L9:
+  77:src/MightyBoard/shared/CoolingFan.cc **** 			disableFan();
+ 216              	 .loc 1 77 0
+ 217 004a 2046     	 mov r0,r4
+ 218 004c FFF7FEFF 	 bl _ZN10CoolingFan10disableFanEv
+  79:src/MightyBoard/shared/CoolingFan.cc **** 			if(fan_on && temp > lowSetPoint){
+ 219              	 .loc 1 79 0
+ 220 0050 237F     	 ldrb r3,[r4,#28]
+ 221 0052 2BB1     	 cbz r3,.L11
+  79:src/MightyBoard/shared/CoolingFan.cc **** 			if(fan_on && temp > lowSetPoint){
+ 222              	 .loc 1 79 0 is_stmt 0 discriminator 1
+ 223 0054 6369     	 ldr r3,[r4,#20]
+ 224 0056 9D42     	 cmp r5,r3
+ 225 0058 02DD     	 ble .L11
+  80:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = highSetPoint;
+ 226              	 .loc 1 80 0 is_stmt 1
+ 227 005a A369     	 ldr r3,[r4,#24]
+ 228 005c E360     	 str r3,[r4,#12]
+ 229 005e 38BD     	 pop {r3,r4,r5,pc}
+ 230              	.L11:
+  83:src/MightyBoard/shared/CoolingFan.cc **** 				fan_on = false;
+ 231              	 .loc 1 83 0
+ 232 0060 4FF00003 	 mov r3,#0
+ 233 0064 2377     	 strb r3,[r4,#28]
+  84:src/MightyBoard/shared/CoolingFan.cc **** 				setPoint = midSetPoint;
+ 234              	 .loc 1 84 0
+ 235 0066 2369     	 ldr r3,[r4,#16]
+ 236 0068 E360     	 str r3,[r4,#12]
+ 237              	.LVL14:
+ 238              	.L7:
+ 239 006a 38BD     	 pop {r3,r4,r5,pc}
+ 240              	.LBE17:
+ 241              	.LBE16:
+ 242              	 .cfi_endproc
+ 243              	.LFE84:
+ 245              	 .section .text._ZN10CoolingFan7disableEv,"ax",%progbits
+ 246              	 .align 2
+ 247              	 .global _ZN10CoolingFan7disableEv
+ 248              	 .thumb
+ 249              	 .thumb_func
+ 251              	_ZN10CoolingFan7disableEv:
+ 252              	.LFB83:
+  54:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::disable() {
+ 253              	 .loc 1 54 0
+ 254              	 .cfi_startproc
+ 255              	 
+ 256              	 
+ 257              	.LVL15:
+ 258 0000 08B5     	 push {r3,lr}
+ 259              	.LCFI3:
+ 260              	 .cfi_def_cfa_offset 8
+ 261              	 .cfi_offset 14,-4
+ 262              	 .cfi_offset 3,-8
+  55:src/MightyBoard/shared/CoolingFan.cc **** 	enabled = false;
+ 263              	 .loc 1 55 0
+ 264 0002 4FF00002 	 mov r2,#0
+ 265 0006 4272     	 strb r2,[r0,#9]
+  56:src/MightyBoard/shared/CoolingFan.cc **** 	disableFan();
+ 266              	 .loc 1 56 0
+ 267 0008 FFF7FEFF 	 bl _ZN10CoolingFan10disableFanEv
+ 268              	.LVL16:
+  57:src/MightyBoard/shared/CoolingFan.cc **** }
+ 269              	 .loc 1 57 0
+ 270 000c 08BD     	 pop {r3,pc}
+ 271              	 .cfi_endproc
+ 272              	.LFE83:
+ 274 000e 00BF     	 .section .text._ZN10CoolingFan5resetEv,"ax",%progbits
+ 275              	 .align 2
+ 276              	 .global _ZN10CoolingFan5resetEv
+ 277              	 .thumb
+ 278              	 .thumb_func
+ 280              	_ZN10CoolingFan5resetEv:
+ 281              	.LFB80:
+  26:src/MightyBoard/shared/CoolingFan.cc **** void CoolingFan::reset() {
+ 282              	 .loc 1 26 0
+ 283              	 .cfi_startproc
+ 284              	 
+ 285              	 
+ 286              	.LVL17:
+ 287 0000 10B5     	 push {r4,lr}
+ 288              	.LCFI4:
+ 289              	 .cfi_def_cfa_offset 8
+ 290              	 .cfi_offset 14,-4
+ 291              	 .cfi_offset 4,-8
+ 292 0002 0446     	 mov r4,r0
+ 293              	.LVL18:
+ 294              	.LBB21:
+  27:src/MightyBoard/shared/CoolingFan.cc **** 	uint16_t offset = eeprom_base + cooler_eeprom_offsets::SETPOINT_C_OFFSET;
+ 295              	 .loc 1 27 0
+ 296 0004 C08B     	 ldrh r0,[r0,#30]
+ 297              	.LVL19:
+ 298 0006 00F10100 	 add r0,r0,#1
+  28:src/MightyBoard/shared/CoolingFan.cc **** 	setSetpoint(eeprom::getEeprom8(offset, DEFAULT_COOLING_FAN_SETPOINT_C));
+ 299              	 .loc 1 28 0
+ 300 000a 80B2     	 uxth r0,r0
+ 301 000c 4FF03201 	 mov r1,#50
+ 302 0010 FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
+ 303              	.LVL20:
+ 304 0014 0146     	 mov r1,r0
+ 305 0016 2046     	 mov r0,r4
+ 306 0018 FFF7FEFF 	 bl _ZN10CoolingFan11setSetpointEi
+ 307              	.LVL21:
+ 308              	.LBB22:
+ 309              	.LBB23:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 310              	 .loc 2 35 0
+ 311 001c 6379     	 ldrb r3,[r4,#5]
+ 312 001e 3BB9     	 cbnz r3,.L14
+ 313              	 .loc 2 48 0
+ 314 0020 A379     	 ldrb r3,[r4,#6]
+ 315 0022 2079     	 ldrb r0,[r4,#4]
+ 316 0024 4FF00101 	 mov r1,#1
+ 317 0028 01FA03F1 	 lsl r1,r1,r3
+ 318 002c FFF7FEFF 	 bl GPIO_ClearValue
+ 319              	.L14:
+ 320              	.LBE23:
+ 321              	.LBE22:
+  31:src/MightyBoard/shared/CoolingFan.cc **** 	Fan_Pin.setDirection(true);
+ 322              	 .loc 1 31 0
+ 323 0030 04F10400 	 add r0,r4,#4
+ 324 0034 4FF00101 	 mov r1,#1
+ 325 0038 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 326              	.LVL22:
+  34:src/MightyBoard/shared/CoolingFan.cc **** 	if (eeprom::getEeprom8(offset ,DEFAULT_COOLING_FAN_ENABLE) == FAN_ENABLED) {
+ 327              	 .loc 1 34 0
+ 328 003c E08B     	 ldrh r0,[r4,#30]
+ 329 003e 4FF00101 	 mov r1,#1
+ 330 0042 FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
+ 331              	.LVL23:
+ 332 0046 0128     	 cmp r0,#1
+ 333 0048 03D1     	 bne .L15
+  35:src/MightyBoard/shared/CoolingFan.cc **** 		enable();
+ 334              	 .loc 1 35 0
+ 335 004a 2046     	 mov r0,r4
+ 336 004c FFF7FEFF 	 bl _ZN10CoolingFan6enableEv
+ 337 0050 02E0     	 b .L16
+ 338              	.L15:
+  38:src/MightyBoard/shared/CoolingFan.cc **** 		disable();
+ 339              	 .loc 1 38 0
+ 340 0052 2046     	 mov r0,r4
+ 341 0054 FFF7FEFF 	 bl _ZN10CoolingFan7disableEv
+ 342              	.L16:
+  40:src/MightyBoard/shared/CoolingFan.cc **** 	fan_on = false;
+ 343              	 .loc 1 40 0
+ 344 0058 4FF00003 	 mov r3,#0
+ 345 005c 2377     	 strb r3,[r4,#28]
+ 346              	.LBE21:
+  41:src/MightyBoard/shared/CoolingFan.cc **** }
+ 347              	 .loc 1 41 0
+ 348 005e 10BD     	 pop {r4,pc}
+ 349              	 .cfi_endproc
+ 350              	.LFE80:
+ 352              	 .section .text._ZN10CoolingFanC2ER6HeatertRK3Pin,"ax",%progbits
+ 353              	 .align 2
+ 354              	 .global _ZN10CoolingFanC2ER6HeatertRK3Pin
+ 355              	 .thumb
+ 356              	 .thumb_func
+ 358              	_ZN10CoolingFanC2ER6HeatertRK3Pin:
+ 359              	.LFB78:
+  18:src/MightyBoard/shared/CoolingFan.cc **** CoolingFan::CoolingFan(Heater& heater_in, uint16_t eeprom_base_in, const Pin &fan) :
+ 360              	 .loc 1 18 0
+ 361              	 .cfi_startproc
+ 362              	 
+ 363              	 
+ 364              	.LVL24:
+ 365 0000 38B5     	 push {r3,r4,r5,lr}
+ 366              	.LCFI5:
+ 367              	 .cfi_def_cfa_offset 16
+ 368              	 .cfi_offset 14,-4
+ 369              	 .cfi_offset 5,-8
+ 370              	 .cfi_offset 4,-12
+ 371              	 .cfi_offset 3,-16
+ 372 0002 0446     	 mov r4,r0
+ 373 0004 1546     	 mov r5,r2
+ 374              	.LBB24:
+  21:src/MightyBoard/shared/CoolingFan.cc ****         Fan_Pin(fan)
+ 375              	 .loc 1 21 0
+ 376 0006 40F8041B 	 str r1,[r0],#4
+ 377              	.LVL25:
+ 378 000a 1946     	 mov r1,r3
+ 379              	.LVL26:
+ 380 000c FFF7FEFF 	 bl _ZN3PinC1ERKS_
+ 381              	.LVL27:
+ 382 0010 E583     	 strh r5,[r4,#30]
+  23:src/MightyBoard/shared/CoolingFan.cc **** 	reset();
+ 383              	 .loc 1 23 0
+ 384 0012 2046     	 mov r0,r4
+ 385 0014 FFF7FEFF 	 bl _ZN10CoolingFan5resetEv
+ 386              	.LBE24:
+  24:src/MightyBoard/shared/CoolingFan.cc **** }
+ 387              	 .loc 1 24 0
+ 388 0018 2046     	 mov r0,r4
+ 389 001a 38BD     	 pop {r3,r4,r5,pc}
+ 390              	 .cfi_endproc
+ 391              	.LFE78:
+ 393              	 .section .text._GLOBAL__sub_I__ZN10CoolingFanC2ER6HeatertRK3Pin,"ax",%progbits
+ 394              	 .align 2
+ 395              	 .thumb
+ 396              	 .thumb_func
+ 398              	_GLOBAL__sub_I__ZN10CoolingFanC2ER6HeatertRK3Pin:
+ 399              	.LFB88:
+  99:src/MightyBoard/shared/CoolingFan.cc **** //#ifdef IS_EXTRUDER_BOARD
+ 100:src/MightyBoard/shared/CoolingFan.cc **** //#warning cooling fan feature disabled
+ 101:src/MightyBoard/shared/CoolingFan.cc **** 	Fan_Pin.setValue(false);
+ 102:src/MightyBoard/shared/CoolingFan.cc **** //#else
+ 103:src/MightyBoard/shared/CoolingFan.cc **** //	#warning cooling fan feature disabled
+ 104:src/MightyBoard/shared/CoolingFan.cc **** //#endif
+ 105:src/MightyBoard/shared/CoolingFan.cc **** }
+ 400              	 .loc 1 105 0
+ 401              	 .cfi_startproc
+ 402              	 
+ 403              	 
+ 404 0000 10B5     	 push {r4,lr}
+ 405              	.LCFI6:
+ 406              	 .cfi_def_cfa_offset 8
+ 407              	 .cfi_offset 14,-4
+ 408              	 .cfi_offset 4,-8
+ 409              	.LVL28:
+ 410              	.LBB27:
+ 411              	.LBB28:
+ 412              	 .file 3 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 413              	 .loc 3 49 0
+ 414 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 415 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 416 000a 4FF00001 	 mov r1,#0
+ 417 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 418              	 .loc 3 50 0
+ 419 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 420 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 421 001a 4FF00101 	 mov r1,#1
+ 422 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 423              	 .loc 3 51 0
+ 424 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 425 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 426 002a 4FF00201 	 mov r1,#2
+ 427 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 428              	 .loc 3 52 0
+ 429 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 430 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 431 003a 4FF00301 	 mov r1,#3
+ 432 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 433              	 .loc 3 53 0
+ 434 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 435 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 436 004a 4FF00401 	 mov r1,#4
+ 437 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 438              	 .loc 3 55 0
+ 439 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 440 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 441 005a 2046     	 mov r0,r4
+ 442 005c 4FF0FF01 	 mov r1,#255
+ 443 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 444              	 .loc 2 76 0
+ 445 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 446 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 447 006c 2146     	 mov r1,r4
+ 448 006e 4FF00002 	 mov r2,#0
+ 449 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 450              	.LBE28:
+ 451              	.LBE27:
+ 452              	 .loc 1 105 0
+ 453 0076 10BD     	 pop {r4,pc}
+ 454              	 .cfi_endproc
+ 455              	.LFE88:
+ 457              	 .section .init_array,"aw",%init_array
+ 458              	 .align 2
+ 459 0000 00000000 	 .word _GLOBAL__sub_I__ZN10CoolingFanC2ER6HeatertRK3Pin(target1)
+ 460              	 .global _ZN10CoolingFanC1ER6HeatertRK3Pin
+ 461              	 .thumb_set _ZN10CoolingFanC1ER6HeatertRK3Pin,_ZN10CoolingFanC2ER6HeatertRK3Pin
+ 462              	 .section .bss._ZL5Port0,"aw",%nobits
+ 463              	 .align 2
+ 464              	 .set .LANCHOR0,.+0
+ 467              	_ZL5Port0:
+ 468 0000 00       	 .space 1
+ 469 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 470              	 .align 2
+ 471              	 .set .LANCHOR1,.+0
+ 474              	_ZL5Port1:
+ 475 0000 00       	 .space 1
+ 476 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 477              	 .align 2
+ 478              	 .set .LANCHOR2,.+0
+ 481              	_ZL5Port2:
+ 482 0000 00       	 .space 1
+ 483 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 484              	 .align 2
+ 485              	 .set .LANCHOR3,.+0
+ 488              	_ZL5Port3:
+ 489 0000 00       	 .space 1
+ 490 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 491              	 .align 2
+ 492              	 .set .LANCHOR4,.+0
+ 495              	_ZL5Port4:
+ 496 0000 00       	 .space 1
+ 497 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 498              	 .align 2
+ 499              	 .set .LANCHOR5,.+0
+ 502              	_ZL8NullPort:
+ 503 0000 00       	 .space 1
+ 504 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 505              	 .align 2
+ 506              	 .set .LANCHOR6,.+0
+ 509              	_ZL7NullPin:
+ 510 0000 00000000 	 .space 5
+ 510      00
+ 511 0005 000000   	 .text
+ 512              	.Letext0:
+ 513              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 514              	 .file 5 "src/MightyBoard/shared/TemperatureSensor.hh"
+ 515              	 .file 6 "src/MightyBoard/shared/PID.hh"
+ 516              	 .file 7 "src/MightyBoard/shared/Types.hh"
+ 517              	 .file 8 "src/MightyBoard/shared/Timeout.hh"
+ 518              	 .file 9 "src/MightyBoard/shared/Heater.hh"
+ 519              	 .file 10 "src/MightyBoard/shared/HeatingElement.hh"
+ 520              	 .file 11 "src/MightyBoard/shared/CoolingFan.hh"
+ 521              	 .file 12 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 522              	 .file 13 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 CoolingFan.cc
+    {standard input}:19     .text._ZN10CoolingFan11setSetpointEi:00000000 $t
+    {standard input}:24     .text._ZN10CoolingFan11setSetpointEi:00000000 _ZN10CoolingFan11setSetpointEi
+    {standard input}:50     .text._ZN10CoolingFan6enableEv:00000000 $t
+    {standard input}:55     .text._ZN10CoolingFan6enableEv:00000000 _ZN10CoolingFan6enableEv
+    {standard input}:72     .text._ZN10CoolingFan9enableFanEv:00000000 $t
+    {standard input}:77     .text._ZN10CoolingFan9enableFanEv:00000000 _ZN10CoolingFan9enableFanEv
+    {standard input}:111    .text._ZN10CoolingFan10disableFanEv:00000000 $t
+    {standard input}:116    .text._ZN10CoolingFan10disableFanEv:00000000 _ZN10CoolingFan10disableFanEv
+    {standard input}:150    .text._ZN10CoolingFan16manageCoolingFanEv:00000000 $t
+    {standard input}:155    .text._ZN10CoolingFan16manageCoolingFanEv:00000000 _ZN10CoolingFan16manageCoolingFanEv
+    {standard input}:246    .text._ZN10CoolingFan7disableEv:00000000 $t
+    {standard input}:251    .text._ZN10CoolingFan7disableEv:00000000 _ZN10CoolingFan7disableEv
+    {standard input}:275    .text._ZN10CoolingFan5resetEv:00000000 $t
+    {standard input}:280    .text._ZN10CoolingFan5resetEv:00000000 _ZN10CoolingFan5resetEv
+    {standard input}:353    .text._ZN10CoolingFanC2ER6HeatertRK3Pin:00000000 $t
+    {standard input}:358    .text._ZN10CoolingFanC2ER6HeatertRK3Pin:00000000 _ZN10CoolingFanC2ER6HeatertRK3Pin
+    {standard input}:394    .text._GLOBAL__sub_I__ZN10CoolingFanC2ER6HeatertRK3Pin:00000000 $t
+    {standard input}:398    .text._GLOBAL__sub_I__ZN10CoolingFanC2ER6HeatertRK3Pin:00000000 _GLOBAL__sub_I__ZN10CoolingFanC2ER6HeatertRK3Pin
+    {standard input}:464    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:471    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:478    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:485    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:492    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:499    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:506    .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:458    .init_array:00000000 $d
+    {standard input}:358    .text._ZN10CoolingFanC2ER6HeatertRK3Pin:00000000 _ZN10CoolingFanC1ER6HeatertRK3Pin
+    {standard input}:463    .bss._ZL5Port0:00000000 $d
+    {standard input}:467    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:470    .bss._ZL5Port1:00000000 $d
+    {standard input}:474    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:477    .bss._ZL5Port2:00000000 $d
+    {standard input}:481    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:484    .bss._ZL5Port3:00000000 $d
+    {standard input}:488    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:491    .bss._ZL5Port4:00000000 $d
+    {standard input}:495    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:498    .bss._ZL8NullPort:00000000 $d
+    {standard input}:502    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:505    .bss._ZL7NullPin:00000000 $d
+    {standard input}:509    .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+GPIO_SetValue
+GPIO_ClearValue
+_ZN6Heater23get_current_temperatureEv
+_ZN6eeprom10getEeprom8Eth
+_ZNK3Pin12setDirectionEb
+_ZN3PinC1ERKS_
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth

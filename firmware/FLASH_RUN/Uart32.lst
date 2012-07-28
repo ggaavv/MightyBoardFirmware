@@ -1,0 +1,399 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Uart32.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.UART_8,"ax",%progbits
+  19              	 .align 2
+  20              	 .global UART_8
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	UART_8:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/Uart32.c"
+   1:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // UART.c
+   2:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Runs on LM3S811, LM3S1968, LM3S8962
+   3:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Simple device driver for the UART.
+   4:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Daniel Valvano
+   5:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // July 26, 2011
+   6:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Modified by EE345L students Charlie Gough && Matt Hawk
+   7:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Modified by EE345M students Agustinus Darmawan && Mingjie Qiu
+   8:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 
+   9:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /* This example accompanies the book
+  10:src/MightyBoard/Motherboard/lib/source/Uart32.c ****    "Embedded Systems: Real Time Interfacing to the Arm Cortex M3",
+  11:src/MightyBoard/Motherboard/lib/source/Uart32.c ****    ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2011
+  12:src/MightyBoard/Motherboard/lib/source/Uart32.c ****    Program 4.12, Section 4.9.4, Figures 4.26 and 4.40
+  13:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 
+  14:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  Copyright 2011 by Jonathan W. Valvano, valvano@mail.utexas.edu
+  15:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     You may use, edit, run or distribute this file
+  16:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     as long as the above copyright notice remains
+  17:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
+  18:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+  19:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
+  20:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  VALVANO SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL,
+  21:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  OR CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+  22:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  For more information about my classes, my research, and my books, see
+  23:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  http://users.ece.utexas.edu/~valvano/
+  24:src/MightyBoard/Motherboard/lib/source/Uart32.c ****  */
+  25:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 
+  26:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // U0Rx (VCP receive) connected to PA0
+  27:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // U0Tx (VCP transmit) connected to PA1
+  28:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 
+  29:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #include "lpc17xx_uart.h"
+  30:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 
+  31:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+  32:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #include "UART.h"
+  33:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 
+  34:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define GPIO_PORTA_AFSEL_R      (*((volatile unsigned long *)0x40004420))
+  35:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define GPIO_PORTA_DEN_R        (*((volatile unsigned long *)0x4000451C))
+  36:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART0_DR_R              (*((volatile unsigned long *)0x4000C000))
+  37:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART0_FR_R              (*((volatile unsigned long *)0x4000C018))
+  38:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART0_IBRD_R            (*((volatile unsigned long *)0x4000C024))
+  39:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART0_FBRD_R            (*((volatile unsigned long *)0x4000C028))
+  40:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART0_LCRH_R            (*((volatile unsigned long *)0x4000C02C))
+  41:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART0_CTL_R             (*((volatile unsigned long *)0x4000C030))
+  42:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART_FR_TXFF            0x00000020  // UART Transmit FIFO Full
+  43:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART_FR_RXFE            0x00000010  // UART Receive FIFO Empty
+  44:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART_LCRH_WLEN_8        0x00000060  // 8 bit word length
+  45:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART_LCRH_FEN           0x00000010  // UART Enable FIFOs
+  46:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define UART_CTL_UARTEN         0x00000001  // UART Enable
+  47:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define SYSCTL_RCGC1_R          (*((volatile unsigned long *)0x400FE104))
+  48:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define SYSCTL_RCGC2_R          (*((volatile unsigned long *)0x400FE108))
+  49:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define SYSCTL_RCGC1_UART0      0x00000001  // UART0 Clock Gating Control
+  50:src/MightyBoard/Motherboard/lib/source/Uart32.c **** #define SYSCTL_RCGC2_GPIOA      0x00000001  // port A Clock Gating Control
+  51:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+  52:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //------------UART_InChar------------
+  53:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Wait for new serial port input
+  54:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Initialize the UART for 115,200 baud rate (assuming 50 MHz UART clock),
+  55:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // 8 bit word length, no parity bits, one stop bit, no FIFOs enabled
+  56:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: none
+  57:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: none
+  58:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+  59:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_Init(void){
+  60:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0; // activate UART0
+  61:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOA; // activate port A
+  62:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   UART0_CTL_R &= ~UART_CTL_UARTEN;      // disable UART
+  63:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   UART0_IBRD_R = 27;                    // IBRD = int(50,000,000 / (16 * 115,200)) = int(27.1267)
+  64:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   UART0_FBRD_R = 8;                     // FBRD = int(0.1267 * 64 + 0.5) = 8
+  65:src/MightyBoard/Motherboard/lib/source/Uart32.c ****                                         // 8 bit word length (no parity bits, one stop bit, FIFOs)
+  66:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   UART0_LCRH_R = (UART_LCRH_WLEN_8|UART_LCRH_FEN);
+  67:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   UART0_CTL_R |= UART_CTL_UARTEN;       // enable UART
+  68:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   GPIO_PORTA_AFSEL_R |= 0x03;           // enable alt funct on PA1-0
+  69:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   GPIO_PORTA_DEN_R |= 0x03;             // enable digital I/O on PA1-0
+  70:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+  71:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+  72:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+  73:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //------------UART_InChar------------
+  74:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Wait for new serial port input
+  75:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: none
+  76:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: ASCII code for key typed
+  77:src/MightyBoard/Motherboard/lib/source/Uart32.c **** unsigned char UART_InChar(void){
+  78:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   while((UART0_FR_R&UART_FR_RXFE) != 0);
+  79:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   return((unsigned char)(UART0_DR_R&0xFF));
+  80:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+  81:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+  82:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+  83:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //------------UART_OutChar------------
+  84:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output 8-bit to serial port
+  85:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: letter is an 8-bit ASCII character to be transferred
+  86:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: none
+  87:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_OutChar(unsigned char data){
+  88:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   while((UART0_FR_R&UART_FR_TXFF) != 0);
+  89:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   UART0_DR_R = data;
+  90:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+  91:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+  92:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+  93:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //------------UART_OutString------------
+  94:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output String (NULL termination)
+  95:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: pointer to a NULL-terminated string to be transferred
+  96:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: none
+  97:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_OutString(char *pt){
+  98:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   while(*pt){
+  99:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     UART_OutChar(*pt);
+ 100:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     pt++;
+ 101:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   }
+ 102:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+ 103:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+ 104:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+ 105:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //------------UART_InUDec------------
+ 106:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // InUDec accepts ASCII input in unsigned decimal format
+ 107:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //     and converts to a 32-bit unsigned number
+ 108:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //     valid range is 0 to 4294967295 (2^32-1)
+ 109:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: none
+ 110:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: 32-bit unsigned number
+ 111:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // If you enter a number above 4294967295, it will return an incorrect value
+ 112:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Backspace will remove last digit typed
+ 113:src/MightyBoard/Motherboard/lib/source/Uart32.c **** unsigned long UART_InUDec(void){
+ 114:src/MightyBoard/Motherboard/lib/source/Uart32.c **** unsigned long number=0, length=0;
+ 115:src/MightyBoard/Motherboard/lib/source/Uart32.c **** char character;
+ 116:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   character = UART_InChar();
+ 117:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   while(character != CR){ // accepts until <enter> is typed
+ 118:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // The next line checks that the input is a digit, 0-9.
+ 119:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // If the character is not 0-9, it is ignored and not echoed
+ 120:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     if((character>='0') && (character<='9')) {
+ 121:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       number = 10*number+(character-'0');   // this line overflows if above 4294967295
+ 122:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       length++;
+ 123:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       UART_OutChar(character);
+ 124:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 125:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // If the input is a backspace, then the return number is
+ 126:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // changed and a backspace is outputted to the screen
+ 127:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     else if((character==BS) && length){
+ 128:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       number /= 10;
+ 129:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       length--;
+ 130:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       UART_OutChar(character);
+ 131:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 132:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     character = UART_InChar();
+ 133:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   }
+ 134:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   return number;
+ 135:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+ 136:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+ 137:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+ 138:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //-----------------------UART_OutUDec-----------------------
+ 139:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output a 32-bit number in unsigned decimal format
+ 140:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: 32-bit number to be transferred
+ 141:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: none
+ 142:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Variable format 1-10 digits with no space before or after
+ 143:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_OutUDec(unsigned long n){
+ 144:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // This function uses recursion to convert decimal number
+ 145:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //   of unspecified length as an ASCII string
+ 146:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   if(n >= 10){
+ 147:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     UART_OutUDec(n/10);
+ 148:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     n = n%10;
+ 149:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   }
+ 150:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   UART_OutChar(n+'0'); // n is between 0 and 9
+ 151:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+ 152:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+ 153:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_8(LPC_UART_TypeDef* UARTx, uint8_t Data){
+  27              	 .loc 1 153 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 08B5     	 push {r3,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 8
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 3,-8
+ 154:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	UART_SendByte((LPC_UART_TypeDef*)UARTx, Data);
+  37              	 .loc 1 154 0
+  38 0002 FFF7FEFF 	 bl UART_SendByte
+  39              	.LVL1:
+ 155:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+  40              	 .loc 1 155 0
+  41 0006 08BD     	 pop {r3,pc}
+  42              	 .cfi_endproc
+  43              	.LFE55:
+  45              	 .section .text.UART_32_DEC,"ax",%progbits
+  46              	 .align 2
+  47              	 .global UART_32_DEC
+  48              	 .thumb
+  49              	 .thumb_func
+  51              	UART_32_DEC:
+  52              	.LFB56:
+ 156:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_32_DEC(LPC_UART_TypeDef* UARTx, uint32_t Data){
+  53              	 .loc 1 156 0
+  54              	 .cfi_startproc
+  55              	 
+  56              	 
+  57              	.LVL2:
+  58 0000 70B5     	 push {r4,r5,r6,lr}
+  59              	.LCFI1:
+  60              	 .cfi_def_cfa_offset 16
+  61              	 .cfi_offset 14,-4
+  62              	 .cfi_offset 6,-8
+  63              	 .cfi_offset 5,-12
+  64              	 .cfi_offset 4,-16
+  65 0002 0646     	 mov r6,r0
+  66 0004 0C46     	 mov r4,r1
+ 157:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // This function uses recursion to convert decimal number
+ 158:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //   of unspecified length as an ASCII string
+ 159:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	if(Data >= 10){
+  67              	 .loc 1 159 0
+  68 0006 0929     	 cmp r1,#9
+  69 0008 0ED9     	 bls .L3
+ 160:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 		UART_32_DEC((LPC_UART_TypeDef*)UARTx, Data/10);
+  70              	 .loc 1 160 0
+  71 000a 4CF6CD45 	 movw r5,#52429
+  72 000e CCF6CC45 	 movt r5,52428
+  73 0012 A5FB0135 	 umull r3,r5,r5,r1
+  74 0016 4FEAD505 	 lsr r5,r5,#3
+  75 001a 2946     	 mov r1,r5
+  76              	.LVL3:
+  77 001c FFF7FEFF 	 bl UART_32_DEC
+  78              	.LVL4:
+ 161:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 		Data = Data%10;
+  79              	 .loc 1 161 0
+  80 0020 05EB8505 	 add r5,r5,r5,lsl#2
+  81 0024 A4EB4504 	 sub r4,r4,r5,lsl#1
+  82              	.LVL5:
+  83              	.L3:
+ 162:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	}
+ 163:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //	UART_OutChar(n+'0'); // n is between 0 and 9
+ 164:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	UART_SendByte((LPC_UART_TypeDef*)UARTx, Data+'0');
+  84              	 .loc 1 164 0
+  85 0028 04F13001 	 add r1,r4,#48
+  86 002c 3046     	 mov r0,r6
+  87 002e C9B2     	 uxtb r1,r1
+  88 0030 FFF7FEFF 	 bl UART_SendByte
+ 165:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+  89              	 .loc 1 165 0
+  90 0034 70BD     	 pop {r4,r5,r6,pc}
+  91              	 .cfi_endproc
+  92              	.LFE56:
+  94 0036 00BF     	 .section .text.UART_32_HEX,"ax",%progbits
+  95              	 .align 2
+  96              	 .global UART_32_HEX
+  97              	 .thumb
+  98              	 .thumb_func
+ 100              	UART_32_HEX:
+ 101              	.LFB57:
+ 166:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+ 167:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //---------------------UART_InUHex----------------------------------------
+ 168:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Accepts ASCII input in unsigned hexadecimal (base 16) format
+ 169:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: none
+ 170:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: 32-bit unsigned number
+ 171:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // No '$' or '0x' need be entered, just the 1 to 8 hex digits
+ 172:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // It will convert lower case a-f to uppercase A-F
+ 173:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //     and converts to a 16 bit unsigned number
+ 174:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //     value range is 0 to FFFFFFFF
+ 175:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // If you enter a number above FFFFFFFF, it will return an incorrect value
+ 176:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Backspace will remove last digit typed
+ 177:src/MightyBoard/Motherboard/lib/source/Uart32.c **** unsigned long UART_InUHex(void){
+ 178:src/MightyBoard/Motherboard/lib/source/Uart32.c **** unsigned long number=0, digit, length=0;
+ 179:src/MightyBoard/Motherboard/lib/source/Uart32.c **** char character;
+ 180:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   character = UART_InChar();
+ 181:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   while(character != CR){
+ 182:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     digit = 0x10; // assume bad
+ 183:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     if((character>='0') && (character<='9')){
+ 184:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       digit = character-'0';
+ 185:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 186:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     else if((character>='A') && (character<='F')){
+ 187:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       digit = (character-'A')+0xA;
+ 188:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 189:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     else if((character>='a') && (character<='f')){
+ 190:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       digit = (character-'a')+0xA;
+ 191:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 192:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // If the character is not 0-9 or A-F, it is ignored and not echoed
+ 193:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     if(digit <= 0xF){
+ 194:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       number = number*0x10+digit;
+ 195:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       length++;
+ 196:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       UART_OutChar(character);
+ 197:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 198:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Backspace outputted and return value changed if a backspace is inputted
+ 199:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     else if((character==BS) && length){
+ 200:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       number /= 0x10;
+ 201:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       length--;
+ 202:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       UART_OutChar(character);
+ 203:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 204:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     character = UART_InChar();
+ 205:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   }
+ 206:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   return number;
+ 207:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+ 208:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+ 209:src/MightyBoard/Motherboard/lib/source/Uart32.c **** /*
+ 210:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //--------------------------UART_OutUHex----------------------------
+ 211:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output a 32-bit number in unsigned hexadecimal format
+ 212:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Input: 32-bit number to be transferred
+ 213:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Output: none
+ 214:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // Variable format 1 to 8 digits with no space before or after
+ 215:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_OutUHex(unsigned long number){
+ 216:src/MightyBoard/Motherboard/lib/source/Uart32.c **** // This function uses recursion to convert the number of
+ 217:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //   unspecified length as an ASCII string
+ 218:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   if(number >= 0x10){
+ 219:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     UART_OutUHex(number/0x10);
+ 220:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     UART_OutUHex(number%0x10);
+ 221:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   }
+ 222:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   else{
+ 223:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     if(number < 0xA){
+ 224:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       UART_OutChar(number+'0');
+ 225:src/MightyBoard/Motherboard/lib/source/Uart32.c ****      }
+ 226:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     else{
+ 227:src/MightyBoard/Motherboard/lib/source/Uart32.c ****       UART_OutChar((number-0x0A)+'A');
+ 228:src/MightyBoard/Motherboard/lib/source/Uart32.c ****     }
+ 229:src/MightyBoard/Motherboard/lib/source/Uart32.c ****   }
+ 230:src/MightyBoard/Motherboard/lib/source/Uart32.c **** }
+ 231:src/MightyBoard/Motherboard/lib/source/Uart32.c **** */
+ 232:src/MightyBoard/Motherboard/lib/source/Uart32.c **** void UART_32_HEX(LPC_UART_TypeDef* UARTx, uint32_t Data){
+ 102              	 .loc 1 232 0
+ 103              	 .cfi_startproc
+ 104              	 
+ 105              	 
+ 106              	.LVL6:
+ 107 0000 38B5     	 push {r3,r4,r5,lr}
+ 108              	.LCFI2:
+ 109              	 .cfi_def_cfa_offset 16
+ 110              	 .cfi_offset 14,-4
+ 111              	 .cfi_offset 5,-8
+ 112              	 .cfi_offset 4,-12
+ 113              	 .cfi_offset 3,-16
+ 114 0002 0546     	 mov r5,r0
+ 115 0004 0C46     	 mov r4,r1
+ 233:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	if(Data >= 0x10){
+ 116              	 .loc 1 233 0
+ 117 0006 0F29     	 cmp r1,#15
+ 118 0008 09D9     	 bls .L5
+ 234:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //		UART_OutUHex(number/0x10);
+ 235:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 		UART_32_HEX((LPC_UART_TypeDef*)UARTx, Data/0x10);
+ 119              	 .loc 1 235 0
+ 120 000a 4FEA1111 	 lsr r1,r1,#4
+ 121              	.LVL7:
+ 122 000e FFF7FEFF 	 bl UART_32_HEX
+ 123              	.LVL8:
+ 236:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //		UART_OutUHex(number%0x10);
+ 237:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 		UART_32_HEX((LPC_UART_TypeDef*)UARTx, Data%0x10);
+ 124              	 .loc 1 237 0
+ 125 0012 2846     	 mov r0,r5
+ 126 0014 04F00F01 	 and r1,r4,#15
+ 127 0018 FFF7FEFF 	 bl UART_32_HEX
+ 128 001c 38BD     	 pop {r3,r4,r5,pc}
+ 129              	.L5:
+ 238:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	}
+ 239:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	else{
+ 240:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 		if(Data < 0xA){
+ 130              	 .loc 1 240 0
+ 131 001e 0929     	 cmp r1,#9
+ 241:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //		UART_OutChar(number+'0');
+ 242:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 		UART_SendByte((LPC_UART_TypeDef*)UARTx, Data+'0');
+ 132              	 .loc 1 242 0
+ 133 0020 94BF     	 ite ls
+ 134 0022 3031     	 addls r1,r1,#48
+ 243:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	    }
+ 244:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	    else{
+ 245:src/MightyBoard/Motherboard/lib/source/Uart32.c **** //			UART_OutChar((number-0x0A)+'A');
+ 246:src/MightyBoard/Motherboard/lib/source/Uart32.c **** 	    	UART_SendByte((LPC_UART_TypeDef*)UARTx, ((Data-0x0A)+'A'));
+ 135              	 .loc 1 246 0
+ 136 0024 3731     	 addhi r1,r1,#55
+ 137 0026 C9B2     	 uxtb r1,r1
+ 138 0028 FFF7FEFF 	 bl UART_SendByte
+ 139 002c 38BD     	 pop {r3,r4,r5,pc}
+ 140              	 .cfi_endproc
+ 141              	.LFE57:
+ 143 002e 00BF     	 .text
+ 144              	.Letext0:
+ 145              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 146              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 147              	 .file 4 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Uart32.c
+    {standard input}:19     .text.UART_8:00000000 $t
+    {standard input}:24     .text.UART_8:00000000 UART_8
+    {standard input}:46     .text.UART_32_DEC:00000000 $t
+    {standard input}:51     .text.UART_32_DEC:00000000 UART_32_DEC
+    {standard input}:95     .text.UART_32_HEX:00000000 $t
+    {standard input}:100    .text.UART_32_HEX:00000000 UART_32_HEX
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+UART_SendByte

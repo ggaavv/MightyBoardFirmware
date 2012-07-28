@@ -1,0 +1,689 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Timeout.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN7TimeoutC2Ev,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN7TimeoutC2Ev
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN7TimeoutC2Ev:
+  25              	.LFB103:
+  26              	 .file 1 "src/MightyBoard/shared/Timeout.cc"
+   1:src/MightyBoard/shared/Timeout.cc **** /*
+   2:src/MightyBoard/shared/Timeout.cc ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/Timeout.cc ****  *
+   4:src/MightyBoard/shared/Timeout.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/Timeout.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/Timeout.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/Timeout.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/Timeout.cc ****  *
+   9:src/MightyBoard/shared/Timeout.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/Timeout.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/Timeout.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/Timeout.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/Timeout.cc ****  *
+  14:src/MightyBoard/shared/Timeout.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/Timeout.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/Timeout.cc ****  */
+  17:src/MightyBoard/shared/Timeout.cc **** 
+  18:src/MightyBoard/shared/Timeout.cc **** #include "Timeout.hh"
+  19:src/MightyBoard/shared/Timeout.cc **** //#include "Configuration.hh"
+  20:src/MightyBoard/shared/Timeout.cc **** 
+  21:src/MightyBoard/shared/Timeout.cc **** #if defined IS_EXTRUDER_BOARD
+  22:src/MightyBoard/shared/Timeout.cc ****     #include "ExtruderBoard.hh"
+  23:src/MightyBoard/shared/Timeout.cc **** 
+  24:src/MightyBoard/shared/Timeout.cc **** 	inline micros_t getMicros() { return ExtruderBoard::getBoard().getCurrentMicros(); }
+  25:src/MightyBoard/shared/Timeout.cc **** #else
+  26:src/MightyBoard/shared/Timeout.cc ****     #include "Motherboard.hh"
+  27:src/MightyBoard/shared/Timeout.cc **** 
+  28:src/MightyBoard/shared/Timeout.cc ****     inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
+  29:src/MightyBoard/shared/Timeout.cc **** #endif
+  30:src/MightyBoard/shared/Timeout.cc **** 
+  31:src/MightyBoard/shared/Timeout.cc **** Timeout::Timeout() : active(false), elapsed(false) {}
+  27              	 .loc 1 31 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33              	.LBB23:
+  34              	 .loc 1 31 0
+  35 0000 4FF00002 	 mov r2,#0
+  36 0004 0270     	 strb r2,[r0,#0]
+  37 0006 4270     	 strb r2,[r0,#1]
+  38              	.LBE23:
+  39 0008 7047     	 bx lr
+  40              	 .cfi_endproc
+  41              	.LFE103:
+  43              	 .section .text._ZN7Timeout5startEm,"ax",%progbits
+  44              	 .align 2
+  45              	 .global _ZN7Timeout5startEm
+  46              	 .thumb
+  47              	 .thumb_func
+  49              	_ZN7Timeout5startEm:
+  50              	.LFB105:
+  32:src/MightyBoard/shared/Timeout.cc **** 
+  33:src/MightyBoard/shared/Timeout.cc **** void Timeout::start(micros_t duration_micros_in) {
+  51              	 .loc 1 33 0
+  52              	 .cfi_startproc
+  53              	 
+  54              	 
+  55              	.LVL1:
+  56 0000 70B5     	 push {r4,r5,r6,lr}
+  57              	.LCFI0:
+  58              	 .cfi_def_cfa_offset 16
+  59              	 .cfi_offset 14,-4
+  60              	 .cfi_offset 6,-8
+  61              	 .cfi_offset 5,-12
+  62              	 .cfi_offset 4,-16
+  63 0002 0446     	 mov r4,r0
+  64 0004 0E46     	 mov r6,r1
+  34:src/MightyBoard/shared/Timeout.cc **** 	active = true;
+  65              	 .loc 1 34 0
+  66 0006 4FF00103 	 mov r3,#1
+  67 000a 0370     	 strb r3,[r0,#0]
+  35:src/MightyBoard/shared/Timeout.cc **** 	is_paused = false;
+  68              	 .loc 1 35 0
+  69 000c 4FF00005 	 mov r5,#0
+  70 0010 8570     	 strb r5,[r0,#2]
+  36:src/MightyBoard/shared/Timeout.cc **** 	elapsed = false;
+  71              	 .loc 1 36 0
+  72 0012 4570     	 strb r5,[r0,#1]
+  73              	.LBB24:
+  74              	.LBB25:
+  28:src/MightyBoard/shared/Timeout.cc ****     inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
+  75              	 .loc 1 28 0
+  76 0014 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+  77              	.LVL2:
+  78 0018 C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+  79 001c FFF7FEFF 	 bl _ZN11Motherboard16getCurrentMicrosEv
+  80              	.LVL3:
+  81              	.LBE25:
+  82              	.LBE24:
+  37:src/MightyBoard/shared/Timeout.cc ****     start_stamp_micros = getMicros();
+  83              	 .loc 1 37 0
+  84 0020 6060     	 str r0,[r4,#4]
+  38:src/MightyBoard/shared/Timeout.cc **** 	duration_micros = duration_micros_in;
+  85              	 .loc 1 38 0
+  86 0022 A660     	 str r6,[r4,#8]
+  39:src/MightyBoard/shared/Timeout.cc **** 	pause_micros = 0;
+  87              	 .loc 1 39 0
+  88 0024 E560     	 str r5,[r4,#12]
+  40:src/MightyBoard/shared/Timeout.cc **** }
+  89              	 .loc 1 40 0
+  90 0026 70BD     	 pop {r4,r5,r6,pc}
+  91              	 .cfi_endproc
+  92              	.LFE105:
+  94              	 .section .text._ZN7Timeout10hasElapsedEv,"ax",%progbits
+  95              	 .align 2
+  96              	 .global _ZN7Timeout10hasElapsedEv
+  97              	 .thumb
+  98              	 .thumb_func
+ 100              	_ZN7Timeout10hasElapsedEv:
+ 101              	.LFB106:
+  41:src/MightyBoard/shared/Timeout.cc **** 
+  42:src/MightyBoard/shared/Timeout.cc **** bool Timeout::hasElapsed() {
+ 102              	 .loc 1 42 0
+ 103              	 .cfi_startproc
+ 104              	 
+ 105              	 
+ 106              	.LVL4:
+ 107 0000 10B5     	 push {r4,lr}
+ 108              	.LCFI1:
+ 109              	 .cfi_def_cfa_offset 8
+ 110              	 .cfi_offset 14,-4
+ 111              	 .cfi_offset 4,-8
+ 112 0002 0446     	 mov r4,r0
+ 113              	.LBB26:
+ 114              	.LBB27:
+  43:src/MightyBoard/shared/Timeout.cc **** 	if (active && !elapsed && !is_paused) {
+ 115              	 .loc 1 43 0
+ 116 0004 0378     	 ldrb r3,[r0,#0]
+ 117 0006 93B1     	 cbz r3,.L5
+ 118              	 .loc 1 43 0 is_stmt 0 discriminator 1
+ 119 0008 4378     	 ldrb r3,[r0,#1]
+ 120 000a 83B9     	 cbnz r3,.L5
+ 121              	 .loc 1 43 0 discriminator 2
+ 122 000c 8378     	 ldrb r3,[r0,#2]
+ 123 000e 73B9     	 cbnz r3,.L5
+ 124              	.LBB28:
+ 125              	.LBB29:
+ 126              	.LBB30:
+  28:src/MightyBoard/shared/Timeout.cc ****     inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
+ 127              	 .loc 1 28 0 is_stmt 1
+ 128 0010 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+ 129              	.LVL5:
+ 130 0014 C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+ 131 0018 FFF7FEFF 	 bl _ZN11Motherboard16getCurrentMicrosEv
+ 132              	.LVL6:
+ 133              	.LBE30:
+ 134              	.LBE29:
+  44:src/MightyBoard/shared/Timeout.cc ****                 micros_t delta = getMicros() - start_stamp_micros;
+ 135              	 .loc 1 44 0
+ 136 001c 6368     	 ldr r3,[r4,#4]
+ 137 001e C31A     	 subs r3,r0,r3
+  45:src/MightyBoard/shared/Timeout.cc **** 		if (delta >= duration_micros) {
+ 138              	 .loc 1 45 0
+ 139 0020 A268     	 ldr r2,[r4,#8]
+ 140 0022 9342     	 cmp r3,r2
+  46:src/MightyBoard/shared/Timeout.cc **** 			active = false;
+ 141              	 .loc 1 46 0
+ 142 0024 21BF     	 itttt cs
+ 143 0026 0023     	 movcs r3,#0
+ 144 0028 2370     	 strbcs r3,[r4,#0]
+  47:src/MightyBoard/shared/Timeout.cc **** 			elapsed = true;
+ 145              	 .loc 1 47 0
+ 146 002a 0123     	 movcs r3,#1
+ 147 002c 6370     	 strbcs r3,[r4,#1]
+ 148              	.LVL7:
+ 149              	.L5:
+ 150              	.LBE28:
+ 151              	.LBE27:
+ 152              	.LBE26:
+  48:src/MightyBoard/shared/Timeout.cc **** 		}
+  49:src/MightyBoard/shared/Timeout.cc **** 	}
+  50:src/MightyBoard/shared/Timeout.cc **** 	return elapsed;
+  51:src/MightyBoard/shared/Timeout.cc **** }
+ 153              	 .loc 1 51 0
+ 154 002e 6078     	 ldrb r0,[r4,#1]
+ 155 0030 10BD     	 pop {r4,pc}
+ 156              	 .cfi_endproc
+ 157              	.LFE106:
+ 159 0032 00BF     	 .section .text._ZN7Timeout5abortEv,"ax",%progbits
+ 160              	 .align 2
+ 161              	 .global _ZN7Timeout5abortEv
+ 162              	 .thumb
+ 163              	 .thumb_func
+ 165              	_ZN7Timeout5abortEv:
+ 166              	.LFB107:
+  52:src/MightyBoard/shared/Timeout.cc **** 
+  53:src/MightyBoard/shared/Timeout.cc **** void Timeout::abort() {
+ 167              	 .loc 1 53 0
+ 168              	 .cfi_startproc
+ 169              	 
+ 170              	 
+ 171              	 
+ 172              	.LVL8:
+  54:src/MightyBoard/shared/Timeout.cc **** 	active = false;
+ 173              	 .loc 1 54 0
+ 174 0000 4FF00003 	 mov r3,#0
+ 175 0004 0370     	 strb r3,[r0,#0]
+  55:src/MightyBoard/shared/Timeout.cc **** }
+ 176              	 .loc 1 55 0
+ 177 0006 7047     	 bx lr
+ 178              	 .cfi_endproc
+ 179              	.LFE107:
+ 181              	 .section .text._ZN7Timeout5clearEv,"ax",%progbits
+ 182              	 .align 2
+ 183              	 .global _ZN7Timeout5clearEv
+ 184              	 .thumb
+ 185              	 .thumb_func
+ 187              	_ZN7Timeout5clearEv:
+ 188              	.LFB108:
+  56:src/MightyBoard/shared/Timeout.cc **** void Timeout::clear(){
+ 189              	 .loc 1 56 0
+ 190              	 .cfi_startproc
+ 191              	 
+ 192              	 
+ 193              	 
+ 194              	.LVL9:
+  57:src/MightyBoard/shared/Timeout.cc **** 	elapsed = false;
+ 195              	 .loc 1 57 0
+ 196 0000 4FF00003 	 mov r3,#0
+ 197 0004 4370     	 strb r3,[r0,#1]
+  58:src/MightyBoard/shared/Timeout.cc **** }
+ 198              	 .loc 1 58 0
+ 199 0006 7047     	 bx lr
+ 200              	 .cfi_endproc
+ 201              	.LFE108:
+ 203              	 .section .text._ZN7Timeout5pauseEb,"ax",%progbits
+ 204              	 .align 2
+ 205              	 .global _ZN7Timeout5pauseEb
+ 206              	 .thumb
+ 207              	 .thumb_func
+ 209              	_ZN7Timeout5pauseEb:
+ 210              	.LFB109:
+  59:src/MightyBoard/shared/Timeout.cc **** void Timeout::pause(bool pause_in){
+ 211              	 .loc 1 59 0
+ 212              	 .cfi_startproc
+ 213              	 
+ 214              	 
+ 215              	.LVL10:
+ 216 0000 10B5     	 push {r4,lr}
+ 217              	.LCFI2:
+ 218              	 .cfi_def_cfa_offset 8
+ 219              	 .cfi_offset 14,-4
+ 220              	 .cfi_offset 4,-8
+ 221 0002 0446     	 mov r4,r0
+  60:src/MightyBoard/shared/Timeout.cc **** 
+  61:src/MightyBoard/shared/Timeout.cc **** 	/// don't update time or state if we are already in the desired state
+  62:src/MightyBoard/shared/Timeout.cc **** 	if (is_paused != pause_in){
+ 222              	 .loc 1 62 0
+ 223 0004 8378     	 ldrb r3,[r0,#2]
+ 224 0006 8B42     	 cmp r3,r1
+ 225 0008 14D0     	 beq .L8
+  63:src/MightyBoard/shared/Timeout.cc **** 		
+  64:src/MightyBoard/shared/Timeout.cc **** 		is_paused = pause_in;
+ 226              	 .loc 1 64 0
+ 227 000a 8170     	 strb r1,[r0,#2]
+  65:src/MightyBoard/shared/Timeout.cc **** 
+  66:src/MightyBoard/shared/Timeout.cc **** 		if(pause_in){
+ 228              	 .loc 1 66 0
+ 229 000c 49B1     	 cbz r1,.L10
+ 230              	.LBB31:
+ 231              	.LBB32:
+  28:src/MightyBoard/shared/Timeout.cc ****     inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
+ 232              	 .loc 1 28 0
+ 233 000e 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+ 234              	.LVL11:
+ 235 0012 C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+ 236 0016 FFF7FEFF 	 bl _ZN11Motherboard16getCurrentMicrosEv
+ 237              	.LVL12:
+ 238              	.LBE32:
+ 239              	.LBE31:
+  67:src/MightyBoard/shared/Timeout.cc **** 			pause_micros = getMicros() - start_stamp_micros;
+ 240              	 .loc 1 67 0
+ 241 001a 6368     	 ldr r3,[r4,#4]
+ 242 001c C31A     	 subs r3,r0,r3
+ 243 001e E360     	 str r3,[r4,#12]
+ 244 0020 10BD     	 pop {r4,pc}
+ 245              	.LVL13:
+ 246              	.L10:
+ 247              	.LBB33:
+ 248              	.LBB34:
+  28:src/MightyBoard/shared/Timeout.cc ****     inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
+ 249              	 .loc 1 28 0
+ 250 0022 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+ 251 0026 C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+ 252 002a FFF7FEFF 	 bl _ZN11Motherboard16getCurrentMicrosEv
+ 253              	.LVL14:
+ 254              	.LBE34:
+ 255              	.LBE33:
+  68:src/MightyBoard/shared/Timeout.cc **** 		}else{
+  69:src/MightyBoard/shared/Timeout.cc **** 			start_stamp_micros = getMicros() - pause_micros;
+ 256              	 .loc 1 69 0
+ 257 002e E368     	 ldr r3,[r4,#12]
+ 258 0030 C31A     	 subs r3,r0,r3
+ 259 0032 6360     	 str r3,[r4,#4]
+ 260              	.L8:
+ 261 0034 10BD     	 pop {r4,pc}
+ 262              	 .cfi_endproc
+ 263              	.LFE109:
+ 265 0036 00BF     	 .section .text._ZN7Timeout17getCurrentElapsedEv,"ax",%progbits
+ 266              	 .align 2
+ 267              	 .global _ZN7Timeout17getCurrentElapsedEv
+ 268              	 .thumb
+ 269              	 .thumb_func
+ 271              	_ZN7Timeout17getCurrentElapsedEv:
+ 272              	.LFB110:
+  70:src/MightyBoard/shared/Timeout.cc **** 		}
+  71:src/MightyBoard/shared/Timeout.cc **** 	}
+  72:src/MightyBoard/shared/Timeout.cc **** 
+  73:src/MightyBoard/shared/Timeout.cc **** }
+  74:src/MightyBoard/shared/Timeout.cc **** 
+  75:src/MightyBoard/shared/Timeout.cc **** micros_t Timeout::getCurrentElapsed(){
+ 273              	 .loc 1 75 0
+ 274              	 .cfi_startproc
+ 275              	 
+ 276              	 
+ 277              	.LVL15:
+ 278 0000 10B5     	 push {r4,lr}
+ 279              	.LCFI3:
+ 280              	 .cfi_def_cfa_offset 8
+ 281              	 .cfi_offset 14,-4
+ 282              	 .cfi_offset 4,-8
+ 283 0002 0446     	 mov r4,r0
+  76:src/MightyBoard/shared/Timeout.cc **** 	if(active){
+ 284              	 .loc 1 76 0
+ 285 0004 0378     	 ldrb r3,[r0,#0]
+ 286 0006 63B1     	 cbz r3,.L14
+  77:src/MightyBoard/shared/Timeout.cc **** 		if(is_paused){
+ 287              	 .loc 1 77 0
+ 288 0008 8378     	 ldrb r3,[r0,#2]
+ 289 000a 0BB1     	 cbz r3,.L13
+  78:src/MightyBoard/shared/Timeout.cc **** 			return pause_micros;
+ 290              	 .loc 1 78 0
+ 291 000c C068     	 ldr r0,[r0,#12]
+ 292              	.LVL16:
+ 293 000e 10BD     	 pop {r4,pc}
+ 294              	.L13:
+ 295              	.LBB35:
+ 296              	.LBB36:
+  28:src/MightyBoard/shared/Timeout.cc ****     inline micros_t getMicros() { return Motherboard::getBoard().getCurrentMicros(); }
+ 297              	 .loc 1 28 0
+ 298 0010 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+ 299 0014 C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+ 300 0018 FFF7FEFF 	 bl _ZN11Motherboard16getCurrentMicrosEv
+ 301              	.LBE36:
+ 302              	.LBE35:
+  79:src/MightyBoard/shared/Timeout.cc **** 		}else{
+  80:src/MightyBoard/shared/Timeout.cc **** 			return getMicros() - start_stamp_micros;
+ 303              	 .loc 1 80 0
+ 304 001c 6368     	 ldr r3,[r4,#4]
+ 305 001e C01A     	 subs r0,r0,r3
+ 306 0020 10BD     	 pop {r4,pc}
+ 307              	.L14:
+  81:src/MightyBoard/shared/Timeout.cc **** 		}
+  82:src/MightyBoard/shared/Timeout.cc **** 	}else{
+  83:src/MightyBoard/shared/Timeout.cc **** 		return 0;
+ 308              	 .loc 1 83 0
+ 309 0022 4FF00000 	 mov r0,#0
+  84:src/MightyBoard/shared/Timeout.cc **** 	}
+  85:src/MightyBoard/shared/Timeout.cc **** }
+ 310              	 .loc 1 85 0
+ 311 0026 10BD     	 pop {r4,pc}
+ 312              	 .cfi_endproc
+ 313              	.LFE110:
+ 315              	 .section .text._GLOBAL__sub_I__ZN7TimeoutC2Ev,"ax",%progbits
+ 316              	 .align 2
+ 317              	 .thumb
+ 318              	 .thumb_func
+ 320              	_GLOBAL__sub_I__ZN7TimeoutC2Ev:
+ 321              	.LFB112:
+ 322              	 .loc 1 85 0
+ 323              	 .cfi_startproc
+ 324              	 
+ 325              	 
+ 326 0000 10B5     	 push {r4,lr}
+ 327              	.LCFI4:
+ 328              	 .cfi_def_cfa_offset 8
+ 329              	 .cfi_offset 14,-4
+ 330              	 .cfi_offset 4,-8
+ 331              	.LVL17:
+ 332              	.LBB39:
+ 333              	.LBB40:
+ 334              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 335              	 .loc 2 49 0
+ 336 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 337 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 338 000a 4FF00001 	 mov r1,#0
+ 339 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 340              	 .loc 2 50 0
+ 341 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 342 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 343 001a 4FF00101 	 mov r1,#1
+ 344 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 345              	 .loc 2 51 0
+ 346 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 347 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 348 002a 4FF00201 	 mov r1,#2
+ 349 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 350              	 .loc 2 52 0
+ 351 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 352 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 353 003a 4FF00301 	 mov r1,#3
+ 354 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 355              	 .loc 2 53 0
+ 356 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 357 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 358 004a 4FF00401 	 mov r1,#4
+ 359 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 360              	 .loc 2 55 0
+ 361 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 362 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 363 005a 2046     	 mov r0,r4
+ 364 005c 4FF0FF01 	 mov r1,#255
+ 365 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 366              	 .file 3 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 367              	 .loc 3 76 0
+ 368 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 369 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 370 006c 2146     	 mov r1,r4
+ 371 006e 4FF00002 	 mov r2,#0
+ 372 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 373              	.LBE40:
+ 374              	.LBE39:
+ 375              	 .loc 1 85 0
+ 376 0076 10BD     	 pop {r4,pc}
+ 377              	 .cfi_endproc
+ 378              	.LFE112:
+ 380              	 .section .init_array,"aw",%init_array
+ 381              	 .align 2
+ 382 0000 00000000 	 .word _GLOBAL__sub_I__ZN7TimeoutC2Ev(target1)
+ 383              	 .global _ZN7TimeoutC1Ev
+ 384              	 .thumb_set _ZN7TimeoutC1Ev,_ZN7TimeoutC2Ev
+ 385              	 .section .bss._ZL5Port0,"aw",%nobits
+ 386              	 .align 2
+ 387              	 .set .LANCHOR0,.+0
+ 390              	_ZL5Port0:
+ 391 0000 00       	 .space 1
+ 392 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 393              	 .align 2
+ 394              	 .set .LANCHOR1,.+0
+ 397              	_ZL5Port1:
+ 398 0000 00       	 .space 1
+ 399 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 400              	 .align 2
+ 401              	 .set .LANCHOR2,.+0
+ 404              	_ZL5Port2:
+ 405 0000 00       	 .space 1
+ 406 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 407              	 .align 2
+ 408              	 .set .LANCHOR3,.+0
+ 411              	_ZL5Port3:
+ 412 0000 00       	 .space 1
+ 413 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 414              	 .align 2
+ 415              	 .set .LANCHOR4,.+0
+ 418              	_ZL5Port4:
+ 419 0000 00       	 .space 1
+ 420 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 421              	 .align 2
+ 422              	 .set .LANCHOR5,.+0
+ 425              	_ZL8NullPort:
+ 426 0000 00       	 .space 1
+ 427 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 428              	 .align 2
+ 429              	 .set .LANCHOR6,.+0
+ 432              	_ZL7NullPin:
+ 433 0000 00000000 	 .space 5
+ 433      00
+ 434 0005 000000   	 .text
+ 435              	.Letext0:
+ 436              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 437              	 .file 5 "src/MightyBoard/shared/Types.hh"
+ 438              	 .file 6 "src/MightyBoard/shared/Timeout.hh"
+ 439              	 .file 7 "src/MightyBoard/shared/TemperatureSensor.hh"
+ 440              	 .file 8 "src/MightyBoard/shared/PID.hh"
+ 441              	 .file 9 "src/MightyBoard/shared/Heater.hh"
+ 442              	 .file 10 "src/MightyBoard/shared/HeatingElement.hh"
+ 443              	 .file 11 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 444              	 .file 12 "src/MightyBoard/shared/CoolingFan.hh"
+ 445              	 .file 13 "src/MightyBoard/Motherboard/ExtruderBoard.hh"
+ 446              	 .file 14 "src/MightyBoard/Motherboard/Cutoff.hh"
+ 447              	 .file 15 "src/MightyBoard/Motherboard/Motherboard.hh"
+ 448              	 .file 16 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 449              	 .file 17 "src/MightyBoard/shared/Packet.hh"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Timeout.cc
+    {standard input}:19     .text._ZN7TimeoutC2Ev:00000000 $t
+    {standard input}:24     .text._ZN7TimeoutC2Ev:00000000 _ZN7TimeoutC2Ev
+    {standard input}:44     .text._ZN7Timeout5startEm:00000000 $t
+    {standard input}:49     .text._ZN7Timeout5startEm:00000000 _ZN7Timeout5startEm
+    {standard input}:95     .text._ZN7Timeout10hasElapsedEv:00000000 $t
+    {standard input}:100    .text._ZN7Timeout10hasElapsedEv:00000000 _ZN7Timeout10hasElapsedEv
+    {standard input}:160    .text._ZN7Timeout5abortEv:00000000 $t
+    {standard input}:165    .text._ZN7Timeout5abortEv:00000000 _ZN7Timeout5abortEv
+    {standard input}:182    .text._ZN7Timeout5clearEv:00000000 $t
+    {standard input}:187    .text._ZN7Timeout5clearEv:00000000 _ZN7Timeout5clearEv
+    {standard input}:204    .text._ZN7Timeout5pauseEb:00000000 $t
+    {standard input}:209    .text._ZN7Timeout5pauseEb:00000000 _ZN7Timeout5pauseEb
+    {standard input}:266    .text._ZN7Timeout17getCurrentElapsedEv:00000000 $t
+    {standard input}:271    .text._ZN7Timeout17getCurrentElapsedEv:00000000 _ZN7Timeout17getCurrentElapsedEv
+    {standard input}:316    .text._GLOBAL__sub_I__ZN7TimeoutC2Ev:00000000 $t
+    {standard input}:320    .text._GLOBAL__sub_I__ZN7TimeoutC2Ev:00000000 _GLOBAL__sub_I__ZN7TimeoutC2Ev
+    {standard input}:387    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:394    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:401    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:408    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:415    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:422    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:429    .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:381    .init_array:00000000 $d
+    {standard input}:24     .text._ZN7TimeoutC2Ev:00000000 _ZN7TimeoutC1Ev
+    {standard input}:386    .bss._ZL5Port0:00000000 $d
+    {standard input}:390    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:393    .bss._ZL5Port1:00000000 $d
+    {standard input}:397    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:400    .bss._ZL5Port2:00000000 $d
+    {standard input}:404    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:407    .bss._ZL5Port3:00000000 $d
+    {standard input}:411    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:414    .bss._ZL5Port4:00000000 $d
+    {standard input}:418    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:421    .bss._ZL8NullPort:00000000 $d
+    {standard input}:425    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:428    .bss._ZL7NullPin:00000000 $d
+    {standard input}:432    .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN11Motherboard11motherboardE
+_ZN11Motherboard16getCurrentMicrosEv
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth

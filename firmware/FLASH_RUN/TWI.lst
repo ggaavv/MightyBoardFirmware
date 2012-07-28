@@ -1,0 +1,234 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "TWI.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._Z14TWI_write_datahPhh,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _Z14TWI_write_datahPhh
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_Z14TWI_write_datahPhh:
+  25              	.LFB0:
+  26              	 .file 1 "src/MightyBoard/Motherboard/TWI.cc"
+   1:src/MightyBoard/Motherboard/TWI.cc **** /*
+   2:src/MightyBoard/Motherboard/TWI.cc ****  * Copyright 2011 by Alison Leonard	 <alison@makerbot.com>
+   3:src/MightyBoard/Motherboard/TWI.cc ****  *
+   4:src/MightyBoard/Motherboard/TWI.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/Motherboard/TWI.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/Motherboard/TWI.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/Motherboard/TWI.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/Motherboard/TWI.cc ****  *
+   9:src/MightyBoard/Motherboard/TWI.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/Motherboard/TWI.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/Motherboard/TWI.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/Motherboard/TWI.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/Motherboard/TWI.cc ****  *
+  14:src/MightyBoard/Motherboard/TWI.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/Motherboard/TWI.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/Motherboard/TWI.cc ****  */
+  17:src/MightyBoard/Motherboard/TWI.cc ****  
+  18:src/MightyBoard/Motherboard/TWI.cc ****  //#include <util/twi.h>
+  19:src/MightyBoard/Motherboard/TWI.cc ****  
+  20:src/MightyBoard/Motherboard/TWI.cc **** extern "C" {
+  21:src/MightyBoard/Motherboard/TWI.cc **** 	#include "lpc_types.h"
+  22:src/MightyBoard/Motherboard/TWI.cc **** }
+  23:src/MightyBoard/Motherboard/TWI.cc **** 
+  24:src/MightyBoard/Motherboard/TWI.cc ****  //TODO write proper error codes
+  25:src/MightyBoard/Motherboard/TWI.cc **** uint8_t TWI_write_data(uint8_t address, uint8_t * data, uint8_t length){
+  27              	 .loc 1 25 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  26:src/MightyBoard/Motherboard/TWI.cc ****  			
+  27:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
+  28:src/MightyBoard/Motherboard/TWI.cc **** //  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+  29:src/MightyBoard/Motherboard/TWI.cc **** //  if((TWSR & 0xF8) != TW_START)
+  30:src/MightyBoard/Motherboard/TWI.cc **** 	return 1;
+  31:src/MightyBoard/Motherboard/TWI.cc **** 
+  32:src/MightyBoard/Motherboard/TWI.cc **** 
+  33:src/MightyBoard/Motherboard/TWI.cc ****   /* send address */
+  34:src/MightyBoard/Motherboard/TWI.cc **** //  TWDR = address | TW_WRITE;
+  35:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
+  36:src/MightyBoard/Motherboard/TWI.cc **** //  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+  37:src/MightyBoard/Motherboard/TWI.cc **** //  if ((TWSR & 0xF8) != TW_MT_SLA_ACK)
+  38:src/MightyBoard/Motherboard/TWI.cc **** 		return 2;
+  39:src/MightyBoard/Motherboard/TWI.cc **** 
+  40:src/MightyBoard/Motherboard/TWI.cc **** 
+  41:src/MightyBoard/Motherboard/TWI.cc ****   for (int i = 0; i < length; i++)
+  42:src/MightyBoard/Motherboard/TWI.cc ****     {
+  43:src/MightyBoard/Motherboard/TWI.cc **** //      TWDR = data[i];
+  44:src/MightyBoard/Motherboard/TWI.cc **** //      TWCR = _BV(TWINT) | _BV(TWEN); /* start transmission */
+  45:src/MightyBoard/Motherboard/TWI.cc **** //      while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+  46:src/MightyBoard/Motherboard/TWI.cc **** //      if ((TWSR & 0xF8) != TW_MT_DATA_ACK)
+  47:src/MightyBoard/Motherboard/TWI.cc **** 			return 3;
+  48:src/MightyBoard/Motherboard/TWI.cc ****     }
+  49:src/MightyBoard/Motherboard/TWI.cc **** 
+  50:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
+  51:src/MightyBoard/Motherboard/TWI.cc ****   
+  52:src/MightyBoard/Motherboard/TWI.cc ****   return 0;
+  53:src/MightyBoard/Motherboard/TWI.cc ****   
+  54:src/MightyBoard/Motherboard/TWI.cc ****  }
+  33              	 .loc 1 54 0
+  34 0000 4FF00100 	 mov r0,#1
+  35              	.LVL1:
+  36 0004 7047     	 bx lr
+  37              	 .cfi_endproc
+  38              	.LFE0:
+  40 0006 00BF     	 .section .text._Z14TWI_write_bytehh,"ax",%progbits
+  41              	 .align 2
+  42              	 .global _Z14TWI_write_bytehh
+  43              	 .thumb
+  44              	 .thumb_func
+  46              	_Z14TWI_write_bytehh:
+  47              	.LFB1:
+  55:src/MightyBoard/Motherboard/TWI.cc ****   //TODO write proper error codes
+  56:src/MightyBoard/Motherboard/TWI.cc **** uint8_t TWI_write_byte(uint8_t address, uint8_t data){
+  48              	 .loc 1 56 0
+  49              	 .cfi_startproc
+  50              	 
+  51              	 
+  52              	 
+  53              	.LVL2:
+  57:src/MightyBoard/Motherboard/TWI.cc ****  
+  58:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
+  59:src/MightyBoard/Motherboard/TWI.cc **** //  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+  60:src/MightyBoard/Motherboard/TWI.cc **** //  if((TWSR & 0xF8) != TW_START)
+  61:src/MightyBoard/Motherboard/TWI.cc **** 	return 1;
+  62:src/MightyBoard/Motherboard/TWI.cc **** 
+  63:src/MightyBoard/Motherboard/TWI.cc ****   /* send address */
+  64:src/MightyBoard/Motherboard/TWI.cc **** //  TWDR = address | TW_WRITE;
+  65:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
+  66:src/MightyBoard/Motherboard/TWI.cc **** //  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+  67:src/MightyBoard/Motherboard/TWI.cc **** //  if ((TWSR & 0xF8) != TW_MT_SLA_ACK)
+  68:src/MightyBoard/Motherboard/TWI.cc **** 		return 2;
+  69:src/MightyBoard/Motherboard/TWI.cc **** 
+  70:src/MightyBoard/Motherboard/TWI.cc **** //  TWDR = data;
+  71:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWEN); /* start transmission */
+  72:src/MightyBoard/Motherboard/TWI.cc **** //  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+  73:src/MightyBoard/Motherboard/TWI.cc **** //  if ((TWSR & 0xF8) != TW_MT_DATA_ACK)
+  74:src/MightyBoard/Motherboard/TWI.cc **** 		return 3;
+  75:src/MightyBoard/Motherboard/TWI.cc **** 
+  76:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
+  77:src/MightyBoard/Motherboard/TWI.cc ****   
+  78:src/MightyBoard/Motherboard/TWI.cc ****   return 0;
+  79:src/MightyBoard/Motherboard/TWI.cc ****   
+  80:src/MightyBoard/Motherboard/TWI.cc ****  }
+  54              	 .loc 1 80 0
+  55 0000 4FF00100 	 mov r0,#1
+  56              	.LVL3:
+  57 0004 7047     	 bx lr
+  58              	 .cfi_endproc
+  59              	.LFE1:
+  61 0006 00BF     	 .section .text._Z8TWI_initv,"ax",%progbits
+  62              	 .align 2
+  63              	 .global _Z8TWI_initv
+  64              	 .thumb
+  65              	 .thumb_func
+  67              	_Z8TWI_initv:
+  68              	.LFB2:
+  81:src/MightyBoard/Motherboard/TWI.cc ****  
+  82:src/MightyBoard/Motherboard/TWI.cc ****  void TWI_init(){
+  69              	 .loc 1 82 0
+  70              	 .cfi_startproc
+  71              	 
+  72              	 
+  73              	 
+  74              	.LVL4:
+  83:src/MightyBoard/Motherboard/TWI.cc **** 
+  84:src/MightyBoard/Motherboard/TWI.cc ****   /* initialize TWI clock: 100 kHz clock, TWPS = 0 => prescaler = 1 */
+  85:src/MightyBoard/Motherboard/TWI.cc **** //  TWSR = 0;
+  86:src/MightyBoard/Motherboard/TWI.cc **** 
+  87:src/MightyBoard/Motherboard/TWI.cc ****   uint32_t fCPU = 8000000;
+  88:src/MightyBoard/Motherboard/TWI.cc **** //  TWBR = (fCPU / 100000UL - 16) / 2;
+  89:src/MightyBoard/Motherboard/TWI.cc ****  }
+  75              	 .loc 1 89 0
+  76 0000 7047     	 bx lr
+  77              	 .cfi_endproc
+  78              	.LFE2:
+  80 0002 00BF     	 .section .text._Z13TWI_read_bytehPhh,"ax",%progbits
+  81              	 .align 2
+  82              	 .global _Z13TWI_read_bytehPhh
+  83              	 .thumb
+  84              	 .thumb_func
+  86              	_Z13TWI_read_bytehPhh:
+  87              	.LFB3:
+  90:src/MightyBoard/Motherboard/TWI.cc ****  
+  91:src/MightyBoard/Motherboard/TWI.cc ****  //TODO write proper error codes
+  92:src/MightyBoard/Motherboard/TWI.cc ****  // read function is Totally untested
+  93:src/MightyBoard/Motherboard/TWI.cc ****  uint8_t TWI_read_byte(uint8_t address, uint8_t * data, uint8_t length){
+  88              	 .loc 1 93 0
+  89              	 .cfi_startproc
+  90              	 
+  91              	 
+  92              	 
+  93              	.LVL5:
+  94:src/MightyBoard/Motherboard/TWI.cc ****  
+  95:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWSTA) | _BV(TWEN); /* send start condition */
+  96:src/MightyBoard/Motherboard/TWI.cc **** //  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+  97:src/MightyBoard/Motherboard/TWI.cc **** //  if((TWSR & 0xF8) != TW_START)
+  98:src/MightyBoard/Motherboard/TWI.cc **** 	return 1;
+  99:src/MightyBoard/Motherboard/TWI.cc **** 	
+ 100:src/MightyBoard/Motherboard/TWI.cc ****   /* send address */
+ 101:src/MightyBoard/Motherboard/TWI.cc **** //   TWDR = address | TW_READ;
+ 102:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWEN); /* clear interrupt to start transmission */
+ 103:src/MightyBoard/Motherboard/TWI.cc **** //  while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+ 104:src/MightyBoard/Motherboard/TWI.cc **** //   if((TWSR & 0xF8) != TW_MR_SLA_ACK)
+ 105:src/MightyBoard/Motherboard/TWI.cc **** 	return 2;
+ 106:src/MightyBoard/Motherboard/TWI.cc ****     
+ 107:src/MightyBoard/Motherboard/TWI.cc **** //    uint8_t twcr = _BV(TWINT) | _BV(TWEN) | _BV(TWEA);
+ 108:src/MightyBoard/Motherboard/TWI.cc ****     /* send data bytes */
+ 109:src/MightyBoard/Motherboard/TWI.cc ****     for (int i=0; i < length; i++){
+ 110:src/MightyBoard/Motherboard/TWI.cc **** 	 // if last byte send NAK
+ 111:src/MightyBoard/Motherboard/TWI.cc ****       if (i == length - 1)
+ 112:src/MightyBoard/Motherboard/TWI.cc **** //			twcr = _BV(TWINT) | _BV(TWEN); /* send NAK this time */
+ 113:src/MightyBoard/Motherboard/TWI.cc ****       
+ 114:src/MightyBoard/Motherboard/TWI.cc **** //      TWCR = twcr;		/* clear int to start transmission */
+ 115:src/MightyBoard/Motherboard/TWI.cc **** //      while ((TWCR & _BV(TWINT)) == 0) ; /* wait for transmission */
+ 116:src/MightyBoard/Motherboard/TWI.cc **** //      if((TWSR & 0xF8) != TW_MR_DATA_ACK)
+ 117:src/MightyBoard/Motherboard/TWI.cc **** 		return 3;
+ 118:src/MightyBoard/Motherboard/TWI.cc **** //	  else
+ 119:src/MightyBoard/Motherboard/TWI.cc **** //		  data[i] = TWDR;
+ 120:src/MightyBoard/Motherboard/TWI.cc ****     }
+ 121:src/MightyBoard/Motherboard/TWI.cc ****  
+ 122:src/MightyBoard/Motherboard/TWI.cc **** //  TWCR = _BV(TWINT) | _BV(TWSTO) | _BV(TWEN); /* send stop condition */
+ 123:src/MightyBoard/Motherboard/TWI.cc **** 
+ 124:src/MightyBoard/Motherboard/TWI.cc ****   return 0;
+ 125:src/MightyBoard/Motherboard/TWI.cc **** 
+ 126:src/MightyBoard/Motherboard/TWI.cc ****  }
+  94              	 .loc 1 126 0
+  95 0000 4FF00100 	 mov r0,#1
+  96              	.LVL6:
+  97 0004 7047     	 bx lr
+  98              	 .cfi_endproc
+  99              	.LFE3:
+ 101 0006 00BF     	 .text
+ 102              	.Letext0:
+ 103              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 TWI.cc
+    {standard input}:19     .text._Z14TWI_write_datahPhh:00000000 $t
+    {standard input}:24     .text._Z14TWI_write_datahPhh:00000000 _Z14TWI_write_datahPhh
+    {standard input}:41     .text._Z14TWI_write_bytehh:00000000 $t
+    {standard input}:46     .text._Z14TWI_write_bytehh:00000000 _Z14TWI_write_bytehh
+    {standard input}:62     .text._Z8TWI_initv:00000000 $t
+    {standard input}:67     .text._Z8TWI_initv:00000000 _Z8TWI_initv
+    {standard input}:81     .text._Z13TWI_read_bytehPhh:00000000 $t
+    {standard input}:86     .text._Z13TWI_read_bytehPhh:00000000 _Z13TWI_read_bytehPhh
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

@@ -1,0 +1,1199 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_clkpwr.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.CLKPWR_SetPCLKDiv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global CLKPWR_SetPCLKDiv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	CLKPWR_SetPCLKDiv:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * $Id$		lpc17xx_clkpwr.c				2010-06-18
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * @file		lpc17xx_clkpwr.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * @brief	Contains all functions support for Clock and Power Control
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * 			firmware library on LPC17xx
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * @version	3.0
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * @date		18. June. 2010
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * @author	NXP MCU SW Application Team
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** *
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * Copyright(C) 2010, NXP Semiconductor
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * All rights reserved.
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** *
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** ***********************************************************************
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * Software that is described herein is for illustrative purposes only
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * which provides customers with programming information regarding the
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * products. This software is supplied "AS IS" without any warranties.
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * use of the software, conveys no license or title under any patent,
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * reserves the right to make changes in the software without
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * notification. NXP Semiconductors also make no representation or
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * warranty that such application will be suitable for the specified
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** * use without further testing or modification.
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** **********************************************************************/
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /* Peripheral group ----------------------------------------------------------- */
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /** @addtogroup CLKPWR
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @{
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  */
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /* Includes ------------------------------------------------------------------- */
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** #include "lpc17xx_clkpwr.h"
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /* Public Functions ----------------------------------------------------------- */
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /** @addtogroup CLKPWR_Public_Functions
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @{
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  */
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief 		Set value of each Peripheral Clock Selection
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	ClkType	Peripheral Clock Selection of each type,
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * 				should be one of the following:
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *				- CLKPWR_PCLKSEL_WDT   		: WDT
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER0   	: Timer 0
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER1   	: Timer 1
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART0   	: UART 0
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART1  	: UART 1
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_PWM1   	: PWM 1
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C0   	: I2C 0
+  52:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SPI   		: SPI
+  53:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SSP1   	: SSP 1
+  54:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_DAC   		: DAC
+  55:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_ADC   		: ADC
+  56:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_CAN1  		: CAN 1
+  57:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_CAN2  		: CAN 2
+  58:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_ACF   		: ACF
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_QEI 		: QEI
+  60:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_PCB   		: PCB
+  61:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C1   	: I2C 1
+  62:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SSP0   	: SSP 0
+  63:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER2   	: Timer 2
+  64:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER3   	: Timer 3
+  65:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART2   	: UART 2
+  66:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART3   	: UART 3
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C2   	: I2C 2
+  68:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2S   		: I2S
+  69:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_RIT   		: RIT
+  70:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SYSCON   	: SYSCON
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_MC 		: MC
+  72:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  73:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	DivVal	Value of divider, should be:
+  74:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * 				- CLKPWR_PCLKSEL_CCLK_DIV_4 : PCLK_peripheral = CCLK/4
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * 				- CLKPWR_PCLKSEL_CCLK_DIV_1 : PCLK_peripheral = CCLK/1
+  76:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *				- CLKPWR_PCLKSEL_CCLK_DIV_2 : PCLK_peripheral = CCLK/2
+  77:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *
+  78:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return none
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+  80:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** void CLKPWR_SetPCLKDiv (uint32_t ClkType, uint32_t DivVal)
+  81:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+  27              	 .loc 1 81 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33 0000 10B4     	 push {r4}
+  34              	.LCFI0:
+  35              	 .cfi_def_cfa_offset 4
+  36              	 .cfi_offset 4,-4
+  82:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	uint32_t bitpos;
+  83:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	bitpos = (ClkType < 32) ? (ClkType) : (ClkType - 32);
+  37              	 .loc 1 84 0
+  38 0002 1F28     	 cmp r0,#31
+  39 0004 17D9     	 bls .L2
+  40              	.LVL1:
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  86:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	/* PCLKSEL0 selected */
+  87:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	if (ClkType < 32)
+  88:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	{
+  89:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		/* Clear two bit at bit position */
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCLKSEL0 &= (~(CLKPWR_PCLKSEL_BITMASK(bitpos)));
+  91:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+  92:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		/* Set two selected bit */
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCLKSEL0 |= (CLKPWR_PCLKSEL_SET(bitpos, DivVal));
+  94:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	}
+  95:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	/* PCLKSEL1 selected */
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	else
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	{
+  98:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		/* Clear two bit at bit position */
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCLKSEL1 &= ~(CLKPWR_PCLKSEL_BITMASK(bitpos));
+  41              	 .loc 1 99 0 discriminator 1
+  42 0006 4FF44043 	 mov r3,#49152
+  43 000a C4F20F03 	 movt r3,16399
+  44 000e D3F8AC41 	 ldr r4,[r3,#428]
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	bitpos = (ClkType < 32) ? (ClkType) : (ClkType - 32);
+  45              	 .loc 1 84 0 discriminator 1
+  46 0012 A0F12000 	 sub r0,r0,#32
+  47              	.LVL2:
+  48              	 .loc 1 99 0 discriminator 1
+  49 0016 4FF00302 	 mov r2,#3
+  50 001a 02FA00F2 	 lsl r2,r2,r0
+  51 001e 24EA0202 	 bic r2,r4,r2
+  52 0022 C3F8AC21 	 str r2,[r3,#428]
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		/* Set two selected bit */
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCLKSEL1 |= (CLKPWR_PCLKSEL_SET(bitpos, DivVal));
+  53              	 .loc 1 102 0 discriminator 1
+  54 0026 D3F8AC21 	 ldr r2,[r3,#428]
+  55 002a 01FA00F0 	 lsl r0,r1,r0
+  56              	.LVL3:
+  57 002e 1043     	 orrs r0,r0,r2
+  58 0030 C3F8AC01 	 str r0,[r3,#428]
+  59 0034 14E0     	 b .L1
+  60              	.LVL4:
+  61              	.L2:
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCLKSEL0 &= (~(CLKPWR_PCLKSEL_BITMASK(bitpos)));
+  62              	 .loc 1 90 0
+  63 0036 4FF44043 	 mov r3,#49152
+  64 003a C4F20F03 	 movt r3,16399
+  65 003e D3F8A841 	 ldr r4,[r3,#424]
+  66 0042 4FF00302 	 mov r2,#3
+  67 0046 02FA00F2 	 lsl r2,r2,r0
+  68 004a 24EA0202 	 bic r2,r4,r2
+  69 004e C3F8A821 	 str r2,[r3,#424]
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCLKSEL0 |= (CLKPWR_PCLKSEL_SET(bitpos, DivVal));
+  70              	 .loc 1 93 0
+  71 0052 D3F8A821 	 ldr r2,[r3,#424]
+  72 0056 01FA00F1 	 lsl r1,r1,r0
+  73              	.LVL5:
+  74 005a 1143     	 orrs r1,r1,r2
+  75 005c C3F8A811 	 str r1,[r3,#424]
+  76              	.LVL6:
+  77              	.L1:
+ 103:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	}
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+  78              	 .loc 1 104 0
+  79 0060 10BC     	 pop {r4}
+  80 0062 7047     	 bx lr
+  81              	 .cfi_endproc
+  82              	.LFE55:
+  84              	 .section .text.CLKPWR_GetPCLKSEL,"ax",%progbits
+  85              	 .align 2
+  86              	 .global CLKPWR_GetPCLKSEL
+  87              	 .thumb
+  88              	 .thumb_func
+  90              	CLKPWR_GetPCLKSEL:
+  91              	.LFB56:
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 106:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 107:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+ 108:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief		Get current value of each Peripheral Clock Selection
+ 109:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	ClkType	Peripheral Clock Selection of each type,
+ 110:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * 				should be one of the following:
+ 111:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *				- CLKPWR_PCLKSEL_WDT   		: WDT
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER0   	: Timer 0
+ 113:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER1   	: Timer 1
+ 114:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART0   	: UART 0
+ 115:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART1  	: UART 1
+ 116:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_PWM1   	: PWM 1
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C0   	: I2C 0
+ 118:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SPI   		: SPI
+ 119:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SSP1   	: SSP 1
+ 120:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_DAC   		: DAC
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_ADC   		: ADC
+ 122:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_CAN1  		: CAN 1
+ 123:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_CAN2  		: CAN 2
+ 124:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_ACF   		: ACF
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_QEI 		: QEI
+ 126:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_PCB   		: PCB
+ 127:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C1   	: I2C 1
+ 128:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SSP0   	: SSP 0
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER2   	: Timer 2
+ 130:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER3   	: Timer 3
+ 131:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART2   	: UART 2
+ 132:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART3   	: UART 3
+ 133:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C2   	: I2C 2
+ 134:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2S   		: I2S
+ 135:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_RIT   		: RIT
+ 136:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SYSCON   	: SYSCON
+ 137:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_MC 		: MC
+ 138:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 139:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return		Value of Selected Peripheral Clock Selection
+ 140:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+ 141:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** uint32_t CLKPWR_GetPCLKSEL (uint32_t ClkType)
+ 142:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+  92              	 .loc 1 142 0
+  93              	 .cfi_startproc
+  94              	 
+  95              	 
+  96              	 
+  97              	.LVL7:
+ 143:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	uint32_t bitpos, retval;
+ 144:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 145:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	if (ClkType < 32)
+  98              	 .loc 1 145 0
+  99 0000 1F28     	 cmp r0,#31
+ 100              	.LVL8:
+ 146:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	{
+ 147:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		bitpos = ClkType;
+ 148:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		retval = LPC_SC->PCLKSEL0;
+ 101              	 .loc 1 148 0
+ 102 0002 9DBF     	 ittte ls
+ 103 0004 4FF44043 	 movls r3,#49152
+ 104 0008 C4F20F03 	 movtls r3,16399
+ 105 000c D3F8A831 	 ldrls r3,[r3,#424]
+ 106              	.LVL9:
+ 149:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	}
+ 150:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	else
+ 151:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	{
+ 152:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		bitpos = ClkType - 32;
+ 107              	 .loc 1 152 0
+ 108 0010 2038     	 subhi r0,r0,#32
+ 109              	.LVL10:
+ 153:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		retval = LPC_SC->PCLKSEL1;
+ 110              	 .loc 1 153 0
+ 111 0012 82BF     	 ittt hi
+ 112 0014 4FF44043 	 movhi r3,#49152
+ 113              	.LVL11:
+ 114 0018 C4F20F03 	 movthi r3,16399
+ 115 001c D3F8AC31 	 ldrhi r3,[r3,#428]
+ 116              	.LVL12:
+ 154:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	}
+ 155:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 156:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	retval = CLKPWR_PCLKSEL_GET(bitpos, retval);
+ 117              	 .loc 1 156 0
+ 118 0020 23FA00F0 	 lsr r0,r3,r0
+ 119              	.LVL13:
+ 157:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	return retval;
+ 158:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+ 120              	 .loc 1 158 0
+ 121 0024 00F00300 	 and r0,r0,#3
+ 122              	.LVL14:
+ 123 0028 7047     	 bx lr
+ 124              	 .cfi_endproc
+ 125              	.LFE56:
+ 127 002a 00BF     	 .section .text.CLKPWR_GetPCLK,"ax",%progbits
+ 128              	 .align 2
+ 129              	 .global CLKPWR_GetPCLK
+ 130              	 .thumb
+ 131              	 .thumb_func
+ 133              	CLKPWR_GetPCLK:
+ 134              	.LFB57:
+ 159:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 160:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 161:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 162:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+ 163:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief 		Get current value of each Peripheral Clock
+ 164:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	ClkType	Peripheral Clock Selection of each type,
+ 165:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * 				should be one of the following:
+ 166:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *				- CLKPWR_PCLKSEL_WDT   		: WDT
+ 167:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER0   	: Timer 0
+ 168:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER1   	: Timer 1
+ 169:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART0   	: UART 0
+ 170:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART1  	: UART 1
+ 171:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_PWM1   	: PWM 1
+ 172:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C0   	: I2C 0
+ 173:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SPI   		: SPI
+ 174:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SSP1   	: SSP 1
+ 175:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_DAC   		: DAC
+ 176:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_ADC   		: ADC
+ 177:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_CAN1  		: CAN 1
+ 178:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_CAN2  		: CAN 2
+ 179:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_ACF   		: ACF
+ 180:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_QEI 		: QEI
+ 181:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_PCB   		: PCB
+ 182:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C1   	: I2C 1
+ 183:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SSP0   	: SSP 0
+ 184:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER2   	: Timer 2
+ 185:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_TIMER3   	: Timer 3
+ 186:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART2   	: UART 2
+ 187:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_UART3   	: UART 3
+ 188:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2C2   	: I2C 2
+ 189:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_I2S   		: I2S
+ 190:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_RIT   		: RIT
+ 191:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_SYSCON   	: SYSCON
+ 192:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				- CLKPWR_PCLKSEL_MC 		: MC
+ 193:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 194:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return		Value of Selected Peripheral Clock
+ 195:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+ 196:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** uint32_t CLKPWR_GetPCLK (uint32_t ClkType)
+ 197:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+ 135              	 .loc 1 197 0
+ 136              	 .cfi_startproc
+ 137              	 
+ 138              	 
+ 139              	.LVL15:
+ 140 0000 10B5     	 push {r4,lr}
+ 141              	.LCFI1:
+ 142              	 .cfi_def_cfa_offset 8
+ 143              	 .cfi_offset 14,-4
+ 144              	 .cfi_offset 4,-8
+ 198:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	uint32_t retval, div;
+ 199:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 200:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	retval = SystemCoreClock;
+ 145              	 .loc 1 200 0
+ 146 0002 40F20003 	 movw r3,#:lower16:SystemCoreClock
+ 147 0006 C0F20003 	 movt r3,#:upper16:SystemCoreClock
+ 148 000a 1C68     	 ldr r4,[r3,#0]
+ 149              	.LVL16:
+ 201:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	div = CLKPWR_GetPCLKSEL(ClkType);
+ 150              	 .loc 1 201 0
+ 151 000c FFF7FEFF 	 bl CLKPWR_GetPCLKSEL
+ 152              	.LVL17:
+ 202:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 203:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	switch (div)
+ 153              	 .loc 1 203 0
+ 154 0010 0328     	 cmp r0,#3
+ 155 0012 08D8     	 bhi .L9
+ 156 0014 DFE800F0 	 tbb [pc,r0]
+ 157              	.L13:
+ 158 0018 05       	 .byte (.L14-.L13)/2
+ 159 0019 07       	 .byte (.L9-.L13)/2
+ 160 001a 07       	 .byte (.L9-.L13)/2
+ 161 001b 02       	 .byte (.L12-.L13)/2
+ 162              	 .align 1
+ 163              	.L12:
+ 164              	.LVL18:
+ 204:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	{
+ 205:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	case 0:
+ 206:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		div = 4;
+ 207:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		break;
+ 208:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 209:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	case 1:
+ 210:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		div = 1;
+ 211:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		break;
+ 212:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 213:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	case 2:
+ 214:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		div = 2;
+ 215:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		break;
+ 216:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 217:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	case 3:
+ 218:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		div = 8;
+ 165              	 .loc 1 218 0
+ 166 001c 4FF00800 	 mov r0,#8
+ 219:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		break;
+ 167              	 .loc 1 219 0
+ 168 0020 01E0     	 b .L9
+ 169              	.LVL19:
+ 170              	.L14:
+ 206:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		div = 4;
+ 171              	 .loc 1 206 0
+ 172 0022 4FF00400 	 mov r0,#4
+ 173              	.LVL20:
+ 174              	.L9:
+ 220:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	}
+ 221:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	retval /= div;
+ 222:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 223:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	return retval;
+ 224:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+ 175              	 .loc 1 224 0
+ 176 0026 B4FBF0F0 	 udiv r0,r4,r0
+ 177              	.LVL21:
+ 178 002a 10BD     	 pop {r4,pc}
+ 179              	 .cfi_endproc
+ 180              	.LFE57:
+ 182              	 .section .text.CLKPWR_ConfigPPWR,"ax",%progbits
+ 183              	 .align 2
+ 184              	 .global CLKPWR_ConfigPPWR
+ 185              	 .thumb
+ 186              	 .thumb_func
+ 188              	CLKPWR_ConfigPPWR:
+ 189              	.LFB58:
+ 225:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 226:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 227:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 228:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+ 229:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief 		Configure power supply for each peripheral according to NewState
+ 230:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	PPType	Type of peripheral used to enable power,
+ 231:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *     					should be one of the following:
+ 232:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *     			-  CLKPWR_PCONP_PCTIM0 		: Timer 0
+ 233:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCTIM1 		: Timer 1
+ 234:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCUART0  	: UART 0
+ 235:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCUART1   	: UART 1
+ 236:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCPWM1 		: PWM 1
+ 237:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCI2C0 		: I2C 0
+ 238:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCSPI   	: SPI
+ 239:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCRTC   	: RTC
+ 240:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCSSP1 		: SSP 1
+ 241:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCAD   		: ADC
+ 242:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCAN1   	: CAN 1
+ 243:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCAN2   	: CAN 2
+ 244:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCGPIO 		: GPIO
+ 245:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCRIT 		: RIT
+ 246:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCMC 		: MC
+ 247:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCQEI 		: QEI
+ 248:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCI2C1   	: I2C 1
+ 249:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCSSP0 		: SSP 0
+ 250:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCTIM2 		: Timer 2
+ 251:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCTIM3 		: Timer 3
+ 252:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCUART2  	: UART 2
+ 253:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCUART3   	: UART 3
+ 254:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCI2C2 		: I2C 2
+ 255:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCI2S   	: I2S
+ 256:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCGPDMA   	: GPDMA
+ 257:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCENET 		: Ethernet
+ 258:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 				-  CLKPWR_PCONP_PCUSB   	: USB
+ 259:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *
+ 260:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	NewState	New state of Peripheral Power, should be:
+ 261:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * 				- ENABLE	: Enable power for this peripheral
+ 262:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * 				- DISABLE	: Disable power for this peripheral
+ 263:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  *
+ 264:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return none
+ 265:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+ 266:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** void CLKPWR_ConfigPPWR (uint32_t PPType, FunctionalState NewState)
+ 267:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+ 190              	 .loc 1 267 0
+ 191              	 .cfi_startproc
+ 192              	 
+ 193              	 
+ 194              	 
+ 195              	.LVL22:
+ 268:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	if (NewState == ENABLE)
+ 196              	 .loc 1 268 0
+ 197 0000 0129     	 cmp r1,#1
+ 198 0002 0ED1     	 bne .L16
+ 269:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	{
+ 270:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCONP |= PPType & CLKPWR_PCONP_BITMASK;
+ 199              	 .loc 1 270 0
+ 200 0004 4FF44042 	 mov r2,#49152
+ 201 0008 C4F20F02 	 movt r2,16399
+ 202 000c D2F8C410 	 ldr r1,[r2,#196]
+ 203              	.LVL23:
+ 204 0010 4FF2DE73 	 movw r3,#63454
+ 205 0014 CEF6EF73 	 movt r3,61423
+ 206 0018 0340     	 ands r3,r3,r0
+ 207 001a 0B43     	 orrs r3,r3,r1
+ 208 001c C2F8C430 	 str r3,[r2,#196]
+ 209 0020 7047     	 bx lr
+ 210              	.LVL24:
+ 211              	.L16:
+ 271:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	}
+ 272:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	else if (NewState == DISABLE)
+ 212              	 .loc 1 272 0
+ 213 0022 71B9     	 cbnz r1,.L15
+ 273:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	{
+ 274:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 		LPC_SC->PCONP &= (~PPType) & CLKPWR_PCONP_BITMASK;
+ 214              	 .loc 1 274 0
+ 215 0024 4FF44042 	 mov r2,#49152
+ 216 0028 C4F20F02 	 movt r2,16399
+ 217 002c D2F8C410 	 ldr r1,[r2,#196]
+ 218              	.LVL25:
+ 219 0030 4FF2DE73 	 movw r3,#63454
+ 220 0034 CEF6EF73 	 movt r3,61423
+ 221 0038 0B40     	 ands r3,r3,r1
+ 222 003a 23EA0000 	 bic r0,r3,r0
+ 223              	.LVL26:
+ 224 003e C2F8C400 	 str r0,[r2,#196]
+ 225              	.L15:
+ 226 0042 7047     	 bx lr
+ 227              	 .cfi_endproc
+ 228              	.LFE58:
+ 230              	 .section .text.CLKPWR_Sleep,"ax",%progbits
+ 231              	 .align 2
+ 232              	 .global CLKPWR_Sleep
+ 233              	 .thumb
+ 234              	 .thumb_func
+ 236              	CLKPWR_Sleep:
+ 237              	.LFB59:
+ 275:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	}
+ 276:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+ 277:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 278:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 279:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+ 280:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief 		Enter Sleep mode with co-operated instruction by the Cortex-M3.
+ 281:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	None
+ 282:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return		None
+ 283:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+ 284:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** void CLKPWR_Sleep(void)
+ 285:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+ 238              	 .loc 1 285 0
+ 239              	 .cfi_startproc
+ 240              	 
+ 241              	 
+ 242              	 
+ 286:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	LPC_SC->PCON = 0x00;
+ 243              	 .loc 1 286 0
+ 244 0000 4FF44043 	 mov r3,#49152
+ 245 0004 C4F20F03 	 movt r3,16399
+ 246 0008 4FF00002 	 mov r2,#0
+ 247 000c C3F8C020 	 str r2,[r3,#192]
+ 248              	.LBB10:
+ 249              	.LBB11:
+ 250              	 .file 2 "src/MightyBoard/Motherboard/system/core_cmInstr.h"
+   1:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /**************************************************************************//**
+   2:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * @file     core_cmInstr.h
+   3:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * @brief    CMSIS Cortex-M Core Instruction Access Header File
+   4:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * @version  V2.01
+   5:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * @date     06. December 2010
+   6:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  *
+   7:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * @note
+   8:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * Copyright (C) 2009-2010 ARM Limited. All rights reserved.
+   9:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  *
+  10:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * @par
+  11:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * ARM Limited (ARM) is supplying this software for use with Cortex-M
+  12:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * processor based microcontrollers.  This file can be freely distributed
+  13:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * within development tools that are supporting such ARM based processors.
+  14:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  *
+  15:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * @par
+  16:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
+  17:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+  18:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
+  19:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
+  20:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+  21:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  *
+  22:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  ******************************************************************************/
+  23:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  24:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #ifndef __CORE_CMINSTR_H__
+  25:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __CORE_CMINSTR_H__
+  26:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  27:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  28:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* ##########################  Core Instruction Access  ######################### */
+  29:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \ingroup  CMSIS
+  30:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 	\addtogroup CMSIS_Core_InstructionInterface CMSIS Core Instruction Interface
+  31:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   Access to dedicated instructions
+  32:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   @{
+  33:src/MightyBoard/Motherboard/system/core_cmInstr.h **** */
+  34:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  35:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #if defined ( __CC_ARM   ) /*------------------ RealView Compiler ----------------*/
+  36:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* ARM armcc specific functions */
+  37:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  38:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  No Operation
+  39:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  40:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     No Operation does nothing. This instruction can be used for code alignment purposes.
+  41:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+  42:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __NOP                             __nop
+  43:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  44:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  45:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Wait For Interrupt
+  46:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  47:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Wait For Interrupt is a hint instruction that suspends execution
+  48:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     until one of a number of events occurs.
+  49:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+  50:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __WFI                             __wfi
+  51:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  52:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  53:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Wait For Event
+  54:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  55:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Wait For Event is a hint instruction that permits the processor to enter
+  56:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     a low-power state until one of a number of events occurs.
+  57:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+  58:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __WFE                             __wfe
+  59:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  60:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  61:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Send Event
+  62:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  63:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Send Event is a hint instruction. It causes an event to be signaled to the CPU.
+  64:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+  65:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __SEV                             __sev
+  66:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  67:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  68:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Instruction Synchronization Barrier
+  69:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  70:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Instruction Synchronization Barrier flushes the pipeline in the processor,
+  71:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     so that all instructions following the ISB are fetched from cache or
+  72:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     memory, after the instruction has been completed.
+  73:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+  74:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __ISB()                           __isb(0xF)
+  75:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  76:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  77:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Data Synchronization Barrier
+  78:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  79:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function acts as a special kind of Data Memory Barrier.
+  80:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     It completes when all explicit memory accesses before this instruction complete.
+  81:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+  82:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __DSB()                           __dsb(0xF)
+  83:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  84:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  85:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Data Memory Barrier
+  86:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  87:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function ensures the apparent order of the explicit memory operations before
+  88:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     and after the instruction, without ensuring their completion.
+  89:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+  90:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __DMB()                           __dmb(0xF)
+  91:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  92:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  93:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Reverse byte order (32 bit)
+  94:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  95:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function reverses the byte order in integer value.
+  96:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+  97:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    value  Value to reverse
+  98:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return               Reversed value
+  99:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 100:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __REV                             __rev
+ 101:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 102:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 103:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Reverse byte order (16 bit)
+ 104:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 105:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function reverses the byte order in two unsigned short values.
+ 106:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 107:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    value  Value to reverse
+ 108:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return               Reversed value
+ 109:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 110:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #if (__ARMCC_VERSION < 400677)
+ 111:src/MightyBoard/Motherboard/system/core_cmInstr.h **** extern uint32_t __REV16(uint32_t value);
+ 112:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #else  /* (__ARMCC_VERSION >= 400677)  */
+ 113:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static __INLINE __ASM uint32_t __REV16(uint32_t value)
+ 114:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 115:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   rev16 r0, r0
+ 116:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   bx lr
+ 117:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 118:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #endif /* __ARMCC_VERSION  */
+ 119:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 120:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 121:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Reverse byte order in signed short value
+ 122:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 123:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function reverses the byte order in a signed short value with sign extension to integer.
+ 124:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 125:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    value  Value to reverse
+ 126:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return               Reversed value
+ 127:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 128:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #if (__ARMCC_VERSION < 400677)
+ 129:src/MightyBoard/Motherboard/system/core_cmInstr.h **** extern int32_t __REVSH(int32_t value);
+ 130:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #else  /* (__ARMCC_VERSION >= 400677)  */
+ 131:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static __INLINE __ASM int32_t __REVSH(int32_t value)
+ 132:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 133:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   revsh r0, r0
+ 134:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   bx lr
+ 135:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 136:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #endif /* __ARMCC_VERSION  */
+ 137:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 138:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 139:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #if       (__CORTEX_M >= 0x03)
+ 140:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 141:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Reverse bit order of value
+ 142:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 143:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function reverses the bit order of the given value.
+ 144:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 145:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    value  Value to reverse
+ 146:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return               Reversed value
+ 147:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 148:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __RBIT                            __rbit
+ 149:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 150:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 151:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  LDR Exclusive (8 bit)
+ 152:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 153:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive LDR command for 8 bit value.
+ 154:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 155:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to data
+ 156:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return             value of type uint8_t at (*ptr)
+ 157:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 158:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __LDREXB(ptr)                     ((uint8_t ) __ldrex(ptr))
+ 159:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 160:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 161:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  LDR Exclusive (16 bit)
+ 162:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 163:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive LDR command for 16 bit values.
+ 164:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 165:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to data
+ 166:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return        value of type uint16_t at (*ptr)
+ 167:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 168:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __LDREXH(ptr)                     ((uint16_t) __ldrex(ptr))
+ 169:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 170:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 171:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  LDR Exclusive (32 bit)
+ 172:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 173:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive LDR command for 32 bit values.
+ 174:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 175:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to data
+ 176:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return        value of type uint32_t at (*ptr)
+ 177:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 178:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __LDREXW(ptr)                     ((uint32_t ) __ldrex(ptr))
+ 179:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 180:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 181:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  STR Exclusive (8 bit)
+ 182:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 183:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive STR command for 8 bit values.
+ 184:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 185:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to store
+ 186:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to location
+ 187:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          0  Function succeeded
+ 188:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          1  Function failed
+ 189:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 190:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __STREXB(value, ptr)              __strex(value, ptr)
+ 191:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 192:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 193:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  STR Exclusive (16 bit)
+ 194:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 195:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive STR command for 16 bit values.
+ 196:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 197:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to store
+ 198:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to location
+ 199:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          0  Function succeeded
+ 200:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          1  Function failed
+ 201:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 202:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __STREXH(value, ptr)              __strex(value, ptr)
+ 203:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 204:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 205:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  STR Exclusive (32 bit)
+ 206:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 207:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive STR command for 32 bit values.
+ 208:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 209:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to store
+ 210:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to location
+ 211:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          0  Function succeeded
+ 212:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          1  Function failed
+ 213:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 214:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __STREXW(value, ptr)              __strex(value, ptr)
+ 215:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 216:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 217:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Remove the exclusive lock
+ 218:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 219:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function removes the exclusive lock which is created by LDREX.
+ 220:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 221:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 222:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #if (__ARMCC_VERSION < 400000)
+ 223:src/MightyBoard/Motherboard/system/core_cmInstr.h **** extern void __CLREX(void);
+ 224:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #else  /* (__ARMCC_VERSION >= 400000)  */
+ 225:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __CLREX                           __clrex
+ 226:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #endif /* __ARMCC_VERSION  */
+ 227:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 228:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 229:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Signed Saturate
+ 230:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 231:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function saturates a signed value.
+ 232:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 233:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to be saturated
+ 234:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    sat  Bit position to saturate to (1..32)
+ 235:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return             Saturated value
+ 236:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 237:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __SSAT                            __ssat
+ 238:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 239:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 240:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Unsigned Saturate
+ 241:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 242:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function saturates an unsigned value.
+ 243:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 244:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to be saturated
+ 245:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    sat  Bit position to saturate to (0..31)
+ 246:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return             Saturated value
+ 247:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 248:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __USAT                            __usat
+ 249:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 250:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 251:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Count leading zeros
+ 252:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 253:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function counts the number of leading zeros of a data value.
+ 254:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 255:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to count the leading zeros
+ 256:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return             number of leading zeros in value
+ 257:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 258:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __CLZ                             __clz
+ 259:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 260:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #endif /* (__CORTEX_M >= 0x03) */
+ 261:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 262:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 263:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 264:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #elif (defined (__ICCARM__)) /*---------------- ICC Compiler ---------------------*/
+ 265:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* IAR iccarm specific functions */
+ 266:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 267:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #include <intrinsics.h>                     /* IAR Intrinsics   */
+ 268:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 269:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #pragma diag_suppress=Pe940
+ 270:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 271:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  No Operation
+ 272:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 273:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     No Operation does nothing. This instruction can be used for code alignment purposes.
+ 274:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 275:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #define __NOP                           __no_operation
+ 276:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 277:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 278:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Wait For Interrupt
+ 279:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 280:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Wait For Interrupt is a hint instruction that suspends execution
+ 281:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     until one of a number of events occurs.
+ 282:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 283:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static __INLINE  void __WFI(void)
+ 284:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 285:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM ("wfi");
+ 286:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 287:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 288:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 289:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Wait For Event
+ 290:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 291:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Wait For Event is a hint instruction that permits the processor to enter
+ 292:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     a low-power state until one of a number of events occurs.
+ 293:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 294:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static __INLINE  void __WFE(void)
+ 295:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 296:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM ("wfe");
+ 297:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 298:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 299:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 300:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Send Event
+ 301:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 302:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Send Event is a hint instruction. It causes an event to be signaled to the CPU.
+ 303:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 304:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static __INLINE  void __SEV(void)
+ 305:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 306:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM ("sev");
+ 307:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 308:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 309:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 310:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic     void __ISB(void)            (see intrinsics.h) */
+ 311:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic     void __DSB(void)            (see intrinsics.h) */
+ 312:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic     void __DMB(void)            (see intrinsics.h) */
+ 313:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic uint32_t __REV(uint32_t value)  (see intrinsics.h) */
+ 314:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic          __SSAT                 (see intrinsics.h) */
+ 315:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic          __USAT                 (see intrinsics.h) */
+ 316:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 317:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 318:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Reverse byte order (16 bit)
+ 319:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 320:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function reverses the byte order in two unsigned short values.
+ 321:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 322:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    value  Value to reverse
+ 323:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return               Reversed value
+ 324:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 325:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint32_t __REV16(uint32_t value)
+ 326:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 327:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("rev16 r0, r0");
+ 328:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 329:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 330:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 331:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic uint32_t __REVSH(uint32_t value)  (see intrinsics.h */
+ 332:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 333:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 334:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #if       (__CORTEX_M >= 0x03)
+ 335:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 336:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Reverse bit order of value
+ 337:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 338:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function reverses the bit order of the given value.
+ 339:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 340:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    value  Value to reverse
+ 341:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return               Reversed value
+ 342:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 343:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint32_t __RBIT(uint32_t value)
+ 344:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 345:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("rbit r0, r0");
+ 346:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 347:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 348:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 349:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  LDR Exclusive (8 bit)
+ 350:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 351:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive LDR command for 8 bit value.
+ 352:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 353:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to data
+ 354:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return             value of type uint8_t at (*ptr)
+ 355:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 356:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint8_t __LDREXB(volatile uint8_t *addr)
+ 357:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 358:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("ldrexb r0, [r0]");
+ 359:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 360:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 361:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 362:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  LDR Exclusive (16 bit)
+ 363:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 364:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive LDR command for 16 bit values.
+ 365:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 366:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to data
+ 367:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return        value of type uint16_t at (*ptr)
+ 368:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 369:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint16_t __LDREXH(volatile uint16_t *addr)
+ 370:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 371:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("ldrexh r0, [r0]");
+ 372:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 373:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 374:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 375:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  LDR Exclusive (32 bit)
+ 376:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 377:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive LDR command for 32 bit values.
+ 378:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 379:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to data
+ 380:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return        value of type uint32_t at (*ptr)
+ 381:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 382:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic unsigned long __LDREX(unsigned long *)  (see intrinsics.h) */
+ 383:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint32_t __LDREXW(volatile uint32_t *addr)
+ 384:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 385:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("ldrex r0, [r0]");
+ 386:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 387:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 388:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 389:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  STR Exclusive (8 bit)
+ 390:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 391:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive STR command for 8 bit values.
+ 392:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 393:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to store
+ 394:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to location
+ 395:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          0  Function succeeded
+ 396:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          1  Function failed
+ 397:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 398:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint32_t __STREXB(uint8_t value, volatile uint8_t *addr)
+ 399:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 400:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("strexb r0, r0, [r1]");
+ 401:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 402:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 403:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 404:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  STR Exclusive (16 bit)
+ 405:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 406:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive STR command for 16 bit values.
+ 407:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 408:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to store
+ 409:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to location
+ 410:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          0  Function succeeded
+ 411:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          1  Function failed
+ 412:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 413:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint32_t __STREXH(uint16_t value, volatile uint16_t *addr)
+ 414:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 415:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("strexh r0, r0, [r1]");
+ 416:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 417:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 418:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 419:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  STR Exclusive (32 bit)
+ 420:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 421:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function performs a exclusive STR command for 32 bit values.
+ 422:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 423:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]  value  Value to store
+ 424:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \param [in]    ptr  Pointer to location
+ 425:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          0  Function succeeded
+ 426:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     \return          1  Function failed
+ 427:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 428:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic unsigned long __STREX(unsigned long, unsigned long)  (see intrinsics.h )*/
+ 429:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static uint32_t __STREXW(uint32_t value, volatile uint32_t *addr)
+ 430:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 431:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM("strex r0, r0, [r1]");
+ 432:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 433:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 434:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 435:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Remove the exclusive lock
+ 436:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 437:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     This function removes the exclusive lock which is created by LDREX.
+ 438:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 439:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 440:src/MightyBoard/Motherboard/system/core_cmInstr.h **** static __INLINE void __CLREX(void)
+ 441:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 442:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM ("clrex");
+ 443:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 444:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 445:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* intrinsic   unsigned char __CLZ( unsigned long )      (see intrinsics.h) */
+ 446:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 447:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #endif /* (__CORTEX_M >= 0x03) */
+ 448:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 449:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #pragma diag_default=Pe940
+ 450:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 451:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 452:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 453:src/MightyBoard/Motherboard/system/core_cmInstr.h **** #elif (defined (__GNUC__)) /*------------------ GNU Compiler ---------------------*/
+ 454:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /* GNU gcc specific functions */
+ 455:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 456:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  No Operation
+ 457:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 458:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     No Operation does nothing. This instruction can be used for code alignment purposes.
+ 459:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 460:src/MightyBoard/Motherboard/system/core_cmInstr.h **** __attribute__( ( always_inline ) ) static __INLINE void __NOP(void)
+ 461:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 462:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM volatile ("nop");
+ 463:src/MightyBoard/Motherboard/system/core_cmInstr.h **** }
+ 464:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 465:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 466:src/MightyBoard/Motherboard/system/core_cmInstr.h **** /** \brief  Wait For Interrupt
+ 467:src/MightyBoard/Motherboard/system/core_cmInstr.h **** 
+ 468:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     Wait For Interrupt is a hint instruction that suspends execution
+ 469:src/MightyBoard/Motherboard/system/core_cmInstr.h ****     until one of a number of events occurs.
+ 470:src/MightyBoard/Motherboard/system/core_cmInstr.h ****  */
+ 471:src/MightyBoard/Motherboard/system/core_cmInstr.h **** __attribute__( ( always_inline ) ) static __INLINE void __WFI(void)
+ 472:src/MightyBoard/Motherboard/system/core_cmInstr.h **** {
+ 473:src/MightyBoard/Motherboard/system/core_cmInstr.h ****   __ASM volatile ("wfi");
+ 251              	 .loc 2 473 0
+ 252              	
+ 253 0010 30BF     	 wfi
+ 254              	
+ 255              	 .thumb
+ 256              	.LBE11:
+ 257              	.LBE10:
+ 287:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	/* Sleep Mode*/
+ 288:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	__WFI();
+ 289:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+ 258              	 .loc 1 289 0
+ 259 0012 7047     	 bx lr
+ 260              	 .cfi_endproc
+ 261              	.LFE59:
+ 263              	 .section .text.CLKPWR_DeepSleep,"ax",%progbits
+ 264              	 .align 2
+ 265              	 .global CLKPWR_DeepSleep
+ 266              	 .thumb
+ 267              	 .thumb_func
+ 269              	CLKPWR_DeepSleep:
+ 270              	.LFB60:
+ 290:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 291:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 292:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+ 293:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief 		Enter Deep Sleep mode with co-operated instruction by the Cortex-M3.
+ 294:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	None
+ 295:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return		None
+ 296:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+ 297:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** void CLKPWR_DeepSleep(void)
+ 298:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+ 271              	 .loc 1 298 0
+ 272              	 .cfi_startproc
+ 273              	 
+ 274              	 
+ 275              	 
+ 299:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****     /* Deep-Sleep Mode, set SLEEPDEEP bit */
+ 300:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	SCB->SCR = 0x4;
+ 276              	 .loc 1 300 0
+ 277 0000 4FF46D43 	 mov r3,#60672
+ 278 0004 CEF20003 	 movt r3,57344
+ 279 0008 4FF00402 	 mov r2,#4
+ 280 000c 1A61     	 str r2,[r3,#16]
+ 301:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	LPC_SC->PCON = 0x8;
+ 281              	 .loc 1 301 0
+ 282 000e 4FF44043 	 mov r3,#49152
+ 283 0012 C4F20F03 	 movt r3,16399
+ 284 0016 4FF00802 	 mov r2,#8
+ 285 001a C3F8C020 	 str r2,[r3,#192]
+ 286              	.LBB12:
+ 287              	.LBB13:
+ 288              	 .loc 2 473 0
+ 289              	
+ 290 001e 30BF     	 wfi
+ 291              	
+ 292              	 .thumb
+ 293              	.LBE13:
+ 294              	.LBE12:
+ 302:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	/* Deep Sleep Mode*/
+ 303:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	__WFI();
+ 304:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+ 295              	 .loc 1 304 0
+ 296 0020 7047     	 bx lr
+ 297              	 .cfi_endproc
+ 298              	.LFE60:
+ 300 0022 00BF     	 .section .text.CLKPWR_PowerDown,"ax",%progbits
+ 301              	 .align 2
+ 302              	 .global CLKPWR_PowerDown
+ 303              	 .thumb
+ 304              	 .thumb_func
+ 306              	CLKPWR_PowerDown:
+ 307              	.LFB61:
+ 305:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 306:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 307:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+ 308:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief 		Enter Power Down mode with co-operated instruction by the Cortex-M3.
+ 309:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	None
+ 310:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return		None
+ 311:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+ 312:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** void CLKPWR_PowerDown(void)
+ 313:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+ 308              	 .loc 1 313 0
+ 309              	 .cfi_startproc
+ 310              	 
+ 311              	 
+ 312              	 
+ 314:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****     /* Deep-Sleep Mode, set SLEEPDEEP bit */
+ 315:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	SCB->SCR = 0x4;
+ 313              	 .loc 1 315 0
+ 314 0000 4FF46D43 	 mov r3,#60672
+ 315 0004 CEF20003 	 movt r3,57344
+ 316 0008 4FF00402 	 mov r2,#4
+ 317 000c 1A61     	 str r2,[r3,#16]
+ 316:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	LPC_SC->PCON = 0x09;
+ 318              	 .loc 1 316 0
+ 319 000e 4FF44043 	 mov r3,#49152
+ 320 0012 C4F20F03 	 movt r3,16399
+ 321 0016 4FF00902 	 mov r2,#9
+ 322 001a C3F8C020 	 str r2,[r3,#192]
+ 323              	.LBB14:
+ 324              	.LBB15:
+ 325              	 .loc 2 473 0
+ 326              	
+ 327 001e 30BF     	 wfi
+ 328              	
+ 329              	 .thumb
+ 330              	.LBE15:
+ 331              	.LBE14:
+ 317:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	/* Power Down Mode*/
+ 318:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	__WFI();
+ 319:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+ 332              	 .loc 1 319 0
+ 333 0020 7047     	 bx lr
+ 334              	 .cfi_endproc
+ 335              	.LFE61:
+ 337 0022 00BF     	 .section .text.CLKPWR_DeepPowerDown,"ax",%progbits
+ 338              	 .align 2
+ 339              	 .global CLKPWR_DeepPowerDown
+ 340              	 .thumb
+ 341              	 .thumb_func
+ 343              	CLKPWR_DeepPowerDown:
+ 344              	.LFB62:
+ 320:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 321:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 
+ 322:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** /*********************************************************************//**
+ 323:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @brief 		Enter Deep Power Down mode with co-operated instruction by the Cortex-M3.
+ 324:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @param[in]	None
+ 325:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  * @return		None
+ 326:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****  **********************************************************************/
+ 327:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** void CLKPWR_DeepPowerDown(void)
+ 328:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** {
+ 345              	 .loc 1 328 0
+ 346              	 .cfi_startproc
+ 347              	 
+ 348              	 
+ 349              	 
+ 329:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c ****     /* Deep-Sleep Mode, set SLEEPDEEP bit */
+ 330:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	SCB->SCR = 0x4;
+ 350              	 .loc 1 330 0
+ 351 0000 4FF46D43 	 mov r3,#60672
+ 352 0004 CEF20003 	 movt r3,57344
+ 353 0008 4FF00402 	 mov r2,#4
+ 354 000c 1A61     	 str r2,[r3,#16]
+ 331:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	LPC_SC->PCON = 0x03;
+ 355              	 .loc 1 331 0
+ 356 000e 4FF44043 	 mov r3,#49152
+ 357 0012 C4F20F03 	 movt r3,16399
+ 358 0016 4FF00302 	 mov r2,#3
+ 359 001a C3F8C020 	 str r2,[r3,#192]
+ 360              	.LBB16:
+ 361              	.LBB17:
+ 362              	 .loc 2 473 0
+ 363              	
+ 364 001e 30BF     	 wfi
+ 365              	
+ 366              	 .thumb
+ 367              	.LBE17:
+ 368              	.LBE16:
+ 332:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	/* Deep Power Down Mode*/
+ 333:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** 	__WFI();
+ 334:src/MightyBoard/Motherboard/lib/source/lpc17xx_clkpwr.c **** }
+ 369              	 .loc 1 334 0
+ 370 0020 7047     	 bx lr
+ 371              	 .cfi_endproc
+ 372              	.LFE62:
+ 374 0022 00BF     	 .text
+ 375              	.Letext0:
+ 376              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 377              	 .file 4 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 378              	 .file 5 "src/MightyBoard/Motherboard/system/lpc17xx.h"
+ 379              	 .file 6 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 380              	 .file 7 "src/MightyBoard/Motherboard/system/system_LPC17xx.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_clkpwr.c
+    {standard input}:19     .text.CLKPWR_SetPCLKDiv:00000000 $t
+    {standard input}:24     .text.CLKPWR_SetPCLKDiv:00000000 CLKPWR_SetPCLKDiv
+    {standard input}:85     .text.CLKPWR_GetPCLKSEL:00000000 $t
+    {standard input}:90     .text.CLKPWR_GetPCLKSEL:00000000 CLKPWR_GetPCLKSEL
+    {standard input}:128    .text.CLKPWR_GetPCLK:00000000 $t
+    {standard input}:133    .text.CLKPWR_GetPCLK:00000000 CLKPWR_GetPCLK
+    {standard input}:158    .text.CLKPWR_GetPCLK:00000018 $d
+    {standard input}:162    .text.CLKPWR_GetPCLK:0000001c $t
+    {standard input}:183    .text.CLKPWR_ConfigPPWR:00000000 $t
+    {standard input}:188    .text.CLKPWR_ConfigPPWR:00000000 CLKPWR_ConfigPPWR
+    {standard input}:231    .text.CLKPWR_Sleep:00000000 $t
+    {standard input}:236    .text.CLKPWR_Sleep:00000000 CLKPWR_Sleep
+    {standard input}:264    .text.CLKPWR_DeepSleep:00000000 $t
+    {standard input}:269    .text.CLKPWR_DeepSleep:00000000 CLKPWR_DeepSleep
+    {standard input}:301    .text.CLKPWR_PowerDown:00000000 $t
+    {standard input}:306    .text.CLKPWR_PowerDown:00000000 CLKPWR_PowerDown
+    {standard input}:338    .text.CLKPWR_DeepPowerDown:00000000 $t
+    {standard input}:343    .text.CLKPWR_DeepPowerDown:00000000 CLKPWR_DeepPowerDown
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+SystemCoreClock

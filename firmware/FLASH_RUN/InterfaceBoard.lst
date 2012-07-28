@@ -1,0 +1,1706 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "InterfaceBoard.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN6Screen17continuousButtonsEv,"axG",%progbits,_ZN6Screen17continuousButtonsEv,comdat
+  19              	 .align 2
+  20              	 .weak _ZN6Screen17continuousButtonsEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN6Screen17continuousButtonsEv:
+  25              	.LFB75:
+  26              	 .file 1 "src/MightyBoard/shared/Menu.hh"
+   1:src/MightyBoard/shared/Menu.hh **** #ifndef MENU_HH_
+   2:src/MightyBoard/shared/Menu.hh **** #define MENU_HH_
+   3:src/MightyBoard/shared/Menu.hh **** 
+   4:src/MightyBoard/shared/Menu.hh **** #include "Types.hh"
+   5:src/MightyBoard/shared/Menu.hh **** #include "ButtonArray.hh"
+   6:src/MightyBoard/shared/Menu.hh **** #include "LiquidCrystalSerial.hh"
+   7:src/MightyBoard/shared/Menu.hh **** #include "Configuration.hh"
+   8:src/MightyBoard/shared/Menu.hh **** #include "CircularBuffer.hh"
+   9:src/MightyBoard/shared/Menu.hh **** #include "Timeout.hh"
+  10:src/MightyBoard/shared/Menu.hh **** //#include "Host.hh"
+  11:src/MightyBoard/shared/Menu.hh **** #include "UtilityScripts.hh"
+  12:src/MightyBoard/shared/Menu.hh **** 
+  13:src/MightyBoard/shared/Menu.hh **** /// states for Welcome Menu
+  14:src/MightyBoard/shared/Menu.hh **** enum WeclomeStates{
+  15:src/MightyBoard/shared/Menu.hh ****     WELCOME_START,
+  16:src/MightyBoard/shared/Menu.hh ****     WELCOME_BUTTONS1,
+  17:src/MightyBoard/shared/Menu.hh ****     WELCOME_BUTTONS2,
+  18:src/MightyBoard/shared/Menu.hh ****   //  WELCOME_BUTTONS3,
+  19:src/MightyBoard/shared/Menu.hh ****   //  WELCOME_BUTTONS4,
+  20:src/MightyBoard/shared/Menu.hh ****   //  WELCOME_BUTTONS5,
+  21:src/MightyBoard/shared/Menu.hh ****     WELCOME_EXPLAIN,
+  22:src/MightyBoard/shared/Menu.hh ****   //  WELCOME_TOOL_SELECT,
+  23:src/MightyBoard/shared/Menu.hh ****     WELCOME_LEVEL,
+  24:src/MightyBoard/shared/Menu.hh ****     WELCOME_LEVEL_ACTION,
+  25:src/MightyBoard/shared/Menu.hh ****     WELCOME_LEVEL_OK,
+  26:src/MightyBoard/shared/Menu.hh ****     WELCOME_LOAD_PLASTIC,
+  27:src/MightyBoard/shared/Menu.hh ****     WELCOME_LOAD_ACTION,
+  28:src/MightyBoard/shared/Menu.hh ****     WELCOME_READY,
+  29:src/MightyBoard/shared/Menu.hh ****     WELCOME_LOAD_SD,
+  30:src/MightyBoard/shared/Menu.hh ****     WELCOME_PRINT_FROM_SD,
+  31:src/MightyBoard/shared/Menu.hh ****     WELCOME_DONE
+  32:src/MightyBoard/shared/Menu.hh **** };
+  33:src/MightyBoard/shared/Menu.hh **** 
+  34:src/MightyBoard/shared/Menu.hh **** /// states for Welcome Menu
+  35:src/MightyBoard/shared/Menu.hh **** enum FilamentStates{
+  36:src/MightyBoard/shared/Menu.hh ****     FILAMENT_HEATING,
+  37:src/MightyBoard/shared/Menu.hh ****     FILAMENT_EXPLAIN2,
+  38:src/MightyBoard/shared/Menu.hh ****     FILAMENT_EXPLAIN3,
+  39:src/MightyBoard/shared/Menu.hh ****     FILAMENT_EXPLAIN4,
+  40:src/MightyBoard/shared/Menu.hh ****     FILAMENT_HEAT_BAR,
+  41:src/MightyBoard/shared/Menu.hh ****     FILAMENT_WAIT,
+  42:src/MightyBoard/shared/Menu.hh ****     FILAMENT_START,
+  43:src/MightyBoard/shared/Menu.hh ****     FILAMENT_TUG,
+  44:src/MightyBoard/shared/Menu.hh ****     FILAMENT_STOP,
+  45:src/MightyBoard/shared/Menu.hh ****     FILAMENT_OK,
+  46:src/MightyBoard/shared/Menu.hh ****     FILAMENT_DONE,
+  47:src/MightyBoard/shared/Menu.hh ****     FILAMENT_EXIT,
+  48:src/MightyBoard/shared/Menu.hh ****     FILAMENT_TIMEOUT
+  49:src/MightyBoard/shared/Menu.hh **** };
+  50:src/MightyBoard/shared/Menu.hh **** 
+  51:src/MightyBoard/shared/Menu.hh **** enum FilamentScript{
+  52:src/MightyBoard/shared/Menu.hh **** 	FILAMENT_RIGHT_FOR,
+  53:src/MightyBoard/shared/Menu.hh **** 	FILAMENT_LEFT_FOR,
+  54:src/MightyBoard/shared/Menu.hh ****     FILAMENT_RIGHT_REV,
+  55:src/MightyBoard/shared/Menu.hh ****     FILAMENT_LEFT_REV,	
+  56:src/MightyBoard/shared/Menu.hh **** 	FILAMENT_STARTUP_SINGLE,
+  57:src/MightyBoard/shared/Menu.hh **** 	FILAMENT_STARTUP_DUAL,
+  58:src/MightyBoard/shared/Menu.hh **** 	};
+  59:src/MightyBoard/shared/Menu.hh **** 
+  60:src/MightyBoard/shared/Menu.hh **** enum AlignmentState {
+  61:src/MightyBoard/shared/Menu.hh **** 	ALIGNMENT_START,
+  62:src/MightyBoard/shared/Menu.hh **** 	ALIGNMENT_PRINT,
+  63:src/MightyBoard/shared/Menu.hh **** 	ALIGNMENT_EXPLAIN1,
+  64:src/MightyBoard/shared/Menu.hh **** 	ALIGNMENT_EXPLAIN2,
+  65:src/MightyBoard/shared/Menu.hh **** 	ALIGNMENT_SELECT,
+  66:src/MightyBoard/shared/Menu.hh **** 	ALIGNMENT_END,
+  67:src/MightyBoard/shared/Menu.hh **** 	ALIGNMENT_QUIT
+  68:src/MightyBoard/shared/Menu.hh **** };
+  69:src/MightyBoard/shared/Menu.hh **** 
+  70:src/MightyBoard/shared/Menu.hh **** 
+  71:src/MightyBoard/shared/Menu.hh **** /// The screen class defines a standard interface for anything that should
+  72:src/MightyBoard/shared/Menu.hh **** /// be displayed on the LCD.
+  73:src/MightyBoard/shared/Menu.hh **** class Screen {
+  74:src/MightyBoard/shared/Menu.hh **** protected:
+  75:src/MightyBoard/shared/Menu.hh **** 	virtual ~Screen()=0;
+  76:src/MightyBoard/shared/Menu.hh **** public:
+  77:src/MightyBoard/shared/Menu.hh ****         /// Get the rate that this display should be updated. This is called
+  78:src/MightyBoard/shared/Menu.hh ****         /// after every screen display, so it can be used to dynamically
+  79:src/MightyBoard/shared/Menu.hh ****         /// adjust the update rate. This can be as fast as you like, however
+  80:src/MightyBoard/shared/Menu.hh ****         /// refreshing too fast during a build is certain to interfere with
+  81:src/MightyBoard/shared/Menu.hh ****         /// the serial and stepper processes, which will decrease build quality.
+  82:src/MightyBoard/shared/Menu.hh ****         /// \return refresh interval, in microseconds.
+  83:src/MightyBoard/shared/Menu.hh **** 	virtual micros_t getUpdateRate() = 0;
+  84:src/MightyBoard/shared/Menu.hh **** 
+  85:src/MightyBoard/shared/Menu.hh ****         /// Update the screen display,
+  86:src/MightyBoard/shared/Menu.hh ****         /// \param[in] lcd LCD to write to
+  87:src/MightyBoard/shared/Menu.hh ****         /// \param[in] forceRedraw if true, redraw the entire screen. If false,
+  88:src/MightyBoard/shared/Menu.hh ****         ///                        only updated sections need to be redrawn.
+  89:src/MightyBoard/shared/Menu.hh **** 	virtual void update(LiquidCrystalSerial& lcd, bool forceRedraw) = 0;
+  90:src/MightyBoard/shared/Menu.hh **** 
+  91:src/MightyBoard/shared/Menu.hh ****         /// Reset the screen to it's default state
+  92:src/MightyBoard/shared/Menu.hh **** 	virtual void reset() = 0;
+  93:src/MightyBoard/shared/Menu.hh **** 
+  94:src/MightyBoard/shared/Menu.hh ****         /// Get a notification that a button was pressed down.
+  95:src/MightyBoard/shared/Menu.hh ****         /// This function is called for every button that is pressed. Screen
+  96:src/MightyBoard/shared/Menu.hh ****         /// logic can be updated, however the screen should not be redrawn
+  97:src/MightyBoard/shared/Menu.hh ****         /// until update() is called again.
+  98:src/MightyBoard/shared/Menu.hh ****         ///
+  99:src/MightyBoard/shared/Menu.hh ****         /// Note that the current implementation only supports one button
+ 100:src/MightyBoard/shared/Menu.hh ****         /// press at a time, and will discard any other events.
+ 101:src/MightyBoard/shared/Menu.hh ****         /// \param button Button that was pressed
+ 102:src/MightyBoard/shared/Menu.hh ****         virtual void notifyButtonPressed(ButtonArray::ButtonName button) = 0;
+ 103:src/MightyBoard/shared/Menu.hh ****         
+ 104:src/MightyBoard/shared/Menu.hh ****         /// return true if this screen uses continuous button mode
+ 105:src/MightyBoard/shared/Menu.hh ****         virtual bool continuousButtons(void){ return false;}
+  27              	 .loc 1 105 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33              	 .loc 1 105 0
+  34 0000 4FF00000 	 mov r0,#0
+  35              	.LVL1:
+  36 0004 7047     	 bx lr
+  37              	 .cfi_endproc
+  38              	.LFE75:
+  40 0006 00BF     	 .section .text._ZN6Screen18setBuildPercentageEh,"axG",%progbits,_ZN6Screen18setBuildPercentageEh,comdat
+  41              	 .align 2
+  42              	 .weak _ZN6Screen18setBuildPercentageEh
+  43              	 .thumb
+  44              	 .thumb_func
+  46              	_ZN6Screen18setBuildPercentageEh:
+  47              	.LFB76:
+ 106:src/MightyBoard/shared/Menu.hh ****         
+ 107:src/MightyBoard/shared/Menu.hh ****         /// set build percentage to be displayed in monitor mode
+ 108:src/MightyBoard/shared/Menu.hh ****         virtual void setBuildPercentage(uint8_t percent){return;}
+  48              	 .loc 1 108 0
+  49              	 .cfi_startproc
+  50              	 
+  51              	 
+  52              	 
+  53              	.LVL2:
+  54              	 .loc 1 108 0
+  55 0000 7047     	 bx lr
+  56              	 .cfi_endproc
+  57              	.LFE76:
+  59 0002 00BF     	 .section .text._ZN6Screen13screenWaitingEv,"axG",%progbits,_ZN6Screen13screenWaitingEv,comdat
+  60              	 .align 2
+  61              	 .weak _ZN6Screen13screenWaitingEv
+  62              	 .thumb
+  63              	 .thumb_func
+  65              	_ZN6Screen13screenWaitingEv:
+  66              	.LFB77:
+ 109:src/MightyBoard/shared/Menu.hh ****         
+ 110:src/MightyBoard/shared/Menu.hh ****         /// poll if the screen is waiting on a timer
+ 111:src/MightyBoard/shared/Menu.hh ****         virtual bool screenWaiting(void){ return false;}
+  67              	 .loc 1 111 0
+  68              	 .cfi_startproc
+  69              	 
+  70              	 
+  71              	 
+  72              	.LVL3:
+  73              	 .loc 1 111 0
+  74 0000 4FF00000 	 mov r0,#0
+  75              	.LVL4:
+  76 0004 7047     	 bx lr
+  77              	 .cfi_endproc
+  78              	.LFE77:
+  80 0006 00BF     	 .section .text._ZN6Screen14isCancelScreenEv,"axG",%progbits,_ZN6Screen14isCancelScreenEv,comdat
+  81              	 .align 2
+  82              	 .weak _ZN6Screen14isCancelScreenEv
+  83              	 .thumb
+  84              	 .thumb_func
+  86              	_ZN6Screen14isCancelScreenEv:
+  87              	.LFB78:
+ 112:src/MightyBoard/shared/Menu.hh ****     
+ 113:src/MightyBoard/shared/Menu.hh ****         /// check if the screen is a cancel screen in case other button
+ 114:src/MightyBoard/shared/Menu.hh ****         /// wait behavior is activated 
+ 115:src/MightyBoard/shared/Menu.hh ****         virtual bool isCancelScreen(void){ return false;}
+  88              	 .loc 1 115 0
+  89              	 .cfi_startproc
+  90              	 
+  91              	 
+  92              	 
+  93              	.LVL5:
+  94              	 .loc 1 115 0
+  95 0000 4FF00000 	 mov r0,#0
+  96              	.LVL6:
+  97 0004 7047     	 bx lr
+  98              	 .cfi_endproc
+  99              	.LFE78:
+ 101 0006 00BF     	 .section .text._ZN6Screen3popEv,"axG",%progbits,_ZN6Screen3popEv,comdat
+ 102              	 .align 2
+ 103              	 .weak _ZN6Screen3popEv
+ 104              	 .thumb
+ 105              	 .thumb_func
+ 107              	_ZN6Screen3popEv:
+ 108              	.LFB79:
+ 116:src/MightyBoard/shared/Menu.hh ****         
+ 117:src/MightyBoard/shared/Menu.hh ****         /// pop function called when screen is popped.  used to 
+ 118:src/MightyBoard/shared/Menu.hh ****         /// clear states in the screen if necessary
+ 119:src/MightyBoard/shared/Menu.hh ****         virtual void pop(void){return;}
+ 109              	 .loc 1 119 0
+ 110              	 .cfi_startproc
+ 111              	 
+ 112              	 
+ 113              	 
+ 114              	.LVL7:
+ 115              	 .loc 1 119 0
+ 116 0000 7047     	 bx lr
+ 117              	 .cfi_endproc
+ 118              	.LFE79:
+ 120 0002 00BF     	 .section .text._ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen,"ax",%progbits
+ 121              	 .align 2
+ 122              	 .global _ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen
+ 123              	 .thumb
+ 124              	 .thumb_func
+ 126              	_ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen:
+ 127              	.LFB160:
+ 128              	 .file 2 "src/MightyBoard/shared/InterfaceBoard.cc"
+   1:src/MightyBoard/shared/InterfaceBoard.cc **** #include "InterfaceBoard.hh"
+   2:src/MightyBoard/shared/InterfaceBoard.cc **** #include "Configuration.hh"
+   3:src/MightyBoard/shared/InterfaceBoard.cc **** #include "LiquidCrystalSerial.hh"
+   4:src/MightyBoard/shared/InterfaceBoard.cc **** //#include "Host.hh"
+   5:src/MightyBoard/shared/InterfaceBoard.cc **** #include "Timeout.hh"
+   6:src/MightyBoard/shared/InterfaceBoard.cc **** //#include "Command.hh"
+   7:src/MightyBoard/shared/InterfaceBoard.cc **** #include "Motherboard.hh"
+   8:src/MightyBoard/shared/InterfaceBoard.cc **** 
+   9:src/MightyBoard/shared/InterfaceBoard.cc **** #if defined HAS_INTERFACE_BOARD
+  10:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  11:src/MightyBoard/shared/InterfaceBoard.cc **** Timeout button_timeout;
+  12:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  13:src/MightyBoard/shared/InterfaceBoard.cc **** InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
+ 129              	 .loc 2 13 0
+ 130              	 .cfi_startproc
+ 131              	 
+ 132              	 
+ 133              	.LVL8:
+ 134 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 135              	.LCFI0:
+ 136              	 .cfi_def_cfa_offset 24
+ 137              	 .cfi_offset 14,-4
+ 138              	 .cfi_offset 8,-8
+ 139              	 .cfi_offset 7,-12
+ 140              	 .cfi_offset 6,-16
+ 141              	 .cfi_offset 5,-20
+ 142              	 .cfi_offset 4,-24
+ 143 0004 0446     	 mov r4,r0
+ 144 0006 1D46     	 mov r5,r3
+ 145 0008 DDF81880 	 ldr r8,[sp,#24]
+ 146              	.LBB42:
+  14:src/MightyBoard/shared/InterfaceBoard.cc ****                                LiquidCrystalSerial& lcd_in,
+  15:src/MightyBoard/shared/InterfaceBoard.cc ****                                const Pin& gled_in,
+  16:src/MightyBoard/shared/InterfaceBoard.cc ****                                const Pin& rled_in,
+  17:src/MightyBoard/shared/InterfaceBoard.cc ****                                Screen* mainScreen_in,
+  18:src/MightyBoard/shared/InterfaceBoard.cc ****                                Screen* buildScreen_in,
+  19:src/MightyBoard/shared/InterfaceBoard.cc ****                                MessageScreen* messageScreen_in) :
+  20:src/MightyBoard/shared/InterfaceBoard.cc ****         lcd(lcd_in),
+  21:src/MightyBoard/shared/InterfaceBoard.cc ****         buttons(buttons_in),
+  22:src/MightyBoard/shared/InterfaceBoard.cc **** 		waitingMask(0)
+ 147              	 .loc 2 22 0
+ 148 000c 0260     	 str r2,[r0,#0]
+ 149 000e 4160     	 str r1,[r0,#4]
+ 150              	.LVL9:
+ 151              	.LBB43:
+ 152              	.LBB44:
+ 153              	.LBB45:
+ 120:src/MightyBoard/shared/Menu.hh **** };
+ 121:src/MightyBoard/shared/Menu.hh **** 
+ 122:src/MightyBoard/shared/Menu.hh **** 
+ 123:src/MightyBoard/shared/Menu.hh **** /// The menu object can be used to display a list of options on the LCD
+ 124:src/MightyBoard/shared/Menu.hh **** /// screen. It handles updating the display and responding to button presses
+ 125:src/MightyBoard/shared/Menu.hh **** /// automatically.
+ 126:src/MightyBoard/shared/Menu.hh **** class Menu: public Screen {
+ 127:src/MightyBoard/shared/Menu.hh **** public:
+ 128:src/MightyBoard/shared/Menu.hh **** 	micros_t getUpdateRate() {return 500L * 1000L;}
+ 129:src/MightyBoard/shared/Menu.hh **** 
+ 130:src/MightyBoard/shared/Menu.hh **** 
+ 131:src/MightyBoard/shared/Menu.hh **** 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+ 132:src/MightyBoard/shared/Menu.hh **** 
+ 133:src/MightyBoard/shared/Menu.hh **** 	void reset();
+ 134:src/MightyBoard/shared/Menu.hh **** 
+ 135:src/MightyBoard/shared/Menu.hh **** 	virtual void resetState();
+ 136:src/MightyBoard/shared/Menu.hh **** 
+ 137:src/MightyBoard/shared/Menu.hh ****     void notifyButtonPressed(ButtonArray::ButtonName button);
+ 138:src/MightyBoard/shared/Menu.hh **** 
+ 139:src/MightyBoard/shared/Menu.hh **** protected:
+ 140:src/MightyBoard/shared/Menu.hh **** 
+ 141:src/MightyBoard/shared/Menu.hh ****         bool needsRedraw;               ///< set to true if a menu item changes out of sequence
+ 142:src/MightyBoard/shared/Menu.hh **** 		bool lineUpdate;				///< flags the menu to update the current line
+ 143:src/MightyBoard/shared/Menu.hh ****         volatile uint8_t itemIndex;     ///< The currently selected item
+ 144:src/MightyBoard/shared/Menu.hh ****         uint8_t lastDrawIndex;          ///< The index used to make the last draw
+ 145:src/MightyBoard/shared/Menu.hh ****         uint8_t itemCount;              ///< Total number of items
+ 146:src/MightyBoard/shared/Menu.hh ****         uint8_t firstItemIndex;         ///< The first selectable item. Set this
+ 147:src/MightyBoard/shared/Menu.hh ****                                         ///< to greater than 0 if the first
+ 148:src/MightyBoard/shared/Menu.hh ****                                         ///< item(s) are a title)
+ 149:src/MightyBoard/shared/Menu.hh **** 
+ 150:src/MightyBoard/shared/Menu.hh ****         /// Draw an item at the current cursor position.
+ 151:src/MightyBoard/shared/Menu.hh ****         /// \param[in] index Index of the item to draw
+ 152:src/MightyBoard/shared/Menu.hh ****         /// \param[in] LCD screen to draw onto
+ 153:src/MightyBoard/shared/Menu.hh **** 	virtual void drawItem(uint8_t index, LiquidCrystalSerial& lcd) = 0;
+ 154:src/MightyBoard/shared/Menu.hh **** 
+ 155:src/MightyBoard/shared/Menu.hh ****         /// Handle selection of a menu item
+ 156:src/MightyBoard/shared/Menu.hh ****         /// \param[in] index Index of the menu item that was selected
+ 157:src/MightyBoard/shared/Menu.hh **** 	virtual void handleSelect(uint8_t index);
+ 158:src/MightyBoard/shared/Menu.hh **** 
+ 159:src/MightyBoard/shared/Menu.hh ****         /// Handle the menu being cancelled. This should either remove the
+ 160:src/MightyBoard/shared/Menu.hh ****         /// menu from the stack, or pop up a confirmation dialog to make sure
+ 161:src/MightyBoard/shared/Menu.hh ****         /// that the menu should be removed.
+ 162:src/MightyBoard/shared/Menu.hh **** 	virtual void handleCancel();
+ 163:src/MightyBoard/shared/Menu.hh **** };
+ 164:src/MightyBoard/shared/Menu.hh **** 
+ 165:src/MightyBoard/shared/Menu.hh **** /// The Counter menu builds on menu to allow selecting number values .
+ 166:src/MightyBoard/shared/Menu.hh **** class CounterMenu: public Menu {
+ 167:src/MightyBoard/shared/Menu.hh **** public:
+ 168:src/MightyBoard/shared/Menu.hh **** 	micros_t getUpdateRate() {return 500L * 1000L;}
+ 169:src/MightyBoard/shared/Menu.hh ****     
+ 170:src/MightyBoard/shared/Menu.hh ****     
+ 171:src/MightyBoard/shared/Menu.hh ****     void notifyButtonPressed(ButtonArray::ButtonName button);
+ 172:src/MightyBoard/shared/Menu.hh ****     
+ 173:src/MightyBoard/shared/Menu.hh **** protected:
+ 174:src/MightyBoard/shared/Menu.hh ****     bool selectMode;        ///< true if in counter change state
+ 175:src/MightyBoard/shared/Menu.hh ****     uint8_t selectIndex;        ///< The currently selected item, in a counter change state
+ 176:src/MightyBoard/shared/Menu.hh ****     uint8_t firstSelectIndex;   ///< first line with selectable item
+ 177:src/MightyBoard/shared/Menu.hh ****     uint8_t lastSelectIndex;   ///< last line with a selectable item
+ 178:src/MightyBoard/shared/Menu.hh ****     
+ 179:src/MightyBoard/shared/Menu.hh ****     void reset();
+ 180:src/MightyBoard/shared/Menu.hh **** 
+ 181:src/MightyBoard/shared/Menu.hh ****     virtual void handleCounterUpdate(uint8_t index, bool up) = 0;
+ 182:src/MightyBoard/shared/Menu.hh **** };
+ 183:src/MightyBoard/shared/Menu.hh **** 
+ 184:src/MightyBoard/shared/Menu.hh **** /// Display a welcome splash screen, that removes itself when updated.
+ 185:src/MightyBoard/shared/Menu.hh **** class SplashScreen: public Screen {
+ 186:src/MightyBoard/shared/Menu.hh **** 
+ 187:src/MightyBoard/shared/Menu.hh **** private:
+ 188:src/MightyBoard/shared/Menu.hh **** 	bool hold_on;
+ 189:src/MightyBoard/shared/Menu.hh **** public:
+ 190:src/MightyBoard/shared/Menu.hh **** 	SplashScreen();
+ 191:src/MightyBoard/shared/Menu.hh **** 	micros_t getUpdateRate() {return 50L * 1000L;}
+ 192:src/MightyBoard/shared/Menu.hh **** 
+ 193:src/MightyBoard/shared/Menu.hh **** 	void SetHold(bool on);
+ 194:src/MightyBoard/shared/Menu.hh **** 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+ 195:src/MightyBoard/shared/Menu.hh **** 
+ 196:src/MightyBoard/shared/Menu.hh **** 	void reset();
+ 197:src/MightyBoard/shared/Menu.hh **** 
+ 198:src/MightyBoard/shared/Menu.hh ****     void notifyButtonPressed(ButtonArray::ButtonName button);
+ 199:src/MightyBoard/shared/Menu.hh **** };
+ 200:src/MightyBoard/shared/Menu.hh **** 
+ 201:src/MightyBoard/shared/Menu.hh **** class FilamentOKMenu: public Menu {
+ 202:src/MightyBoard/shared/Menu.hh **** public:
+ 203:src/MightyBoard/shared/Menu.hh **** 	FilamentOKMenu();
+ 204:src/MightyBoard/shared/Menu.hh ****     
+ 205:src/MightyBoard/shared/Menu.hh **** 	void resetState();
+ 206:src/MightyBoard/shared/Menu.hh ****     
+ 207:src/MightyBoard/shared/Menu.hh **** protected:
+ 208:src/MightyBoard/shared/Menu.hh **** 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+ 209:src/MightyBoard/shared/Menu.hh ****     
+ 210:src/MightyBoard/shared/Menu.hh **** 	void handleSelect(uint8_t index);
+ 211:src/MightyBoard/shared/Menu.hh ****     
+ 212:src/MightyBoard/shared/Menu.hh **** };
+ 213:src/MightyBoard/shared/Menu.hh **** 
+ 214:src/MightyBoard/shared/Menu.hh **** class ReadyMenu: public Menu {
+ 215:src/MightyBoard/shared/Menu.hh **** public:
+ 216:src/MightyBoard/shared/Menu.hh **** 	ReadyMenu();
+ 217:src/MightyBoard/shared/Menu.hh ****     
+ 218:src/MightyBoard/shared/Menu.hh **** 	void resetState();
+ 219:src/MightyBoard/shared/Menu.hh ****     
+ 220:src/MightyBoard/shared/Menu.hh **** protected:
+ 221:src/MightyBoard/shared/Menu.hh **** 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+ 222:src/MightyBoard/shared/Menu.hh ****     
+ 223:src/MightyBoard/shared/Menu.hh **** 	void handleSelect(uint8_t index);
+ 224:src/MightyBoard/shared/Menu.hh **** };
+ 225:src/MightyBoard/shared/Menu.hh **** 
+ 226:src/MightyBoard/shared/Menu.hh **** class LevelOKMenu: public Menu {
+ 227:src/MightyBoard/shared/Menu.hh **** public:
+ 228:src/MightyBoard/shared/Menu.hh **** 	LevelOKMenu();
+ 229:src/MightyBoard/shared/Menu.hh ****     
+ 230:src/MightyBoard/shared/Menu.hh **** 	void resetState();
+ 231:src/MightyBoard/shared/Menu.hh ****     
+ 232:src/MightyBoard/shared/Menu.hh **** protected:
+ 233:src/MightyBoard/shared/Menu.hh **** 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+ 234:src/MightyBoard/shared/Menu.hh ****     
+ 235:src/MightyBoard/shared/Menu.hh **** 	void handleSelect(uint8_t index);
+ 236:src/MightyBoard/shared/Menu.hh **** };
+ 237:src/MightyBoard/shared/Menu.hh **** 
+ 238:src/MightyBoard/shared/Menu.hh **** class CancelBuildMenu: public Menu {
+ 239:src/MightyBoard/shared/Menu.hh **** public:
+ 240:src/MightyBoard/shared/Menu.hh **** 	CancelBuildMenu();
+ 241:src/MightyBoard/shared/Menu.hh ****     
+ 242:src/MightyBoard/shared/Menu.hh **** 	void resetState();
+ 243:src/MightyBoard/shared/Menu.hh ****     
+ 244:src/MightyBoard/shared/Menu.hh ****     bool isCancelScreen(){return true;}
+ 245:src/MightyBoard/shared/Menu.hh ****     
+ 246:src/MightyBoard/shared/Menu.hh ****     void pop(void);
+ 247:src/MightyBoard/shared/Menu.hh ****     
+ 248:src/MightyBoard/shared/Menu.hh **** protected:
+ 249:src/MightyBoard/shared/Menu.hh **** 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+ 250:src/MightyBoard/shared/Menu.hh ****     
+ 251:src/MightyBoard/shared/Menu.hh **** 	void handleSelect(uint8_t index);
+ 252:src/MightyBoard/shared/Menu.hh ****     
+ 253:src/MightyBoard/shared/Menu.hh ****     
+ 254:src/MightyBoard/shared/Menu.hh ****     bool paused;
+ 255:src/MightyBoard/shared/Menu.hh **** };
+ 256:src/MightyBoard/shared/Menu.hh **** 
+ 257:src/MightyBoard/shared/Menu.hh **** class BuildStats: public Screen {
+ 258:src/MightyBoard/shared/Menu.hh **** 
+ 259:src/MightyBoard/shared/Menu.hh **** private:
+ 260:src/MightyBoard/shared/Menu.hh **** 
+ 261:src/MightyBoard/shared/Menu.hh **** 	const static uint8_t UPDATE_COUNT_MAX = 20;
+ 262:src/MightyBoard/shared/Menu.hh **** 	uint8_t update_count;
+ 263:src/MightyBoard/shared/Menu.hh **** 
+ 264:src/MightyBoard/shared/Menu.hh **** public:
+ 265:src/MightyBoard/shared/Menu.hh **** 
+ 266:src/MightyBoard/shared/Menu.hh **** 	micros_t getUpdateRate() {return 500L * 1000L;}
+ 267:src/MightyBoard/shared/Menu.hh **** 	
+ 268:src/MightyBoard/shared/Menu.hh **** 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+ 269:src/MightyBoard/shared/Menu.hh **** 	
+ 270:src/MightyBoard/shared/Menu.hh **** 	void reset();
+ 271:src/MightyBoard/shared/Menu.hh **** 
+ 272:src/MightyBoard/shared/Menu.hh ****     void notifyButtonPressed(ButtonArray::ButtonName button);
+ 273:src/MightyBoard/shared/Menu.hh **** };
+ 274:src/MightyBoard/shared/Menu.hh **** 
+ 275:src/MightyBoard/shared/Menu.hh **** class ActiveBuildMenu: public Menu {
+ 276:src/MightyBoard/shared/Menu.hh **** 	
+ 277:src/MightyBoard/shared/Menu.hh **** private:
+ 278:src/MightyBoard/shared/Menu.hh **** 	CancelBuildMenu cancel_build_menu;
+ 279:src/MightyBoard/shared/Menu.hh **** 	BuildStats build_stats_screen;
+ 280:src/MightyBoard/shared/Menu.hh **** 	
+ 281:src/MightyBoard/shared/Menu.hh **** 	//Fan ON/OFF
+ 282:src/MightyBoard/shared/Menu.hh **** 	//LEDS OFF / COLORS
+ 283:src/MightyBoard/shared/Menu.hh **** 
+ 284:src/MightyBoard/shared/Menu.hh **** 	bool is_paused;
+ 285:src/MightyBoard/shared/Menu.hh **** 
+ 286:src/MightyBoard/shared/Menu.hh **** public:
+ 287:src/MightyBoard/shared/Menu.hh **** 	ActiveBuildMenu();
+ 288:src/MightyBoard/shared/Menu.hh ****     
+ 289:src/MightyBoard/shared/Menu.hh **** 	void resetState();
+ 290:src/MightyBoard/shared/Menu.hh **** 	
+ 291:src/MightyBoard/shared/Menu.hh **** 	void pop(void);
+ 292:src/MightyBoard/shared/Menu.hh ****     
+ 293:src/MightyBoard/shared/Menu.hh **** protected:
+ 294:src/MightyBoard/shared/Menu.hh **** 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
+ 295:src/MightyBoard/shared/Menu.hh ****     
+ 296:src/MightyBoard/shared/Menu.hh **** 	void handleSelect(uint8_t index);
+ 297:src/MightyBoard/shared/Menu.hh **** };
+ 298:src/MightyBoard/shared/Menu.hh **** 
+ 299:src/MightyBoard/shared/Menu.hh **** 
+ 300:src/MightyBoard/shared/Menu.hh **** 
+ 301:src/MightyBoard/shared/Menu.hh **** /// Display a message for the user, and provide support for
+ 302:src/MightyBoard/shared/Menu.hh **** /// user-specified pauses.
+ 303:src/MightyBoard/shared/Menu.hh **** class MessageScreen: public Screen {
+ 304:src/MightyBoard/shared/Menu.hh **** private:
+ 305:src/MightyBoard/shared/Menu.hh **** 	uint8_t x, y;
+ 306:src/MightyBoard/shared/Menu.hh **** 	const static int BUF_SIZE = LCD_SCREEN_WIDTH*LCD_SCREEN_HEIGHT + 1;
+ 307:src/MightyBoard/shared/Menu.hh **** 	char message[BUF_SIZE];
+ 308:src/MightyBoard/shared/Menu.hh **** 	uint8_t cursor;
+ 309:src/MightyBoard/shared/Menu.hh **** 	bool needsRedraw;
+ 310:src/MightyBoard/shared/Menu.hh **** 	bool incomplete;
+ 311:src/MightyBoard/shared/Menu.hh **** 	Timeout timeout;
+ 312:src/MightyBoard/shared/Menu.hh ****     
+ 313:src/MightyBoard/shared/Menu.hh ****     CancelBuildMenu cancelBuildMenu;
+ 314:src/MightyBoard/shared/Menu.hh ****     
+ 315:src/MightyBoard/shared/Menu.hh **** public:
+ 316:src/MightyBoard/shared/Menu.hh **** 	MessageScreen() : needsRedraw(false) { message[0] = '\0'; }
+ 317:src/MightyBoard/shared/Menu.hh **** 
+ 318:src/MightyBoard/shared/Menu.hh **** 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
+ 319:src/MightyBoard/shared/Menu.hh **** 
+ 320:src/MightyBoard/shared/Menu.hh **** 	void addMessage(CircularBuffer& buf);
+ 321:src/MightyBoard/shared/Menu.hh **** 	void addMessage(char * msg);
+ 322:src/MightyBoard/shared/Menu.hh **** 	void clearMessage();
+ 323:src/MightyBoard/shared/Menu.hh **** 	void setTimeout(uint8_t seconds);//, bool pop);
+ 324:src/MightyBoard/shared/Menu.hh **** 	void refreshScreen();
+ 325:src/MightyBoard/shared/Menu.hh **** 
+ 326:src/MightyBoard/shared/Menu.hh **** 	micros_t getUpdateRate() {return 50L * 1000L;}
+ 327:src/MightyBoard/shared/Menu.hh ****   
+ 328:src/MightyBoard/shared/Menu.hh **** 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+ 329:src/MightyBoard/shared/Menu.hh **** 	
+ 330:src/MightyBoard/shared/Menu.hh **** 	void reset();
+ 331:src/MightyBoard/shared/Menu.hh **** 
+ 332:src/MightyBoard/shared/Menu.hh ****     void notifyButtonPressed(ButtonArray::ButtonName button);
+ 333:src/MightyBoard/shared/Menu.hh ****     
+ 334:src/MightyBoard/shared/Menu.hh ****     bool screenWaiting(void);
+ 335:src/MightyBoard/shared/Menu.hh **** };
+ 336:src/MightyBoard/shared/Menu.hh **** 
+ 337:src/MightyBoard/shared/Menu.hh **** 
+ 338:src/MightyBoard/shared/Menu.hh **** class JogMode: public Screen {
+ 339:src/MightyBoard/shared/Menu.hh **** private:
+ 340:src/MightyBoard/shared/Menu.hh **** 	enum distance_t {
+ 341:src/MightyBoard/shared/Menu.hh **** 	  DISTANCE_SHORT,
+ 342:src/MightyBoard/shared/Menu.hh **** 	  DISTANCE_LONG,
+ 343:src/MightyBoard/shared/Menu.hh **** 	};
+ 344:src/MightyBoard/shared/Menu.hh **** 	enum jogmode_t {
+ 345:src/MightyBoard/shared/Menu.hh **** 		JOG_MODE_X,
+ 346:src/MightyBoard/shared/Menu.hh **** 		JOG_MODE_Y,
+ 347:src/MightyBoard/shared/Menu.hh **** 		JOG_MODE_Z
+ 348:src/MightyBoard/shared/Menu.hh **** 	};
+ 349:src/MightyBoard/shared/Menu.hh **** 
+ 350:src/MightyBoard/shared/Menu.hh **** 	distance_t jogDistance;
+ 351:src/MightyBoard/shared/Menu.hh **** 	bool distanceChanged, modeChanged;
+ 352:src/MightyBoard/shared/Menu.hh **** 	jogmode_t  JogModeScreen;
+ 353:src/MightyBoard/shared/Menu.hh **** 
+ 354:src/MightyBoard/shared/Menu.hh ****     void jog(ButtonArray::ButtonName direction);
+ 355:src/MightyBoard/shared/Menu.hh **** 
+ 356:src/MightyBoard/shared/Menu.hh **** public:
+ 357:src/MightyBoard/shared/Menu.hh **** 	micros_t getUpdateRate() {return 50L * 1000L;}
+ 358:src/MightyBoard/shared/Menu.hh **** 
+ 359:src/MightyBoard/shared/Menu.hh **** 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+ 360:src/MightyBoard/shared/Menu.hh **** 
+ 361:src/MightyBoard/shared/Menu.hh **** 	void reset();
+ 362:src/MightyBoard/shared/Menu.hh **** 
+ 363:src/MightyBoard/shared/Menu.hh ****     void notifyButtonPressed(ButtonArray::ButtonName button);
+ 364:src/MightyBoard/shared/Menu.hh ****      
+ 365:src/MightyBoard/shared/Menu.hh ****     bool continuousButtons(void) {return true;}
+ 366:src/MightyBoard/shared/Menu.hh **** };
+ 367:src/MightyBoard/shared/Menu.hh **** 
+ 368:src/MightyBoard/shared/Menu.hh **** /// This is an easter egg.
+ 369:src/MightyBoard/shared/Menu.hh **** class SnakeMode: public Screen {
+ 154              	 .loc 1 369 0
+ 155 0010 154B     	 ldr r3,.L10
+ 156              	.LVL10:
+ 157 0012 4361     	 str r3,[r0,#20]
+ 158              	.LBE45:
+ 159              	.LBE44:
+ 160              	.LBE43:
+ 161              	 .loc 2 22 0
+ 162 0014 00F16D06 	 add r6,r0,#109
+ 163 0018 3046     	 mov r0,r6
+ 164              	.LVL11:
+ 165 001a FFF7FEFF 	 bl _ZN3PinC1Ev
+ 166              	.LVL12:
+ 167 001e 04F17207 	 add r7,r4,#114
+ 168 0022 3846     	 mov r0,r7
+ 169 0024 FFF7FEFF 	 bl _ZN3PinC1Ev
+ 170 0028 4FF00003 	 mov r3,#0
+ 171 002c 84F87930 	 strb r3,[r4,#121]
+  23:src/MightyBoard/shared/InterfaceBoard.cc **** {
+  24:src/MightyBoard/shared/InterfaceBoard.cc ****         buildScreen = buildScreen_in;
+ 172              	 .loc 2 24 0
+ 173 0030 089B     	 ldr r3,[sp,#32]
+ 174 0032 A360     	 str r3,[r4,#8]
+  25:src/MightyBoard/shared/InterfaceBoard.cc ****         mainScreen = mainScreen_in;
+ 175              	 .loc 2 25 0
+ 176 0034 079B     	 ldr r3,[sp,#28]
+ 177 0036 E360     	 str r3,[r4,#12]
+  26:src/MightyBoard/shared/InterfaceBoard.cc ****         messageScreen = messageScreen_in;
+ 178              	 .loc 2 26 0
+ 179 0038 099B     	 ldr r3,[sp,#36]
+ 180 003a 2361     	 str r3,[r4,#16]
+  27:src/MightyBoard/shared/InterfaceBoard.cc ****         LEDs[0] = gled_in;
+ 181              	 .loc 2 27 0
+ 182 003c 2B68     	 ldr r3,[r5,#0]
+ 183 003e C4F86D30 	 str r3,[r4,#109]
+ 184 0042 2B79     	 ldrb r3,[r5,#4]
+ 185 0044 84F87130 	 strb r3,[r4,#113]
+  28:src/MightyBoard/shared/InterfaceBoard.cc ****         LEDs[1] = rled_in;
+ 186              	 .loc 2 28 0
+ 187 0048 D8F80030 	 ldr r3,[r8,#0]
+ 188 004c C4F87230 	 str r3,[r4,#114]
+ 189 0050 98F80430 	 ldrb r3,[r8,#4]
+ 190 0054 84F87630 	 strb r3,[r4,#118]
+  29:src/MightyBoard/shared/InterfaceBoard.cc ****         buildPercentage = 101;
+ 191              	 .loc 2 29 0
+ 192 0058 4FF06503 	 mov r3,#101
+ 193 005c 84F87830 	 strb r3,[r4,#120]
+ 194              	.LBE42:
+  30:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 195              	 .loc 2 30 0
+ 196 0060 2046     	 mov r0,r4
+ 197 0062 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 198              	.L11:
+ 199 0066 00BF     	 .align 2
+ 200              	.L10:
+ 201 0068 08000000 	 .word _ZTV9SnakeMode+8
+ 202              	 .cfi_endproc
+ 203              	.LFE160:
+ 205              	 .section .text._ZN14InterfaceBoard8resetLCDEv,"ax",%progbits
+ 206              	 .align 2
+ 207              	 .global _ZN14InterfaceBoard8resetLCDEv
+ 208              	 .thumb
+ 209              	 .thumb_func
+ 211              	_ZN14InterfaceBoard8resetLCDEv:
+ 212              	.LFB163:
+  31:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  32:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::init() {
+  33:src/MightyBoard/shared/InterfaceBoard.cc **** 	buttons.init();
+  34:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  35:src/MightyBoard/shared/InterfaceBoard.cc **** 	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+  36:src/MightyBoard/shared/InterfaceBoard.cc **** 	
+  37:src/MightyBoard/shared/InterfaceBoard.cc **** 	lcd.clear();
+  38:src/MightyBoard/shared/InterfaceBoard.cc **** 	lcd.home();
+  39:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  40:src/MightyBoard/shared/InterfaceBoard.cc **** 	LEDs[0].setDirection(true);
+  41:src/MightyBoard/shared/InterfaceBoard.cc **** 	LEDs[1].setDirection(true);
+  42:src/MightyBoard/shared/InterfaceBoard.cc **** 	
+  43:src/MightyBoard/shared/InterfaceBoard.cc ****     building = false;
+  44:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  45:src/MightyBoard/shared/InterfaceBoard.cc ****     screenIndex = -1;
+  46:src/MightyBoard/shared/InterfaceBoard.cc **** 	waitingMask = 0;
+  47:src/MightyBoard/shared/InterfaceBoard.cc ****     pushScreen(mainScreen);
+  48:src/MightyBoard/shared/InterfaceBoard.cc ****     screen_locked = false;
+  49:src/MightyBoard/shared/InterfaceBoard.cc **** }
+  50:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  51:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::resetLCD() {
+ 213              	 .loc 2 51 0
+ 214              	 .cfi_startproc
+ 215              	 
+ 216              	 
+ 217              	.LVL13:
+ 218 0000 08B5     	 push {r3,lr}
+ 219              	.LCFI1:
+ 220              	 .cfi_def_cfa_offset 8
+ 221              	 .cfi_offset 14,-4
+ 222              	 .cfi_offset 3,-8
+  52:src/MightyBoard/shared/InterfaceBoard.cc **** 	
+  53:src/MightyBoard/shared/InterfaceBoard.cc **** 	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+ 223              	 .loc 2 53 0
+ 224 0002 0068     	 ldr r0,[r0,#0]
+ 225              	.LVL14:
+ 226 0004 4FF01401 	 mov r1,#20
+ 227 0008 4FF00402 	 mov r2,#4
+ 228 000c 4FF00003 	 mov r3,#0
+ 229 0010 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial5beginEhhh
+  54:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  55:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 230              	 .loc 2 55 0
+ 231 0014 08BD     	 pop {r3,pc}
+ 232              	 .cfi_endproc
+ 233              	.LFE163:
+ 235 0016 00BF     	 .section .text._ZN14InterfaceBoard11doInterruptEv,"ax",%progbits
+ 236              	 .align 2
+ 237              	 .global _ZN14InterfaceBoard11doInterruptEv
+ 238              	 .thumb
+ 239              	 .thumb_func
+ 241              	_ZN14InterfaceBoard11doInterruptEv:
+ 242              	.LFB164:
+  56:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  57:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::doInterrupt() {
+ 243              	 .loc 2 57 0
+ 244              	 .cfi_startproc
+ 245              	 
+ 246              	 
+ 247              	.LVL15:
+ 248 0000 08B5     	 push {r3,lr}
+ 249              	.LCFI2:
+ 250              	 .cfi_def_cfa_offset 8
+ 251              	 .cfi_offset 14,-4
+ 252              	 .cfi_offset 3,-8
+  58:src/MightyBoard/shared/InterfaceBoard.cc **** 	buttons.scanButtons();
+ 253              	 .loc 2 58 0
+ 254 0002 4068     	 ldr r0,[r0,#4]
+ 255              	.LVL16:
+ 256 0004 FFF7FEFF 	 bl _ZN11ButtonArray11scanButtonsEv
+  59:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 257              	 .loc 2 59 0
+ 258 0008 08BD     	 pop {r3,pc}
+ 259              	 .cfi_endproc
+ 260              	.LFE164:
+ 262 000a 00BF     	 .section .text._ZN14InterfaceBoard13getUpdateRateEv,"ax",%progbits
+ 263              	 .align 2
+ 264              	 .global _ZN14InterfaceBoard13getUpdateRateEv
+ 265              	 .thumb
+ 266              	 .thumb_func
+ 268              	_ZN14InterfaceBoard13getUpdateRateEv:
+ 269              	.LFB165:
+  60:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  61:src/MightyBoard/shared/InterfaceBoard.cc **** micros_t InterfaceBoard::getUpdateRate() {
+ 270              	 .loc 2 61 0
+ 271              	 .cfi_startproc
+ 272              	 
+ 273              	 
+ 274              	.LVL17:
+ 275 0000 08B5     	 push {r3,lr}
+ 276              	.LCFI3:
+ 277              	 .cfi_def_cfa_offset 8
+ 278              	 .cfi_offset 14,-4
+ 279              	 .cfi_offset 3,-8
+  62:src/MightyBoard/shared/InterfaceBoard.cc **** 	return screenStack[screenIndex]->getUpdateRate();
+ 280              	 .loc 2 62 0
+ 281 0002 90F96C30 	 ldrsb r3,[r0,#108]
+ 282 0006 03F11403 	 add r3,r3,#20
+ 283 000a 50F82300 	 ldr r0,[r0,r3,lsl#2]
+ 284              	.LVL18:
+ 285 000e 0368     	 ldr r3,[r0,#0]
+ 286 0010 9B68     	 ldr r3,[r3,#8]
+ 287 0012 9847     	 blx r3
+  63:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 288              	 .loc 2 63 0
+ 289 0014 08BD     	 pop {r3,pc}
+ 290              	 .cfi_endproc
+ 291              	.LFE165:
+ 293 0016 00BF     	 .section .text._ZN14InterfaceBoard8doUpdateEv,"ax",%progbits
+ 294              	 .align 2
+ 295              	 .global _ZN14InterfaceBoard8doUpdateEv
+ 296              	 .thumb
+ 297              	 .thumb_func
+ 299              	_ZN14InterfaceBoard8doUpdateEv:
+ 300              	.LFB167:
+  64:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  65:src/MightyBoard/shared/InterfaceBoard.cc **** /// push Error Message Screen
+  66:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::errorMessage(char buf[]){
+  67:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  68:src/MightyBoard/shared/InterfaceBoard.cc **** 		messageScreen->clearMessage();
+  69:src/MightyBoard/shared/InterfaceBoard.cc **** 		messageScreen->setXY(0,0);
+  70:src/MightyBoard/shared/InterfaceBoard.cc **** 		messageScreen->addMessage(buf);
+  71:src/MightyBoard/shared/InterfaceBoard.cc **** 		pushScreen(messageScreen);
+  72:src/MightyBoard/shared/InterfaceBoard.cc **** }
+  73:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  74:src/MightyBoard/shared/InterfaceBoard.cc **** bool onboard_build = false;
+  75:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  76:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::doUpdate() {
+ 301              	 .loc 2 76 0
+ 302              	 .cfi_startproc
+ 303              	 
+ 304              	 
+ 305              	 
+ 306              	.LVL19:
+  77:src/MightyBoard/shared/InterfaceBoard.cc **** 
+  78:src/MightyBoard/shared/InterfaceBoard.cc **** 	// If we are building, make sure we show a build menu; otherwise,
+  79:src/MightyBoard/shared/InterfaceBoard.cc **** 	// turn it off.
+  80:src/MightyBoard/shared/InterfaceBoard.cc **** /*	switch(host::getHostState()) {
+  81:src/MightyBoard/shared/InterfaceBoard.cc ****     case host::HOST_STATE_BUILDING_ONBOARD:
+  82:src/MightyBoard/shared/InterfaceBoard.cc ****             onboard_build = true;
+  83:src/MightyBoard/shared/InterfaceBoard.cc **** 	case host::HOST_STATE_BUILDING:
+  84:src/MightyBoard/shared/InterfaceBoard.cc **** 	case host::HOST_STATE_BUILDING_FROM_SD:
+  85:src/MightyBoard/shared/InterfaceBoard.cc **** 		if (!building ){
+  86:src/MightyBoard/shared/InterfaceBoard.cc **** 			
+  87:src/MightyBoard/shared/InterfaceBoard.cc **** 			// if a message screen is still active, wait until it times out to push the monitor mode screen
+  88:src/MightyBoard/shared/InterfaceBoard.cc **** 			// move the current screen up an index so when it pops off, it will load buildScreen
+  89:src/MightyBoard/shared/InterfaceBoard.cc **** 			// as desired instead of popping to main menu first
+  90:src/MightyBoard/shared/InterfaceBoard.cc **** 			// ie this is a push behind, instead of push on top
+  91:src/MightyBoard/shared/InterfaceBoard.cc **** 			if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
+  92:src/MightyBoard/shared/InterfaceBoard.cc **** 			{
+  93:src/MightyBoard/shared/InterfaceBoard.cc **** 					if (screenIndex < SCREEN_STACK_DEPTH - 1) {
+  94:src/MightyBoard/shared/InterfaceBoard.cc **** 						screenIndex++;
+  95:src/MightyBoard/shared/InterfaceBoard.cc **** 						screenStack[screenIndex] = screenStack[screenIndex-1];
+  96:src/MightyBoard/shared/InterfaceBoard.cc **** 					}
+  97:src/MightyBoard/shared/InterfaceBoard.cc **** 					screenStack[screenIndex -1] = buildScreen;
+  98:src/MightyBoard/shared/InterfaceBoard.cc **** 					buildScreen->reset();
+  99:src/MightyBoard/shared/InterfaceBoard.cc **** 			}
+ 100:src/MightyBoard/shared/InterfaceBoard.cc **** 			else
+ 101:src/MightyBoard/shared/InterfaceBoard.cc ****                  pushScreen(buildScreen);
+ 102:src/MightyBoard/shared/InterfaceBoard.cc **** 			building = true;
+ 103:src/MightyBoard/shared/InterfaceBoard.cc **** 		}
+ 104:src/MightyBoard/shared/InterfaceBoard.cc **** 		break;
+ 105:src/MightyBoard/shared/InterfaceBoard.cc **** 	case host::HOST_STATE_HEAT_SHUTDOWN:
+ 106:src/MightyBoard/shared/InterfaceBoard.cc **** 		break;
+ 107:src/MightyBoard/shared/InterfaceBoard.cc **** 	default:
+ 108:src/MightyBoard/shared/InterfaceBoard.cc **** 		if (building) {
+ 109:src/MightyBoard/shared/InterfaceBoard.cc **** 			if(!(screenStack[screenIndex]->screenWaiting())){	
+ 110:src/MightyBoard/shared/InterfaceBoard.cc ****                 // when using onboard scrips, we want to return to the Utilites menu
+ 111:src/MightyBoard/shared/InterfaceBoard.cc ****                 // which is one screen deep in the stack
+ 112:src/MightyBoard/shared/InterfaceBoard.cc ****                 if(onboard_build){
+ 113:src/MightyBoard/shared/InterfaceBoard.cc **** 					while(screenIndex > 1){
+ 114:src/MightyBoard/shared/InterfaceBoard.cc **** 						popScreen();
+ 115:src/MightyBoard/shared/InterfaceBoard.cc **** 					}
+ 116:src/MightyBoard/shared/InterfaceBoard.cc **** 				}
+ 117:src/MightyBoard/shared/InterfaceBoard.cc **** 				// else, after a build, we'll want to go back to the main menu
+ 118:src/MightyBoard/shared/InterfaceBoard.cc **** 				else{
+ 119:src/MightyBoard/shared/InterfaceBoard.cc **** 					while(screenIndex > 0){
+ 120:src/MightyBoard/shared/InterfaceBoard.cc **** 						popScreen();
+ 121:src/MightyBoard/shared/InterfaceBoard.cc **** 					}
+ 122:src/MightyBoard/shared/InterfaceBoard.cc **** 				}
+ 123:src/MightyBoard/shared/InterfaceBoard.cc **** 				building = false;
+ 124:src/MightyBoard/shared/InterfaceBoard.cc **** 			}
+ 125:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 126:src/MightyBoard/shared/InterfaceBoard.cc **** 		}
+ 127:src/MightyBoard/shared/InterfaceBoard.cc **** 		
+ 128:src/MightyBoard/shared/InterfaceBoard.cc **** 		break;
+ 129:src/MightyBoard/shared/InterfaceBoard.cc **** 	}
+ 130:src/MightyBoard/shared/InterfaceBoard.cc ****     static ButtonArray::ButtonName button;
+ 131:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 132:src/MightyBoard/shared/InterfaceBoard.cc ****     if(!screen_locked){
+ 133:src/MightyBoard/shared/InterfaceBoard.cc ****         if (buttons.getButton(button)) {
+ 134:src/MightyBoard/shared/InterfaceBoard.cc ****             if (button == ButtonArray::RESET){
+ 135:src/MightyBoard/shared/InterfaceBoard.cc ****                 host::stopBuild();
+ 136:src/MightyBoard/shared/InterfaceBoard.cc ****                 return;
+ 137:src/MightyBoard/shared/InterfaceBoard.cc ****             // respond to button press if waiting
+ 138:src/MightyBoard/shared/InterfaceBoard.cc ****             // pass on to screen if a cancel screen is active
+ 139:src/MightyBoard/shared/InterfaceBoard.cc ****             } else if((((1<<button) & waitingMask) != 0) &&
+ 140:src/MightyBoard/shared/InterfaceBoard.cc ****                       (!screenStack[screenIndex]->isCancelScreen())){
+ 141:src/MightyBoard/shared/InterfaceBoard.cc ****                  waitingMask = 0;
+ 142:src/MightyBoard/shared/InterfaceBoard.cc ****             } else if (button == ButtonArray::EGG){
+ 143:src/MightyBoard/shared/InterfaceBoard.cc ****                 pushScreen(&snake);
+ 144:src/MightyBoard/shared/InterfaceBoard.cc ****             } else {
+ 145:src/MightyBoard/shared/InterfaceBoard.cc ****                 screenStack[screenIndex]->notifyButtonPressed(button);
+ 146:src/MightyBoard/shared/InterfaceBoard.cc ****                 if(screenStack[screenIndex]->continuousButtons()) {
+ 147:src/MightyBoard/shared/InterfaceBoard.cc ****                     button_timeout.start(100000);// .1s timeout
+ 148:src/MightyBoard/shared/InterfaceBoard.cc ****                 }
+ 149:src/MightyBoard/shared/InterfaceBoard.cc ****             }
+ 150:src/MightyBoard/shared/InterfaceBoard.cc ****             // reset user input timeout when buttons are pressed
+ 151:src/MightyBoard/shared/InterfaceBoard.cc ****             Motherboard::getBoard().resetUserInputTimeout();
+ 152:src/MightyBoard/shared/InterfaceBoard.cc ****         }
+ 153:src/MightyBoard/shared/InterfaceBoard.cc ****         // clear button press if button timeout occurs in continuous press mode
+ 154:src/MightyBoard/shared/InterfaceBoard.cc ****         if(button_timeout.hasElapsed())
+ 155:src/MightyBoard/shared/InterfaceBoard.cc ****         {
+ 156:src/MightyBoard/shared/InterfaceBoard.cc ****             buttons.clearButtonPress();
+ 157:src/MightyBoard/shared/InterfaceBoard.cc ****             button_timeout.clear();
+ 158:src/MightyBoard/shared/InterfaceBoard.cc ****         }
+ 159:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 160:src/MightyBoard/shared/InterfaceBoard.cc ****         // update build data
+ 161:src/MightyBoard/shared/InterfaceBoard.cc ****         screenStack[screenIndex]->setBuildPercentage(buildPercentage);
+ 162:src/MightyBoard/shared/InterfaceBoard.cc ****         screenStack[screenIndex]->update(lcd, false);
+ 163:src/MightyBoard/shared/InterfaceBoard.cc ****     }*/
+ 164:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 307              	 .loc 2 164 0
+ 308 0000 7047     	 bx lr
+ 309              	 .cfi_endproc
+ 310              	.LFE167:
+ 312 0002 00BF     	 .section .text._ZN14InterfaceBoard12pushNoUpdateEP6Screen,"ax",%progbits
+ 313              	 .align 2
+ 314              	 .global _ZN14InterfaceBoard12pushNoUpdateEP6Screen
+ 315              	 .thumb
+ 316              	 .thumb_func
+ 318              	_ZN14InterfaceBoard12pushNoUpdateEP6Screen:
+ 319              	.LFB168:
+ 165:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 166:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 167:src/MightyBoard/shared/InterfaceBoard.cc **** // add a screen to the stack but don't refresh the screen
+ 168:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::pushNoUpdate(Screen *newScreen){
+ 320              	 .loc 2 168 0
+ 321              	 .cfi_startproc
+ 322              	 
+ 323              	 
+ 324              	.LVL20:
+ 325 0000 08B5     	 push {r3,lr}
+ 326              	.LCFI4:
+ 327              	 .cfi_def_cfa_offset 8
+ 328              	 .cfi_offset 14,-4
+ 329              	 .cfi_offset 3,-8
+ 169:src/MightyBoard/shared/InterfaceBoard.cc **** 	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
+ 330              	 .loc 2 169 0
+ 331 0002 90F86C30 	 ldrb r3,[r0,#108]
+ 332 0006 5AB2     	 sxtb r2,r3
+ 333 0008 052A     	 cmp r2,#5
+ 334 000a 09DC     	 bgt .L17
+ 170:src/MightyBoard/shared/InterfaceBoard.cc **** 		screenIndex++;
+ 335              	 .loc 2 170 0
+ 336 000c 03F10103 	 add r3,r3,#1
+ 337 0010 DBB2     	 uxtb r3,r3
+ 338 0012 80F86C30 	 strb r3,[r0,#108]
+ 171:src/MightyBoard/shared/InterfaceBoard.cc **** 		screenStack[screenIndex] = newScreen;
+ 339              	 .loc 2 171 0
+ 340 0016 5BB2     	 sxtb r3,r3
+ 341 0018 03F11403 	 add r3,r3,#20
+ 342 001c 40F82310 	 str r1,[r0,r3,lsl#2]
+ 343              	.L17:
+ 172:src/MightyBoard/shared/InterfaceBoard.cc **** 	}
+ 173:src/MightyBoard/shared/InterfaceBoard.cc **** 	screenStack[screenIndex]->reset();
+ 344              	 .loc 2 173 0
+ 345 0020 90F96C30 	 ldrsb r3,[r0,#108]
+ 346 0024 03F11403 	 add r3,r3,#20
+ 347 0028 50F82300 	 ldr r0,[r0,r3,lsl#2]
+ 348              	.LVL21:
+ 349 002c 0368     	 ldr r3,[r0,#0]
+ 350 002e 1B69     	 ldr r3,[r3,#16]
+ 351 0030 9847     	 blx r3
+ 352              	.LVL22:
+ 174:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 353              	 .loc 2 174 0
+ 354 0032 08BD     	 pop {r3,pc}
+ 355              	 .cfi_endproc
+ 356              	.LFE168:
+ 358              	 .section .text._ZN14InterfaceBoard10pushScreenEP6Screen,"ax",%progbits
+ 359              	 .align 2
+ 360              	 .global _ZN14InterfaceBoard10pushScreenEP6Screen
+ 361              	 .thumb
+ 362              	 .thumb_func
+ 364              	_ZN14InterfaceBoard10pushScreenEP6Screen:
+ 365              	.LFB169:
+ 175:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 176:src/MightyBoard/shared/InterfaceBoard.cc **** // push screen to stack and call update
+ 177:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::pushScreen(Screen* newScreen) {
+ 366              	 .loc 2 177 0
+ 367              	 .cfi_startproc
+ 368              	 
+ 369              	 
+ 370              	.LVL23:
+ 371 0000 10B5     	 push {r4,lr}
+ 372              	.LCFI5:
+ 373              	 .cfi_def_cfa_offset 8
+ 374              	 .cfi_offset 14,-4
+ 375              	 .cfi_offset 4,-8
+ 376 0002 0446     	 mov r4,r0
+ 178:src/MightyBoard/shared/InterfaceBoard.cc **** 	if (screenIndex < SCREEN_STACK_DEPTH - 1) {
+ 377              	 .loc 2 178 0
+ 378 0004 90F86C30 	 ldrb r3,[r0,#108]
+ 379 0008 5AB2     	 sxtb r2,r3
+ 380 000a 052A     	 cmp r2,#5
+ 381 000c 09DC     	 bgt .L19
+ 179:src/MightyBoard/shared/InterfaceBoard.cc **** 		screenIndex++;
+ 382              	 .loc 2 179 0
+ 383 000e 03F10103 	 add r3,r3,#1
+ 384 0012 DBB2     	 uxtb r3,r3
+ 385 0014 80F86C30 	 strb r3,[r0,#108]
+ 180:src/MightyBoard/shared/InterfaceBoard.cc **** 		screenStack[screenIndex] = newScreen;
+ 386              	 .loc 2 180 0
+ 387 0018 5BB2     	 sxtb r3,r3
+ 388 001a 03F11403 	 add r3,r3,#20
+ 389 001e 40F82310 	 str r1,[r0,r3,lsl#2]
+ 390              	.L19:
+ 181:src/MightyBoard/shared/InterfaceBoard.cc **** 	}
+ 182:src/MightyBoard/shared/InterfaceBoard.cc **** 	screenStack[screenIndex]->reset();
+ 391              	 .loc 2 182 0
+ 392 0022 94F96C30 	 ldrsb r3,[r4,#108]
+ 393 0026 03F11403 	 add r3,r3,#20
+ 394 002a 54F82300 	 ldr r0,[r4,r3,lsl#2]
+ 395              	.LVL24:
+ 396 002e 0368     	 ldr r3,[r0,#0]
+ 397 0030 1B69     	 ldr r3,[r3,#16]
+ 398 0032 9847     	 blx r3
+ 399              	.LVL25:
+ 183:src/MightyBoard/shared/InterfaceBoard.cc **** 	screenStack[screenIndex]->update(lcd, true);
+ 400              	 .loc 2 183 0
+ 401 0034 94F96C30 	 ldrsb r3,[r4,#108]
+ 402 0038 03F11403 	 add r3,r3,#20
+ 403 003c 54F82300 	 ldr r0,[r4,r3,lsl#2]
+ 404 0040 0368     	 ldr r3,[r0,#0]
+ 405 0042 DB68     	 ldr r3,[r3,#12]
+ 406 0044 2168     	 ldr r1,[r4,#0]
+ 407 0046 4FF00102 	 mov r2,#1
+ 408 004a 9847     	 blx r3
+ 184:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 409              	 .loc 2 184 0
+ 410 004c 10BD     	 pop {r4,pc}
+ 411              	 .cfi_endproc
+ 412              	.LFE169:
+ 414 004e 00BF     	 .section .text._ZN14InterfaceBoard12errorMessageEPc,"ax",%progbits
+ 415              	 .align 2
+ 416              	 .global _ZN14InterfaceBoard12errorMessageEPc
+ 417              	 .thumb
+ 418              	 .thumb_func
+ 420              	_ZN14InterfaceBoard12errorMessageEPc:
+ 421              	.LFB166:
+  66:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::errorMessage(char buf[]){
+ 422              	 .loc 2 66 0
+ 423              	 .cfi_startproc
+ 424              	 
+ 425              	 
+ 426              	.LVL26:
+ 427 0000 38B5     	 push {r3,r4,r5,lr}
+ 428              	.LCFI6:
+ 429              	 .cfi_def_cfa_offset 16
+ 430              	 .cfi_offset 14,-4
+ 431              	 .cfi_offset 5,-8
+ 432              	 .cfi_offset 4,-12
+ 433              	 .cfi_offset 3,-16
+ 434 0002 0446     	 mov r4,r0
+ 435 0004 0D46     	 mov r5,r1
+  68:src/MightyBoard/shared/InterfaceBoard.cc **** 		messageScreen->clearMessage();
+ 436              	 .loc 2 68 0
+ 437 0006 0069     	 ldr r0,[r0,#16]
+ 438              	.LVL27:
+ 439 0008 FFF7FEFF 	 bl _ZN13MessageScreen12clearMessageEv
+ 440              	.LVL28:
+  69:src/MightyBoard/shared/InterfaceBoard.cc **** 		messageScreen->setXY(0,0);
+ 441              	 .loc 2 69 0
+ 442 000c 2369     	 ldr r3,[r4,#16]
+ 443              	.LVL29:
+ 444              	.LBB46:
+ 445              	.LBB47:
+ 318:src/MightyBoard/shared/Menu.hh **** 	void setXY(uint8_t xpos, uint8_t ypos) { x = xpos; y = ypos; }
+ 446              	 .loc 1 318 0
+ 447 000e 4FF00002 	 mov r2,#0
+ 448 0012 1A71     	 strb r2,[r3,#4]
+ 449 0014 5A71     	 strb r2,[r3,#5]
+ 450              	.LBE47:
+ 451              	.LBE46:
+  70:src/MightyBoard/shared/InterfaceBoard.cc **** 		messageScreen->addMessage(buf);
+ 452              	 .loc 2 70 0
+ 453 0016 2069     	 ldr r0,[r4,#16]
+ 454 0018 2946     	 mov r1,r5
+ 455 001a FFF7FEFF 	 bl _ZN13MessageScreen10addMessageEPc
+ 456              	.LVL30:
+  71:src/MightyBoard/shared/InterfaceBoard.cc **** 		pushScreen(messageScreen);
+ 457              	 .loc 2 71 0
+ 458 001e 2046     	 mov r0,r4
+ 459 0020 2169     	 ldr r1,[r4,#16]
+ 460 0022 FFF7FEFF 	 bl _ZN14InterfaceBoard10pushScreenEP6Screen
+  72:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 461              	 .loc 2 72 0
+ 462 0026 38BD     	 pop {r3,r4,r5,pc}
+ 463              	 .cfi_endproc
+ 464              	.LFE166:
+ 466              	 .section .text._ZN14InterfaceBoard4initEv,"ax",%progbits
+ 467              	 .align 2
+ 468              	 .global _ZN14InterfaceBoard4initEv
+ 469              	 .thumb
+ 470              	 .thumb_func
+ 472              	_ZN14InterfaceBoard4initEv:
+ 473              	.LFB162:
+  32:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::init() {
+ 474              	 .loc 2 32 0
+ 475              	 .cfi_startproc
+ 476              	 
+ 477              	 
+ 478              	.LVL31:
+ 479 0000 38B5     	 push {r3,r4,r5,lr}
+ 480              	.LCFI7:
+ 481              	 .cfi_def_cfa_offset 16
+ 482              	 .cfi_offset 14,-4
+ 483              	 .cfi_offset 5,-8
+ 484              	 .cfi_offset 4,-12
+ 485              	 .cfi_offset 3,-16
+ 486 0002 0446     	 mov r4,r0
+  33:src/MightyBoard/shared/InterfaceBoard.cc **** 	buttons.init();
+ 487              	 .loc 2 33 0
+ 488 0004 4068     	 ldr r0,[r0,#4]
+ 489              	.LVL32:
+ 490 0006 FFF7FEFF 	 bl _ZN11ButtonArray4initEv
+  35:src/MightyBoard/shared/InterfaceBoard.cc **** 	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+ 491              	 .loc 2 35 0
+ 492 000a 2068     	 ldr r0,[r4,#0]
+ 493 000c 4FF01401 	 mov r1,#20
+ 494 0010 4FF00402 	 mov r2,#4
+ 495 0014 4FF00003 	 mov r3,#0
+ 496 0018 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial5beginEhhh
+  37:src/MightyBoard/shared/InterfaceBoard.cc **** 	lcd.clear();
+ 497              	 .loc 2 37 0
+ 498 001c 2068     	 ldr r0,[r4,#0]
+ 499 001e FFF7FEFF 	 bl _ZN19LiquidCrystalSerial5clearEv
+  38:src/MightyBoard/shared/InterfaceBoard.cc **** 	lcd.home();
+ 500              	 .loc 2 38 0
+ 501 0022 2546     	 mov r5,r4
+ 502 0024 55F86D0B 	 ldr r0,[r5],#109
+ 503 0028 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4homeEv
+  40:src/MightyBoard/shared/InterfaceBoard.cc **** 	LEDs[0].setDirection(true);
+ 504              	 .loc 2 40 0
+ 505 002c 2846     	 mov r0,r5
+ 506 002e 4FF00101 	 mov r1,#1
+ 507 0032 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  41:src/MightyBoard/shared/InterfaceBoard.cc **** 	LEDs[1].setDirection(true);
+ 508              	 .loc 2 41 0
+ 509 0036 04F17200 	 add r0,r4,#114
+ 510 003a 4FF00101 	 mov r1,#1
+ 511 003e FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  43:src/MightyBoard/shared/InterfaceBoard.cc ****     building = false;
+ 512              	 .loc 2 43 0
+ 513 0042 4FF00005 	 mov r5,#0
+ 514 0046 84F87750 	 strb r5,[r4,#119]
+  45:src/MightyBoard/shared/InterfaceBoard.cc ****     screenIndex = -1;
+ 515              	 .loc 2 45 0
+ 516 004a 4FF0FF03 	 mov r3,#255
+ 517 004e 84F86C30 	 strb r3,[r4,#108]
+  46:src/MightyBoard/shared/InterfaceBoard.cc **** 	waitingMask = 0;
+ 518              	 .loc 2 46 0
+ 519 0052 84F87950 	 strb r5,[r4,#121]
+  47:src/MightyBoard/shared/InterfaceBoard.cc ****     pushScreen(mainScreen);
+ 520              	 .loc 2 47 0
+ 521 0056 2046     	 mov r0,r4
+ 522 0058 E168     	 ldr r1,[r4,#12]
+ 523 005a FFF7FEFF 	 bl _ZN14InterfaceBoard10pushScreenEP6Screen
+  48:src/MightyBoard/shared/InterfaceBoard.cc ****     screen_locked = false;
+ 524              	 .loc 2 48 0
+ 525 005e 84F87A50 	 strb r5,[r4,#122]
+  49:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 526              	 .loc 2 49 0
+ 527 0062 38BD     	 pop {r3,r4,r5,pc}
+ 528              	 .cfi_endproc
+ 529              	.LFE162:
+ 531              	 .section .text._ZN14InterfaceBoard18setBuildPercentageEh,"ax",%progbits
+ 532              	 .align 2
+ 533              	 .global _ZN14InterfaceBoard18setBuildPercentageEh
+ 534              	 .thumb
+ 535              	 .thumb_func
+ 537              	_ZN14InterfaceBoard18setBuildPercentageEh:
+ 538              	.LFB170:
+ 185:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 186:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::setBuildPercentage(uint8_t percent){
+ 539              	 .loc 2 186 0
+ 540              	 .cfi_startproc
+ 541              	 
+ 542              	 
+ 543              	 
+ 544              	.LVL33:
+ 187:src/MightyBoard/shared/InterfaceBoard.cc **** 	
+ 188:src/MightyBoard/shared/InterfaceBoard.cc **** 	if(percent < 100){
+ 545              	 .loc 2 188 0
+ 546 0000 6329     	 cmp r1,#99
+ 189:src/MightyBoard/shared/InterfaceBoard.cc **** 		buildPercentage = percent;
+ 547              	 .loc 2 189 0
+ 548 0002 98BF     	 it ls
+ 549 0004 80F87810 	 strbls r1,[r0,#120]
+ 550 0008 7047     	 bx lr
+ 551              	 .cfi_endproc
+ 552              	.LFE170:
+ 554 000a 00BF     	 .section .text._ZN14InterfaceBoard9popScreenEv,"ax",%progbits
+ 555              	 .align 2
+ 556              	 .global _ZN14InterfaceBoard9popScreenEv
+ 557              	 .thumb
+ 558              	 .thumb_func
+ 560              	_ZN14InterfaceBoard9popScreenEv:
+ 561              	.LFB171:
+ 190:src/MightyBoard/shared/InterfaceBoard.cc **** 	}
+ 191:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 192:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 193:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::popScreen() {
+ 562              	 .loc 2 193 0
+ 563              	 .cfi_startproc
+ 564              	 
+ 565              	 
+ 566              	.LVL34:
+ 567 0000 10B5     	 push {r4,lr}
+ 568              	.LCFI8:
+ 569              	 .cfi_def_cfa_offset 8
+ 570              	 .cfi_offset 14,-4
+ 571              	 .cfi_offset 4,-8
+ 572 0002 0446     	 mov r4,r0
+ 194:src/MightyBoard/shared/InterfaceBoard.cc **** 	
+ 195:src/MightyBoard/shared/InterfaceBoard.cc **** 	screenStack[screenIndex]->pop();
+ 573              	 .loc 2 195 0
+ 574 0004 90F96C30 	 ldrsb r3,[r0,#108]
+ 575 0008 03F11403 	 add r3,r3,#20
+ 576 000c 50F82300 	 ldr r0,[r0,r3,lsl#2]
+ 577              	.LVL35:
+ 578 0010 0368     	 ldr r3,[r0,#0]
+ 579 0012 9B6A     	 ldr r3,[r3,#40]
+ 580 0014 9847     	 blx r3
+ 196:src/MightyBoard/shared/InterfaceBoard.cc **** 	// Don't allow the root menu to be removed.
+ 197:src/MightyBoard/shared/InterfaceBoard.cc **** 	if (screenIndex > 0) {
+ 581              	 .loc 2 197 0
+ 582 0016 94F86C30 	 ldrb r3,[r4,#108]
+ 583 001a 5AB2     	 sxtb r2,r3
+ 584 001c 002A     	 cmp r2,#0
+ 198:src/MightyBoard/shared/InterfaceBoard.cc **** 		screenIndex--;
+ 585              	 .loc 2 198 0
+ 586 001e C4BF     	 itt gt
+ 587 0020 03F1FF33 	 addgt r3,r3,#-1
+ 588 0024 84F86C30 	 strbgt r3,[r4,#108]
+ 199:src/MightyBoard/shared/InterfaceBoard.cc **** 	}
+ 200:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 201:src/MightyBoard/shared/InterfaceBoard.cc **** 	screenStack[screenIndex]->update(lcd, true);
+ 589              	 .loc 2 201 0
+ 590 0028 94F96C30 	 ldrsb r3,[r4,#108]
+ 591 002c 03F11403 	 add r3,r3,#20
+ 592 0030 54F82300 	 ldr r0,[r4,r3,lsl#2]
+ 593 0034 0368     	 ldr r3,[r0,#0]
+ 594 0036 DB68     	 ldr r3,[r3,#12]
+ 595 0038 2168     	 ldr r1,[r4,#0]
+ 596 003a 4FF00102 	 mov r2,#1
+ 597 003e 9847     	 blx r3
+ 202:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 598              	 .loc 2 202 0
+ 599 0040 10BD     	 pop {r4,pc}
+ 600              	 .cfi_endproc
+ 601              	.LFE171:
+ 603 0042 00BF     	 .section .text._ZN14InterfaceBoard11pop2ScreensEv,"ax",%progbits
+ 604              	 .align 2
+ 605              	 .global _ZN14InterfaceBoard11pop2ScreensEv
+ 606              	 .thumb
+ 607              	 .thumb_func
+ 609              	_ZN14InterfaceBoard11pop2ScreensEv:
+ 610              	.LFB172:
+ 203:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::pop2Screens() {
+ 611              	 .loc 2 203 0
+ 612              	 .cfi_startproc
+ 613              	 
+ 614              	 
+ 615              	.LVL36:
+ 616 0000 08B5     	 push {r3,lr}
+ 617              	.LCFI9:
+ 618              	 .cfi_def_cfa_offset 8
+ 619              	 .cfi_offset 14,-4
+ 620              	 .cfi_offset 3,-8
+ 621 0002 0246     	 mov r2,r0
+ 204:src/MightyBoard/shared/InterfaceBoard.cc **** 	// Don't allow the root menu to be removed.
+ 205:src/MightyBoard/shared/InterfaceBoard.cc **** 	if (screenIndex > 1) {
+ 622              	 .loc 2 205 0
+ 623 0004 90F86C30 	 ldrb r3,[r0,#108]
+ 624 0008 59B2     	 sxtb r1,r3
+ 625 000a 0129     	 cmp r1,#1
+ 206:src/MightyBoard/shared/InterfaceBoard.cc **** 		screenIndex-=2;
+ 626              	 .loc 2 206 0
+ 627 000c C4BF     	 itt gt
+ 628 000e 023B     	 subgt r3,r3,#2
+ 629 0010 80F86C30 	 strbgt r3,[r0,#108]
+ 207:src/MightyBoard/shared/InterfaceBoard.cc **** 	}
+ 208:src/MightyBoard/shared/InterfaceBoard.cc ****     
+ 209:src/MightyBoard/shared/InterfaceBoard.cc **** 	screenStack[screenIndex]->update(lcd, true);
+ 630              	 .loc 2 209 0
+ 631 0014 90F96C30 	 ldrsb r3,[r0,#108]
+ 632 0018 03F11403 	 add r3,r3,#20
+ 633 001c 50F82300 	 ldr r0,[r0,r3,lsl#2]
+ 634              	.LVL37:
+ 635 0020 0368     	 ldr r3,[r0,#0]
+ 636 0022 DB68     	 ldr r3,[r3,#12]
+ 637 0024 1168     	 ldr r1,[r2,#0]
+ 638 0026 4FF00102 	 mov r2,#1
+ 639              	.LVL38:
+ 640 002a 9847     	 blx r3
+ 210:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 641              	 .loc 2 210 0
+ 642 002c 08BD     	 pop {r3,pc}
+ 643              	 .cfi_endproc
+ 644              	.LFE172:
+ 646 002e 00BF     	 .section .text._ZN14InterfaceBoard6setLEDEhb,"ax",%progbits
+ 647              	 .align 2
+ 648              	 .global _ZN14InterfaceBoard6setLEDEhb
+ 649              	 .thumb
+ 650              	 .thumb_func
+ 652              	_ZN14InterfaceBoard6setLEDEhb:
+ 653              	.LFB173:
+ 211:src/MightyBoard/shared/InterfaceBoard.cc **** // turn interface LEDs on
+ 212:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::setLED(uint8_t id, bool on){
+ 654              	 .loc 2 212 0
+ 655              	 .cfi_startproc
+ 656              	 
+ 657              	 
+ 658              	.LVL39:
+ 659 0000 08B5     	 push {r3,lr}
+ 660              	.LCFI10:
+ 661              	 .cfi_def_cfa_offset 8
+ 662              	 .cfi_offset 14,-4
+ 663              	 .cfi_offset 3,-8
+ 213:src/MightyBoard/shared/InterfaceBoard.cc **** 	LEDs[id].setValue(on);
+ 664              	 .loc 2 213 0
+ 665 0002 01EB8101 	 add r1,r1,r1,lsl#2
+ 666              	.LVL40:
+ 667 0006 01F16801 	 add r1,r1,#104
+ 668 000a 4018     	 adds r0,r0,r1
+ 669              	.LVL41:
+ 670 000c 00F10503 	 add r3,r0,#5
+ 671              	.LVL42:
+ 672              	.LBB48:
+ 673              	.LBB49:
+ 674              	 .file 3 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 675              	 .loc 3 35 0
+ 676 0010 5978     	 ldrb r1,[r3,#1]
+ 677 0012 89B9     	 cbnz r1,.L28
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+ 678              	 .loc 3 41 0
+ 679 0014 42B1     	 cbz r2,.L30
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 680              	 .loc 3 44 0
+ 681 0016 9B78     	 ldrb r3,[r3,#2]
+ 682              	.LVL43:
+ 683 0018 4079     	 ldrb r0,[r0,#5]
+ 684 001a 4FF00101 	 mov r1,#1
+ 685 001e 01FA03F1 	 lsl r1,r1,r3
+ 686 0022 FFF7FEFF 	 bl GPIO_SetValue
+ 687              	.LVL44:
+ 688 0026 08BD     	 pop {r3,pc}
+ 689              	.LVL45:
+ 690              	.L30:
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+ 691              	 .loc 3 48 0
+ 692 0028 9B78     	 ldrb r3,[r3,#2]
+ 693              	.LVL46:
+ 694 002a 4079     	 ldrb r0,[r0,#5]
+ 695 002c 4FF00101 	 mov r1,#1
+ 696 0030 01FA03F1 	 lsl r1,r1,r3
+ 697 0034 FFF7FEFF 	 bl GPIO_ClearValue
+ 698              	.LVL47:
+ 699              	.L28:
+ 700 0038 08BD     	 pop {r3,pc}
+ 701              	.LBE49:
+ 702              	.LBE48:
+ 703              	 .cfi_endproc
+ 704              	.LFE173:
+ 706 003a 00BF     	 .section .text._ZN14InterfaceBoard13waitForButtonEh,"ax",%progbits
+ 707              	 .align 2
+ 708              	 .global _ZN14InterfaceBoard13waitForButtonEh
+ 709              	 .thumb
+ 710              	 .thumb_func
+ 712              	_ZN14InterfaceBoard13waitForButtonEh:
+ 713              	.LFB174:
+ 214:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 215:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 216:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 217:src/MightyBoard/shared/InterfaceBoard.cc **** /// Tell the interface board that the system is waiting for a button push
+ 218:src/MightyBoard/shared/InterfaceBoard.cc **** /// corresponding to one of the bits in the button mask. The interface board
+ 219:src/MightyBoard/shared/InterfaceBoard.cc **** /// will not process button pushes directly until one of the buttons in the
+ 220:src/MightyBoard/shared/InterfaceBoard.cc **** /// mask is pushed.
+ 221:src/MightyBoard/shared/InterfaceBoard.cc **** void InterfaceBoard::waitForButton(uint8_t button_mask) {
+ 714              	 .loc 2 221 0
+ 715              	 .cfi_startproc
+ 716              	 
+ 717              	 
+ 718              	 
+ 719              	.LVL48:
+ 222:src/MightyBoard/shared/InterfaceBoard.cc ****   waitingMask = button_mask;
+ 720              	 .loc 2 222 0
+ 721 0000 80F87910 	 strb r1,[r0,#121]
+ 223:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 722              	 .loc 2 223 0
+ 723 0004 7047     	 bx lr
+ 724              	 .cfi_endproc
+ 725              	.LFE174:
+ 727 0006 00BF     	 .section .text._ZN14InterfaceBoard12buttonPushedEv,"ax",%progbits
+ 728              	 .align 2
+ 729              	 .global _ZN14InterfaceBoard12buttonPushedEv
+ 730              	 .thumb
+ 731              	 .thumb_func
+ 733              	_ZN14InterfaceBoard12buttonPushedEv:
+ 734              	.LFB175:
+ 224:src/MightyBoard/shared/InterfaceBoard.cc **** 
+ 225:src/MightyBoard/shared/InterfaceBoard.cc **** /// Check if the expected button push has been made. If waitForButton was
+ 226:src/MightyBoard/shared/InterfaceBoard.cc **** /// never called, always return true.
+ 227:src/MightyBoard/shared/InterfaceBoard.cc **** bool InterfaceBoard::buttonPushed() {
+ 735              	 .loc 2 227 0
+ 736              	 .cfi_startproc
+ 737              	 
+ 738              	 
+ 739              	 
+ 740              	.LVL49:
+ 228:src/MightyBoard/shared/InterfaceBoard.cc ****   return waitingMask == 0;
+ 741              	 .loc 2 228 0
+ 742 0000 90F87900 	 ldrb r0,[r0,#121]
+ 743              	.LVL50:
+ 229:src/MightyBoard/shared/InterfaceBoard.cc **** }
+ 744              	 .loc 2 229 0
+ 745 0004 D0F10100 	 rsbs r0,r0,#1
+ 746 0008 38BF     	 it cc
+ 747 000a 0020     	 movcc r0,#0
+ 748 000c 7047     	 bx lr
+ 749              	 .cfi_endproc
+ 750              	.LFE175:
+ 752 000e 00BF     	 .section .text._GLOBAL__sub_I_button_timeout,"ax",%progbits
+ 753              	 .align 2
+ 754              	 .thumb
+ 755              	 .thumb_func
+ 757              	_GLOBAL__sub_I_button_timeout:
+ 758              	.LFB177:
+ 759              	 .loc 2 229 0
+ 760              	 .cfi_startproc
+ 761              	 
+ 762              	 
+ 763 0000 10B5     	 push {r4,lr}
+ 764              	.LCFI11:
+ 765              	 .cfi_def_cfa_offset 8
+ 766              	 .cfi_offset 14,-4
+ 767              	 .cfi_offset 4,-8
+ 768              	.LVL51:
+ 769              	.LBB52:
+ 770              	.LBB53:
+ 771              	 .file 4 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 772              	 .loc 4 49 0
+ 773 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 774 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 775 000a 4FF00001 	 mov r1,#0
+ 776 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 777              	 .loc 4 50 0
+ 778 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 779 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 780 001a 4FF00101 	 mov r1,#1
+ 781 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 782              	 .loc 4 51 0
+ 783 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 784 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 785 002a 4FF00201 	 mov r1,#2
+ 786 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 787              	 .loc 4 52 0
+ 788 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 789 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 790 003a 4FF00301 	 mov r1,#3
+ 791 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 792              	 .loc 4 53 0
+ 793 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 794 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 795 004a 4FF00401 	 mov r1,#4
+ 796 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 797              	 .loc 4 55 0
+ 798 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 799 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 800 005a 2046     	 mov r0,r4
+ 801 005c 4FF0FF01 	 mov r1,#255
+ 802 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 803              	 .loc 3 76 0
+ 804 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 805 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 806 006c 2146     	 mov r1,r4
+ 807 006e 4FF00002 	 mov r2,#0
+ 808 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  11:src/MightyBoard/shared/InterfaceBoard.cc **** Timeout button_timeout;
+ 809              	 .loc 2 11 0
+ 810 0076 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 811 007a C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 812 007e FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 813              	.LBE53:
+ 814              	.LBE52:
+ 815              	 .loc 2 229 0
+ 816 0082 10BD     	 pop {r4,pc}
+ 817              	 .cfi_endproc
+ 818              	.LFE177:
+ 820              	 .section .init_array,"aw",%init_array
+ 821              	 .align 2
+ 822 0000 00000000 	 .word _GLOBAL__sub_I_button_timeout(target1)
+ 823              	 .global onboard_build
+ 824              	 .global button_timeout
+ 825              	 .weak _ZTV6Screen
+ 826              	 .section .rodata._ZTV6Screen,"aG",%progbits,_ZTV6Screen,comdat
+ 827              	 .align 3
+ 830              	_ZTV6Screen:
+ 831 0000 00000000 	 .word 0
+ 832 0004 00000000 	 .word 0
+ 833 0008 00000000 	 .word __cxa_pure_virtual
+ 834 000c 00000000 	 .word __cxa_pure_virtual
+ 835 0010 00000000 	 .word __cxa_pure_virtual
+ 836 0014 00000000 	 .word __cxa_pure_virtual
+ 837 0018 00000000 	 .word __cxa_pure_virtual
+ 838 001c 00000000 	 .word __cxa_pure_virtual
+ 839 0020 00000000 	 .word _ZN6Screen17continuousButtonsEv
+ 840 0024 00000000 	 .word _ZN6Screen18setBuildPercentageEh
+ 841 0028 00000000 	 .word _ZN6Screen13screenWaitingEv
+ 842 002c 00000000 	 .word _ZN6Screen14isCancelScreenEv
+ 843 0030 00000000 	 .word _ZN6Screen3popEv
+ 844              	 .global _ZN14InterfaceBoardC1ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen
+ 845              	 .thumb_set _ZN14InterfaceBoardC1ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen,_ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen
+ 846 0034 00000000 	 .section .bss._ZL5Port0,"aw",%nobits
+ 847              	 .align 2
+ 848              	 .set .LANCHOR0,.+0
+ 851              	_ZL5Port0:
+ 852 0000 00       	 .space 1
+ 853 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 854              	 .align 2
+ 855              	 .set .LANCHOR1,.+0
+ 858              	_ZL5Port1:
+ 859 0000 00       	 .space 1
+ 860 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 861              	 .align 2
+ 862              	 .set .LANCHOR2,.+0
+ 865              	_ZL5Port2:
+ 866 0000 00       	 .space 1
+ 867 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 868              	 .align 2
+ 869              	 .set .LANCHOR3,.+0
+ 872              	_ZL5Port3:
+ 873 0000 00       	 .space 1
+ 874 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 875              	 .align 2
+ 876              	 .set .LANCHOR4,.+0
+ 879              	_ZL5Port4:
+ 880 0000 00       	 .space 1
+ 881 0001 000000   	 .section .bss.button_timeout,"aw",%nobits
+ 882              	 .align 2
+ 883              	 .set .LANCHOR7,.+0
+ 886              	button_timeout:
+ 887 0000 00000000 	 .space 16
+ 887      00000000 
+ 887      00000000 
+ 887      00000000 
+ 888              	 .section .bss.onboard_build,"aw",%nobits
+ 891              	onboard_build:
+ 892 0000 00       	 .space 1
+ 893              	 .section .bss._ZL8NullPort,"aw",%nobits
+ 894              	 .align 2
+ 895              	 .set .LANCHOR5,.+0
+ 898              	_ZL8NullPort:
+ 899 0000 00       	 .space 1
+ 900 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 901              	 .align 2
+ 902              	 .set .LANCHOR6,.+0
+ 905              	_ZL7NullPin:
+ 906 0000 00000000 	 .space 5
+ 906      00
+ 907 0005 000000   	 .text
+ 908              	.Letext0:
+ 909              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 910              	 .file 6 "src/MightyBoard/shared/Types.hh"
+ 911              	 .file 7 "src/MightyBoard/shared/Timeout.hh"
+ 912              	 .file 8 "src/MightyBoard/shared/ButtonArray.hh"
+ 913              	 .file 9 "src/MightyBoard/shared/InterfaceBoard.hh"
+ 914              	 .file 10 "src/MightyBoard/shared/LiquidCrystalSerial.hh"
+ 915              	 .file 11 "src/MightyBoard/Motherboard/UtilityScripts.hh"
+ 916              	 .file 12 "src/MightyBoard/shared/Packet.hh"
+ 917              	 .file 13 "src/MightyBoard/shared/TemperatureSensor.hh"
+ 918              	 .file 14 "src/MightyBoard/shared/HeatingElement.hh"
+ 919              	 .file 15 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 920              	 .file 16 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 InterfaceBoard.cc
+    {standard input}:19     .text._ZN6Screen17continuousButtonsEv:00000000 $t
+    {standard input}:24     .text._ZN6Screen17continuousButtonsEv:00000000 _ZN6Screen17continuousButtonsEv
+    {standard input}:41     .text._ZN6Screen18setBuildPercentageEh:00000000 $t
+    {standard input}:46     .text._ZN6Screen18setBuildPercentageEh:00000000 _ZN6Screen18setBuildPercentageEh
+    {standard input}:60     .text._ZN6Screen13screenWaitingEv:00000000 $t
+    {standard input}:65     .text._ZN6Screen13screenWaitingEv:00000000 _ZN6Screen13screenWaitingEv
+    {standard input}:81     .text._ZN6Screen14isCancelScreenEv:00000000 $t
+    {standard input}:86     .text._ZN6Screen14isCancelScreenEv:00000000 _ZN6Screen14isCancelScreenEv
+    {standard input}:102    .text._ZN6Screen3popEv:00000000 $t
+    {standard input}:107    .text._ZN6Screen3popEv:00000000 _ZN6Screen3popEv
+    {standard input}:121    .text._ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen:00000000 $t
+    {standard input}:126    .text._ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen:00000000 _ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen
+    {standard input}:201    .text._ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen:00000068 $d
+    {standard input}:206    .text._ZN14InterfaceBoard8resetLCDEv:00000000 $t
+    {standard input}:211    .text._ZN14InterfaceBoard8resetLCDEv:00000000 _ZN14InterfaceBoard8resetLCDEv
+    {standard input}:236    .text._ZN14InterfaceBoard11doInterruptEv:00000000 $t
+    {standard input}:241    .text._ZN14InterfaceBoard11doInterruptEv:00000000 _ZN14InterfaceBoard11doInterruptEv
+    {standard input}:263    .text._ZN14InterfaceBoard13getUpdateRateEv:00000000 $t
+    {standard input}:268    .text._ZN14InterfaceBoard13getUpdateRateEv:00000000 _ZN14InterfaceBoard13getUpdateRateEv
+    {standard input}:294    .text._ZN14InterfaceBoard8doUpdateEv:00000000 $t
+    {standard input}:299    .text._ZN14InterfaceBoard8doUpdateEv:00000000 _ZN14InterfaceBoard8doUpdateEv
+    {standard input}:313    .text._ZN14InterfaceBoard12pushNoUpdateEP6Screen:00000000 $t
+    {standard input}:318    .text._ZN14InterfaceBoard12pushNoUpdateEP6Screen:00000000 _ZN14InterfaceBoard12pushNoUpdateEP6Screen
+    {standard input}:359    .text._ZN14InterfaceBoard10pushScreenEP6Screen:00000000 $t
+    {standard input}:364    .text._ZN14InterfaceBoard10pushScreenEP6Screen:00000000 _ZN14InterfaceBoard10pushScreenEP6Screen
+    {standard input}:415    .text._ZN14InterfaceBoard12errorMessageEPc:00000000 $t
+    {standard input}:420    .text._ZN14InterfaceBoard12errorMessageEPc:00000000 _ZN14InterfaceBoard12errorMessageEPc
+    {standard input}:467    .text._ZN14InterfaceBoard4initEv:00000000 $t
+    {standard input}:472    .text._ZN14InterfaceBoard4initEv:00000000 _ZN14InterfaceBoard4initEv
+    {standard input}:532    .text._ZN14InterfaceBoard18setBuildPercentageEh:00000000 $t
+    {standard input}:537    .text._ZN14InterfaceBoard18setBuildPercentageEh:00000000 _ZN14InterfaceBoard18setBuildPercentageEh
+    {standard input}:555    .text._ZN14InterfaceBoard9popScreenEv:00000000 $t
+    {standard input}:560    .text._ZN14InterfaceBoard9popScreenEv:00000000 _ZN14InterfaceBoard9popScreenEv
+    {standard input}:604    .text._ZN14InterfaceBoard11pop2ScreensEv:00000000 $t
+    {standard input}:609    .text._ZN14InterfaceBoard11pop2ScreensEv:00000000 _ZN14InterfaceBoard11pop2ScreensEv
+    {standard input}:647    .text._ZN14InterfaceBoard6setLEDEhb:00000000 $t
+    {standard input}:652    .text._ZN14InterfaceBoard6setLEDEhb:00000000 _ZN14InterfaceBoard6setLEDEhb
+    {standard input}:707    .text._ZN14InterfaceBoard13waitForButtonEh:00000000 $t
+    {standard input}:712    .text._ZN14InterfaceBoard13waitForButtonEh:00000000 _ZN14InterfaceBoard13waitForButtonEh
+    {standard input}:728    .text._ZN14InterfaceBoard12buttonPushedEv:00000000 $t
+    {standard input}:733    .text._ZN14InterfaceBoard12buttonPushedEv:00000000 _ZN14InterfaceBoard12buttonPushedEv
+    {standard input}:753    .text._GLOBAL__sub_I_button_timeout:00000000 $t
+    {standard input}:757    .text._GLOBAL__sub_I_button_timeout:00000000 _GLOBAL__sub_I_button_timeout
+    {standard input}:848    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:855    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:862    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:869    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:876    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:895    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:902    .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:883    .bss.button_timeout:00000000 .LANCHOR7
+    {standard input}:821    .init_array:00000000 $d
+    {standard input}:891    .bss.onboard_build:00000000 onboard_build
+    {standard input}:886    .bss.button_timeout:00000000 button_timeout
+    {standard input}:830    .rodata._ZTV6Screen:00000000 _ZTV6Screen
+    {standard input}:827    .rodata._ZTV6Screen:00000000 $d
+    {standard input}:126    .text._ZN14InterfaceBoardC2ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen:00000000 _ZN14InterfaceBoardC1ER11ButtonArrayR19LiquidCrystalSerialRK3PinS6_P6ScreenS8_P13MessageScreen
+    {standard input}:847    .bss._ZL5Port0:00000000 $d
+    {standard input}:851    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:854    .bss._ZL5Port1:00000000 $d
+    {standard input}:858    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:861    .bss._ZL5Port2:00000000 $d
+    {standard input}:865    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:868    .bss._ZL5Port3:00000000 $d
+    {standard input}:872    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:875    .bss._ZL5Port4:00000000 $d
+    {standard input}:879    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:882    .bss.button_timeout:00000000 $d
+    {standard input}:892    .bss.onboard_build:00000000 $d
+    {standard input}:894    .bss._ZL8NullPort:00000000 $d
+    {standard input}:898    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:901    .bss._ZL7NullPin:00000000 $d
+    {standard input}:905    .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN3PinC1Ev
+_ZTV9SnakeMode
+_ZN19LiquidCrystalSerial5beginEhhh
+_ZN11ButtonArray11scanButtonsEv
+_ZN13MessageScreen12clearMessageEv
+_ZN13MessageScreen10addMessageEPc
+_ZN11ButtonArray4initEv
+_ZN19LiquidCrystalSerial5clearEv
+_ZN19LiquidCrystalSerial4homeEv
+_ZNK3Pin12setDirectionEb
+GPIO_SetValue
+GPIO_ClearValue
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth
+_ZN7TimeoutC1Ev
+__cxa_pure_virtual

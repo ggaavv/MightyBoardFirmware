@@ -1,0 +1,773 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Interface.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN9interface11isConnectedEv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN9interface11isConnectedEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN9interface11isConnectedEv:
+  25              	.LFB111:
+  26              	 .file 1 "src/MightyBoard/shared/Interface.cc"
+   1:src/MightyBoard/shared/Interface.cc **** 
+   2:src/MightyBoard/shared/Interface.cc **** #include "Interface.hh"
+   3:src/MightyBoard/shared/Interface.cc **** #include "InterfaceBoard.hh"
+   4:src/MightyBoard/shared/Interface.cc **** #include "Configuration.hh"
+   5:src/MightyBoard/shared/Interface.cc **** 
+   6:src/MightyBoard/shared/Interface.cc **** 
+   7:src/MightyBoard/shared/Interface.cc **** // TODO: Make this a proper module.
+   8:src/MightyBoard/shared/Interface.cc **** #if defined HAS_INTERFACE_BOARD
+   9:src/MightyBoard/shared/Interface.cc **** 
+  10:src/MightyBoard/shared/Interface.cc **** namespace interface {
+  11:src/MightyBoard/shared/Interface.cc **** 
+  12:src/MightyBoard/shared/Interface.cc **** 
+  13:src/MightyBoard/shared/Interface.cc **** LiquidCrystalSerial* lcd;
+  14:src/MightyBoard/shared/Interface.cc **** InterfaceBoard* board;
+  15:src/MightyBoard/shared/Interface.cc **** 
+  16:src/MightyBoard/shared/Interface.cc **** bool isConnected() {
+  27              	 .loc 1 16 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31 0000 10B5     	 push {r4,lr}
+  32              	.LCFI0:
+  33              	 .cfi_def_cfa_offset 8
+  34              	 .cfi_offset 14,-4
+  35              	 .cfi_offset 4,-8
+  36 0002 84B0     	 sub sp,sp,#16
+  37              	.LCFI1:
+  38              	 .cfi_def_cfa_offset 24
+  39              	.LBB23:
+  17:src/MightyBoard/shared/Interface.cc **** 	// Avoid repeatedly creating temp objects
+  18:src/MightyBoard/shared/Interface.cc **** 	const Pin InterfaceDetect = INTERFACE_DETECT;
+  40              	 .loc 1 18 0
+  41 0004 03A8     	 add r0,sp,#12
+  42 0006 4FF0FF01 	 mov r1,#255
+  43 000a FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  44 000e 01A8     	 add r0,sp,#4
+  45 0010 03A9     	 add r1,sp,#12
+  46 0012 4FF0FF02 	 mov r2,#255
+  47 0016 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  48              	.LVL0:
+  49              	.LBB24:
+  50              	.LBB25:
+  51              	 .file 2 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  52              	 .loc 2 35 0
+  53 001a 9DF80530 	 ldrb r3,[sp,#5]
+  54 001e 4BB9     	 cbnz r3,.L2
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  55              	 .loc 2 48 0
+  56 0020 9DF80630 	 ldrb r3,[sp,#6]
+  57 0024 9DF80400 	 ldrb r0,[sp,#4]
+  58 0028 4FF00101 	 mov r1,#1
+  59 002c 01FA03F1 	 lsl r1,r1,r3
+  60 0030 FFF7FEFF 	 bl GPIO_ClearValue
+  61              	.L2:
+  62              	.LBE25:
+  63              	.LBE24:
+  19:src/MightyBoard/shared/Interface.cc **** 
+  20:src/MightyBoard/shared/Interface.cc **** 	// Strategy: Set up the foo pin as an input, turn on pull up resistor,
+  21:src/MightyBoard/shared/Interface.cc **** 	// then measure it. If low, then we probably have an interface board.
+  22:src/MightyBoard/shared/Interface.cc **** 	// If high, we probably don't.
+  23:src/MightyBoard/shared/Interface.cc **** 
+  24:src/MightyBoard/shared/Interface.cc **** 	InterfaceDetect.setValue(false);
+  25:src/MightyBoard/shared/Interface.cc **** 	InterfaceDetect.setDirection(false);
+  64              	 .loc 1 25 0
+  65 0034 01A8     	 add r0,sp,#4
+  66              	.LVL1:
+  67 0036 4FF00001 	 mov r1,#0
+  68 003a FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  69              	.LVL2:
+  70              	.LBB26:
+  71              	.LBB27:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  72              	 .loc 2 28 0
+  73 003e 9DF80530 	 ldrb r3,[sp,#5]
+  26:src/MightyBoard/shared/Interface.cc **** 
+  27:src/MightyBoard/shared/Interface.cc **** 	// if we are pulled down, then we have an led attached??
+  28:src/MightyBoard/shared/Interface.cc **** 	if (InterfaceDetect.getValue()) {
+  29:src/MightyBoard/shared/Interface.cc **** 
+  30:src/MightyBoard/shared/Interface.cc **** 		board->setLED(1,false);
+  31:src/MightyBoard/shared/Interface.cc **** 		board->setLED(0,false);
+  32:src/MightyBoard/shared/Interface.cc **** 		return true;
+  33:src/MightyBoard/shared/Interface.cc **** 	}
+  34:src/MightyBoard/shared/Interface.cc **** 	else {
+  35:src/MightyBoard/shared/Interface.cc **** 
+  36:src/MightyBoard/shared/Interface.cc **** 		return false;
+  74              	 .loc 1 36 0
+  75 0042 4FF00000 	 mov r0,#0
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  76              	 .loc 2 28 0
+  77 0046 0BBB     	 cbnz r3,.L3
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  78              	 .loc 2 30 0
+  79 0048 9DF80400 	 ldrb r0,[sp,#4]
+  80 004c FFF7FEFF 	 bl FIO_ReadValue
+  81 0050 9DF80630 	 ldrb r3,[sp,#6]
+  82 0054 4FF00102 	 mov r2,#1
+  83 0058 02FA03F3 	 lsl r3,r2,r3
+  84              	.LBE27:
+  85              	.LBE26:
+  28:src/MightyBoard/shared/Interface.cc **** 	if (InterfaceDetect.getValue()) {
+  86              	 .loc 1 28 0
+  87 005c 0340     	 ands r3,r3,r0
+  88 005e 13F0FF0F 	 tst r3,#255
+  89              	 .loc 1 36 0
+  90 0062 08BF     	 it eq
+  91 0064 0020     	 moveq r0,#0
+  28:src/MightyBoard/shared/Interface.cc **** 	if (InterfaceDetect.getValue()) {
+  92              	 .loc 1 28 0
+  93 0066 11D0     	 beq .L3
+  30:src/MightyBoard/shared/Interface.cc **** 		board->setLED(1,false);
+  94              	 .loc 1 30 0
+  95 0068 40F20004 	 movw r4,#:lower16:.LANCHOR0
+  96 006c C0F20004 	 movt r4,#:upper16:.LANCHOR0
+  97 0070 2068     	 ldr r0,[r4,#0]
+  98 0072 1146     	 mov r1,r2
+  99 0074 4FF00002 	 mov r2,#0
+ 100 0078 FFF7FEFF 	 bl _ZN14InterfaceBoard6setLEDEhb
+  31:src/MightyBoard/shared/Interface.cc **** 		board->setLED(0,false);
+ 101              	 .loc 1 31 0
+ 102 007c 2068     	 ldr r0,[r4,#0]
+ 103 007e 4FF00001 	 mov r1,#0
+ 104 0082 0A46     	 mov r2,r1
+ 105 0084 FFF7FEFF 	 bl _ZN14InterfaceBoard6setLEDEhb
+  32:src/MightyBoard/shared/Interface.cc **** 		return true;
+ 106              	 .loc 1 32 0
+ 107 0088 4FF00100 	 mov r0,#1
+ 108              	.L3:
+ 109              	.LBE23:
+  37:src/MightyBoard/shared/Interface.cc **** 	}
+  38:src/MightyBoard/shared/Interface.cc **** 
+  39:src/MightyBoard/shared/Interface.cc **** 	return (InterfaceDetect.getValue());
+  40:src/MightyBoard/shared/Interface.cc **** 
+  41:src/MightyBoard/shared/Interface.cc **** }
+ 110              	 .loc 1 41 0
+ 111 008c 04B0     	 add sp,sp,#16
+ 112 008e 10BD     	 pop {r4,pc}
+ 113              	 .cfi_endproc
+ 114              	.LFE111:
+ 116              	 .section .text._ZN9interface18setBuildPercentageEh,"ax",%progbits
+ 117              	 .align 2
+ 118              	 .global _ZN9interface18setBuildPercentageEh
+ 119              	 .thumb
+ 120              	 .thumb_func
+ 122              	_ZN9interface18setBuildPercentageEh:
+ 123              	.LFB112:
+  42:src/MightyBoard/shared/Interface.cc **** void setBuildPercentage(uint8_t percent){
+ 124              	 .loc 1 42 0
+ 125              	 .cfi_startproc
+ 126              	 
+ 127              	 
+ 128              	.LVL3:
+ 129 0000 08B5     	 push {r3,lr}
+ 130              	.LCFI2:
+ 131              	 .cfi_def_cfa_offset 8
+ 132              	 .cfi_offset 14,-4
+ 133              	 .cfi_offset 3,-8
+ 134 0002 0146     	 mov r1,r0
+  43:src/MightyBoard/shared/Interface.cc **** 	board->setBuildPercentage(percent);
+ 135              	 .loc 1 43 0
+ 136 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 137 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 138 000c 1868     	 ldr r0,[r3,#0]
+ 139              	.LVL4:
+ 140 000e FFF7FEFF 	 bl _ZN14InterfaceBoard18setBuildPercentageEh
+  44:src/MightyBoard/shared/Interface.cc **** }
+ 141              	 .loc 1 44 0
+ 142 0012 08BD     	 pop {r3,pc}
+ 143              	 .cfi_endproc
+ 144              	.LFE112:
+ 146              	 .section .text._ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial,"ax",%progbits
+ 147              	 .align 2
+ 148              	 .global _ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial
+ 149              	 .thumb
+ 150              	 .thumb_func
+ 152              	_ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial:
+ 153              	.LFB113:
+  45:src/MightyBoard/shared/Interface.cc **** 
+  46:src/MightyBoard/shared/Interface.cc **** void init(InterfaceBoard* board_in, LiquidCrystalSerial* lcd_in) {
+ 154              	 .loc 1 46 0
+ 155              	 .cfi_startproc
+ 156              	 
+ 157              	 
+ 158              	 
+ 159              	.LVL5:
+  47:src/MightyBoard/shared/Interface.cc ****     board = board_in;
+ 160              	 .loc 1 47 0
+ 161 0000 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 162 0004 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 163 0008 1860     	 str r0,[r3,#0]
+  48:src/MightyBoard/shared/Interface.cc ****     lcd = lcd_in;
+ 164              	 .loc 1 48 0
+ 165 000a 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 166 000e C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 167 0012 1960     	 str r1,[r3,#0]
+  49:src/MightyBoard/shared/Interface.cc **** }
+ 168              	 .loc 1 49 0
+ 169 0014 7047     	 bx lr
+ 170              	 .cfi_endproc
+ 171              	.LFE113:
+ 173 0016 00BF     	 .section .text._ZN9interface10pushScreenEP6Screen,"ax",%progbits
+ 174              	 .align 2
+ 175              	 .global _ZN9interface10pushScreenEP6Screen
+ 176              	 .thumb
+ 177              	 .thumb_func
+ 179              	_ZN9interface10pushScreenEP6Screen:
+ 180              	.LFB114:
+  50:src/MightyBoard/shared/Interface.cc **** 
+  51:src/MightyBoard/shared/Interface.cc **** void pushScreen(Screen* newScreen) {
+ 181              	 .loc 1 51 0
+ 182              	 .cfi_startproc
+ 183              	 
+ 184              	 
+ 185              	.LVL6:
+ 186 0000 08B5     	 push {r3,lr}
+ 187              	.LCFI3:
+ 188              	 .cfi_def_cfa_offset 8
+ 189              	 .cfi_offset 14,-4
+ 190              	 .cfi_offset 3,-8
+ 191 0002 0146     	 mov r1,r0
+  52:src/MightyBoard/shared/Interface.cc ****         board->pushScreen(newScreen);
+ 192              	 .loc 1 52 0
+ 193 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 194 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 195 000c 1868     	 ldr r0,[r3,#0]
+ 196              	.LVL7:
+ 197 000e FFF7FEFF 	 bl _ZN14InterfaceBoard10pushScreenEP6Screen
+ 198              	.LVL8:
+  53:src/MightyBoard/shared/Interface.cc **** }
+ 199              	 .loc 1 53 0
+ 200 0012 08BD     	 pop {r3,pc}
+ 201              	 .cfi_endproc
+ 202              	.LFE114:
+ 204              	 .section .text._ZN9interface12pushNoUpdateEP6Screen,"ax",%progbits
+ 205              	 .align 2
+ 206              	 .global _ZN9interface12pushNoUpdateEP6Screen
+ 207              	 .thumb
+ 208              	 .thumb_func
+ 210              	_ZN9interface12pushNoUpdateEP6Screen:
+ 211              	.LFB115:
+  54:src/MightyBoard/shared/Interface.cc **** 
+  55:src/MightyBoard/shared/Interface.cc **** void pushNoUpdate(Screen *newScreen){
+ 212              	 .loc 1 55 0
+ 213              	 .cfi_startproc
+ 214              	 
+ 215              	 
+ 216              	.LVL9:
+ 217 0000 08B5     	 push {r3,lr}
+ 218              	.LCFI4:
+ 219              	 .cfi_def_cfa_offset 8
+ 220              	 .cfi_offset 14,-4
+ 221              	 .cfi_offset 3,-8
+ 222 0002 0146     	 mov r1,r0
+  56:src/MightyBoard/shared/Interface.cc **** 	board->pushNoUpdate(newScreen);
+ 223              	 .loc 1 56 0
+ 224 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 225 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 226 000c 1868     	 ldr r0,[r3,#0]
+ 227              	.LVL10:
+ 228 000e FFF7FEFF 	 bl _ZN14InterfaceBoard12pushNoUpdateEP6Screen
+ 229              	.LVL11:
+  57:src/MightyBoard/shared/Interface.cc **** }
+ 230              	 .loc 1 57 0
+ 231 0012 08BD     	 pop {r3,pc}
+ 232              	 .cfi_endproc
+ 233              	.LFE115:
+ 235              	 .section .text._ZN9interface9popScreenEv,"ax",%progbits
+ 236              	 .align 2
+ 237              	 .global _ZN9interface9popScreenEv
+ 238              	 .thumb
+ 239              	 .thumb_func
+ 241              	_ZN9interface9popScreenEv:
+ 242              	.LFB116:
+  58:src/MightyBoard/shared/Interface.cc **** 
+  59:src/MightyBoard/shared/Interface.cc **** void popScreen() {
+ 243              	 .loc 1 59 0
+ 244              	 .cfi_startproc
+ 245              	 
+ 246              	 
+ 247 0000 08B5     	 push {r3,lr}
+ 248              	.LCFI5:
+ 249              	 .cfi_def_cfa_offset 8
+ 250              	 .cfi_offset 14,-4
+ 251              	 .cfi_offset 3,-8
+  60:src/MightyBoard/shared/Interface.cc ****         board->popScreen();
+ 252              	 .loc 1 60 0
+ 253 0002 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 254 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 255 000a 1868     	 ldr r0,[r3,#0]
+ 256 000c FFF7FEFF 	 bl _ZN14InterfaceBoard9popScreenEv
+  61:src/MightyBoard/shared/Interface.cc **** }
+ 257              	 .loc 1 61 0
+ 258 0010 08BD     	 pop {r3,pc}
+ 259              	 .cfi_endproc
+ 260              	.LFE116:
+ 262 0012 00BF     	 .section .text._ZN9interface11doInterruptEv,"ax",%progbits
+ 263              	 .align 2
+ 264              	 .global _ZN9interface11doInterruptEv
+ 265              	 .thumb
+ 266              	 .thumb_func
+ 268              	_ZN9interface11doInterruptEv:
+ 269              	.LFB117:
+  62:src/MightyBoard/shared/Interface.cc **** 
+  63:src/MightyBoard/shared/Interface.cc **** void doInterrupt() {
+ 270              	 .loc 1 63 0
+ 271              	 .cfi_startproc
+ 272              	 
+ 273              	 
+ 274 0000 08B5     	 push {r3,lr}
+ 275              	.LCFI6:
+ 276              	 .cfi_def_cfa_offset 8
+ 277              	 .cfi_offset 14,-4
+ 278              	 .cfi_offset 3,-8
+  64:src/MightyBoard/shared/Interface.cc ****         board->doInterrupt();
+ 279              	 .loc 1 64 0
+ 280 0002 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 281 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 282 000a 1868     	 ldr r0,[r3,#0]
+ 283 000c FFF7FEFF 	 bl _ZN14InterfaceBoard11doInterruptEv
+  65:src/MightyBoard/shared/Interface.cc **** }
+ 284              	 .loc 1 65 0
+ 285 0010 08BD     	 pop {r3,pc}
+ 286              	 .cfi_endproc
+ 287              	.LFE117:
+ 289 0012 00BF     	 .section .text._ZN9interface13getUpdateRateEv,"ax",%progbits
+ 290              	 .align 2
+ 291              	 .global _ZN9interface13getUpdateRateEv
+ 292              	 .thumb
+ 293              	 .thumb_func
+ 295              	_ZN9interface13getUpdateRateEv:
+ 296              	.LFB118:
+  66:src/MightyBoard/shared/Interface.cc **** 
+  67:src/MightyBoard/shared/Interface.cc **** micros_t getUpdateRate() {
+ 297              	 .loc 1 67 0
+ 298              	 .cfi_startproc
+ 299              	 
+ 300              	 
+ 301 0000 08B5     	 push {r3,lr}
+ 302              	.LCFI7:
+ 303              	 .cfi_def_cfa_offset 8
+ 304              	 .cfi_offset 14,-4
+ 305              	 .cfi_offset 3,-8
+  68:src/MightyBoard/shared/Interface.cc ****         return board->getUpdateRate();
+ 306              	 .loc 1 68 0
+ 307 0002 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 308 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 309 000a 1868     	 ldr r0,[r3,#0]
+ 310 000c FFF7FEFF 	 bl _ZN14InterfaceBoard13getUpdateRateEv
+  69:src/MightyBoard/shared/Interface.cc **** }
+ 311              	 .loc 1 69 0
+ 312 0010 08BD     	 pop {r3,pc}
+ 313              	 .cfi_endproc
+ 314              	.LFE118:
+ 316 0012 00BF     	 .section .text._ZN9interface8doUpdateEv,"ax",%progbits
+ 317              	 .align 2
+ 318              	 .global _ZN9interface8doUpdateEv
+ 319              	 .thumb
+ 320              	 .thumb_func
+ 322              	_ZN9interface8doUpdateEv:
+ 323              	.LFB119:
+  70:src/MightyBoard/shared/Interface.cc **** 
+  71:src/MightyBoard/shared/Interface.cc **** void doUpdate() {
+ 324              	 .loc 1 71 0
+ 325              	 .cfi_startproc
+ 326              	 
+ 327              	 
+ 328 0000 08B5     	 push {r3,lr}
+ 329              	.LCFI8:
+ 330              	 .cfi_def_cfa_offset 8
+ 331              	 .cfi_offset 14,-4
+ 332              	 .cfi_offset 3,-8
+  72:src/MightyBoard/shared/Interface.cc ****         board->doUpdate();
+ 333              	 .loc 1 72 0
+ 334 0002 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 335 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 336 000a 1868     	 ldr r0,[r3,#0]
+ 337 000c FFF7FEFF 	 bl _ZN14InterfaceBoard8doUpdateEv
+  73:src/MightyBoard/shared/Interface.cc **** }
+ 338              	 .loc 1 73 0
+ 339 0010 08BD     	 pop {r3,pc}
+ 340              	 .cfi_endproc
+ 341              	.LFE119:
+ 343 0012 00BF     	 .section .text._ZN9interface7setLEDsEb,"ax",%progbits
+ 344              	 .align 2
+ 345              	 .global _ZN9interface7setLEDsEb
+ 346              	 .thumb
+ 347              	 .thumb_func
+ 349              	_ZN9interface7setLEDsEb:
+ 350              	.LFB120:
+  74:src/MightyBoard/shared/Interface.cc **** 
+  75:src/MightyBoard/shared/Interface.cc **** void setLEDs(bool on){
+ 351              	 .loc 1 75 0
+ 352              	 .cfi_startproc
+ 353              	 
+ 354              	 
+ 355              	.LVL12:
+ 356 0000 38B5     	 push {r3,r4,r5,lr}
+ 357              	.LCFI9:
+ 358              	 .cfi_def_cfa_offset 16
+ 359              	 .cfi_offset 14,-4
+ 360              	 .cfi_offset 5,-8
+ 361              	 .cfi_offset 4,-12
+ 362              	 .cfi_offset 3,-16
+ 363 0002 0546     	 mov r5,r0
+  76:src/MightyBoard/shared/Interface.cc **** 	board->setLED(0,on);
+ 364              	 .loc 1 76 0
+ 365 0004 40F20004 	 movw r4,#:lower16:.LANCHOR0
+ 366 0008 C0F20004 	 movt r4,#:upper16:.LANCHOR0
+ 367 000c 2068     	 ldr r0,[r4,#0]
+ 368              	.LVL13:
+ 369 000e 4FF00001 	 mov r1,#0
+ 370 0012 2A46     	 mov r2,r5
+ 371 0014 FFF7FEFF 	 bl _ZN14InterfaceBoard6setLEDEhb
+  77:src/MightyBoard/shared/Interface.cc **** 	board->setLED(1,on);
+ 372              	 .loc 1 77 0
+ 373 0018 2068     	 ldr r0,[r4,#0]
+ 374 001a 4FF00101 	 mov r1,#1
+ 375 001e 2A46     	 mov r2,r5
+ 376 0020 FFF7FEFF 	 bl _ZN14InterfaceBoard6setLEDEhb
+  78:src/MightyBoard/shared/Interface.cc **** }
+ 377              	 .loc 1 78 0
+ 378 0024 38BD     	 pop {r3,r4,r5,pc}
+ 379              	 .cfi_endproc
+ 380              	.LFE120:
+ 382 0026 00BF     	 .section .text._GLOBAL__sub_I__ZN9interface3lcdE,"ax",%progbits
+ 383              	 .align 2
+ 384              	 .thumb
+ 385              	 .thumb_func
+ 387              	_GLOBAL__sub_I__ZN9interface3lcdE:
+ 388              	.LFB122:
+  79:src/MightyBoard/shared/Interface.cc **** 
+  80:src/MightyBoard/shared/Interface.cc **** }
+ 389              	 .loc 1 80 0
+ 390              	 .cfi_startproc
+ 391              	 
+ 392              	 
+ 393 0000 10B5     	 push {r4,lr}
+ 394              	.LCFI10:
+ 395              	 .cfi_def_cfa_offset 8
+ 396              	 .cfi_offset 14,-4
+ 397              	 .cfi_offset 4,-8
+ 398              	.LVL14:
+ 399              	.LBB30:
+ 400              	.LBB31:
+ 401              	 .file 3 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 402              	 .loc 3 49 0
+ 403 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 404 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 405 000a 4FF00001 	 mov r1,#0
+ 406 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 407              	 .loc 3 50 0
+ 408 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 409 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 410 001a 4FF00101 	 mov r1,#1
+ 411 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 412              	 .loc 3 51 0
+ 413 0022 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 414 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 415 002a 4FF00201 	 mov r1,#2
+ 416 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 417              	 .loc 3 52 0
+ 418 0032 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 419 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 420 003a 4FF00301 	 mov r1,#3
+ 421 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 422              	 .loc 3 53 0
+ 423 0042 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 424 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 425 004a 4FF00401 	 mov r1,#4
+ 426 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 427              	 .loc 3 55 0
+ 428 0052 40F20004 	 movw r4,#:lower16:.LANCHOR7
+ 429 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR7
+ 430 005a 2046     	 mov r0,r4
+ 431 005c 4FF0FF01 	 mov r1,#255
+ 432 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 433              	 .loc 2 76 0
+ 434 0064 40F20000 	 movw r0,#:lower16:.LANCHOR8
+ 435 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR8
+ 436 006c 2146     	 mov r1,r4
+ 437 006e 4FF00002 	 mov r2,#0
+ 438 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 439              	.LBE31:
+ 440              	.LBE30:
+ 441              	 .loc 1 80 0
+ 442 0076 10BD     	 pop {r4,pc}
+ 443              	 .cfi_endproc
+ 444              	.LFE122:
+ 446              	 .section .init_array,"aw",%init_array
+ 447              	 .align 2
+ 448 0000 00000000 	 .word _GLOBAL__sub_I__ZN9interface3lcdE(target1)
+ 449              	 .global _ZN9interface5boardE
+ 450              	 .global _ZN9interface3lcdE
+ 451              	 .section .bss._ZL5Port0,"aw",%nobits
+ 452              	 .align 2
+ 453              	 .set .LANCHOR2,.+0
+ 456              	_ZL5Port0:
+ 457 0000 00       	 .space 1
+ 458 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 459              	 .align 2
+ 460              	 .set .LANCHOR3,.+0
+ 463              	_ZL5Port1:
+ 464 0000 00       	 .space 1
+ 465 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 466              	 .align 2
+ 467              	 .set .LANCHOR4,.+0
+ 470              	_ZL5Port2:
+ 471 0000 00       	 .space 1
+ 472 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 473              	 .align 2
+ 474              	 .set .LANCHOR5,.+0
+ 477              	_ZL5Port3:
+ 478 0000 00       	 .space 1
+ 479 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 480              	 .align 2
+ 481              	 .set .LANCHOR6,.+0
+ 484              	_ZL5Port4:
+ 485 0000 00       	 .space 1
+ 486 0001 000000   	 .section .bss._ZN9interface5boardE,"aw",%nobits
+ 487              	 .align 2
+ 488              	 .set .LANCHOR0,.+0
+ 491              	_ZN9interface5boardE:
+ 492 0000 00000000 	 .space 4
+ 493              	 .section .bss._ZN9interface3lcdE,"aw",%nobits
+ 494              	 .align 2
+ 495              	 .set .LANCHOR1,.+0
+ 498              	_ZN9interface3lcdE:
+ 499 0000 00000000 	 .space 4
+ 500              	 .section .bss._ZL7NullPin,"aw",%nobits
+ 501              	 .align 2
+ 502              	 .set .LANCHOR8,.+0
+ 505              	_ZL7NullPin:
+ 506 0000 00000000 	 .space 5
+ 506      00
+ 507 0005 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 508              	 .align 2
+ 509              	 .set .LANCHOR7,.+0
+ 512              	_ZL8NullPort:
+ 513 0000 00       	 .space 1
+ 514 0001 000000   	 .text
+ 515              	.Letext0:
+ 516              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 517              	 .file 5 "src/MightyBoard/shared/Types.hh"
+ 518              	 .file 6 "src/MightyBoard/shared/Timeout.hh"
+ 519              	 .file 7 "src/MightyBoard/shared/ButtonArray.hh"
+ 520              	 .file 8 "src/MightyBoard/shared/InterfaceBoard.hh"
+ 521              	 .file 9 "src/MightyBoard/shared/LiquidCrystalSerial.hh"
+ 522              	 .file 10 "src/MightyBoard/shared/Menu.hh"
+ 523              	 .file 11 "src/MightyBoard/Motherboard/UtilityScripts.hh"
+ 524              	 .file 12 "src/MightyBoard/shared/Interface.hh"
+ 525              	 .file 13 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Interface.cc
+    {standard input}:19     .text._ZN9interface11isConnectedEv:00000000 $t
+    {standard input}:24     .text._ZN9interface11isConnectedEv:00000000 _ZN9interface11isConnectedEv
+    {standard input}:488    .bss._ZN9interface5boardE:00000000 .LANCHOR0
+    {standard input}:117    .text._ZN9interface18setBuildPercentageEh:00000000 $t
+    {standard input}:122    .text._ZN9interface18setBuildPercentageEh:00000000 _ZN9interface18setBuildPercentageEh
+    {standard input}:147    .text._ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial:00000000 $t
+    {standard input}:152    .text._ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial:00000000 _ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial
+    {standard input}:495    .bss._ZN9interface3lcdE:00000000 .LANCHOR1
+    {standard input}:174    .text._ZN9interface10pushScreenEP6Screen:00000000 $t
+    {standard input}:179    .text._ZN9interface10pushScreenEP6Screen:00000000 _ZN9interface10pushScreenEP6Screen
+    {standard input}:205    .text._ZN9interface12pushNoUpdateEP6Screen:00000000 $t
+    {standard input}:210    .text._ZN9interface12pushNoUpdateEP6Screen:00000000 _ZN9interface12pushNoUpdateEP6Screen
+    {standard input}:236    .text._ZN9interface9popScreenEv:00000000 $t
+    {standard input}:241    .text._ZN9interface9popScreenEv:00000000 _ZN9interface9popScreenEv
+    {standard input}:263    .text._ZN9interface11doInterruptEv:00000000 $t
+    {standard input}:268    .text._ZN9interface11doInterruptEv:00000000 _ZN9interface11doInterruptEv
+    {standard input}:290    .text._ZN9interface13getUpdateRateEv:00000000 $t
+    {standard input}:295    .text._ZN9interface13getUpdateRateEv:00000000 _ZN9interface13getUpdateRateEv
+    {standard input}:317    .text._ZN9interface8doUpdateEv:00000000 $t
+    {standard input}:322    .text._ZN9interface8doUpdateEv:00000000 _ZN9interface8doUpdateEv
+    {standard input}:344    .text._ZN9interface7setLEDsEb:00000000 $t
+    {standard input}:349    .text._ZN9interface7setLEDsEb:00000000 _ZN9interface7setLEDsEb
+    {standard input}:383    .text._GLOBAL__sub_I__ZN9interface3lcdE:00000000 $t
+    {standard input}:387    .text._GLOBAL__sub_I__ZN9interface3lcdE:00000000 _GLOBAL__sub_I__ZN9interface3lcdE
+    {standard input}:453    .bss._ZL5Port0:00000000 .LANCHOR2
+    {standard input}:460    .bss._ZL5Port1:00000000 .LANCHOR3
+    {standard input}:467    .bss._ZL5Port2:00000000 .LANCHOR4
+    {standard input}:474    .bss._ZL5Port3:00000000 .LANCHOR5
+    {standard input}:481    .bss._ZL5Port4:00000000 .LANCHOR6
+    {standard input}:509    .bss._ZL8NullPort:00000000 .LANCHOR7
+    {standard input}:502    .bss._ZL7NullPin:00000000 .LANCHOR8
+    {standard input}:447    .init_array:00000000 $d
+    {standard input}:491    .bss._ZN9interface5boardE:00000000 _ZN9interface5boardE
+    {standard input}:498    .bss._ZN9interface3lcdE:00000000 _ZN9interface3lcdE
+    {standard input}:452    .bss._ZL5Port0:00000000 $d
+    {standard input}:456    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:459    .bss._ZL5Port1:00000000 $d
+    {standard input}:463    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:466    .bss._ZL5Port2:00000000 $d
+    {standard input}:470    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:473    .bss._ZL5Port3:00000000 $d
+    {standard input}:477    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:480    .bss._ZL5Port4:00000000 $d
+    {standard input}:484    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:487    .bss._ZN9interface5boardE:00000000 $d
+    {standard input}:494    .bss._ZN9interface3lcdE:00000000 $d
+    {standard input}:501    .bss._ZL7NullPin:00000000 $d
+    {standard input}:505    .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:508    .bss._ZL8NullPort:00000000 $d
+    {standard input}:512    .bss._ZL8NullPort:00000000 _ZL8NullPort
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth
+GPIO_ClearValue
+_ZNK3Pin12setDirectionEb
+FIO_ReadValue
+_ZN14InterfaceBoard6setLEDEhb
+_ZN14InterfaceBoard18setBuildPercentageEh
+_ZN14InterfaceBoard10pushScreenEP6Screen
+_ZN14InterfaceBoard12pushNoUpdateEP6Screen
+_ZN14InterfaceBoard9popScreenEv
+_ZN14InterfaceBoard11doInterruptEv
+_ZN14InterfaceBoard13getUpdateRateEv
+_ZN14InterfaceBoard8doUpdateEv

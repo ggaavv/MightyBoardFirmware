@@ -1,0 +1,1513 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Piezo.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN5Piezo9isPlayingEv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN5Piezo9isPlayingEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN5Piezo9isPlayingEv:
+  25              	.LFB73:
+  26              	 .file 1 "src/MightyBoard/Motherboard/Piezo.cc"
+   1:src/MightyBoard/Motherboard/Piezo.cc **** /*
+   2:src/MightyBoard/Motherboard/Piezo.cc ****  * Copyright 2011 by Alison Leonard	 <alison@makerbot.com>
+   3:src/MightyBoard/Motherboard/Piezo.cc ****  *
+   4:src/MightyBoard/Motherboard/Piezo.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/Motherboard/Piezo.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/Motherboard/Piezo.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/Motherboard/Piezo.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/Motherboard/Piezo.cc ****  *
+   9:src/MightyBoard/Motherboard/Piezo.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/Motherboard/Piezo.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/Motherboard/Piezo.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/Motherboard/Piezo.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/Motherboard/Piezo.cc ****  *
+  14:src/MightyBoard/Motherboard/Piezo.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/Motherboard/Piezo.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/Motherboard/Piezo.cc ****  */
+  17:src/MightyBoard/Motherboard/Piezo.cc ****  
+  18:src/MightyBoard/Motherboard/Piezo.cc **** #include "Piezo.hh"
+  19:src/MightyBoard/Motherboard/Piezo.cc **** #include "Configuration.hh"
+  20:src/MightyBoard/Motherboard/Piezo.cc **** //#include <avr/io.h>
+  21:src/MightyBoard/Motherboard/Piezo.cc **** //#include <avr/interrupt.h>
+  22:src/MightyBoard/Motherboard/Piezo.cc **** //#include <util/delay.h>
+  23:src/MightyBoard/Motherboard/Piezo.cc **** #include "EepromMap.hh"
+  24:src/MightyBoard/Motherboard/Piezo.cc **** #include "Eeprom.hh"
+  25:src/MightyBoard/Motherboard/Piezo.cc **** //#include <avr/eeprom.h>
+  26:src/MightyBoard/Motherboard/Piezo.cc ****  
+  27:src/MightyBoard/Motherboard/Piezo.cc ****  namespace Piezo{
+  28:src/MightyBoard/Motherboard/Piezo.cc **** 
+  29:src/MightyBoard/Motherboard/Piezo.cc **** Pin BuzzPin = BUZZER_PIN;
+  30:src/MightyBoard/Motherboard/Piezo.cc **** Timeout piezoTimeout;
+  31:src/MightyBoard/Motherboard/Piezo.cc **** bool ToneOn = false;
+  32:src/MightyBoard/Motherboard/Piezo.cc **** bool playing = false;
+  33:src/MightyBoard/Motherboard/Piezo.cc **** uint8_t queueLength = 0;
+  34:src/MightyBoard/Motherboard/Piezo.cc **** uint32_t toggleCount = 0;
+  35:src/MightyBoard/Motherboard/Piezo.cc **** uint32_t toggle_time =  0;
+  36:src/MightyBoard/Motherboard/Piezo.cc **** uint32_t lastMicros = 0;
+  37:src/MightyBoard/Motherboard/Piezo.cc **** bool toggle = false;
+  38:src/MightyBoard/Motherboard/Piezo.cc **** const static uint8_t TONE_QUEUE_SIZE = 20;
+  39:src/MightyBoard/Motherboard/Piezo.cc **** //TRICKY: ^ Wwas 40, but that was causing bugs, failures. Lowered to 20 for shipping
+  40:src/MightyBoard/Motherboard/Piezo.cc **** 
+  41:src/MightyBoard/Motherboard/Piezo.cc **** // TODO change to one buffer of sound structs
+  42:src/MightyBoard/Motherboard/Piezo.cc **** uint16_t frequency_buf[TONE_QUEUE_SIZE];
+  43:src/MightyBoard/Motherboard/Piezo.cc **** uint16_t duration_buf[TONE_QUEUE_SIZE];
+  44:src/MightyBoard/Motherboard/Piezo.cc **** CircularBuffer16 frequencies(TONE_QUEUE_SIZE, frequency_buf);
+  45:src/MightyBoard/Motherboard/Piezo.cc **** CircularBuffer16 durations(TONE_QUEUE_SIZE, duration_buf);
+  46:src/MightyBoard/Motherboard/Piezo.cc ****  
+  47:src/MightyBoard/Motherboard/Piezo.cc ****  // call this sequence on startup
+  48:src/MightyBoard/Motherboard/Piezo.cc ****  void startUpTone()
+  49:src/MightyBoard/Motherboard/Piezo.cc ****  {		
+  50:src/MightyBoard/Motherboard/Piezo.cc **** 	 ///song 3
+  51:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A7, 288);
+  52:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+  53:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_CS8, 188);
+  54:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+  55:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_D8, 433);
+  56:src/MightyBoard/Motherboard/Piezo.cc ****  }
+  57:src/MightyBoard/Motherboard/Piezo.cc **** 
+  58:src/MightyBoard/Motherboard/Piezo.cc **** // call this sequence at the end of prints
+  59:src/MightyBoard/Motherboard/Piezo.cc ****  void doneTone( )// Ta-da!
+  60:src/MightyBoard/Motherboard/Piezo.cc ****  {
+  61:src/MightyBoard/Motherboard/Piezo.cc **** 
+  62:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A5, 188);
+  63:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+  64:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A6, 188);
+  65:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+  66:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_B6, 188);
+  67:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+  68:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_C7, 188);
+  69:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_CS7, 188);
+  70:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+  71:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A7, 333);
+  72:src/MightyBoard/Motherboard/Piezo.cc **** 
+  73:src/MightyBoard/Motherboard/Piezo.cc ****  }
+  74:src/MightyBoard/Motherboard/Piezo.cc ****  bool isPlaying(){
+  27              	 .loc 1 74 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  75:src/MightyBoard/Motherboard/Piezo.cc **** 	return playing;
+  32              	 .loc 1 75 0
+  33 0000 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  34 0004 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  76:src/MightyBoard/Motherboard/Piezo.cc ****  }
+  35              	 .loc 1 76 0
+  36 0008 1878     	 ldrb r0,[r3,#0]
+  37 000a 7047     	 bx lr
+  38              	 .cfi_endproc
+  39              	.LFE73:
+  41              	 .section .text._ZN5Piezo9queueToneEtt,"ax",%progbits
+  42              	 .align 2
+  43              	 .global _ZN5Piezo9queueToneEtt
+  44              	 .thumb
+  45              	 .thumb_func
+  47              	_ZN5Piezo9queueToneEtt:
+  48              	.LFB75:
+  77:src/MightyBoard/Motherboard/Piezo.cc **** 
+  78:src/MightyBoard/Motherboard/Piezo.cc **** 
+  79:src/MightyBoard/Motherboard/Piezo.cc **** 
+  80:src/MightyBoard/Motherboard/Piezo.cc ****  // call this sequence on error
+  81:src/MightyBoard/Motherboard/Piezo.cc ****  void errorTone(uint8_t iterations)
+  82:src/MightyBoard/Motherboard/Piezo.cc ****  {
+  83:src/MightyBoard/Motherboard/Piezo.cc **** 	 for(int i = 0; i < iterations; i++)
+  84:src/MightyBoard/Motherboard/Piezo.cc **** 	 {
+  85:src/MightyBoard/Motherboard/Piezo.cc **** 		setTone(NOTE_B4, 300);
+  86:src/MightyBoard/Motherboard/Piezo.cc **** 		setTone(NOTE_A4, 300);
+  87:src/MightyBoard/Motherboard/Piezo.cc **** 	}
+  88:src/MightyBoard/Motherboard/Piezo.cc ****  }
+  89:src/MightyBoard/Motherboard/Piezo.cc ****  
+  90:src/MightyBoard/Motherboard/Piezo.cc ****  // allow queuing of tones so that multiple tones can be called sequentially
+  91:src/MightyBoard/Motherboard/Piezo.cc ****  // without waiting for each to finish
+  92:src/MightyBoard/Motherboard/Piezo.cc ****  void queueTone(uint16_t frequency, uint16_t duration)
+  93:src/MightyBoard/Motherboard/Piezo.cc ****  {
+  49              	 .loc 1 93 0
+  50              	 .cfi_startproc
+  51              	 
+  52              	 
+  53              	 
+  54              	.LVL0:
+  55 0000 30B4     	 push {r4,r5}
+  56              	.LCFI0:
+  57              	 .cfi_def_cfa_offset 8
+  58              	 .cfi_offset 5,-4
+  59              	 .cfi_offset 4,-8
+  60              	.LVL1:
+  61              	.LBB43:
+  62              	.LBB44:
+  63              	 .file 2 "src/MightyBoard/shared/CircularBuffer.hh"
+   1:src/MightyBoard/shared/CircularBuffer.hh **** /*
+   2:src/MightyBoard/shared/CircularBuffer.hh ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/CircularBuffer.hh ****  *
+   4:src/MightyBoard/shared/CircularBuffer.hh ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/CircularBuffer.hh ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/CircularBuffer.hh ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/CircularBuffer.hh ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/CircularBuffer.hh ****  *
+   9:src/MightyBoard/shared/CircularBuffer.hh ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/CircularBuffer.hh ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/CircularBuffer.hh ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/CircularBuffer.hh ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/CircularBuffer.hh ****  *
+  14:src/MightyBoard/shared/CircularBuffer.hh ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/CircularBuffer.hh ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/CircularBuffer.hh ****  */
+  17:src/MightyBoard/shared/CircularBuffer.hh **** 
+  18:src/MightyBoard/shared/CircularBuffer.hh **** 
+  19:src/MightyBoard/shared/CircularBuffer.hh **** #ifndef SHARED_CIRCULAR_BUFFER_HH_
+  20:src/MightyBoard/shared/CircularBuffer.hh **** #define SHARED_CIRCULAR_BUFFER_HH_
+  21:src/MightyBoard/shared/CircularBuffer.hh **** 
+  22:src/MightyBoard/shared/CircularBuffer.hh **** #include <stdint.h>
+  23:src/MightyBoard/shared/CircularBuffer.hh **** 
+  24:src/MightyBoard/shared/CircularBuffer.hh **** typedef uint16_t BufSizeType;
+  25:src/MightyBoard/shared/CircularBuffer.hh **** 
+  26:src/MightyBoard/shared/CircularBuffer.hh **** /// A simple, reliable circular buffer implementation.
+  27:src/MightyBoard/shared/CircularBuffer.hh **** /// This implementation does not offer any protection from
+  28:src/MightyBoard/shared/CircularBuffer.hh **** /// interrupts and code writing over each other!  You must
+  29:src/MightyBoard/shared/CircularBuffer.hh **** /// disable interrupts before all accesses and writes to
+  30:src/MightyBoard/shared/CircularBuffer.hh **** /// a circular buffer that is updated in an interrupt.
+  31:src/MightyBoard/shared/CircularBuffer.hh **** template<typename T>
+  32:src/MightyBoard/shared/CircularBuffer.hh **** class CircularBufferTempl {
+  33:src/MightyBoard/shared/CircularBuffer.hh **** public:
+  34:src/MightyBoard/shared/CircularBuffer.hh **** 	typedef T BufDataType;
+  35:src/MightyBoard/shared/CircularBuffer.hh **** private:
+  36:src/MightyBoard/shared/CircularBuffer.hh **** 	const BufSizeType size; /// Size of this buffer
+  37:src/MightyBoard/shared/CircularBuffer.hh **** 	volatile BufSizeType length; /// Current length of valid buffer data
+  38:src/MightyBoard/shared/CircularBuffer.hh **** 	volatile BufSizeType start; /// Current start point of valid bufffer data
+  39:src/MightyBoard/shared/CircularBuffer.hh **** 	BufDataType* const data; /// Pointer to buffer data
+  40:src/MightyBoard/shared/CircularBuffer.hh **** 	volatile bool overflow; /// Overflow indicator
+  41:src/MightyBoard/shared/CircularBuffer.hh **** 	volatile bool underflow; /// Underflow indicator
+  42:src/MightyBoard/shared/CircularBuffer.hh **** public:
+  43:src/MightyBoard/shared/CircularBuffer.hh **** 	CircularBufferTempl(BufSizeType size_in, BufDataType* data_in) :
+  44:src/MightyBoard/shared/CircularBuffer.hh **** 		size(size_in), length(0), start(0), data(data_in), overflow(false),
+  45:src/MightyBoard/shared/CircularBuffer.hh **** 				underflow(false) {
+  46:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+  47:src/MightyBoard/shared/CircularBuffer.hh **** 
+  48:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Reset the buffer to its empty state.  All data in
+  49:src/MightyBoard/shared/CircularBuffer.hh **** 	/// the buffer will be (effectively) lost.
+  50:src/MightyBoard/shared/CircularBuffer.hh **** 	inline void reset() {
+  51:src/MightyBoard/shared/CircularBuffer.hh **** 		length = 0;
+  52:src/MightyBoard/shared/CircularBuffer.hh **** 		start = 0;
+  53:src/MightyBoard/shared/CircularBuffer.hh **** 		overflow = false;
+  54:src/MightyBoard/shared/CircularBuffer.hh **** 		underflow = false;
+  55:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+  56:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Append a byte to the tail of the buffer
+  57:src/MightyBoard/shared/CircularBuffer.hh **** 	inline void push(BufDataType b) {
+  58:src/MightyBoard/shared/CircularBuffer.hh **** 		if (length < size) {
+  59:src/MightyBoard/shared/CircularBuffer.hh **** 			operator[](length) = b;
+  60:src/MightyBoard/shared/CircularBuffer.hh **** 			length++;
+  61:src/MightyBoard/shared/CircularBuffer.hh **** 		} else {
+  62:src/MightyBoard/shared/CircularBuffer.hh **** 			overflow = true;
+  63:src/MightyBoard/shared/CircularBuffer.hh **** 		}
+  64:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+  65:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Pop a byte off the head of the buffer
+  66:src/MightyBoard/shared/CircularBuffer.hh **** 	inline BufDataType pop() {
+  67:src/MightyBoard/shared/CircularBuffer.hh **** 		if (isEmpty()) {
+  68:src/MightyBoard/shared/CircularBuffer.hh **** 			underflow = true;
+  69:src/MightyBoard/shared/CircularBuffer.hh **** 			return BufDataType();
+  70:src/MightyBoard/shared/CircularBuffer.hh **** 		}
+  71:src/MightyBoard/shared/CircularBuffer.hh **** 		const BufDataType& popped_byte = operator[](0);
+  72:src/MightyBoard/shared/CircularBuffer.hh **** 		start = (start + 1) % size;
+  73:src/MightyBoard/shared/CircularBuffer.hh **** 		length--;
+  74:src/MightyBoard/shared/CircularBuffer.hh **** 		return popped_byte;
+  75:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+  76:src/MightyBoard/shared/CircularBuffer.hh **** 
+  77:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Pop a number of bytes off the head of the buffer.  If there
+  78:src/MightyBoard/shared/CircularBuffer.hh **** 	/// are not enough bytes to complete the pop, pop what we can and
+  79:src/MightyBoard/shared/CircularBuffer.hh **** 	/// set the underflow flag.
+  80:src/MightyBoard/shared/CircularBuffer.hh **** 	inline void pop(BufSizeType sz) {
+  81:src/MightyBoard/shared/CircularBuffer.hh **** 		if (length < sz) {
+  82:src/MightyBoard/shared/CircularBuffer.hh **** 			underflow = true;
+  83:src/MightyBoard/shared/CircularBuffer.hh **** 			sz = length;
+  84:src/MightyBoard/shared/CircularBuffer.hh **** 		}
+  85:src/MightyBoard/shared/CircularBuffer.hh **** 		start = (start + sz) % size;
+  86:src/MightyBoard/shared/CircularBuffer.hh **** 		length -= sz;
+  87:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+  88:src/MightyBoard/shared/CircularBuffer.hh **** 
+  89:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Get the length of the buffer
+  90:src/MightyBoard/shared/CircularBuffer.hh **** 	inline const BufSizeType getLength() const {
+  91:src/MightyBoard/shared/CircularBuffer.hh **** 		return length;
+  92:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+  93:src/MightyBoard/shared/CircularBuffer.hh **** 
+  94:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Get the remaining capacity of this buffer
+  95:src/MightyBoard/shared/CircularBuffer.hh **** 	inline const BufSizeType getRemainingCapacity() const {
+  96:src/MightyBoard/shared/CircularBuffer.hh **** 		return size - length;
+  64              	 .loc 2 96 0
+  65 0002 40F20003 	 movw r3,#:lower16:.LANCHOR1
+  66 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+  67 000a 1A88     	 ldrh r2,[r3,#0]
+  68 000c 5B88     	 ldrh r3,[r3,#2]
+  69 000e 9BB2     	 uxth r3,r3
+  70              	.LBE44:
+  71              	.LBE43:
+  94:src/MightyBoard/Motherboard/Piezo.cc **** 	 if(frequencies.getRemainingCapacity() > 0 ) {
+  72              	 .loc 1 94 0
+  73 0010 9A42     	 cmp r2,r3
+  74 0012 4CD0     	 beq .L2
+  75              	.LVL2:
+  76              	.LBB45:
+  77              	.LBB46:
+  58:src/MightyBoard/shared/CircularBuffer.hh **** 		if (length < size) {
+  78              	 .loc 2 58 0
+  79 0014 40F20003 	 movw r3,#:lower16:.LANCHOR1
+  80 0018 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+  81 001c 5B88     	 ldrh r3,[r3,#2]
+  82 001e 9BB2     	 uxth r3,r3
+  83 0020 9A42     	 cmp r2,r3
+  84 0022 16D9     	 bls .L4
+  59:src/MightyBoard/shared/CircularBuffer.hh **** 			operator[](length) = b;
+  85              	 .loc 2 59 0
+  86 0024 40F20003 	 movw r3,#:lower16:.LANCHOR1
+  87 0028 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+  88 002c 5D88     	 ldrh r5,[r3,#2]
+  89 002e ADB2     	 uxth r5,r5
+  90              	.LVL3:
+  91              	.LBB47:
+  92              	.LBB48:
+  97:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+  98:src/MightyBoard/shared/CircularBuffer.hh **** 
+  99:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Check if the buffer is empty
+ 100:src/MightyBoard/shared/CircularBuffer.hh **** 	inline const bool isEmpty() const {
+ 101:src/MightyBoard/shared/CircularBuffer.hh **** 		return length == 0;
+ 102:src/MightyBoard/shared/CircularBuffer.hh **** 	}
+ 103:src/MightyBoard/shared/CircularBuffer.hh **** 	/// Read the buffer directly
+ 104:src/MightyBoard/shared/CircularBuffer.hh **** 	inline BufDataType& operator[](BufSizeType index) {
+ 105:src/MightyBoard/shared/CircularBuffer.hh **** 		const BufSizeType actual_index = (index + start) % size;
+  93              	 .loc 2 105 0
+  94 0030 9C88     	 ldrh r4,[r3,#4]
+  95 0032 A4B2     	 uxth r4,r4
+  96              	.LVL4:
+  97 0034 2C19     	 adds r4,r5,r4
+  98              	.LVL5:
+  99 0036 94FBF2F5 	 sdiv r5,r4,r2
+ 100              	.LVL6:
+ 101 003a 02FB1542 	 mls r2,r2,r5,r4
+ 106:src/MightyBoard/shared/CircularBuffer.hh **** 		return data[actual_index];
+ 102              	 .loc 2 106 0
+ 103 003e 92B2     	 uxth r2,r2
+ 104              	.LBE48:
+ 105              	.LBE47:
+  59:src/MightyBoard/shared/CircularBuffer.hh **** 			operator[](length) = b;
+ 106              	 .loc 2 59 0
+ 107 0040 9D68     	 ldr r5,[r3,#8]
+ 108 0042 25F81200 	 strh r0,[r5,r2,lsl#1]
+  60:src/MightyBoard/shared/CircularBuffer.hh **** 			length++;
+ 109              	 .loc 2 60 0
+ 110 0046 5A88     	 ldrh r2,[r3,#2]
+ 111 0048 02F10102 	 add r2,r2,#1
+ 112 004c 92B2     	 uxth r2,r2
+ 113 004e 5A80     	 strh r2,[r3,#2]
+ 114 0050 06E0     	 b .L5
+ 115              	.LVL7:
+ 116              	.L4:
+  62:src/MightyBoard/shared/CircularBuffer.hh **** 			overflow = true;
+ 117              	 .loc 2 62 0
+ 118 0052 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 119 0056 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 120 005a 4FF00102 	 mov r2,#1
+ 121 005e 1A73     	 strb r2,[r3,#12]
+ 122              	.L5:
+ 123              	.LVL8:
+ 124              	.LBE46:
+ 125              	.LBE45:
+ 126              	.LBB49:
+ 127              	.LBB50:
+  58:src/MightyBoard/shared/CircularBuffer.hh **** 		if (length < size) {
+ 128              	 .loc 2 58 0
+ 129 0060 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 130 0064 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 131 0068 5888     	 ldrh r0,[r3,#2]
+ 132              	.LVL9:
+ 133 006a 80B2     	 uxth r0,r0
+ 134 006c 1A88     	 ldrh r2,[r3,#0]
+ 135 006e 9042     	 cmp r0,r2
+ 136 0070 16D2     	 bcs .L6
+  59:src/MightyBoard/shared/CircularBuffer.hh **** 			operator[](length) = b;
+ 137              	 .loc 2 59 0
+ 138 0072 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 139 0076 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 140 007a 5C88     	 ldrh r4,[r3,#2]
+ 141 007c A4B2     	 uxth r4,r4
+ 142              	.LVL10:
+ 143              	.LBB51:
+ 144              	.LBB52:
+ 105:src/MightyBoard/shared/CircularBuffer.hh **** 		const BufSizeType actual_index = (index + start) % size;
+ 145              	 .loc 2 105 0
+ 146 007e 9888     	 ldrh r0,[r3,#4]
+ 147 0080 80B2     	 uxth r0,r0
+ 148              	.LVL11:
+ 149 0082 2018     	 adds r0,r4,r0
+ 150              	.LVL12:
+ 151 0084 90FBF2F4 	 sdiv r4,r0,r2
+ 152              	.LVL13:
+ 153 0088 02FB1402 	 mls r2,r2,r4,r0
+ 154              	 .loc 2 106 0
+ 155 008c 92B2     	 uxth r2,r2
+ 156              	.LBE52:
+ 157              	.LBE51:
+  59:src/MightyBoard/shared/CircularBuffer.hh **** 			operator[](length) = b;
+ 158              	 .loc 2 59 0
+ 159 008e 9C68     	 ldr r4,[r3,#8]
+ 160 0090 24F81210 	 strh r1,[r4,r2,lsl#1]
+  60:src/MightyBoard/shared/CircularBuffer.hh **** 			length++;
+ 161              	 .loc 2 60 0
+ 162 0094 5A88     	 ldrh r2,[r3,#2]
+ 163 0096 02F10102 	 add r2,r2,#1
+ 164 009a 92B2     	 uxth r2,r2
+ 165 009c 5A80     	 strh r2,[r3,#2]
+ 166 009e 06E0     	 b .L2
+ 167              	.LVL14:
+ 168              	.L6:
+  62:src/MightyBoard/shared/CircularBuffer.hh **** 			overflow = true;
+ 169              	 .loc 2 62 0
+ 170 00a0 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 171 00a4 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 172 00a8 4FF00102 	 mov r2,#1
+ 173 00ac 1A73     	 strb r2,[r3,#12]
+ 174              	.LVL15:
+ 175              	.L2:
+ 176              	.LBE50:
+ 177              	.LBE49:
+  95:src/MightyBoard/Motherboard/Piezo.cc **** 		 frequencies.push(frequency);
+  96:src/MightyBoard/Motherboard/Piezo.cc **** 		 durations.push(duration);
+  97:src/MightyBoard/Motherboard/Piezo.cc **** 	 }
+  98:src/MightyBoard/Motherboard/Piezo.cc **** 	 //FUTURE: set an error blink here.
+  99:src/MightyBoard/Motherboard/Piezo.cc ****  }
+ 178              	 .loc 1 99 0
+ 179 00ae 30BC     	 pop {r4,r5}
+ 180 00b0 7047     	 bx lr
+ 181              	 .cfi_endproc
+ 182              	.LFE75:
+ 184 00b2 00BF     	 .section .text._ZN5Piezo7setToneEtt,"ax",%progbits
+ 185              	 .align 2
+ 186              	 .global _ZN5Piezo7setToneEtt
+ 187              	 .thumb
+ 188              	 .thumb_func
+ 190              	_ZN5Piezo7setToneEtt:
+ 191              	.LFB76:
+ 100:src/MightyBoard/Motherboard/Piezo.cc ****  
+ 101:src/MightyBoard/Motherboard/Piezo.cc ****  // derived from arduino Tone library
+ 102:src/MightyBoard/Motherboard/Piezo.cc ****  void setTone(uint16_t frequency, uint16_t duration)
+ 103:src/MightyBoard/Motherboard/Piezo.cc **** {
+ 192              	 .loc 1 103 0
+ 193              	 .cfi_startproc
+ 194              	 
+ 195              	 
+ 196              	.LVL16:
+ 197 0000 38B5     	 push {r3,r4,r5,lr}
+ 198              	.LCFI1:
+ 199              	 .cfi_def_cfa_offset 16
+ 200              	 .cfi_offset 14,-4
+ 201              	 .cfi_offset 5,-8
+ 202              	 .cfi_offset 4,-12
+ 203              	 .cfi_offset 3,-16
+ 204 0002 0446     	 mov r4,r0
+ 205 0004 0D46     	 mov r5,r1
+ 206              	.LBB56:
+ 104:src/MightyBoard/Motherboard/Piezo.cc **** 	 /// if we are already playing, cache the next tone
+ 105:src/MightyBoard/Motherboard/Piezo.cc **** 	if( ToneOn ) {
+ 207              	 .loc 1 105 0
+ 208 0006 40F20003 	 movw r3,#:lower16:.LANCHOR3
+ 209 000a C0F20003 	 movt r3,#:upper16:.LANCHOR3
+ 210 000e 1B78     	 ldrb r3,[r3,#0]
+ 211 0010 13B1     	 cbz r3,.L8
+ 106:src/MightyBoard/Motherboard/Piezo.cc **** 		queueTone(frequency,duration);
+ 212              	 .loc 1 106 0
+ 213 0012 FFF7FEFF 	 bl _ZN5Piezo9queueToneEtt
+ 214              	.LVL17:
+ 107:src/MightyBoard/Motherboard/Piezo.cc **** 		return;
+ 215              	 .loc 1 107 0
+ 216 0016 38BD     	 pop {r3,r4,r5,pc}
+ 217              	.LVL18:
+ 218              	.L8:
+ 108:src/MightyBoard/Motherboard/Piezo.cc **** 	}
+ 109:src/MightyBoard/Motherboard/Piezo.cc **** 
+ 110:src/MightyBoard/Motherboard/Piezo.cc ****     if(eeprom::getEeprom8(eeprom_offsets::BUZZ_SETTINGS + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET,1)
+ 219              	 .loc 1 110 0
+ 220 0018 4FF4A570 	 mov r0,#330
+ 221              	.LVL19:
+ 222 001c 4FF00101 	 mov r1,#1
+ 223              	.LVL20:
+ 224 0020 FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
+ 225 0024 0028     	 cmp r0,#0
+ 226 0026 4ED0     	 beq .L7
+ 111:src/MightyBoard/Motherboard/Piezo.cc ****         return;
+ 112:src/MightyBoard/Motherboard/Piezo.cc **** 
+ 113:src/MightyBoard/Motherboard/Piezo.cc **** 	playing = true;
+ 227              	 .loc 1 113 0
+ 228 0028 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 229 002c C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 230 0030 4FF00102 	 mov r2,#1
+ 231 0034 1A70     	 strb r2,[r3,#0]
+ 114:src/MightyBoard/Motherboard/Piezo.cc **** 	ToneOn = true;
+ 232              	 .loc 1 114 0
+ 233 0036 40F20003 	 movw r3,#:lower16:.LANCHOR3
+ 234 003a C0F20003 	 movt r3,#:upper16:.LANCHOR3
+ 235 003e 1A70     	 strb r2,[r3,#0]
+ 236              	.LVL21:
+ 237              	.LBB57:
+ 238              	.LBB58:
+ 239              	 .file 3 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 240              	 .loc 3 35 0
+ 241 0040 40F20003 	 movw r3,#:lower16:.LANCHOR4
+ 242 0044 C0F20003 	 movt r3,#:upper16:.LANCHOR4
+ 243 0048 5B78     	 ldrb r3,[r3,#1]
+ 244 004a 5BB9     	 cbnz r3,.L10
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+ 245              	 .loc 3 48 0
+ 246 004c 40F20002 	 movw r2,#:lower16:.LANCHOR4
+ 247 0050 C0F20002 	 movt r2,#:upper16:.LANCHOR4
+ 248 0054 9378     	 ldrb r3,[r2,#2]
+ 249 0056 1078     	 ldrb r0,[r2,#0]
+ 250 0058 4FF00101 	 mov r1,#1
+ 251 005c 01FA03F1 	 lsl r1,r1,r3
+ 252 0060 FFF7FEFF 	 bl GPIO_ClearValue
+ 253              	.L10:
+ 254              	.LBE58:
+ 255              	.LBE57:
+ 115:src/MightyBoard/Motherboard/Piezo.cc **** 	BuzzPin.setValue(false);
+ 116:src/MightyBoard/Motherboard/Piezo.cc ****     BuzzPin.setDirection(true);
+ 256              	 .loc 1 116 0
+ 257 0064 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 258 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 259 006c 4FF00101 	 mov r1,#1
+ 260 0070 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 261              	.LVL22:
+ 117:src/MightyBoard/Motherboard/Piezo.cc **** 		
+ 118:src/MightyBoard/Motherboard/Piezo.cc **** 	// 8 MHZ base clock
+ 119:src/MightyBoard/Motherboard/Piezo.cc **** 	uint32_t fCPU = 8000000;
+ 120:src/MightyBoard/Motherboard/Piezo.cc **** 	// scan through prescalars to find the best fit
+ 121:src/MightyBoard/Motherboard/Piezo.cc ****       uint32_t ocr = fCPU / frequency / 2 - 1;
+ 122:src/MightyBoard/Motherboard/Piezo.cc ****       toggle_time = ocr;
+ 262              	 .loc 1 122 0
+ 263 0074 40F20003 	 movw r3,#:lower16:.LANCHOR5
+ 264 0078 C0F20003 	 movt r3,#:upper16:.LANCHOR5
+ 121:src/MightyBoard/Motherboard/Piezo.cc ****       uint32_t ocr = fCPU / frequency / 2 - 1;
+ 265              	 .loc 1 121 0
+ 266 007c 4FF49052 	 mov r2,#4608
+ 267 0080 C0F27A02 	 movt r2,122
+ 268 0084 B2FBF4F2 	 udiv r2,r2,r4
+ 269 0088 4FEA5202 	 lsr r2,r2,#1
+ 270 008c 02F1FF32 	 add r2,r2,#-1
+ 271              	 .loc 1 122 0
+ 272 0090 1A60     	 str r2,[r3,#0]
+ 273              	.LVL23:
+ 123:src/MightyBoard/Motherboard/Piezo.cc ****       uint8_t prescalarbits = 0b001;  
+ 124:src/MightyBoard/Motherboard/Piezo.cc ****      
+ 125:src/MightyBoard/Motherboard/Piezo.cc ****       if (ocr > 255)
+ 126:src/MightyBoard/Motherboard/Piezo.cc ****       {
+ 127:src/MightyBoard/Motherboard/Piezo.cc ****         ocr = fCPU / frequency / 2 / 8 - 1;
+ 128:src/MightyBoard/Motherboard/Piezo.cc ****         prescalarbits = 0b010;  
+ 129:src/MightyBoard/Motherboard/Piezo.cc **** 
+ 130:src/MightyBoard/Motherboard/Piezo.cc ****         if (ocr > 255)
+ 131:src/MightyBoard/Motherboard/Piezo.cc ****         {
+ 132:src/MightyBoard/Motherboard/Piezo.cc ****           ocr = fCPU / frequency / 2 / 64 - 1;
+ 133:src/MightyBoard/Motherboard/Piezo.cc ****           prescalarbits = 0b011;
+ 134:src/MightyBoard/Motherboard/Piezo.cc **** 
+ 135:src/MightyBoard/Motherboard/Piezo.cc ****           if (ocr > 255)
+ 136:src/MightyBoard/Motherboard/Piezo.cc ****           {
+ 137:src/MightyBoard/Motherboard/Piezo.cc ****             ocr = fCPU / frequency / 2 / 256 - 1;
+ 138:src/MightyBoard/Motherboard/Piezo.cc ****             prescalarbits = 0b100;
+ 139:src/MightyBoard/Motherboard/Piezo.cc ****             
+ 140:src/MightyBoard/Motherboard/Piezo.cc ****             if (ocr > 255)
+ 141:src/MightyBoard/Motherboard/Piezo.cc ****             {
+ 142:src/MightyBoard/Motherboard/Piezo.cc ****               // can't do any better than /1024
+ 143:src/MightyBoard/Motherboard/Piezo.cc ****               ocr = fCPU / frequency / 2 / 1024 - 1;
+ 144:src/MightyBoard/Motherboard/Piezo.cc ****               prescalarbits = 0b101;
+ 145:src/MightyBoard/Motherboard/Piezo.cc ****             }
+ 146:src/MightyBoard/Motherboard/Piezo.cc ****           }
+ 147:src/MightyBoard/Motherboard/Piezo.cc ****         }
+ 148:src/MightyBoard/Motherboard/Piezo.cc ****       }
+ 149:src/MightyBoard/Motherboard/Piezo.cc **** //      TCCR0B = 0b00001000 + prescalarbits; //set prescaler to desired value
+ 150:src/MightyBoard/Motherboard/Piezo.cc ****       
+ 151:src/MightyBoard/Motherboard/Piezo.cc **** //      OCR0A = ocr & 0xFF;
+ 152:src/MightyBoard/Motherboard/Piezo.cc **** //      OCR0B = ocr & 0xFF; //set pwm frequency
+ 153:src/MightyBoard/Motherboard/Piezo.cc **** //      TIMSK0 = 0b00000010; //turn compA interrupt on
+ 154:src/MightyBoard/Motherboard/Piezo.cc ****       toggleCount = 2L * frequency * duration / 1000L;
+ 274              	 .loc 1 154 0
+ 275 0092 40F20003 	 movw r3,#:lower16:.LANCHOR6
+ 276 0096 C0F20003 	 movt r3,#:upper16:.LANCHOR6
+ 277 009a 4FEA4404 	 lsl r4,r4,#1
+ 278              	.LVL24:
+ 279 009e 05FB04F5 	 mul r5,r5,r4
+ 280 00a2 44F6D352 	 movw r2,#19923
+ 281 00a6 C1F26202 	 movt r2,4194
+ 282 00aa 82FB0512 	 smull r1,r2,r2,r5
+ 283 00ae 4FEAE575 	 asr r5,r5,#31
+ 284 00b2 C5EBA215 	 rsb r5,r5,r2,asr#6
+ 285 00b6 1D60     	 str r5,[r3,#0]
+ 155:src/MightyBoard/Motherboard/Piezo.cc ****       lastMicros = 0;
+ 286              	 .loc 1 155 0
+ 287 00b8 40F20003 	 movw r3,#:lower16:.LANCHOR7
+ 288 00bc C0F20003 	 movt r3,#:upper16:.LANCHOR7
+ 289 00c0 4FF00002 	 mov r2,#0
+ 290 00c4 1A60     	 str r2,[r3,#0]
+ 291              	.LVL25:
+ 292              	.L7:
+ 293 00c6 38BD     	 pop {r3,r4,r5,pc}
+ 294              	.LBE56:
+ 295              	 .cfi_endproc
+ 296              	.LFE76:
+ 298              	 .section .text._ZN5Piezo9errorToneEh,"ax",%progbits
+ 299              	 .align 2
+ 300              	 .global _ZN5Piezo9errorToneEh
+ 301              	 .thumb
+ 302              	 .thumb_func
+ 304              	_ZN5Piezo9errorToneEh:
+ 305              	.LFB74:
+  82:src/MightyBoard/Motherboard/Piezo.cc ****  {
+ 306              	 .loc 1 82 0
+ 307              	 .cfi_startproc
+ 308              	 
+ 309              	 
+ 310              	.LVL26:
+ 311 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 312              	.LCFI2:
+ 313              	 .cfi_def_cfa_offset 24
+ 314              	 .cfi_offset 14,-4
+ 315              	 .cfi_offset 8,-8
+ 316              	 .cfi_offset 7,-12
+ 317              	 .cfi_offset 6,-16
+ 318              	 .cfi_offset 5,-20
+ 319              	 .cfi_offset 4,-24
+ 320              	.LVL27:
+ 321              	.LBB59:
+  83:src/MightyBoard/Motherboard/Piezo.cc **** 	 for(int i = 0; i < iterations; i++)
+ 322              	 .loc 1 83 0
+ 323 0004 0646     	 mov r6,r0
+ 324 0006 98B1     	 cbz r0,.L11
+ 325 0008 4FF00004 	 mov r4,#0
+  85:src/MightyBoard/Motherboard/Piezo.cc **** 		setTone(NOTE_B4, 300);
+ 326              	 .loc 1 85 0
+ 327 000c 4FF4F777 	 mov r7,#494
+ 328 0010 4FF49675 	 mov r5,#300
+  86:src/MightyBoard/Motherboard/Piezo.cc **** 		setTone(NOTE_A4, 300);
+ 329              	 .loc 1 86 0
+ 330 0014 4FF4DC78 	 mov r8,#440
+ 331              	.LVL28:
+ 332              	.L13:
+  85:src/MightyBoard/Motherboard/Piezo.cc **** 		setTone(NOTE_B4, 300);
+ 333              	 .loc 1 85 0 discriminator 2
+ 334 0018 3846     	 mov r0,r7
+ 335 001a 2946     	 mov r1,r5
+ 336 001c FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  86:src/MightyBoard/Motherboard/Piezo.cc **** 		setTone(NOTE_A4, 300);
+ 337              	 .loc 1 86 0 discriminator 2
+ 338 0020 4046     	 mov r0,r8
+ 339 0022 2946     	 mov r1,r5
+ 340 0024 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  83:src/MightyBoard/Motherboard/Piezo.cc **** 	 for(int i = 0; i < iterations; i++)
+ 341              	 .loc 1 83 0 discriminator 2
+ 342 0028 04F10104 	 add r4,r4,#1
+ 343              	.LVL29:
+ 344 002c B442     	 cmp r4,r6
+ 345 002e F3DB     	 blt .L13
+ 346              	.LVL30:
+ 347              	.L11:
+ 348 0030 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 349              	.LBE59:
+ 350              	 .cfi_endproc
+ 351              	.LFE74:
+ 353              	 .section .text._ZN5Piezo8doneToneEv,"ax",%progbits
+ 354              	 .align 2
+ 355              	 .global _ZN5Piezo8doneToneEv
+ 356              	 .thumb
+ 357              	 .thumb_func
+ 359              	_ZN5Piezo8doneToneEv:
+ 360              	.LFB72:
+  60:src/MightyBoard/Motherboard/Piezo.cc ****  {
+ 361              	 .loc 1 60 0
+ 362              	 .cfi_startproc
+ 363              	 
+ 364              	 
+ 365 0000 08B5     	 push {r3,lr}
+ 366              	.LCFI3:
+ 367              	 .cfi_def_cfa_offset 8
+ 368              	 .cfi_offset 14,-4
+ 369              	 .cfi_offset 3,-8
+  62:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A5, 188);
+ 370              	 .loc 1 62 0
+ 371 0002 4FF45C70 	 mov r0,#880
+ 372 0006 4FF0BC01 	 mov r1,#188
+ 373 000a FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  63:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+ 374              	 .loc 1 63 0
+ 375 000e 4FF00000 	 mov r0,#0
+ 376 0012 4FF0BC01 	 mov r1,#188
+ 377 0016 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  64:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A6, 188);
+ 378              	 .loc 1 64 0
+ 379 001a 4FF4DC60 	 mov r0,#1760
+ 380 001e 4FF0BC01 	 mov r1,#188
+ 381 0022 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  65:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+ 382              	 .loc 1 65 0
+ 383 0026 4FF00000 	 mov r0,#0
+ 384 002a 4FF0BC01 	 mov r1,#188
+ 385 002e FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  66:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_B6, 188);
+ 386              	 .loc 1 66 0
+ 387 0032 4FF4F760 	 mov r0,#1976
+ 388 0036 4FF0BC01 	 mov r1,#188
+ 389 003a FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  67:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+ 390              	 .loc 1 67 0
+ 391 003e 4FF00000 	 mov r0,#0
+ 392 0042 4FF0BC01 	 mov r1,#188
+ 393 0046 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  68:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_C7, 188);
+ 394              	 .loc 1 68 0
+ 395 004a 40F62D00 	 movw r0,#2093
+ 396 004e 4FF0BC01 	 mov r1,#188
+ 397 0052 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  69:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_CS7, 188);
+ 398              	 .loc 1 69 0
+ 399 0056 40F6A900 	 movw r0,#2217
+ 400 005a 4FF0BC01 	 mov r1,#188
+ 401 005e FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  70:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+ 402              	 .loc 1 70 0
+ 403 0062 4FF00000 	 mov r0,#0
+ 404 0066 4FF0BC01 	 mov r1,#188
+ 405 006a FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  71:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A7, 333);
+ 406              	 .loc 1 71 0
+ 407 006e 4FF45C60 	 mov r0,#3520
+ 408 0072 40F24D11 	 movw r1,#333
+ 409 0076 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  73:src/MightyBoard/Motherboard/Piezo.cc ****  }
+ 410              	 .loc 1 73 0
+ 411 007a 08BD     	 pop {r3,pc}
+ 412              	 .cfi_endproc
+ 413              	.LFE72:
+ 415              	 .section .text._ZN5Piezo11startUpToneEv,"ax",%progbits
+ 416              	 .align 2
+ 417              	 .global _ZN5Piezo11startUpToneEv
+ 418              	 .thumb
+ 419              	 .thumb_func
+ 421              	_ZN5Piezo11startUpToneEv:
+ 422              	.LFB71:
+  49:src/MightyBoard/Motherboard/Piezo.cc ****  {		
+ 423              	 .loc 1 49 0
+ 424              	 .cfi_startproc
+ 425              	 
+ 426              	 
+ 427 0000 08B5     	 push {r3,lr}
+ 428              	.LCFI4:
+ 429              	 .cfi_def_cfa_offset 8
+ 430              	 .cfi_offset 14,-4
+ 431              	 .cfi_offset 3,-8
+  51:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_A7, 288);
+ 432              	 .loc 1 51 0
+ 433 0002 4FF45C60 	 mov r0,#3520
+ 434 0006 4FF49071 	 mov r1,#288
+ 435 000a FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  52:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+ 436              	 .loc 1 52 0
+ 437 000e 4FF00000 	 mov r0,#0
+ 438 0012 4FF0BC01 	 mov r1,#188
+ 439 0016 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  53:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_CS8, 188);
+ 440              	 .loc 1 53 0
+ 441 001a 41F25310 	 movw r0,#4435
+ 442 001e 4FF0BC01 	 mov r1,#188
+ 443 0022 FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  54:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_0, 188);
+ 444              	 .loc 1 54 0
+ 445 0026 4FF00000 	 mov r0,#0
+ 446 002a 4FF0BC01 	 mov r1,#188
+ 447 002e FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  55:src/MightyBoard/Motherboard/Piezo.cc **** 	 setTone(NOTE_D8, 433);
+ 448              	 .loc 1 55 0
+ 449 0032 41F25B20 	 movw r0,#4699
+ 450 0036 40F2B111 	 movw r1,#433
+ 451 003a FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+  56:src/MightyBoard/Motherboard/Piezo.cc ****  }
+ 452              	 .loc 1 56 0
+ 453 003e 08BD     	 pop {r3,pc}
+ 454              	 .cfi_endproc
+ 455              	.LFE71:
+ 457              	 .section .text._ZN5Piezo11doInterruptEv,"ax",%progbits
+ 458              	 .align 2
+ 459              	 .global _ZN5Piezo11doInterruptEv
+ 460              	 .thumb
+ 461              	 .thumb_func
+ 463              	_ZN5Piezo11doInterruptEv:
+ 464              	.LFB77:
+ 156:src/MightyBoard/Motherboard/Piezo.cc **** }
+ 157:src/MightyBoard/Motherboard/Piezo.cc **** 
+ 158:src/MightyBoard/Motherboard/Piezo.cc **** void doInterrupt()
+ 159:src/MightyBoard/Motherboard/Piezo.cc **** {			  
+ 465              	 .loc 1 159 0
+ 466              	 .cfi_startproc
+ 467              	 
+ 468              	 
+ 469 0000 70B5     	 push {r4,r5,r6,lr}
+ 470              	.LCFI5:
+ 471              	 .cfi_def_cfa_offset 16
+ 472              	 .cfi_offset 14,-4
+ 473              	 .cfi_offset 6,-8
+ 474              	 .cfi_offset 5,-12
+ 475              	 .cfi_offset 4,-16
+ 160:src/MightyBoard/Motherboard/Piezo.cc **** 	if (toggleCount != 0)
+ 476              	 .loc 1 160 0
+ 477 0002 40F20003 	 movw r3,#:lower16:.LANCHOR6
+ 478 0006 C0F20003 	 movt r3,#:upper16:.LANCHOR6
+ 479 000a 1B68     	 ldr r3,[r3,#0]
+ 480 000c 002B     	 cmp r3,#0
+ 481 000e 37D0     	 beq .L18
+ 161:src/MightyBoard/Motherboard/Piezo.cc ****   {
+ 162:src/MightyBoard/Motherboard/Piezo.cc ****     // toggle the pin
+ 163:src/MightyBoard/Motherboard/Piezo.cc ****     toggle = !toggle;
+ 482              	 .loc 1 163 0
+ 483 0010 40F20003 	 movw r3,#:lower16:.LANCHOR8
+ 484 0014 C0F20003 	 movt r3,#:upper16:.LANCHOR8
+ 485 0018 1A78     	 ldrb r2,[r3,#0]
+ 486 001a 82F00102 	 eor r2,r2,#1
+ 487 001e 1A70     	 strb r2,[r3,#0]
+ 488              	.LVL31:
+ 489              	.LBB78:
+ 490              	.LBB79:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 491              	 .loc 3 35 0
+ 492 0020 40F20003 	 movw r3,#:lower16:.LANCHOR4
+ 493 0024 C0F20003 	 movt r3,#:upper16:.LANCHOR4
+ 494 0028 5B78     	 ldrb r3,[r3,#1]
+ 495 002a CBB9     	 cbnz r3,.L19
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+ 496              	 .loc 3 41 0
+ 497 002c 62B1     	 cbz r2,.L20
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 498              	 .loc 3 44 0
+ 499 002e 40F20002 	 movw r2,#:lower16:.LANCHOR4
+ 500              	.LVL32:
+ 501 0032 C0F20002 	 movt r2,#:upper16:.LANCHOR4
+ 502 0036 9378     	 ldrb r3,[r2,#2]
+ 503 0038 1078     	 ldrb r0,[r2,#0]
+ 504 003a 4FF00101 	 mov r1,#1
+ 505 003e 01FA03F1 	 lsl r1,r1,r3
+ 506 0042 FFF7FEFF 	 bl GPIO_SetValue
+ 507 0046 0BE0     	 b .L19
+ 508              	.LVL33:
+ 509              	.L20:
+ 510              	 .loc 3 48 0
+ 511 0048 40F20002 	 movw r2,#:lower16:.LANCHOR4
+ 512              	.LVL34:
+ 513 004c C0F20002 	 movt r2,#:upper16:.LANCHOR4
+ 514 0050 9378     	 ldrb r3,[r2,#2]
+ 515 0052 1078     	 ldrb r0,[r2,#0]
+ 516 0054 4FF00101 	 mov r1,#1
+ 517 0058 01FA03F1 	 lsl r1,r1,r3
+ 518 005c FFF7FEFF 	 bl GPIO_ClearValue
+ 519              	.L19:
+ 520              	.LBE79:
+ 521              	.LBE78:
+ 164:src/MightyBoard/Motherboard/Piezo.cc ****     BuzzPin.setValue(toggle);
+ 165:src/MightyBoard/Motherboard/Piezo.cc **** 
+ 166:src/MightyBoard/Motherboard/Piezo.cc ****     if (toggleCount > 0)
+ 522              	 .loc 1 166 0
+ 523 0060 40F20003 	 movw r3,#:lower16:.LANCHOR6
+ 524 0064 C0F20003 	 movt r3,#:upper16:.LANCHOR6
+ 525 0068 1B68     	 ldr r3,[r3,#0]
+ 526 006a 002B     	 cmp r3,#0
+ 527 006c 00F09180 	 beq .L17
+ 167:src/MightyBoard/Motherboard/Piezo.cc ****       toggleCount--;
+ 528              	 .loc 1 167 0
+ 529 0070 40F20002 	 movw r2,#:lower16:.LANCHOR6
+ 530 0074 C0F20002 	 movt r2,#:upper16:.LANCHOR6
+ 531 0078 03F1FF33 	 add r3,r3,#-1
+ 532 007c 1360     	 str r3,[r2,#0]
+ 533 007e 70BD     	 pop {r4,r5,r6,pc}
+ 534              	.LVL35:
+ 535              	.L18:
+ 536              	.LBB80:
+ 537              	.LBB81:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 538              	 .loc 3 35 0
+ 539 0080 40F20003 	 movw r3,#:lower16:.LANCHOR4
+ 540 0084 C0F20003 	 movt r3,#:upper16:.LANCHOR4
+ 541 0088 5B78     	 ldrb r3,[r3,#1]
+ 542 008a 5BB9     	 cbnz r3,.L22
+ 543              	 .loc 3 48 0
+ 544 008c 40F20002 	 movw r2,#:lower16:.LANCHOR4
+ 545 0090 C0F20002 	 movt r2,#:upper16:.LANCHOR4
+ 546 0094 9378     	 ldrb r3,[r2,#2]
+ 547 0096 1078     	 ldrb r0,[r2,#0]
+ 548 0098 4FF00101 	 mov r1,#1
+ 549 009c 01FA03F1 	 lsl r1,r1,r3
+ 550 00a0 FFF7FEFF 	 bl GPIO_ClearValue
+ 551              	.L22:
+ 552              	.LBE81:
+ 553              	.LBE80:
+ 168:src/MightyBoard/Motherboard/Piezo.cc ****   }
+ 169:src/MightyBoard/Motherboard/Piezo.cc ****  // clear after interval
+ 170:src/MightyBoard/Motherboard/Piezo.cc ****   else
+ 171:src/MightyBoard/Motherboard/Piezo.cc ****   {
+ 172:src/MightyBoard/Motherboard/Piezo.cc **** //    TIMSK0 = 0;
+ 173:src/MightyBoard/Motherboard/Piezo.cc **** //    OCR0B = 0;
+ 174:src/MightyBoard/Motherboard/Piezo.cc **** //    OCR0A = 0;
+ 175:src/MightyBoard/Motherboard/Piezo.cc ****     BuzzPin.setValue(false);  // keep pin low after stop
+ 176:src/MightyBoard/Motherboard/Piezo.cc ****     ToneOn = false;
+ 554              	 .loc 1 176 0
+ 555 00a4 40F20003 	 movw r3,#:lower16:.LANCHOR3
+ 556 00a8 C0F20003 	 movt r3,#:upper16:.LANCHOR3
+ 557 00ac 4FF00002 	 mov r2,#0
+ 558 00b0 1A70     	 strb r2,[r3,#0]
+ 559              	.LVL36:
+ 560              	.LBB82:
+ 561              	.LBB83:
+ 101:src/MightyBoard/shared/CircularBuffer.hh **** 		return length == 0;
+ 562              	 .loc 2 101 0
+ 563 00b2 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 564 00b6 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 565 00ba 5B88     	 ldrh r3,[r3,#2]
+ 566 00bc 9BB2     	 uxth r3,r3
+ 567              	.LBE83:
+ 568              	.LBE82:
+ 177:src/MightyBoard/Motherboard/Piezo.cc ****     if(frequencies.isEmpty() == false)
+ 569              	 .loc 1 177 0
+ 570 00be 002B     	 cmp r3,#0
+ 571 00c0 60D0     	 beq .L23
+ 572              	.LVL37:
+ 573              	.LBB84:
+ 574              	.LBB85:
+ 575              	.LBB86:
+ 576              	.LBB87:
+ 101:src/MightyBoard/shared/CircularBuffer.hh **** 		return length == 0;
+ 577              	 .loc 2 101 0
+ 578 00c2 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 579 00c6 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 580 00ca 5B88     	 ldrh r3,[r3,#2]
+ 581 00cc 9BB2     	 uxth r3,r3
+ 582              	.LBE87:
+ 583              	.LBE86:
+  67:src/MightyBoard/shared/CircularBuffer.hh **** 		if (isEmpty()) {
+ 584              	 .loc 2 67 0
+ 585 00ce 4BB9     	 cbnz r3,.L24
+  68:src/MightyBoard/shared/CircularBuffer.hh **** 			underflow = true;
+ 586              	 .loc 2 68 0
+ 587 00d0 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 588 00d4 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 589 00d8 4FF00102 	 mov r2,#1
+ 590 00dc 5A73     	 strb r2,[r3,#13]
+  69:src/MightyBoard/shared/CircularBuffer.hh **** 			return BufDataType();
+ 591              	 .loc 2 69 0
+ 592 00de 4FF00000 	 mov r0,#0
+ 593 00e2 1DE0     	 b .L25
+ 594              	.L24:
+ 595              	.LVL38:
+ 596              	.LBB88:
+ 597              	.LBB89:
+ 105:src/MightyBoard/shared/CircularBuffer.hh **** 		const BufSizeType actual_index = (index + start) % size;
+ 598              	 .loc 2 105 0
+ 599 00e4 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 600 00e8 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 601 00ec 9988     	 ldrh r1,[r3,#4]
+ 602 00ee 89B2     	 uxth r1,r1
+ 603 00f0 1A88     	 ldrh r2,[r3,#0]
+ 604              	.LVL39:
+ 605 00f2 91FBF2F4 	 sdiv r4,r1,r2
+ 606 00f6 02FB1411 	 mls r1,r2,r4,r1
+ 607              	.LVL40:
+ 608              	 .loc 2 106 0
+ 609 00fa 8CB2     	 uxth r4,r1
+ 610 00fc 9868     	 ldr r0,[r3,#8]
+ 611              	.LBE89:
+ 612              	.LBE88:
+  72:src/MightyBoard/shared/CircularBuffer.hh **** 		start = (start + 1) % size;
+ 613              	 .loc 2 72 0
+ 614 00fe 9988     	 ldrh r1,[r3,#4]
+ 615 0100 89B2     	 uxth r1,r1
+ 616 0102 01F10101 	 add r1,r1,#1
+ 617 0106 91FBF2F5 	 sdiv r5,r1,r2
+ 618 010a 02FB1512 	 mls r2,r2,r5,r1
+ 619 010e 92B2     	 uxth r2,r2
+ 620 0110 9A80     	 strh r2,[r3,#4]
+  73:src/MightyBoard/shared/CircularBuffer.hh **** 		length--;
+ 621              	 .loc 2 73 0
+ 622 0112 5A88     	 ldrh r2,[r3,#2]
+ 623 0114 02F1FF32 	 add r2,r2,#-1
+ 624 0118 92B2     	 uxth r2,r2
+ 625 011a 5A80     	 strh r2,[r3,#2]
+  74:src/MightyBoard/shared/CircularBuffer.hh **** 		return popped_byte;
+ 626              	 .loc 2 74 0
+ 627 011c 30F81400 	 ldrh r0,[r0,r4,lsl#1]
+ 628              	.LVL41:
+ 629              	.L25:
+ 630              	.LBE85:
+ 631              	.LBE84:
+ 632              	.LBB90:
+ 633              	.LBB91:
+ 634              	.LBB92:
+ 635              	.LBB93:
+ 101:src/MightyBoard/shared/CircularBuffer.hh **** 		return length == 0;
+ 636              	 .loc 2 101 0
+ 637 0120 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 638 0124 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 639 0128 5B88     	 ldrh r3,[r3,#2]
+ 640 012a 9BB2     	 uxth r3,r3
+ 641              	.LBE93:
+ 642              	.LBE92:
+  67:src/MightyBoard/shared/CircularBuffer.hh **** 		if (isEmpty()) {
+ 643              	 .loc 2 67 0
+ 644 012c 4BB9     	 cbnz r3,.L26
+  68:src/MightyBoard/shared/CircularBuffer.hh **** 			underflow = true;
+ 645              	 .loc 2 68 0
+ 646 012e 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 647 0132 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 648 0136 4FF00102 	 mov r2,#1
+ 649 013a 5A73     	 strb r2,[r3,#13]
+  69:src/MightyBoard/shared/CircularBuffer.hh **** 			return BufDataType();
+ 650              	 .loc 2 69 0
+ 651 013c 4FF00001 	 mov r1,#0
+ 652 0140 1DE0     	 b .L27
+ 653              	.L26:
+ 654              	.LVL42:
+ 655              	.LBB94:
+ 656              	.LBB95:
+ 105:src/MightyBoard/shared/CircularBuffer.hh **** 		const BufSizeType actual_index = (index + start) % size;
+ 657              	 .loc 2 105 0
+ 658 0142 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 659 0146 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 660 014a 9988     	 ldrh r1,[r3,#4]
+ 661 014c 89B2     	 uxth r1,r1
+ 662 014e 1A88     	 ldrh r2,[r3,#0]
+ 663              	.LVL43:
+ 664 0150 91FBF2F5 	 sdiv r5,r1,r2
+ 665 0154 02FB1511 	 mls r1,r2,r5,r1
+ 666              	.LVL44:
+ 667              	 .loc 2 106 0
+ 668 0158 8DB2     	 uxth r5,r1
+ 669 015a 9C68     	 ldr r4,[r3,#8]
+ 670              	.LBE95:
+ 671              	.LBE94:
+  72:src/MightyBoard/shared/CircularBuffer.hh **** 		start = (start + 1) % size;
+ 672              	 .loc 2 72 0
+ 673 015c 9988     	 ldrh r1,[r3,#4]
+ 674 015e 89B2     	 uxth r1,r1
+ 675 0160 01F10101 	 add r1,r1,#1
+ 676 0164 91FBF2F6 	 sdiv r6,r1,r2
+ 677 0168 02FB1612 	 mls r2,r2,r6,r1
+ 678 016c 92B2     	 uxth r2,r2
+ 679 016e 9A80     	 strh r2,[r3,#4]
+  73:src/MightyBoard/shared/CircularBuffer.hh **** 		length--;
+ 680              	 .loc 2 73 0
+ 681 0170 5A88     	 ldrh r2,[r3,#2]
+ 682 0172 02F1FF32 	 add r2,r2,#-1
+ 683 0176 92B2     	 uxth r2,r2
+ 684 0178 5A80     	 strh r2,[r3,#2]
+  74:src/MightyBoard/shared/CircularBuffer.hh **** 		return popped_byte;
+ 685              	 .loc 2 74 0
+ 686 017a 34F81510 	 ldrh r1,[r4,r5,lsl#1]
+ 687              	.LVL45:
+ 688              	.L27:
+ 689              	.LBE91:
+ 690              	.LBE90:
+ 178:src/MightyBoard/Motherboard/Piezo.cc **** 		setTone(frequencies.pop(), durations.pop());
+ 691              	 .loc 1 178 0
+ 692 017e FFF7FEFF 	 bl _ZN5Piezo7setToneEtt
+ 693 0182 70BD     	 pop {r4,r5,r6,pc}
+ 694              	.LVL46:
+ 695              	.L23:
+ 179:src/MightyBoard/Motherboard/Piezo.cc **** 	else
+ 180:src/MightyBoard/Motherboard/Piezo.cc **** 		playing = false;
+ 696              	 .loc 1 180 0
+ 697 0184 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 698 0188 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 699 018c 4FF00002 	 mov r2,#0
+ 700 0190 1A70     	 strb r2,[r3,#0]
+ 701              	.LVL47:
+ 702              	.L17:
+ 703 0192 70BD     	 pop {r4,r5,r6,pc}
+ 704              	 .cfi_endproc
+ 705              	.LFE77:
+ 707              	 .section .text._GLOBAL__sub_I__ZN5Piezo7BuzzPinE,"ax",%progbits
+ 708              	 .align 2
+ 709              	 .thumb
+ 710              	 .thumb_func
+ 712              	_GLOBAL__sub_I__ZN5Piezo7BuzzPinE:
+ 713              	.LFB87:
+ 181:src/MightyBoard/Motherboard/Piezo.cc ****    }
+ 182:src/MightyBoard/Motherboard/Piezo.cc **** }
+ 183:src/MightyBoard/Motherboard/Piezo.cc **** }
+ 714              	 .loc 1 183 0
+ 715              	 .cfi_startproc
+ 716              	 
+ 717              	 
+ 718 0000 38B5     	 push {r3,r4,r5,lr}
+ 719              	.LCFI6:
+ 720              	 .cfi_def_cfa_offset 16
+ 721              	 .cfi_offset 14,-4
+ 722              	 .cfi_offset 5,-8
+ 723              	 .cfi_offset 4,-12
+ 724              	 .cfi_offset 3,-16
+ 725              	.LVL48:
+ 726              	.LBB104:
+ 727              	.LBB105:
+ 728              	 .file 4 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 729              	 .loc 4 49 0
+ 730 0002 40F20000 	 movw r0,#:lower16:.LANCHOR9
+ 731 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR9
+ 732 000a 4FF00001 	 mov r1,#0
+ 733 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 734              	 .loc 4 50 0
+ 735 0012 40F20000 	 movw r0,#:lower16:.LANCHOR10
+ 736 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR10
+ 737 001a 4FF00101 	 mov r1,#1
+ 738 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 739              	 .loc 4 51 0
+ 740 0022 40F20004 	 movw r4,#:lower16:.LANCHOR11
+ 741 0026 C0F20004 	 movt r4,#:upper16:.LANCHOR11
+ 742 002a 2046     	 mov r0,r4
+ 743 002c 4FF00201 	 mov r1,#2
+ 744 0030 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 745              	 .loc 4 52 0
+ 746 0034 40F20000 	 movw r0,#:lower16:.LANCHOR12
+ 747 0038 C0F20000 	 movt r0,#:upper16:.LANCHOR12
+ 748 003c 4FF00301 	 mov r1,#3
+ 749 0040 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 750              	 .loc 4 53 0
+ 751 0044 40F20000 	 movw r0,#:lower16:.LANCHOR13
+ 752 0048 C0F20000 	 movt r0,#:upper16:.LANCHOR13
+ 753 004c 4FF00401 	 mov r1,#4
+ 754 0050 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 755              	 .loc 4 55 0
+ 756 0054 40F20005 	 movw r5,#:lower16:.LANCHOR14
+ 757 0058 C0F20005 	 movt r5,#:upper16:.LANCHOR14
+ 758 005c 2846     	 mov r0,r5
+ 759 005e 4FF0FF01 	 mov r1,#255
+ 760 0062 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 761              	 .loc 3 76 0
+ 762 0066 40F20000 	 movw r0,#:lower16:.LANCHOR15
+ 763 006a C0F20000 	 movt r0,#:upper16:.LANCHOR15
+ 764 006e 2946     	 mov r1,r5
+ 765 0070 4FF00002 	 mov r2,#0
+ 766 0074 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  29:src/MightyBoard/Motherboard/Piezo.cc **** Pin BuzzPin = BUZZER_PIN;
+ 767              	 .loc 1 29 0
+ 768 0078 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 769 007c C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 770 0080 2146     	 mov r1,r4
+ 771 0082 4FF00502 	 mov r2,#5
+ 772 0086 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  30:src/MightyBoard/Motherboard/Piezo.cc **** Timeout piezoTimeout;
+ 773              	 .loc 1 30 0
+ 774 008a 40F20000 	 movw r0,#:lower16:.LANCHOR16
+ 775 008e C0F20000 	 movt r0,#:upper16:.LANCHOR16
+ 776 0092 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 777              	.LVL49:
+ 778              	.LBB106:
+ 779              	.LBB107:
+ 780              	.LBB108:
+  45:src/MightyBoard/shared/CircularBuffer.hh **** 				underflow(false) {
+ 781              	 .loc 2 45 0
+ 782 0096 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 783 009a C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 784 009e 4FF01404 	 mov r4,#20
+ 785 00a2 1C80     	 strh r4,[r3,#0]
+ 786 00a4 4FF00002 	 mov r2,#0
+ 787 00a8 1146     	 mov r1,r2
+ 788 00aa 5A80     	 strh r2,[r3,#2]
+ 789 00ac 9A80     	 strh r2,[r3,#4]
+ 790 00ae 40F20000 	 movw r0,#:lower16:.LANCHOR17
+ 791 00b2 C0F20000 	 movt r0,#:upper16:.LANCHOR17
+ 792 00b6 9860     	 str r0,[r3,#8]
+ 793 00b8 1A73     	 strb r2,[r3,#12]
+ 794 00ba 5A73     	 strb r2,[r3,#13]
+ 795              	.LVL50:
+ 796              	.LBE108:
+ 797              	.LBE107:
+ 798              	.LBE106:
+ 799              	.LBB109:
+ 800              	.LBB110:
+ 801              	.LBB111:
+ 802 00bc 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 803 00c0 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 804 00c4 1C80     	 strh r4,[r3,#0]
+ 805 00c6 5A80     	 strh r2,[r3,#2]
+ 806 00c8 9A80     	 strh r2,[r3,#4]
+ 807 00ca 40F20002 	 movw r2,#:lower16:.LANCHOR18
+ 808 00ce C0F20002 	 movt r2,#:upper16:.LANCHOR18
+ 809 00d2 9A60     	 str r2,[r3,#8]
+ 810 00d4 1973     	 strb r1,[r3,#12]
+ 811 00d6 5973     	 strb r1,[r3,#13]
+ 812              	.LBE111:
+ 813              	.LBE110:
+ 814              	.LBE109:
+ 815              	.LBE105:
+ 816              	.LBE104:
+ 817              	 .loc 1 183 0
+ 818 00d8 38BD     	 pop {r3,r4,r5,pc}
+ 819              	 .cfi_endproc
+ 820              	.LFE87:
+ 822 00da 00BF     	 .section .init_array,"aw",%init_array
+ 823              	 .align 2
+ 824 0000 00000000 	 .word _GLOBAL__sub_I__ZN5Piezo7BuzzPinE(target1)
+ 825              	 .global _ZN5Piezo9durationsE
+ 826              	 .global _ZN5Piezo11frequenciesE
+ 827              	 .global _ZN5Piezo12duration_bufE
+ 828              	 .global _ZN5Piezo13frequency_bufE
+ 829              	 .global _ZN5Piezo6toggleE
+ 830              	 .global _ZN5Piezo10lastMicrosE
+ 831              	 .global _ZN5Piezo11toggle_timeE
+ 832              	 .global _ZN5Piezo11toggleCountE
+ 833              	 .global _ZN5Piezo11queueLengthE
+ 834              	 .global _ZN5Piezo7playingE
+ 835              	 .global _ZN5Piezo6ToneOnE
+ 836              	 .global _ZN5Piezo12piezoTimeoutE
+ 837              	 .global _ZN5Piezo7BuzzPinE
+ 838              	 .section .bss._ZL5Port0,"aw",%nobits
+ 839              	 .align 2
+ 840              	 .set .LANCHOR9,.+0
+ 843              	_ZL5Port0:
+ 844 0000 00       	 .space 1
+ 845 0001 000000   	 .section .bss._ZN5Piezo10lastMicrosE,"aw",%nobits
+ 846              	 .align 2
+ 847              	 .set .LANCHOR7,.+0
+ 850              	_ZN5Piezo10lastMicrosE:
+ 851 0000 00000000 	 .space 4
+ 852              	 .section .bss._ZN5Piezo9durationsE,"aw",%nobits
+ 853              	 .align 2
+ 854              	 .set .LANCHOR2,.+0
+ 857              	_ZN5Piezo9durationsE:
+ 858 0000 00000000 	 .space 16
+ 858      00000000 
+ 858      00000000 
+ 858      00000000 
+ 859              	 .section .bss._ZL5Port1,"aw",%nobits
+ 860              	 .align 2
+ 861              	 .set .LANCHOR10,.+0
+ 864              	_ZL5Port1:
+ 865 0000 00       	 .space 1
+ 866 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 867              	 .align 2
+ 868              	 .set .LANCHOR11,.+0
+ 871              	_ZL5Port2:
+ 872 0000 00       	 .space 1
+ 873 0001 000000   	 .section .bss._ZN5Piezo6toggleE,"aw",%nobits
+ 874              	 .set .LANCHOR8,.+0
+ 877              	_ZN5Piezo6toggleE:
+ 878 0000 00       	 .space 1
+ 879              	 .section .bss._ZL5Port4,"aw",%nobits
+ 880              	 .align 2
+ 881              	 .set .LANCHOR13,.+0
+ 884              	_ZL5Port4:
+ 885 0000 00       	 .space 1
+ 886 0001 000000   	 .section .bss._ZN5Piezo6ToneOnE,"aw",%nobits
+ 887              	 .set .LANCHOR3,.+0
+ 890              	_ZN5Piezo6ToneOnE:
+ 891 0000 00       	 .space 1
+ 892              	 .section .bss._ZL5Port3,"aw",%nobits
+ 893              	 .align 2
+ 894              	 .set .LANCHOR12,.+0
+ 897              	_ZL5Port3:
+ 898 0000 00       	 .space 1
+ 899 0001 000000   	 .section .bss._ZN5Piezo12duration_bufE,"aw",%nobits
+ 900              	 .align 2
+ 901              	 .set .LANCHOR18,.+0
+ 904              	_ZN5Piezo12duration_bufE:
+ 905 0000 00000000 	 .space 40
+ 905      00000000 
+ 905      00000000 
+ 905      00000000 
+ 905      00000000 
+ 906              	 .section .bss._ZN5Piezo11toggleCountE,"aw",%nobits
+ 907              	 .align 2
+ 908              	 .set .LANCHOR6,.+0
+ 911              	_ZN5Piezo11toggleCountE:
+ 912 0000 00000000 	 .space 4
+ 913              	 .section .bss._ZN5Piezo7BuzzPinE,"aw",%nobits
+ 914              	 .align 2
+ 915              	 .set .LANCHOR4,.+0
+ 918              	_ZN5Piezo7BuzzPinE:
+ 919 0000 00000000 	 .space 5
+ 919      00
+ 920 0005 000000   	 .section .bss._ZN5Piezo13frequency_bufE,"aw",%nobits
+ 921              	 .align 2
+ 922              	 .set .LANCHOR17,.+0
+ 925              	_ZN5Piezo13frequency_bufE:
+ 926 0000 00000000 	 .space 40
+ 926      00000000 
+ 926      00000000 
+ 926      00000000 
+ 926      00000000 
+ 927              	 .section .bss._ZN5Piezo11frequenciesE,"aw",%nobits
+ 928              	 .align 2
+ 929              	 .set .LANCHOR1,.+0
+ 932              	_ZN5Piezo11frequenciesE:
+ 933 0000 00000000 	 .space 16
+ 933      00000000 
+ 933      00000000 
+ 933      00000000 
+ 934              	 .section .bss._ZN5Piezo11queueLengthE,"aw",%nobits
+ 937              	_ZN5Piezo11queueLengthE:
+ 938 0000 00       	 .space 1
+ 939              	 .section .bss._ZL8NullPort,"aw",%nobits
+ 940              	 .align 2
+ 941              	 .set .LANCHOR14,.+0
+ 944              	_ZL8NullPort:
+ 945 0000 00       	 .space 1
+ 946 0001 000000   	 .section .bss._ZN5Piezo7playingE,"aw",%nobits
+ 947              	 .set .LANCHOR0,.+0
+ 950              	_ZN5Piezo7playingE:
+ 951 0000 00       	 .space 1
+ 952              	 .section .bss._ZN5Piezo11toggle_timeE,"aw",%nobits
+ 953              	 .align 2
+ 954              	 .set .LANCHOR5,.+0
+ 957              	_ZN5Piezo11toggle_timeE:
+ 958 0000 00000000 	 .space 4
+ 959              	 .section .bss._ZL7NullPin,"aw",%nobits
+ 960              	 .align 2
+ 961              	 .set .LANCHOR15,.+0
+ 964              	_ZL7NullPin:
+ 965 0000 00000000 	 .space 5
+ 965      00
+ 966 0005 000000   	 .section .bss._ZN5Piezo12piezoTimeoutE,"aw",%nobits
+ 967              	 .align 2
+ 968              	 .set .LANCHOR16,.+0
+ 971              	_ZN5Piezo12piezoTimeoutE:
+ 972 0000 00000000 	 .space 16
+ 972      00000000 
+ 972      00000000 
+ 972      00000000 
+ 973              	 .text
+ 974              	.Letext0:
+ 975              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 976              	 .file 6 "src/MightyBoard/shared/Types.hh"
+ 977              	 .file 7 "src/MightyBoard/shared/Timeout.hh"
+ 978              	 .file 8 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 979              	 .file 9 "src/MightyBoard/Motherboard/Piezo.hh"
+ 980              	 .file 10 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Piezo.cc
+    {standard input}:19     .text._ZN5Piezo9isPlayingEv:00000000 $t
+    {standard input}:24     .text._ZN5Piezo9isPlayingEv:00000000 _ZN5Piezo9isPlayingEv
+    {standard input}:947    .bss._ZN5Piezo7playingE:00000000 .LANCHOR0
+    {standard input}:42     .text._ZN5Piezo9queueToneEtt:00000000 $t
+    {standard input}:47     .text._ZN5Piezo9queueToneEtt:00000000 _ZN5Piezo9queueToneEtt
+    {standard input}:929    .bss._ZN5Piezo11frequenciesE:00000000 .LANCHOR1
+    {standard input}:854    .bss._ZN5Piezo9durationsE:00000000 .LANCHOR2
+    {standard input}:185    .text._ZN5Piezo7setToneEtt:00000000 $t
+    {standard input}:190    .text._ZN5Piezo7setToneEtt:00000000 _ZN5Piezo7setToneEtt
+    {standard input}:887    .bss._ZN5Piezo6ToneOnE:00000000 .LANCHOR3
+    {standard input}:915    .bss._ZN5Piezo7BuzzPinE:00000000 .LANCHOR4
+    {standard input}:954    .bss._ZN5Piezo11toggle_timeE:00000000 .LANCHOR5
+    {standard input}:908    .bss._ZN5Piezo11toggleCountE:00000000 .LANCHOR6
+    {standard input}:847    .bss._ZN5Piezo10lastMicrosE:00000000 .LANCHOR7
+    {standard input}:299    .text._ZN5Piezo9errorToneEh:00000000 $t
+    {standard input}:304    .text._ZN5Piezo9errorToneEh:00000000 _ZN5Piezo9errorToneEh
+    {standard input}:354    .text._ZN5Piezo8doneToneEv:00000000 $t
+    {standard input}:359    .text._ZN5Piezo8doneToneEv:00000000 _ZN5Piezo8doneToneEv
+    {standard input}:416    .text._ZN5Piezo11startUpToneEv:00000000 $t
+    {standard input}:421    .text._ZN5Piezo11startUpToneEv:00000000 _ZN5Piezo11startUpToneEv
+    {standard input}:458    .text._ZN5Piezo11doInterruptEv:00000000 $t
+    {standard input}:463    .text._ZN5Piezo11doInterruptEv:00000000 _ZN5Piezo11doInterruptEv
+    {standard input}:874    .bss._ZN5Piezo6toggleE:00000000 .LANCHOR8
+    {standard input}:708    .text._GLOBAL__sub_I__ZN5Piezo7BuzzPinE:00000000 $t
+    {standard input}:712    .text._GLOBAL__sub_I__ZN5Piezo7BuzzPinE:00000000 _GLOBAL__sub_I__ZN5Piezo7BuzzPinE
+    {standard input}:840    .bss._ZL5Port0:00000000 .LANCHOR9
+    {standard input}:861    .bss._ZL5Port1:00000000 .LANCHOR10
+    {standard input}:868    .bss._ZL5Port2:00000000 .LANCHOR11
+    {standard input}:894    .bss._ZL5Port3:00000000 .LANCHOR12
+    {standard input}:881    .bss._ZL5Port4:00000000 .LANCHOR13
+    {standard input}:941    .bss._ZL8NullPort:00000000 .LANCHOR14
+    {standard input}:961    .bss._ZL7NullPin:00000000 .LANCHOR15
+    {standard input}:968    .bss._ZN5Piezo12piezoTimeoutE:00000000 .LANCHOR16
+    {standard input}:922    .bss._ZN5Piezo13frequency_bufE:00000000 .LANCHOR17
+    {standard input}:901    .bss._ZN5Piezo12duration_bufE:00000000 .LANCHOR18
+    {standard input}:823    .init_array:00000000 $d
+    {standard input}:857    .bss._ZN5Piezo9durationsE:00000000 _ZN5Piezo9durationsE
+    {standard input}:932    .bss._ZN5Piezo11frequenciesE:00000000 _ZN5Piezo11frequenciesE
+    {standard input}:904    .bss._ZN5Piezo12duration_bufE:00000000 _ZN5Piezo12duration_bufE
+    {standard input}:925    .bss._ZN5Piezo13frequency_bufE:00000000 _ZN5Piezo13frequency_bufE
+    {standard input}:877    .bss._ZN5Piezo6toggleE:00000000 _ZN5Piezo6toggleE
+    {standard input}:850    .bss._ZN5Piezo10lastMicrosE:00000000 _ZN5Piezo10lastMicrosE
+    {standard input}:957    .bss._ZN5Piezo11toggle_timeE:00000000 _ZN5Piezo11toggle_timeE
+    {standard input}:911    .bss._ZN5Piezo11toggleCountE:00000000 _ZN5Piezo11toggleCountE
+    {standard input}:937    .bss._ZN5Piezo11queueLengthE:00000000 _ZN5Piezo11queueLengthE
+    {standard input}:950    .bss._ZN5Piezo7playingE:00000000 _ZN5Piezo7playingE
+    {standard input}:890    .bss._ZN5Piezo6ToneOnE:00000000 _ZN5Piezo6ToneOnE
+    {standard input}:971    .bss._ZN5Piezo12piezoTimeoutE:00000000 _ZN5Piezo12piezoTimeoutE
+    {standard input}:918    .bss._ZN5Piezo7BuzzPinE:00000000 _ZN5Piezo7BuzzPinE
+    {standard input}:839    .bss._ZL5Port0:00000000 $d
+    {standard input}:843    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:846    .bss._ZN5Piezo10lastMicrosE:00000000 $d
+    {standard input}:853    .bss._ZN5Piezo9durationsE:00000000 $d
+    {standard input}:860    .bss._ZL5Port1:00000000 $d
+    {standard input}:864    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:867    .bss._ZL5Port2:00000000 $d
+    {standard input}:871    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:878    .bss._ZN5Piezo6toggleE:00000000 $d
+    {standard input}:880    .bss._ZL5Port4:00000000 $d
+    {standard input}:884    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:891    .bss._ZN5Piezo6ToneOnE:00000000 $d
+    {standard input}:893    .bss._ZL5Port3:00000000 $d
+    {standard input}:897    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:900    .bss._ZN5Piezo12duration_bufE:00000000 $d
+    {standard input}:907    .bss._ZN5Piezo11toggleCountE:00000000 $d
+    {standard input}:914    .bss._ZN5Piezo7BuzzPinE:00000000 $d
+    {standard input}:921    .bss._ZN5Piezo13frequency_bufE:00000000 $d
+    {standard input}:928    .bss._ZN5Piezo11frequenciesE:00000000 $d
+    {standard input}:938    .bss._ZN5Piezo11queueLengthE:00000000 $d
+    {standard input}:940    .bss._ZL8NullPort:00000000 $d
+    {standard input}:944    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:951    .bss._ZN5Piezo7playingE:00000000 $d
+    {standard input}:953    .bss._ZN5Piezo11toggle_timeE:00000000 $d
+    {standard input}:960    .bss._ZL7NullPin:00000000 $d
+    {standard input}:964    .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:967    .bss._ZN5Piezo12piezoTimeoutE:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN6eeprom10getEeprom8Eth
+GPIO_ClearValue
+_ZNK3Pin12setDirectionEb
+GPIO_SetValue
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth
+_ZN7TimeoutC1Ev

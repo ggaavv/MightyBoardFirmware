@@ -1,0 +1,405 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "partition.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.partition_open,"ax",%progbits
+  19              	 .align 2
+  20              	 .global partition_open
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	partition_open:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib_sd/partition.c"
+   1:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+   2:src/MightyBoard/Motherboard/lib_sd/partition.c **** /*
+   3:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * Copyright (c) 2006-2010 by Roland Riegel <feedback@roland-riegel.de>
+   4:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+   5:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * This file is free software; you can redistribute it and/or modify
+   6:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * it under the terms of either the GNU General Public License version 2
+   7:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * or the GNU Lesser General Public License version 2.1, both as
+   8:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * published by the Free Software Foundation.
+   9:src/MightyBoard/Motherboard/lib_sd/partition.c ****  */
+  10:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  11:src/MightyBoard/Motherboard/lib_sd/partition.c **** #include "partition.h"
+  12:src/MightyBoard/Motherboard/lib_sd/partition.c **** #include "partition_config.h"
+  13:src/MightyBoard/Motherboard/lib_sd/partition.c **** #include "sd-reader_config.h"
+  14:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  15:src/MightyBoard/Motherboard/lib_sd/partition.c **** #include <string.h>
+  16:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  17:src/MightyBoard/Motherboard/lib_sd/partition.c **** #if USE_DYNAMIC_MEMORY
+  18:src/MightyBoard/Motherboard/lib_sd/partition.c ****     #include <stdlib.h>
+  19:src/MightyBoard/Motherboard/lib_sd/partition.c **** #endif
+  20:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  21:src/MightyBoard/Motherboard/lib_sd/partition.c **** /**
+  22:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \addtogroup partition Partition table support
+  23:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+  24:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * Support for reading partition tables and access to partitions.
+  25:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+  26:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * @{
+  27:src/MightyBoard/Motherboard/lib_sd/partition.c ****  */
+  28:src/MightyBoard/Motherboard/lib_sd/partition.c **** /**
+  29:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \file
+  30:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * Partition table implementation (license: GPLv2 or LGPLv2.1)
+  31:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+  32:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \author Roland Riegel
+  33:src/MightyBoard/Motherboard/lib_sd/partition.c ****  */
+  34:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  35:src/MightyBoard/Motherboard/lib_sd/partition.c **** /**
+  36:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \addtogroup partition_config Configuration of partition table support
+  37:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * Preprocessor defines to configure the partition support.
+  38:src/MightyBoard/Motherboard/lib_sd/partition.c ****  */
+  39:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  40:src/MightyBoard/Motherboard/lib_sd/partition.c **** #if !USE_DYNAMIC_MEMORY
+  41:src/MightyBoard/Motherboard/lib_sd/partition.c **** static struct partition_struct partition_handles[PARTITION_COUNT];
+  42:src/MightyBoard/Motherboard/lib_sd/partition.c **** #endif
+  43:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  44:src/MightyBoard/Motherboard/lib_sd/partition.c **** /**
+  45:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * Opens a partition.
+  46:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+  47:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * Opens a partition by its index number and returns a partition
+  48:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * handle which describes the opened partition.
+  49:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+  50:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \note This function does not support extended partitions.
+  51:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+  52:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \param[in] device_read A function pointer which is used to read from the disk.
+  53:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \param[in] device_read_interval A function pointer which is used to read in constant intervals f
+  54:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \param[in] device_write A function pointer which is used to write to the disk.
+  55:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \param[in] device_write_interval A function pointer which is used to write a data stream to disk
+  56:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \param[in] index The index of the partition which should be opened, range 0 to 3.
+  57:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *                  A negative value is allowed as well. In this case, the partition opened is
+  58:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *                  not checked for existance, begins at offset zero, has a length of zero
+  59:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *                  and is of an unknown type. Use this in case you want to open the whole device
+  60:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *                  as a single partition (e.g. for "super floppy" use).
+  61:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \returns 0 on failure, a partition descriptor on success.
+  62:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \see partition_close
+  63:src/MightyBoard/Motherboard/lib_sd/partition.c ****  */
+  64:src/MightyBoard/Motherboard/lib_sd/partition.c **** struct partition_struct* partition_open(device_read_t device_read, device_read_interval_t device_re
+  65:src/MightyBoard/Motherboard/lib_sd/partition.c **** {
+  27              	 .loc 1 65 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 24
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 8,-8
+  37              	 .cfi_offset 7,-12
+  38              	 .cfi_offset 6,-16
+  39              	 .cfi_offset 5,-20
+  40              	 .cfi_offset 4,-24
+  41 0004 84B0     	 sub sp,sp,#16
+  42              	.LCFI1:
+  43              	 .cfi_def_cfa_offset 40
+  44 0006 1746     	 mov r7,r2
+  45 0008 9846     	 mov r8,r3
+  46 000a 9DF92840 	 ldrsb r4,[sp,#40]
+  47              	.LVL1:
+  66:src/MightyBoard/Motherboard/lib_sd/partition.c ****     struct partition_struct* new_partition = 0;
+  67:src/MightyBoard/Motherboard/lib_sd/partition.c ****     uint8_t buffer[0x10];
+  68:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  69:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(!device_read || !device_read_interval || index >= 4)
+  48              	 .loc 1 69 0
+  49 000e 0546     	 mov r5,r0
+  50 0010 0E46     	 mov r6,r1
+  51 0012 D1F10101 	 rsbs r1,r1,#1
+  52              	.LVL2:
+  53 0016 38BF     	 it cc
+  54 0018 0021     	 movcc r1,#0
+  55 001a 0028     	 cmp r0,#0
+  56 001c 08BF     	 it eq
+  57 001e 41F00101 	 orreq r1,r1,#1
+  70:src/MightyBoard/Motherboard/lib_sd/partition.c ****         return 0;
+  58              	 .loc 1 70 0
+  59 0022 4FF00000 	 mov r0,#0
+  60              	.LVL3:
+  69:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(!device_read || !device_read_interval || index >= 4)
+  61              	 .loc 1 69 0
+  62 0026 0029     	 cmp r1,#0
+  63 0028 63D1     	 bne .L2
+  69:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(!device_read || !device_read_interval || index >= 4)
+  64              	 .loc 1 69 0 is_stmt 0 discriminator 1
+  65 002a 032C     	 cmp r4,#3
+  66              	 .loc 1 70 0 is_stmt 1 discriminator 1
+  67 002c C8BF     	 it gt
+  68 002e 0020     	 movgt r0,#0
+  69:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(!device_read || !device_read_interval || index >= 4)
+  69              	 .loc 1 69 0 discriminator 1
+  70 0030 5FDC     	 bgt .L2
+  71:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  72:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(index >= 0)
+  71              	 .loc 1 72 0
+  72 0032 002C     	 cmp r4,#0
+  73 0034 0FDB     	 blt .L3
+  73:src/MightyBoard/Motherboard/lib_sd/partition.c ****     {
+  74:src/MightyBoard/Motherboard/lib_sd/partition.c ****         /* read specified partition table index */
+  75:src/MightyBoard/Motherboard/lib_sd/partition.c ****         if(!device_read(0x01be + index * 0x10, buffer, sizeof(buffer)))
+  74              	 .loc 1 75 0
+  75 0036 4FEA0410 	 lsl r0,r4,#4
+  76 003a 00F5DF70 	 add r0,r0,#446
+  77 003e 6946     	 mov r1,sp
+  78 0040 4FF01002 	 mov r2,#16
+  79              	.LVL4:
+  80 0044 A847     	 blx r5
+  81              	.LVL5:
+  82 0046 0028     	 cmp r0,#0
+  83 0048 51D0     	 beq .L7
+  76:src/MightyBoard/Motherboard/lib_sd/partition.c ****             return 0;
+  77:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  78:src/MightyBoard/Motherboard/lib_sd/partition.c ****         /* abort on empty partition entry */
+  79:src/MightyBoard/Motherboard/lib_sd/partition.c ****         if(buffer[4] == 0x00)
+  84              	 .loc 1 79 0
+  85 004a 9DF80430 	 ldrb r3,[sp,#4]
+  80:src/MightyBoard/Motherboard/lib_sd/partition.c ****             return 0;
+  86              	 .loc 1 80 0
+  87 004e 4FF00000 	 mov r0,#0
+  79:src/MightyBoard/Motherboard/lib_sd/partition.c ****         if(buffer[4] == 0x00)
+  88              	 .loc 1 79 0
+  89 0052 002B     	 cmp r3,#0
+  90 0054 4DD0     	 beq .L2
+  91              	.L3:
+  92              	.LVL6:
+  81:src/MightyBoard/Motherboard/lib_sd/partition.c ****     }
+  82:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  83:src/MightyBoard/Motherboard/lib_sd/partition.c ****     /* allocate partition descriptor */
+  84:src/MightyBoard/Motherboard/lib_sd/partition.c **** #if USE_DYNAMIC_MEMORY
+  85:src/MightyBoard/Motherboard/lib_sd/partition.c ****     new_partition = malloc(sizeof(*new_partition));
+  86:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(!new_partition)
+  87:src/MightyBoard/Motherboard/lib_sd/partition.c ****         return 0;
+  88:src/MightyBoard/Motherboard/lib_sd/partition.c **** #else
+  89:src/MightyBoard/Motherboard/lib_sd/partition.c ****     new_partition = partition_handles;
+  90:src/MightyBoard/Motherboard/lib_sd/partition.c ****     uint8_t i;
+  91:src/MightyBoard/Motherboard/lib_sd/partition.c ****     for(i = 0; i < PARTITION_COUNT; ++i)
+  92:src/MightyBoard/Motherboard/lib_sd/partition.c ****     {
+  93:src/MightyBoard/Motherboard/lib_sd/partition.c ****         if(new_partition->type == PARTITION_TYPE_FREE)
+  93              	 .loc 1 93 0
+  94 0056 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  95 005a C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  96 005e 1B7C     	 ldrb r3,[r3,#16]
+  94:src/MightyBoard/Motherboard/lib_sd/partition.c ****             break;
+  95:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+  96:src/MightyBoard/Motherboard/lib_sd/partition.c ****         ++new_partition;
+  97:src/MightyBoard/Motherboard/lib_sd/partition.c ****     }
+  98:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(i >= PARTITION_COUNT)
+  99:src/MightyBoard/Motherboard/lib_sd/partition.c ****         return 0;
+  97              	 .loc 1 99 0
+  98 0060 4FF00000 	 mov r0,#0
+  93:src/MightyBoard/Motherboard/lib_sd/partition.c ****         if(new_partition->type == PARTITION_TYPE_FREE)
+  99              	 .loc 1 93 0
+ 100 0064 002B     	 cmp r3,#0
+ 101 0066 44D1     	 bne .L2
+  89:src/MightyBoard/Motherboard/lib_sd/partition.c ****     new_partition = partition_handles;
+ 102              	 .loc 1 89 0
+ 103 0068 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 104 006c C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 100:src/MightyBoard/Motherboard/lib_sd/partition.c **** #endif
+ 101:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+ 102:src/MightyBoard/Motherboard/lib_sd/partition.c ****     memset(new_partition, 0, sizeof(*new_partition));
+ 105              	 .loc 1 102 0
+ 106 0070 4FF00001 	 mov r1,#0
+ 107 0074 03F10C02 	 add r2,r3,#12
+ 108 0078 42F8041B 	 str r1,[r2],#4
+ 109 007c 42F8041B 	 str r1,[r2],#4
+ 110 0080 42F8041B 	 str r1,[r2],#4
+ 111 0084 1160     	 str r1,[r2,#0]
+ 103:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+ 104:src/MightyBoard/Motherboard/lib_sd/partition.c ****     /* fill partition descriptor */
+ 105:src/MightyBoard/Motherboard/lib_sd/partition.c ****     new_partition->device_read = device_read;
+ 112              	 .loc 1 105 0
+ 113 0086 1D60     	 str r5,[r3,#0]
+ 106:src/MightyBoard/Motherboard/lib_sd/partition.c ****     new_partition->device_read_interval = device_read_interval;
+ 114              	 .loc 1 106 0
+ 115 0088 5E60     	 str r6,[r3,#4]
+ 107:src/MightyBoard/Motherboard/lib_sd/partition.c ****     new_partition->device_write = device_write;
+ 116              	 .loc 1 107 0
+ 117 008a 9F60     	 str r7,[r3,#8]
+ 108:src/MightyBoard/Motherboard/lib_sd/partition.c ****     new_partition->device_write_interval = device_write_interval;
+ 118              	 .loc 1 108 0
+ 119 008c C3F80C80 	 str r8,[r3,#12]
+ 109:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+ 110:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(index >= 0)
+ 120              	 .loc 1 110 0
+ 121 0090 8C42     	 cmp r4,r1
+ 122 0092 24DB     	 blt .L4
+ 111:src/MightyBoard/Motherboard/lib_sd/partition.c ****     {
+ 112:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->type = buffer[4];
+ 123              	 .loc 1 112 0
+ 124 0094 1846     	 mov r0,r3
+ 125 0096 9DF80430 	 ldrb r3,[sp,#4]
+ 126 009a 0374     	 strb r3,[r0,#16]
+ 113:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->offset = ((uint32_t) buffer[8]) |
+ 114:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[9] << 8) |
+ 127              	 .loc 1 114 0
+ 128 009c 9DF80920 	 ldrb r2,[sp,#9]
+ 115:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[10] << 16) |
+ 129              	 .loc 1 115 0
+ 130 00a0 9DF80A30 	 ldrb r3,[sp,#10]
+ 131 00a4 4FEA0343 	 lsl r3,r3,#16
+ 113:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->offset = ((uint32_t) buffer[8]) |
+ 132              	 .loc 1 113 0
+ 133 00a8 43EA0223 	 orr r3,r3,r2,lsl#8
+ 134 00ac 9DF80820 	 ldrb r2,[sp,#8]
+ 114:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[9] << 8) |
+ 135              	 .loc 1 114 0
+ 136 00b0 1343     	 orrs r3,r3,r2
+ 116:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[11] << 24);
+ 137              	 .loc 1 116 0
+ 138 00b2 9DF80B20 	 ldrb r2,[sp,#11]
+ 115:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[10] << 16) |
+ 139              	 .loc 1 115 0
+ 140 00b6 43EA0263 	 orr r3,r3,r2,lsl#24
+ 113:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->offset = ((uint32_t) buffer[8]) |
+ 141              	 .loc 1 113 0
+ 142 00ba 4361     	 str r3,[r0,#20]
+ 117:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->length = ((uint32_t) buffer[12]) |
+ 118:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[13] << 8) |
+ 143              	 .loc 1 118 0
+ 144 00bc 9DF80D20 	 ldrb r2,[sp,#13]
+ 119:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[14] << 16) |
+ 145              	 .loc 1 119 0
+ 146 00c0 9DF80E30 	 ldrb r3,[sp,#14]
+ 147 00c4 4FEA0343 	 lsl r3,r3,#16
+ 117:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->length = ((uint32_t) buffer[12]) |
+ 148              	 .loc 1 117 0
+ 149 00c8 43EA0223 	 orr r3,r3,r2,lsl#8
+ 150 00cc 9DF80C20 	 ldrb r2,[sp,#12]
+ 118:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[13] << 8) |
+ 151              	 .loc 1 118 0
+ 152 00d0 1343     	 orrs r3,r3,r2
+ 120:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[15] << 24);
+ 153              	 .loc 1 120 0
+ 154 00d2 9DF80F20 	 ldrb r2,[sp,#15]
+ 119:src/MightyBoard/Motherboard/lib_sd/partition.c ****                                 ((uint32_t) buffer[14] << 16) |
+ 155              	 .loc 1 119 0
+ 156 00d6 43EA0263 	 orr r3,r3,r2,lsl#24
+ 117:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->length = ((uint32_t) buffer[12]) |
+ 157              	 .loc 1 117 0
+ 158 00da 8361     	 str r3,[r0,#24]
+ 159 00dc 09E0     	 b .L2
+ 160              	.L4:
+ 121:src/MightyBoard/Motherboard/lib_sd/partition.c ****     }
+ 122:src/MightyBoard/Motherboard/lib_sd/partition.c ****     else
+ 123:src/MightyBoard/Motherboard/lib_sd/partition.c ****     {
+ 124:src/MightyBoard/Motherboard/lib_sd/partition.c ****         new_partition->type = 0xff;
+ 161              	 .loc 1 124 0
+ 162 00de 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 163 00e2 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 164 00e6 4FF0FF03 	 mov r3,#255
+ 165 00ea 0374     	 strb r3,[r0,#16]
+ 166 00ec 01E0     	 b .L2
+ 167              	.LVL7:
+ 168              	.L7:
+  76:src/MightyBoard/Motherboard/lib_sd/partition.c ****             return 0;
+ 169              	 .loc 1 76 0
+ 170 00ee 4FF00000 	 mov r0,#0
+ 171              	.LVL8:
+ 172              	.L2:
+ 125:src/MightyBoard/Motherboard/lib_sd/partition.c ****     }
+ 126:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+ 127:src/MightyBoard/Motherboard/lib_sd/partition.c ****     return new_partition;
+ 128:src/MightyBoard/Motherboard/lib_sd/partition.c **** }
+ 173              	 .loc 1 128 0
+ 174 00f2 04B0     	 add sp,sp,#16
+ 175 00f4 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 176              	 .cfi_endproc
+ 177              	.LFE55:
+ 179              	 .section .text.partition_close,"ax",%progbits
+ 180              	 .align 2
+ 181              	 .global partition_close
+ 182              	 .thumb
+ 183              	 .thumb_func
+ 185              	partition_close:
+ 186              	.LFB56:
+ 129:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+ 130:src/MightyBoard/Motherboard/lib_sd/partition.c **** /**
+ 131:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * Closes a partition.
+ 132:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+ 133:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * This function destroys a partition descriptor which was
+ 134:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * previously obtained from a call to partition_open().
+ 135:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * When this function returns, the given descriptor will be
+ 136:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * invalid.
+ 137:src/MightyBoard/Motherboard/lib_sd/partition.c ****  *
+ 138:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \param[in] partition The partition descriptor to destroy.
+ 139:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \returns 0 on failure, 1 on success.
+ 140:src/MightyBoard/Motherboard/lib_sd/partition.c ****  * \see partition_open
+ 141:src/MightyBoard/Motherboard/lib_sd/partition.c ****  */
+ 142:src/MightyBoard/Motherboard/lib_sd/partition.c **** uint8_t partition_close(struct partition_struct* partition)
+ 143:src/MightyBoard/Motherboard/lib_sd/partition.c **** {
+ 187              	 .loc 1 143 0
+ 188              	 .cfi_startproc
+ 189              	 
+ 190              	 
+ 191              	 
+ 192              	.LVL9:
+ 144:src/MightyBoard/Motherboard/lib_sd/partition.c ****     if(!partition)
+ 193              	 .loc 1 144 0
+ 194 0000 28B1     	 cbz r0,.L12
+ 145:src/MightyBoard/Motherboard/lib_sd/partition.c ****         return 0;
+ 146:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+ 147:src/MightyBoard/Motherboard/lib_sd/partition.c ****     /* destroy partition descriptor */
+ 148:src/MightyBoard/Motherboard/lib_sd/partition.c **** #if USE_DYNAMIC_MEMORY
+ 149:src/MightyBoard/Motherboard/lib_sd/partition.c ****     free(partition);
+ 150:src/MightyBoard/Motherboard/lib_sd/partition.c **** #else
+ 151:src/MightyBoard/Motherboard/lib_sd/partition.c ****     partition->type = PARTITION_TYPE_FREE;
+ 195              	 .loc 1 151 0
+ 196 0002 4FF00002 	 mov r2,#0
+ 197 0006 0274     	 strb r2,[r0,#16]
+ 152:src/MightyBoard/Motherboard/lib_sd/partition.c **** #endif
+ 153:src/MightyBoard/Motherboard/lib_sd/partition.c **** 
+ 154:src/MightyBoard/Motherboard/lib_sd/partition.c ****     return 1;
+ 198              	 .loc 1 154 0
+ 199 0008 4FF00100 	 mov r0,#1
+ 200              	.LVL10:
+ 201 000c 7047     	 bx lr
+ 202              	.LVL11:
+ 203              	.L12:
+ 145:src/MightyBoard/Motherboard/lib_sd/partition.c ****         return 0;
+ 204              	 .loc 1 145 0
+ 205 000e 4FF00000 	 mov r0,#0
+ 206              	.LVL12:
+ 155:src/MightyBoard/Motherboard/lib_sd/partition.c **** }
+ 207              	 .loc 1 155 0
+ 208 0012 7047     	 bx lr
+ 209              	 .cfi_endproc
+ 210              	.LFE56:
+ 212              	 .section .bss.partition_handles,"aw",%nobits
+ 213              	 .align 2
+ 214              	 .set .LANCHOR0,.+0
+ 217              	partition_handles:
+ 218 0000 00000000 	 .space 28
+ 218      00000000 
+ 218      00000000 
+ 218      00000000 
+ 218      00000000 
+ 219              	 .text
+ 220              	.Letext0:
+ 221              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 222              	 .file 3 "src/MightyBoard/Motherboard/lib_sd/sd_raw_config.h"
+ 223              	 .file 4 "src/MightyBoard/Motherboard/lib_sd/partition.h"
+ 224              	 .file 5 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 partition.c
+    {standard input}:19     .text.partition_open:00000000 $t
+    {standard input}:24     .text.partition_open:00000000 partition_open
+    {standard input}:214    .bss.partition_handles:00000000 .LANCHOR0
+    {standard input}:180    .text.partition_close:00000000 $t
+    {standard input}:185    .text.partition_close:00000000 partition_close
+    {standard input}:213    .bss.partition_handles:00000000 $d
+    {standard input}:217    .bss.partition_handles:00000000 partition_handles
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

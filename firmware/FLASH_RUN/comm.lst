@@ -1,0 +1,2752 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "comm.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.comm_test,"ax",%progbits
+  19              	 .align 2
+  20              	 .global comm_test
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	comm_test:
+  25              	.LFB56:
+  26              	 .file 1 "src/MightyBoard/Motherboard/comm.c"
+   1:src/MightyBoard/Motherboard/comm.c **** /*
+   2:src/MightyBoard/Motherboard/comm.c ****  * coms.cpp
+   3:src/MightyBoard/Motherboard/comm.c ****  *
+   4:src/MightyBoard/Motherboard/comm.c ****  *  Created on: 31 Mar 2011
+   5:src/MightyBoard/Motherboard/comm.c ****  *      Author: Jamie
+   6:src/MightyBoard/Motherboard/comm.c ****  */
+   7:src/MightyBoard/Motherboard/comm.c **** 
+   8:src/MightyBoard/Motherboard/comm.c **** #include <string.h>
+   9:src/MightyBoard/Motherboard/comm.c **** #include "comm.h"
+  10:src/MightyBoard/Motherboard/comm.c **** 
+  11:src/MightyBoard/Motherboard/comm.c **** #include "lpc17xx_uart.h"
+  12:src/MightyBoard/Motherboard/comm.c **** #include "lpc17xx_pinsel.h"
+  13:src/MightyBoard/Motherboard/comm.c **** #include "lpc17xx_gpio.h"
+  14:src/MightyBoard/Motherboard/comm.c **** #include "lpc17xx_wdt.h"
+  15:src/MightyBoard/Motherboard/comm.c **** //#include "pinout.h"
+  16:src/MightyBoard/Motherboard/comm.c **** #include "lpc17xx_wdt.h"
+  17:src/MightyBoard/Motherboard/comm.c **** 
+  18:src/MightyBoard/Motherboard/comm.c **** 
+  19:src/MightyBoard/Motherboard/comm.c **** #define USER_FLASH_START 0x3000 // For USB bootloader
+  20:src/MightyBoard/Motherboard/comm.c **** //#define USER_FLASH_START 0x0 // No USB bootloader
+  21:src/MightyBoard/Motherboard/comm.c **** #define BOOTLOADER_START 0x0 // To enter bootloader
+  22:src/MightyBoard/Motherboard/comm.c **** 
+  23:src/MightyBoard/Motherboard/comm.c **** volatile int LINE_READY=0;
+  24:src/MightyBoard/Motherboard/comm.c **** volatile int RX_TOG=0;
+  25:src/MightyBoard/Motherboard/comm.c **** volatile int TX_TOG=0;
+  26:src/MightyBoard/Motherboard/comm.c **** 
+  27:src/MightyBoard/Motherboard/comm.c **** volatile uint8_t UART_LINE[50];
+  28:src/MightyBoard/Motherboard/comm.c **** volatile uint32_t UART_LINE_LEN=0;
+  29:src/MightyBoard/Motherboard/comm.c **** 
+  30:src/MightyBoard/Motherboard/comm.c **** #define USARTx LPC_UART0
+  31:src/MightyBoard/Motherboard/comm.c **** 
+  32:src/MightyBoard/Motherboard/comm.c **** /************************** PRIVATE DEFINTIONS *************************/
+  33:src/MightyBoard/Motherboard/comm.c **** /* buffer size definition */
+  34:src/MightyBoard/Motherboard/comm.c **** #define UART_RING_BUFSIZE 1024
+  35:src/MightyBoard/Motherboard/comm.c **** 
+  36:src/MightyBoard/Motherboard/comm.c **** /* Buf mask */
+  37:src/MightyBoard/Motherboard/comm.c **** #define __BUF_MASK (UART_RING_BUFSIZE-1)
+  38:src/MightyBoard/Motherboard/comm.c **** /* Check buf is full or not */
+  39:src/MightyBoard/Motherboard/comm.c **** #define __BUF_IS_FULL(head, tail) ((tail&__BUF_MASK)==((head+1)&__BUF_MASK))
+  40:src/MightyBoard/Motherboard/comm.c **** /* Check buf will be full in next receiving or not */
+  41:src/MightyBoard/Motherboard/comm.c **** #define __BUF_WILL_FULL(head, tail) ((tail&__BUF_MASK)==((head+2)&__BUF_MASK))
+  42:src/MightyBoard/Motherboard/comm.c **** /* Check buf is empty */
+  43:src/MightyBoard/Motherboard/comm.c **** #define __BUF_IS_EMPTY(head, tail) ((head&__BUF_MASK)==(tail&__BUF_MASK))
+  44:src/MightyBoard/Motherboard/comm.c **** /* Reset buf */
+  45:src/MightyBoard/Motherboard/comm.c **** #define __BUF_RESET(bufidx)	(bufidx=0)
+  46:src/MightyBoard/Motherboard/comm.c **** #define __BUF_INCR(bufidx)	(bufidx=(bufidx+1)&__BUF_MASK)
+  47:src/MightyBoard/Motherboard/comm.c **** 
+  48:src/MightyBoard/Motherboard/comm.c **** 
+  49:src/MightyBoard/Motherboard/comm.c **** /************************** PRIVATE TYPES *************************/
+  50:src/MightyBoard/Motherboard/comm.c **** 
+  51:src/MightyBoard/Motherboard/comm.c **** /** @brief UART Ring buffer structure */
+  52:src/MightyBoard/Motherboard/comm.c **** typedef struct
+  53:src/MightyBoard/Motherboard/comm.c **** {
+  54:src/MightyBoard/Motherboard/comm.c ****     __IO uint32_t tx_head;                /*!< UART Tx ring buffer head index */
+  55:src/MightyBoard/Motherboard/comm.c ****     __IO uint32_t tx_tail;                /*!< UART Tx ring buffer tail index */
+  56:src/MightyBoard/Motherboard/comm.c ****     __IO uint32_t rx_head;                /*!< UART Rx ring buffer head index */
+  57:src/MightyBoard/Motherboard/comm.c ****     __IO uint32_t rx_tail;                /*!< UART Rx ring buffer tail index */
+  58:src/MightyBoard/Motherboard/comm.c ****     __IO uint8_t  tx[UART_RING_BUFSIZE];  /*!< UART Tx data ring buffer */
+  59:src/MightyBoard/Motherboard/comm.c ****     __IO uint8_t  rx[UART_RING_BUFSIZE];  /*!< UART Rx data ring buffer */
+  60:src/MightyBoard/Motherboard/comm.c **** } UART_RING_BUFFER_T;
+  61:src/MightyBoard/Motherboard/comm.c **** 
+  62:src/MightyBoard/Motherboard/comm.c **** 
+  63:src/MightyBoard/Motherboard/comm.c **** /************************** PRIVATE VARIABLES *************************/
+  64:src/MightyBoard/Motherboard/comm.c **** // UART Ring buffer
+  65:src/MightyBoard/Motherboard/comm.c **** UART_RING_BUFFER_T rb;
+  66:src/MightyBoard/Motherboard/comm.c **** 
+  67:src/MightyBoard/Motherboard/comm.c **** // Current Tx Interrupt enable state
+  68:src/MightyBoard/Motherboard/comm.c **** __IO FlagStatus TxIntStat;
+  69:src/MightyBoard/Motherboard/comm.c **** 
+  70:src/MightyBoard/Motherboard/comm.c **** void exec_cmd(char *cmd){
+  71:src/MightyBoard/Motherboard/comm.c **** 	comm_flush();
+  72:src/MightyBoard/Motherboard/comm.c **** 	if(stricmp(cmd,"b")==0){
+  73:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "resetting to bootloader" " (%s:%d)\n",_F_,_L_);
+  74:src/MightyBoard/Motherboard/comm.c **** 		SCB->VTOR = (BOOTLOADER_START & 0x1FFFFF80);
+  75:src/MightyBoard/Motherboard/comm.c **** 		RTC_WriteGPREG(LPC_RTC, 2, 0xbbbbbbbb);
+  76:src/MightyBoard/Motherboard/comm.c **** 		WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+  77:src/MightyBoard/Motherboard/comm.c **** 		WDT_Start(1);
+  78:src/MightyBoard/Motherboard/comm.c **** 		NVIC_EnableIRQ(WDT_IRQn);
+  79:src/MightyBoard/Motherboard/comm.c **** 	}
+  80:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"r")==0){
+  81:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "reseting" " (%s:%d)\n",_F_,_L_);
+  82:src/MightyBoard/Motherboard/comm.c **** 		WDT_Init(WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+  83:src/MightyBoard/Motherboard/comm.c **** 		WDT_Start(1);
+  84:src/MightyBoard/Motherboard/comm.c **** 		NVIC_EnableIRQ(WDT_IRQn);
+  85:src/MightyBoard/Motherboard/comm.c **** 		while(1);//lockup, wdt will reset board
+  86:src/MightyBoard/Motherboard/comm.c **** 		//WDT_ClrTimeOutFlag();
+  87:src/MightyBoard/Motherboard/comm.c **** 	}
+  88:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"t")==0){
+  89:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "tests running" " (%s:%d)\n",_F_,_L_);
+  90:src/MightyBoard/Motherboard/comm.c **** 	}
+  91:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"q")==0){
+  92:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "q" " (%s:%d)\n",_F_,_L_);
+  93:src/MightyBoard/Motherboard/comm.c **** 	}
+  94:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"")==0){
+  95:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "\r\nr-Resets board\r\nb-Resets to bootloader\r\nt-led test\r\n" " (%s:%d)\n",_F_,_L
+  96:src/MightyBoard/Motherboard/comm.c **** 	}
+  97:src/MightyBoard/Motherboard/comm.c **** 	else{
+  98:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "Command not found (cmd=%s)" " (%s:%d)\n",cmd,_F_,_L_);
+  99:src/MightyBoard/Motherboard/comm.c **** 	}
+ 100:src/MightyBoard/Motherboard/comm.c **** 	return;
+ 101:src/MightyBoard/Motherboard/comm.c **** }
+ 102:src/MightyBoard/Motherboard/comm.c **** 
+ 103:src/MightyBoard/Motherboard/comm.c **** int comm_test(void){
+  27              	 .loc 1 103 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31 0000 08B5     	 push {r3,lr}
+  32              	.LCFI0:
+  33              	 .cfi_def_cfa_offset 8
+  34              	 .cfi_offset 14,-4
+  35              	 .cfi_offset 3,-8
+ 104:src/MightyBoard/Motherboard/comm.c **** 	xprintf("%s{\n",__func__);
+  36              	 .loc 1 104 0
+  37 0002 40F20000 	 movw r0,#:lower16:.LC0
+  38 0006 C0F20000 	 movt r0,#:upper16:.LC0
+  39 000a 40F20001 	 movw r1,#:lower16:.LANCHOR0
+  40 000e C0F20001 	 movt r1,#:upper16:.LANCHOR0
+  41 0012 FFF7FEFF 	 bl xprintf
+ 105:src/MightyBoard/Motherboard/comm.c **** //	delay_ms(1000);
+ 106:src/MightyBoard/Motherboard/comm.c **** 	return ( LPC_UART0->LSR & UART_LSR_RDR ) ? 1 : 0;
+  42              	 .loc 1 106 0
+  43 0016 4FF44043 	 mov r3,#49152
+  44 001a C4F20003 	 movt r3,16384
+  45 001e 187D     	 ldrb r0,[r3,#20]
+ 107:src/MightyBoard/Motherboard/comm.c **** //	return 0;//always avaliable
+ 108:src/MightyBoard/Motherboard/comm.c **** 
+ 109:src/MightyBoard/Motherboard/comm.c ****     // Wait for incomming char...
+ 110:src/MightyBoard/Motherboard/comm.c **** //    while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET) ;
+ 111:src/MightyBoard/Motherboard/comm.c **** //	return ( USART_GetFlagStatus(USARTx, USART_FLAG_RXNE) == RESET ) ? 0 : 1;
+ 112:src/MightyBoard/Motherboard/comm.c **** }
+  46              	 .loc 1 112 0
+  47 0020 00F00100 	 and r0,r0,#1
+  48 0024 08BD     	 pop {r3,pc}
+  49              	 .cfi_endproc
+  50              	.LFE56:
+  52 0026 00BF     	 .section .text.comm_get2,"ax",%progbits
+  53              	 .align 2
+  54              	 .global comm_get2
+  55              	 .thumb
+  56              	 .thumb_func
+  58              	comm_get2:
+  59              	.LFB57:
+ 113:src/MightyBoard/Motherboard/comm.c **** 
+ 114:src/MightyBoard/Motherboard/comm.c **** #if 0
+ 115:src/MightyBoard/Motherboard/comm.c **** //for printf??
+ 116:src/MightyBoard/Motherboard/comm.c **** int8_t __putchar(int8_t ch){
+ 117:src/MightyBoard/Motherboard/comm.c **** 	xprintf("%s{\n",__func__);
+ 118:src/MightyBoard/Motherboard/comm.c ****   if (ch == '\n')
+ 119:src/MightyBoard/Motherboard/comm.c **** 	  comm_put('\r');
+ 120:src/MightyBoard/Motherboard/comm.c ****   comm_put(ch);
+ 121:src/MightyBoard/Motherboard/comm.c **** 	xprintf("%s}\n",__func__);
+ 122:src/MightyBoard/Motherboard/comm.c **** }
+ 123:src/MightyBoard/Motherboard/comm.c **** 
+ 124:src/MightyBoard/Motherboard/comm.c **** //for scanf??
+ 125:src/MightyBoard/Motherboard/comm.c **** int8_t __getchar(void){
+ 126:src/MightyBoard/Motherboard/comm.c **** 	xprintf("%s{\n",__func__);
+ 127:src/MightyBoard/Motherboard/comm.c **** 	return comm_get();
+ 128:src/MightyBoard/Motherboard/comm.c **** }
+ 129:src/MightyBoard/Motherboard/comm.c **** //for scanf??
+ 130:src/MightyBoard/Motherboard/comm.c **** int8_t _getc(void){
+ 131:src/MightyBoard/Motherboard/comm.c **** 	xprintf("%s{\n",__func__);
+ 132:src/MightyBoard/Motherboard/comm.c **** 	return comm_get();
+ 133:src/MightyBoard/Motherboard/comm.c **** }
+ 134:src/MightyBoard/Motherboard/comm.c **** #endif
+ 135:src/MightyBoard/Motherboard/comm.c **** 
+ 136:src/MightyBoard/Motherboard/comm.c **** 
+ 137:src/MightyBoard/Motherboard/comm.c **** uint8_t comm_get2(int name){
+  60              	 .loc 1 137 0
+  61              	 .cfi_startproc
+  62              	 
+  63              	 
+  64              	.LVL0:
+  65 0000 30B5     	 push {r4,r5,lr}
+  66              	.LCFI1:
+  67              	 .cfi_def_cfa_offset 12
+  68              	 .cfi_offset 14,-4
+  69              	 .cfi_offset 5,-8
+  70              	 .cfi_offset 4,-12
+  71 0002 83B0     	 sub sp,sp,#12
+  72              	.LCFI2:
+  73              	 .cfi_def_cfa_offset 24
+ 138:src/MightyBoard/Motherboard/comm.c **** 	(void)name; /* avoid warning */
+ 139:src/MightyBoard/Motherboard/comm.c **** 	uint8_t buffer[2], len;
+ 140:src/MightyBoard/Motherboard/comm.c **** 	while (len == 0){
+ 141:src/MightyBoard/Motherboard/comm.c **** 		len = UART_Receive(LPC_UART0, buffer, sizeof(buffer), NONE_BLOCKING);
+  74              	 .loc 1 141 0
+  75 0004 4FF44044 	 mov r4,#49152
+  76 0008 C4F20004 	 movt r4,16384
+  77 000c 4FF00205 	 mov r5,#2
+  78              	.LVL1:
+  79              	.L5:
+  80 0010 2046     	 mov r0,r4
+  81 0012 01A9     	 add r1,sp,#4
+  82 0014 2A46     	 mov r2,r5
+  83 0016 4FF00003 	 mov r3,#0
+  84 001a FFF7FEFF 	 bl UART_Receive
+  85              	.LVL2:
+ 140:src/MightyBoard/Motherboard/comm.c **** 	while (len == 0){
+  86              	 .loc 1 140 0
+  87 001e C0B2     	 uxtb r0,r0
+  88 0020 0028     	 cmp r0,#0
+  89 0022 F5D0     	 beq .L5
+ 142:src/MightyBoard/Motherboard/comm.c **** 	}
+ 143:src/MightyBoard/Motherboard/comm.c **** 	return buffer;// buffer;
+  90              	 .loc 1 143 0
+  91 0024 01A8     	 add r0,sp,#4
+  92              	.LVL3:
+ 144:src/MightyBoard/Motherboard/comm.c **** }
+  93              	 .loc 1 144 0
+  94 0026 00F0FC00 	 and r0,r0,#252
+  95 002a 03B0     	 add sp,sp,#12
+  96 002c 30BD     	 pop {r4,r5,pc}
+  97              	 .cfi_endproc
+  98              	.LFE57:
+ 100 002e 00BF     	 .section .text.comm_init,"ax",%progbits
+ 101              	 .align 2
+ 102              	 .global comm_init
+ 103              	 .thumb
+ 104              	 .thumb_func
+ 106              	comm_init:
+ 107              	.LFB61:
+ 145:src/MightyBoard/Motherboard/comm.c **** 
+ 146:src/MightyBoard/Motherboard/comm.c **** uint8_t comm_get(void){
+ 147:src/MightyBoard/Motherboard/comm.c **** #if 0
+ 148:src/MightyBoard/Motherboard/comm.c **** //	xprintf("%s{\n",__func__);
+ 149:src/MightyBoard/Motherboard/comm.c **** 	uint8_t tmp = 0;
+ 150:src/MightyBoard/Motherboard/comm.c **** 	UART_Receive(LPC_UART0, &tmp, 1, BLOCKING);
+ 151:src/MightyBoard/Motherboard/comm.c **** 	return(tmp);
+ 152:src/MightyBoard/Motherboard/comm.c **** #endif
+ 153:src/MightyBoard/Motherboard/comm.c **** #if 1
+ 154:src/MightyBoard/Motherboard/comm.c **** 	uint8_t buffer[1], len;
+ 155:src/MightyBoard/Motherboard/comm.c **** 	while (len == 0){
+ 156:src/MightyBoard/Motherboard/comm.c **** 		len = UARTReceive(LPC_UART0, buffer, 1);
+ 157:src/MightyBoard/Motherboard/comm.c **** 	}
+ 158:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE_LEN=0;
+ 159:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE[0]='\0';
+ 160:src/MightyBoard/Motherboard/comm.c **** 	return buffer;
+ 161:src/MightyBoard/Motherboard/comm.c **** #endif
+ 162:src/MightyBoard/Motherboard/comm.c **** }
+ 163:src/MightyBoard/Motherboard/comm.c **** 
+ 164:src/MightyBoard/Motherboard/comm.c **** void comm_flush(void){
+ 165:src/MightyBoard/Motherboard/comm.c **** #if 1
+ 166:src/MightyBoard/Motherboard/comm.c **** 	uint8_t buffer[1], len;
+ 167:src/MightyBoard/Motherboard/comm.c **** 	while (UARTReceive(LPC_UART0, buffer, 1));
+ 168:src/MightyBoard/Motherboard/comm.c **** #endif
+ 169:src/MightyBoard/Motherboard/comm.c **** }
+ 170:src/MightyBoard/Motherboard/comm.c **** 
+ 171:src/MightyBoard/Motherboard/comm.c **** #if 0
+ 172:src/MightyBoard/Motherboard/comm.c **** uint8_t comm_gets(void){
+ 173:src/MightyBoard/Motherboard/comm.c **** 	uint8_t buffer[100];
+ 174:src/MightyBoard/Motherboard/comm.c **** 	uint32_t len;
+ 175:src/MightyBoard/Motherboard/comm.c **** 	while (len == 0){
+ 176:src/MightyBoard/Motherboard/comm.c **** 		len = UART_Receive(LPC_UART0, buffer, sizeof(buffer), NONE_BLOCKING);
+ 177:src/MightyBoard/Motherboard/comm.c **** 	}
+ 178:src/MightyBoard/Motherboard/comm.c **** 	return buffer;
+ 179:src/MightyBoard/Motherboard/comm.c **** }
+ 180:src/MightyBoard/Motherboard/comm.c **** #endif
+ 181:src/MightyBoard/Motherboard/comm.c **** 
+ 182:src/MightyBoard/Motherboard/comm.c **** void comm_put(uint8_t d){
+ 183:src/MightyBoard/Motherboard/comm.c **** //	UART_Send(LPC_UART0, &d, 1, BLOCKING);//without interrupt
+ 184:src/MightyBoard/Motherboard/comm.c **** 	UARTSend(LPC_UART0, &d, 1);//with interrupt
+ 185:src/MightyBoard/Motherboard/comm.c **** ////	serial_writechar(d);
+ 186:src/MightyBoard/Motherboard/comm.c **** }
+ 187:src/MightyBoard/Motherboard/comm.c **** 
+ 188:src/MightyBoard/Motherboard/comm.c **** #if 0
+ 189:src/MightyBoard/Motherboard/comm.c **** void comm_puts(const void *str){
+ 190:src/MightyBoard/Motherboard/comm.c **** 	uint8_t *s = (uint8_t *) str;
+ 191:src/MightyBoard/Motherboard/comm.c **** 
+ 192:src/MightyBoard/Motherboard/comm.c **** 	while (*s){
+ 193:src/MightyBoard/Motherboard/comm.c **** 		UARTPutChar(LPC_UART0, *s++);
+ 194:src/MightyBoard/Motherboard/comm.c **** 	}
+ 195:src/MightyBoard/Motherboard/comm.c **** }
+ 196:src/MightyBoard/Motherboard/comm.c **** #endif
+ 197:src/MightyBoard/Motherboard/comm.c **** 
+ 198:src/MightyBoard/Motherboard/comm.c **** void comm_init(void){
+ 108              	 .loc 1 198 0
+ 109              	 .cfi_startproc
+ 110              	 
+ 111              	 
+ 112 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 113              	.LCFI3:
+ 114              	 .cfi_def_cfa_offset 24
+ 115              	 .cfi_offset 14,-4
+ 116              	 .cfi_offset 8,-8
+ 117              	 .cfi_offset 7,-12
+ 118              	 .cfi_offset 6,-16
+ 119              	 .cfi_offset 5,-20
+ 120              	 .cfi_offset 4,-24
+ 121 0004 84B0     	 sub sp,sp,#16
+ 122              	.LCFI4:
+ 123              	 .cfi_def_cfa_offset 40
+ 199:src/MightyBoard/Motherboard/comm.c **** 
+ 200:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE_LEN=0;
+ 124              	 .loc 1 200 0
+ 125 0006 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 126 000a C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 127 000e 4FF00004 	 mov r4,#0
+ 128 0012 1C60     	 str r4,[r3,#0]
+ 201:src/MightyBoard/Motherboard/comm.c **** 
+ 202:src/MightyBoard/Motherboard/comm.c **** 	// UART Configuration structure variable
+ 203:src/MightyBoard/Motherboard/comm.c **** 	UART_CFG_Type UARTConfigStruct;
+ 204:src/MightyBoard/Motherboard/comm.c **** 	// UART FIFO configuration Struct variable
+ 205:src/MightyBoard/Motherboard/comm.c **** //	UART_FIFO_CFG_Type UARTFIFOConfigStruct;
+ 206:src/MightyBoard/Motherboard/comm.c **** 	// Pin configuration for UART0
+ 207:src/MightyBoard/Motherboard/comm.c **** 	PINSEL_CFG_Type PinCfg;
+ 208:src/MightyBoard/Motherboard/comm.c **** 
+ 209:src/MightyBoard/Motherboard/comm.c **** 	//Initialize UART0 pin connect
+ 210:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Funcnum = 1;
+ 129              	 .loc 1 210 0
+ 130 0014 4FF00106 	 mov r6,#1
+ 131 0018 8DF80260 	 strb r6,[sp,#2]
+ 211:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.OpenDrain = 0;
+ 132              	 .loc 1 211 0
+ 133 001c 8DF80440 	 strb r4,[sp,#4]
+ 212:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Pinmode = 0;
+ 134              	 .loc 1 212 0
+ 135 0020 8DF80340 	 strb r4,[sp,#3]
+ 213:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Pinnum = 2;
+ 136              	 .loc 1 213 0
+ 137 0024 4FF00208 	 mov r8,#2
+ 138 0028 8DF80180 	 strb r8,[sp,#1]
+ 214:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Portnum = 0;
+ 139              	 .loc 1 214 0
+ 140 002c 04AD     	 add r5,sp,#16
+ 141 002e 05F8104D 	 strb r4,[r5,#-16]!
+ 215:src/MightyBoard/Motherboard/comm.c **** 	PINSEL_ConfigPin(&PinCfg);
+ 142              	 .loc 1 215 0
+ 143 0032 6846     	 mov r0,sp
+ 144 0034 FFF7FEFF 	 bl PINSEL_ConfigPin
+ 216:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Pinnum = 3;
+ 145              	 .loc 1 216 0
+ 146 0038 4FF00307 	 mov r7,#3
+ 147 003c 8DF80170 	 strb r7,[sp,#1]
+ 217:src/MightyBoard/Motherboard/comm.c **** 	PINSEL_ConfigPin(&PinCfg);
+ 148              	 .loc 1 217 0
+ 149 0040 6846     	 mov r0,sp
+ 150 0042 FFF7FEFF 	 bl PINSEL_ConfigPin
+ 218:src/MightyBoard/Motherboard/comm.c **** 
+ 219:src/MightyBoard/Motherboard/comm.c **** 	UART_ConfigStructInit(&UARTConfigStruct);
+ 151              	 .loc 1 219 0
+ 152 0046 02A8     	 add r0,sp,#8
+ 153 0048 FFF7FEFF 	 bl UART_ConfigStructInit
+ 220:src/MightyBoard/Motherboard/comm.c **** 	// Re-configure baudrate to 115200bps
+ 221:src/MightyBoard/Motherboard/comm.c **** 	/* Initialize UART Configuration parameter structure to default state:
+ 222:src/MightyBoard/Motherboard/comm.c **** 	 * Baudrate = 115200bps
+ 223:src/MightyBoard/Motherboard/comm.c **** 	 * 8 data bit
+ 224:src/MightyBoard/Motherboard/comm.c **** 	 * 1 Stop bit
+ 225:src/MightyBoard/Motherboard/comm.c **** 	 * None parity
+ 226:src/MightyBoard/Motherboard/comm.c **** 	 */
+ 227:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Baud_rate = 512000;
+ 154              	 .loc 1 227 0
+ 155 004c 4FF4FA23 	 mov r3,#512000
+ 156 0050 0293     	 str r3,[sp,#8]
+ 228:src/MightyBoard/Motherboard/comm.c **** //	UARTConfigStruct.Baud_rate = 115200;
+ 229:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Parity = UART_PARITY_NONE;
+ 157              	 .loc 1 229 0
+ 158 0052 8DF80C40 	 strb r4,[sp,#12]
+ 230:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Stopbits = UART_STOPBIT_1;
+ 159              	 .loc 1 230 0
+ 160 0056 8DF80E40 	 strb r4,[sp,#14]
+ 231:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Databits = UART_DATABIT_8;
+ 161              	 .loc 1 231 0
+ 162 005a 8DF80D70 	 strb r7,[sp,#13]
+ 232:src/MightyBoard/Motherboard/comm.c **** 
+ 233:src/MightyBoard/Motherboard/comm.c **** 	// Initialize UART0 peripheral with given to corresponding parameter
+ 234:src/MightyBoard/Motherboard/comm.c **** 	UART_Init(LPC_UART0, &UARTConfigStruct);
+ 163              	 .loc 1 234 0
+ 164 005e 4FF44045 	 mov r5,#49152
+ 165 0062 C4F20005 	 movt r5,16384
+ 166 0066 2846     	 mov r0,r5
+ 167 0068 02A9     	 add r1,sp,#8
+ 168 006a FFF7FEFF 	 bl UART_Init
+ 235:src/MightyBoard/Motherboard/comm.c **** 
+ 236:src/MightyBoard/Motherboard/comm.c **** 	// Enable UART Transmit
+ 237:src/MightyBoard/Motherboard/comm.c **** 	UART_TxCmd(LPC_UART0, ENABLE);
+ 169              	 .loc 1 237 0
+ 170 006e 2846     	 mov r0,r5
+ 171 0070 3146     	 mov r1,r6
+ 172 0072 FFF7FEFF 	 bl UART_TxCmd
+ 238:src/MightyBoard/Motherboard/comm.c **** #if 1
+ 239:src/MightyBoard/Motherboard/comm.c ****     /* Enable UART Rx interrupt */
+ 240:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_RBR, ENABLE);
+ 173              	 .loc 1 240 0
+ 174 0076 2846     	 mov r0,r5
+ 175 0078 2146     	 mov r1,r4
+ 176 007a 3246     	 mov r2,r6
+ 177 007c FFF7FEFF 	 bl UART_IntConfig
+ 241:src/MightyBoard/Motherboard/comm.c **** 	/* Enable UART line status interrupt */
+ 242:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_RLS, ENABLE);
+ 178              	 .loc 1 242 0
+ 179 0080 2846     	 mov r0,r5
+ 180 0082 4146     	 mov r1,r8
+ 181 0084 3246     	 mov r2,r6
+ 182 0086 FFF7FEFF 	 bl UART_IntConfig
+ 243:src/MightyBoard/Motherboard/comm.c **** 	/*
+ 244:src/MightyBoard/Motherboard/comm.c **** 	 * Do not enable transmit interrupt here, since it is handled by
+ 245:src/MightyBoard/Motherboard/comm.c **** 	 * UART_Send() function, just to reset Tx Interrupt state for the
+ 246:src/MightyBoard/Motherboard/comm.c **** 	 * first time
+ 247:src/MightyBoard/Motherboard/comm.c **** 	 */
+ 248:src/MightyBoard/Motherboard/comm.c **** 	TxIntStat = RESET;
+ 183              	 .loc 1 248 0
+ 184 008a 40F20003 	 movw r3,#:lower16:TxIntStat
+ 185 008e C0F20003 	 movt r3,#:upper16:TxIntStat
+ 186 0092 1C70     	 strb r4,[r3,#0]
+ 249:src/MightyBoard/Motherboard/comm.c **** 
+ 250:src/MightyBoard/Motherboard/comm.c **** 	// Reset ring buf head and tail idx
+ 251:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.rx_head);
+ 187              	 .loc 1 251 0
+ 188 0094 40F20003 	 movw r3,#:lower16:rb
+ 189 0098 C0F20003 	 movt r3,#:upper16:rb
+ 190 009c 9C60     	 str r4,[r3,#8]
+ 252:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.rx_tail);
+ 191              	 .loc 1 252 0
+ 192 009e DC60     	 str r4,[r3,#12]
+ 253:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.tx_head);
+ 193              	 .loc 1 253 0
+ 194 00a0 1C60     	 str r4,[r3,#0]
+ 254:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.tx_tail);
+ 195              	 .loc 1 254 0
+ 196 00a2 5C60     	 str r4,[r3,#4]
+ 197              	.LVL4:
+ 198              	.LBB11:
+ 199              	.LBB12:
+ 200              	 .file 2 "src/MightyBoard/Motherboard/system/core_cm3.h"
+   1:src/MightyBoard/Motherboard/system/core_cm3.h **** /**************************************************************************//**
+   2:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @file     core_cm3.h
+   3:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @brief    CMSIS Cortex-M3 Core Peripheral Access Layer Header File
+   4:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @version  V2.01
+   5:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @date     06. December 2010
+   6:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+   7:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @note
+   8:src/MightyBoard/Motherboard/system/core_cm3.h ****  * Copyright (C) 2009-2010 ARM Limited. All rights reserved.
+   9:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+  10:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @par
+  11:src/MightyBoard/Motherboard/system/core_cm3.h ****  * ARM Limited (ARM) is supplying this software for use with Cortex-M
+  12:src/MightyBoard/Motherboard/system/core_cm3.h ****  * processor based microcontrollers.  This file can be freely distributed
+  13:src/MightyBoard/Motherboard/system/core_cm3.h ****  * within development tools that are supporting such ARM based processors.
+  14:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+  15:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @par
+  16:src/MightyBoard/Motherboard/system/core_cm3.h ****  * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
+  17:src/MightyBoard/Motherboard/system/core_cm3.h ****  * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+  18:src/MightyBoard/Motherboard/system/core_cm3.h ****  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
+  19:src/MightyBoard/Motherboard/system/core_cm3.h ****  * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
+  20:src/MightyBoard/Motherboard/system/core_cm3.h ****  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+  21:src/MightyBoard/Motherboard/system/core_cm3.h ****  *
+  22:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+  23:src/MightyBoard/Motherboard/system/core_cm3.h **** #if defined ( __ICCARM__ )
+  24:src/MightyBoard/Motherboard/system/core_cm3.h ****  #pragma system_include  /* treat file as system include file for MISRA check */
+  25:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+  26:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  27:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifdef __cplusplus
+  28:src/MightyBoard/Motherboard/system/core_cm3.h ****  extern "C" {
+  29:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+  30:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  31:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifndef __CORE_CM3_H_GENERIC
+  32:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CORE_CM3_H_GENERIC
+  33:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  34:src/MightyBoard/Motherboard/system/core_cm3.h **** /**  @ingroup  CMSIS
+  35:src/MightyBoard/Motherboard/system/core_cm3.h ****  @addtogroup CMSIS_core_LintCinfiguration CMSIS Core Lint Configuration
+  36:src/MightyBoard/Motherboard/system/core_cm3.h ****   List of Lint messages which will be suppressed and not shown:
+  37:src/MightyBoard/Motherboard/system/core_cm3.h ****     - not yet checked
+  38:src/MightyBoard/Motherboard/system/core_cm3.h ****   .
+  39:src/MightyBoard/Motherboard/system/core_cm3.h ****   Note:  To re-enable a Message, insert a space before 'lint' *
+  40:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  41:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+  42:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  43:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  44:src/MightyBoard/Motherboard/system/core_cm3.h **** /*******************************************************************************
+  45:src/MightyBoard/Motherboard/system/core_cm3.h ****  *                 CMSIS definitions
+  46:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+  47:src/MightyBoard/Motherboard/system/core_cm3.h **** /** @ingroup  CMSIS
+  48:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @addtogroup CMSIS_core_definitions CMSIS Core Definitions
+  49:src/MightyBoard/Motherboard/system/core_cm3.h ****   This file defines all structures and symbols for CMSIS core:
+  50:src/MightyBoard/Motherboard/system/core_cm3.h ****    - CMSIS version number
+  51:src/MightyBoard/Motherboard/system/core_cm3.h ****    - Cortex-M core
+  52:src/MightyBoard/Motherboard/system/core_cm3.h ****    - Cortex-M core Revision Number
+  53:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+  54:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+  55:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  56:src/MightyBoard/Motherboard/system/core_cm3.h **** /*  CMSIS CM3 definitions */
+  57:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CM3_CMSIS_VERSION_MAIN  (0x02)                                                       /*!<
+  58:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CM3_CMSIS_VERSION_SUB   (0x00)                                                       /*!<
+  59:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CM3_CMSIS_VERSION       ((__CM3_CMSIS_VERSION_MAIN << 16) | __CM3_CMSIS_VERSION_SUB) /*!<
+  60:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  61:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CORTEX_M                (0x03)                                                       /*!<
+  62:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  63:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  64:src/MightyBoard/Motherboard/system/core_cm3.h **** #if defined ( __CC_ARM   )
+  65:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM            __asm                                      /*!< asm keyword for ARM Comp
+  66:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE         __inline                                   /*!< inline keyword for ARM C
+  67:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  68:src/MightyBoard/Motherboard/system/core_cm3.h **** #elif defined ( __ICCARM__ )
+  69:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM           __asm                                       /*!< asm keyword for IAR Comp
+  70:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE        inline                                      /*!< inline keyword for IAR C
+  71:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  72:src/MightyBoard/Motherboard/system/core_cm3.h **** #elif defined   (  __GNUC__  )
+  73:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM            __asm                                      /*!< asm keyword for GNU Comp
+  74:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE         inline                                     /*!< inline keyword for GNU C
+  75:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  76:src/MightyBoard/Motherboard/system/core_cm3.h **** #elif defined   (  __TASKING__  )
+  77:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __ASM            __asm                                      /*!< asm keyword for TASKING 
+  78:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define __INLINE         inline                                     /*!< inline keyword for TASKI
+  79:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  80:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+  81:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  82:src/MightyBoard/Motherboard/system/core_cm3.h **** #include <stdint.h>                      /*!< standard types definitions                      */
+  83:src/MightyBoard/Motherboard/system/core_cm3.h **** #include "core_cmInstr.h"                /*!< Core Instruction Access                         */
+  84:src/MightyBoard/Motherboard/system/core_cm3.h **** #include "core_cmFunc.h"                 /*!< Core Function Access                            */
+  85:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  86:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif /* __CORE_CM3_H_GENERIC */
+  87:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  88:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  89:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifndef __CMSIS_GENERIC
+  90:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  91:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifndef __CORE_CM3_H_DEPENDANT
+  92:src/MightyBoard/Motherboard/system/core_cm3.h **** #define __CORE_CM3_H_DEPENDANT
+  93:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+  94:src/MightyBoard/Motherboard/system/core_cm3.h **** /* IO definitions (access restrictions to peripheral registers) */
+  95:src/MightyBoard/Motherboard/system/core_cm3.h **** #ifdef __cplusplus
+  96:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define     __I     volatile           /*!< defines 'read only' permissions                 */
+  97:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+  98:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define     __I     volatile const     /*!< defines 'read only' permissions                 */
+  99:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 100:src/MightyBoard/Motherboard/system/core_cm3.h **** #define     __O     volatile             /*!< defines 'write only' permissions                */
+ 101:src/MightyBoard/Motherboard/system/core_cm3.h **** #define     __IO    volatile             /*!< defines 'read / write' permissions              */
+ 102:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 103:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_core_definitions */
+ 104:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 105:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 106:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 107:src/MightyBoard/Motherboard/system/core_cm3.h **** /*******************************************************************************
+ 108:src/MightyBoard/Motherboard/system/core_cm3.h ****  *                 Register Abstraction
+ 109:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+ 110:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 111:src/MightyBoard/Motherboard/system/core_cm3.h **** /** @ingroup  CMSIS
+ 112:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @addtogroup CMSIS_core_register CMSIS Core Register
+ 113:src/MightyBoard/Motherboard/system/core_cm3.h ****   Core Register contain:
+ 114:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Register
+ 115:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core NVIC Register
+ 116:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core SCB Register
+ 117:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core SysTick Register
+ 118:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Debug Register
+ 119:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core MPU Register
+ 120:src/MightyBoard/Motherboard/system/core_cm3.h **** */
+ 121:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 122:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 123:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_CORE CMSIS Core
+ 124:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Core Registers
+ 125:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 126:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 127:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 128:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Application Program Status Register (APSR).
+ 129:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 130:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 131:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 132:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 133:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 134:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__CORTEX_M != 0x04)
+ 135:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:27;              /*!< bit:  0..26  Reserved                           */
+ 136:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+ 137:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:16;              /*!< bit:  0..15  Reserved                           */
+ 138:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t GE:4;                       /*!< bit: 16..19  Greater than or Equal flags        */
+ 139:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved1:7;               /*!< bit: 20..26  Reserved                           */
+ 140:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 141:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Q:1;                        /*!< bit:     27  Saturation condition flag          */
+ 142:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t V:1;                        /*!< bit:     28  Overflow condition code flag       */
+ 143:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t C:1;                        /*!< bit:     29  Carry condition code flag          */
+ 144:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Z:1;                        /*!< bit:     30  Zero condition code flag           */
+ 145:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t N:1;                        /*!< bit:     31  Negative condition code flag       */
+ 146:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 147:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 148:src/MightyBoard/Motherboard/system/core_cm3.h **** } APSR_Type;
+ 149:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 150:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 151:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Interrupt Program Status Register (IPSR).
+ 152:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 153:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 154:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 155:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 156:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 157:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t ISR:9;                      /*!< bit:  0.. 8  Exception number                   */
+ 158:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:23;              /*!< bit:  9..31  Reserved                           */
+ 159:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 160:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 161:src/MightyBoard/Motherboard/system/core_cm3.h **** } IPSR_Type;
+ 162:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 163:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 164:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Special-Purpose Program Status Registers (xPSR).
+ 165:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 166:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 167:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 168:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 169:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 170:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t ISR:9;                      /*!< bit:  0.. 8  Exception number                   */
+ 171:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__CORTEX_M != 0x04)
+ 172:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:15;              /*!< bit:  9..23  Reserved                           */
+ 173:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+ 174:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:7;               /*!< bit:  9..15  Reserved                           */
+ 175:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t GE:4;                       /*!< bit: 16..19  Greater than or Equal flags        */
+ 176:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved1:4;               /*!< bit: 20..23  Reserved                           */
+ 177:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 178:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t T:1;                        /*!< bit:     24  Thumb bit        (read 0)          */
+ 179:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t IT:2;                       /*!< bit: 25..26  saved IT state   (read 0)          */
+ 180:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Q:1;                        /*!< bit:     27  Saturation condition flag          */
+ 181:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t V:1;                        /*!< bit:     28  Overflow condition code flag       */
+ 182:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t C:1;                        /*!< bit:     29  Carry condition code flag          */
+ 183:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t Z:1;                        /*!< bit:     30  Zero condition code flag           */
+ 184:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t N:1;                        /*!< bit:     31  Negative condition code flag       */
+ 185:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 186:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 187:src/MightyBoard/Motherboard/system/core_cm3.h **** } xPSR_Type;
+ 188:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 189:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 190:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Union type to access the Control Registers (CONTROL).
+ 191:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 192:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef union
+ 193:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 194:src/MightyBoard/Motherboard/system/core_cm3.h ****   struct
+ 195:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 196:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t nPRIV:1;                    /*!< bit:      0  Execution privilege in Thread mode */
+ 197:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t SPSEL:1;                    /*!< bit:      1  Stack to be used                   */
+ 198:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t FPCA:1;                     /*!< bit:      2  FP extension active flag           */
+ 199:src/MightyBoard/Motherboard/system/core_cm3.h ****     uint32_t _reserved0:29;              /*!< bit:  3..31  Reserved                           */
+ 200:src/MightyBoard/Motherboard/system/core_cm3.h ****   } b;                                   /*!< Structure used for bit  access                  */
+ 201:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t w;                            /*!< Type      used for word access                  */
+ 202:src/MightyBoard/Motherboard/system/core_cm3.h **** } CONTROL_Type;
+ 203:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 204:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_CORE */
+ 205:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 206:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 207:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 208:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_NVIC CMSIS NVIC
+ 209:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M NVIC Registers
+ 210:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 211:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 212:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 213:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Nested Vectored Interrupt Controller (NVIC).
+ 214:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 215:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 216:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 217:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ISER[8];                 /*!< Offset: 0x000 (R/W)  Interrupt Set Enable Register   
+ 218:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED0[24];
+ 219:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ICER[8];                 /*!< Offset: 0x080 (R/W)  Interrupt Clear Enable Register 
+ 220:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RSERVED1[24];
+ 221:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ISPR[8];                 /*!< Offset: 0x100 (R/W)  Interrupt Set Pending Register  
+ 222:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED2[24];
+ 223:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ICPR[8];                 /*!< Offset: 0x180 (R/W)  Interrupt Clear Pending Register
+ 224:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED3[24];
+ 225:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IABR[8];                 /*!< Offset: 0x200 (R/W)  Interrupt Active bit Register   
+ 226:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED4[56];
+ 227:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint8_t  IP[240];                 /*!< Offset: 0x300 (R/W)  Interrupt Priority Register (8Bi
+ 228:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED5[644];
+ 229:src/MightyBoard/Motherboard/system/core_cm3.h ****   __O  uint32_t STIR;                    /*!< Offset: 0xE00 ( /W)  Software Trigger Interrupt Regis
+ 230:src/MightyBoard/Motherboard/system/core_cm3.h **** }  NVIC_Type;
+ 231:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 232:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_NVIC */
+ 233:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 234:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 235:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 236:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_SCB CMSIS SCB
+ 237:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M System Control Block Registers
+ 238:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 239:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 240:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 241:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the System Control Block (SCB).
+ 242:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 243:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 244:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 245:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CPUID;                   /*!< Offset: 0x000 (R/ )  CPU ID Base Register            
+ 246:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ICSR;                    /*!< Offset: 0x004 (R/W)  Interrupt Control State Register
+ 247:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t VTOR;                    /*!< Offset: 0x008 (R/W)  Vector Table Offset Register    
+ 248:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t AIRCR;                   /*!< Offset: 0x00C (R/W)  Application Interrupt / Reset Co
+ 249:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t SCR;                     /*!< Offset: 0x010 (R/W)  System Control Register         
+ 250:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CCR;                     /*!< Offset: 0x014 (R/W)  Configuration Control Register  
+ 251:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint8_t  SHP[12];                 /*!< Offset: 0x018 (R/W)  System Handlers Priority Registe
+ 252:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t SHCSR;                   /*!< Offset: 0x024 (R/W)  System Handler Control and State
+ 253:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CFSR;                    /*!< Offset: 0x028 (R/W)  Configurable Fault Status Regist
+ 254:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t HFSR;                    /*!< Offset: 0x02C (R/W)  Hard Fault Status Register      
+ 255:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DFSR;                    /*!< Offset: 0x030 (R/W)  Debug Fault Status Register     
+ 256:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t MMFAR;                   /*!< Offset: 0x034 (R/W)  Mem Manage Address Register     
+ 257:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t BFAR;                    /*!< Offset: 0x038 (R/W)  Bus Fault Address Register      
+ 258:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t AFSR;                    /*!< Offset: 0x03C (R/W)  Auxiliary Fault Status Register 
+ 259:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PFR[2];                  /*!< Offset: 0x040 (R/ )  Processor Feature Register      
+ 260:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t DFR;                     /*!< Offset: 0x048 (R/ )  Debug Feature Register          
+ 261:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t ADR;                     /*!< Offset: 0x04C (R/ )  Auxiliary Feature Register      
+ 262:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t MMFR[4];                 /*!< Offset: 0x050 (R/ )  Memory Model Feature Register   
+ 263:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t ISAR[5];                 /*!< Offset: 0x060 (R/ )  ISA Feature Register            
+ 264:src/MightyBoard/Motherboard/system/core_cm3.h **** } SCB_Type;
+ 265:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 266:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB CPUID Register Definitions */
+ 267:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_IMPLEMENTER_Pos          24                                             /*!< SCB 
+ 268:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_IMPLEMENTER_Msk          (0xFFUL << SCB_CPUID_IMPLEMENTER_Pos)          /*!< SCB 
+ 269:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 270:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_VARIANT_Pos              20                                             /*!< SCB 
+ 271:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_VARIANT_Msk              (0xFUL << SCB_CPUID_VARIANT_Pos)               /*!< SCB 
+ 272:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 273:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_PARTNO_Pos                4                                             /*!< SCB 
+ 274:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_PARTNO_Msk               (0xFFFUL << SCB_CPUID_PARTNO_Pos)              /*!< SCB 
+ 275:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 276:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_REVISION_Pos              0                                             /*!< SCB 
+ 277:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CPUID_REVISION_Msk             (0xFUL << SCB_CPUID_REVISION_Pos)              /*!< SCB 
+ 278:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 279:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Interrupt Control State Register Definitions */
+ 280:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_NMIPENDSET_Pos            31                                             /*!< SCB 
+ 281:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_NMIPENDSET_Msk            (1UL << SCB_ICSR_NMIPENDSET_Pos)               /*!< SCB 
+ 282:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 283:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVSET_Pos             28                                             /*!< SCB 
+ 284:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVSET_Msk             (1UL << SCB_ICSR_PENDSVSET_Pos)                /*!< SCB 
+ 285:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 286:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVCLR_Pos             27                                             /*!< SCB 
+ 287:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSVCLR_Msk             (1UL << SCB_ICSR_PENDSVCLR_Pos)                /*!< SCB 
+ 288:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 289:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTSET_Pos             26                                             /*!< SCB 
+ 290:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTSET_Msk             (1UL << SCB_ICSR_PENDSTSET_Pos)                /*!< SCB 
+ 291:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 292:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTCLR_Pos             25                                             /*!< SCB 
+ 293:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_PENDSTCLR_Msk             (1UL << SCB_ICSR_PENDSTCLR_Pos)                /*!< SCB 
+ 294:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 295:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPREEMPT_Pos            23                                             /*!< SCB 
+ 296:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPREEMPT_Msk            (1UL << SCB_ICSR_ISRPREEMPT_Pos)               /*!< SCB 
+ 297:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 298:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPENDING_Pos            22                                             /*!< SCB 
+ 299:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_ISRPENDING_Msk            (1UL << SCB_ICSR_ISRPENDING_Pos)               /*!< SCB 
+ 300:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 301:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTPENDING_Pos           12                                             /*!< SCB 
+ 302:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTPENDING_Msk           (0x1FFUL << SCB_ICSR_VECTPENDING_Pos)          /*!< SCB 
+ 303:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 304:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_RETTOBASE_Pos             11                                             /*!< SCB 
+ 305:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_RETTOBASE_Msk             (1UL << SCB_ICSR_RETTOBASE_Pos)                /*!< SCB 
+ 306:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 307:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTACTIVE_Pos             0                                             /*!< SCB 
+ 308:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_ICSR_VECTACTIVE_Msk            (0x1FFUL << SCB_ICSR_VECTACTIVE_Pos)           /*!< SCB 
+ 309:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 310:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Interrupt Control State Register Definitions */
+ 311:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLBASE_Pos               29                                             /*!< SCB 
+ 312:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLBASE_Msk               (1UL << SCB_VTOR_TBLBASE_Pos)                  /*!< SCB 
+ 313:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 314:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLOFF_Pos                 7                                             /*!< SCB 
+ 315:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_VTOR_TBLOFF_Msk                (0x3FFFFFUL << SCB_VTOR_TBLOFF_Pos)            /*!< SCB 
+ 316:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 317:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Application Interrupt and Reset Control Register Definitions */
+ 318:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEY_Pos              16                                             /*!< SCB 
+ 319:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEY_Msk              (0xFFFFUL << SCB_AIRCR_VECTKEY_Pos)            /*!< SCB 
+ 320:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 321:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEYSTAT_Pos          16                                             /*!< SCB 
+ 322:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTKEYSTAT_Msk          (0xFFFFUL << SCB_AIRCR_VECTKEYSTAT_Pos)        /*!< SCB 
+ 323:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 324:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_ENDIANESS_Pos            15                                             /*!< SCB 
+ 325:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_ENDIANESS_Msk            (1UL << SCB_AIRCR_ENDIANESS_Pos)               /*!< SCB 
+ 326:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 327:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_PRIGROUP_Pos              8                                             /*!< SCB 
+ 328:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_PRIGROUP_Msk             (7UL << SCB_AIRCR_PRIGROUP_Pos)                /*!< SCB 
+ 329:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 330:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_SYSRESETREQ_Pos           2                                             /*!< SCB 
+ 331:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_SYSRESETREQ_Msk          (1UL << SCB_AIRCR_SYSRESETREQ_Pos)             /*!< SCB 
+ 332:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 333:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTCLRACTIVE_Pos         1                                             /*!< SCB 
+ 334:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTCLRACTIVE_Msk        (1UL << SCB_AIRCR_VECTCLRACTIVE_Pos)           /*!< SCB 
+ 335:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 336:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTRESET_Pos             0                                             /*!< SCB 
+ 337:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_AIRCR_VECTRESET_Msk            (1UL << SCB_AIRCR_VECTRESET_Pos)               /*!< SCB 
+ 338:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 339:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB System Control Register Definitions */
+ 340:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SEVONPEND_Pos               4                                             /*!< SCB 
+ 341:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SEVONPEND_Msk              (1UL << SCB_SCR_SEVONPEND_Pos)                 /*!< SCB 
+ 342:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 343:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPDEEP_Pos               2                                             /*!< SCB 
+ 344:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPDEEP_Msk              (1UL << SCB_SCR_SLEEPDEEP_Pos)                 /*!< SCB 
+ 345:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 346:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPONEXIT_Pos             1                                             /*!< SCB 
+ 347:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SCR_SLEEPONEXIT_Msk            (1UL << SCB_SCR_SLEEPONEXIT_Pos)               /*!< SCB 
+ 348:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 349:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Configuration Control Register Definitions */
+ 350:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_STKALIGN_Pos                9                                             /*!< SCB 
+ 351:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_STKALIGN_Msk               (1UL << SCB_CCR_STKALIGN_Pos)                  /*!< SCB 
+ 352:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 353:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_BFHFNMIGN_Pos               8                                             /*!< SCB 
+ 354:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_BFHFNMIGN_Msk              (1UL << SCB_CCR_BFHFNMIGN_Pos)                 /*!< SCB 
+ 355:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 356:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_DIV_0_TRP_Pos               4                                             /*!< SCB 
+ 357:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_DIV_0_TRP_Msk              (1UL << SCB_CCR_DIV_0_TRP_Pos)                 /*!< SCB 
+ 358:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 359:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_UNALIGN_TRP_Pos             3                                             /*!< SCB 
+ 360:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_UNALIGN_TRP_Msk            (1UL << SCB_CCR_UNALIGN_TRP_Pos)               /*!< SCB 
+ 361:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 362:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_USERSETMPEND_Pos            1                                             /*!< SCB 
+ 363:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_USERSETMPEND_Msk           (1UL << SCB_CCR_USERSETMPEND_Pos)              /*!< SCB 
+ 364:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 365:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_NONBASETHRDENA_Pos          0                                             /*!< SCB 
+ 366:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CCR_NONBASETHRDENA_Msk         (1UL << SCB_CCR_NONBASETHRDENA_Pos)            /*!< SCB 
+ 367:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 368:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB System Handler Control and State Register Definitions */
+ 369:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTENA_Pos          18                                             /*!< SCB 
+ 370:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTENA_Msk          (1UL << SCB_SHCSR_USGFAULTENA_Pos)             /*!< SCB 
+ 371:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 372:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTENA_Pos          17                                             /*!< SCB 
+ 373:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTENA_Msk          (1UL << SCB_SHCSR_BUSFAULTENA_Pos)             /*!< SCB 
+ 374:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 375:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTENA_Pos          16                                             /*!< SCB 
+ 376:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTENA_Msk          (1UL << SCB_SHCSR_MEMFAULTENA_Pos)             /*!< SCB 
+ 377:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 378:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLPENDED_Pos         15                                             /*!< SCB 
+ 379:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLPENDED_Msk         (1UL << SCB_SHCSR_SVCALLPENDED_Pos)            /*!< SCB 
+ 380:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 381:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTPENDED_Pos       14                                             /*!< SCB 
+ 382:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTPENDED_Msk       (1UL << SCB_SHCSR_BUSFAULTPENDED_Pos)          /*!< SCB 
+ 383:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 384:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTPENDED_Pos       13                                             /*!< SCB 
+ 385:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTPENDED_Msk       (1UL << SCB_SHCSR_MEMFAULTPENDED_Pos)          /*!< SCB 
+ 386:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 387:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTPENDED_Pos       12                                             /*!< SCB 
+ 388:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTPENDED_Msk       (1UL << SCB_SHCSR_USGFAULTPENDED_Pos)          /*!< SCB 
+ 389:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 390:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SYSTICKACT_Pos           11                                             /*!< SCB 
+ 391:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SYSTICKACT_Msk           (1UL << SCB_SHCSR_SYSTICKACT_Pos)              /*!< SCB 
+ 392:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 393:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_PENDSVACT_Pos            10                                             /*!< SCB 
+ 394:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_PENDSVACT_Msk            (1UL << SCB_SHCSR_PENDSVACT_Pos)               /*!< SCB 
+ 395:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 396:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MONITORACT_Pos            8                                             /*!< SCB 
+ 397:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MONITORACT_Msk           (1UL << SCB_SHCSR_MONITORACT_Pos)              /*!< SCB 
+ 398:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 399:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLACT_Pos             7                                             /*!< SCB 
+ 400:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_SVCALLACT_Msk            (1UL << SCB_SHCSR_SVCALLACT_Pos)               /*!< SCB 
+ 401:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 402:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTACT_Pos           3                                             /*!< SCB 
+ 403:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_USGFAULTACT_Msk          (1UL << SCB_SHCSR_USGFAULTACT_Pos)             /*!< SCB 
+ 404:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 405:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTACT_Pos           1                                             /*!< SCB 
+ 406:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_BUSFAULTACT_Msk          (1UL << SCB_SHCSR_BUSFAULTACT_Pos)             /*!< SCB 
+ 407:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 408:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTACT_Pos           0                                             /*!< SCB 
+ 409:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_SHCSR_MEMFAULTACT_Msk          (1UL << SCB_SHCSR_MEMFAULTACT_Pos)             /*!< SCB 
+ 410:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 411:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Configurable Fault Status Registers Definitions */
+ 412:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_USGFAULTSR_Pos            16                                             /*!< SCB 
+ 413:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_USGFAULTSR_Msk            (0xFFFFUL << SCB_CFSR_USGFAULTSR_Pos)          /*!< SCB 
+ 414:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 415:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_BUSFAULTSR_Pos             8                                             /*!< SCB 
+ 416:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_BUSFAULTSR_Msk            (0xFFUL << SCB_CFSR_BUSFAULTSR_Pos)            /*!< SCB 
+ 417:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 418:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_MEMFAULTSR_Pos             0                                             /*!< SCB 
+ 419:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_CFSR_MEMFAULTSR_Msk            (0xFFUL << SCB_CFSR_MEMFAULTSR_Pos)            /*!< SCB 
+ 420:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 421:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Hard Fault Status Registers Definitions */
+ 422:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_DEBUGEVT_Pos              31                                             /*!< SCB 
+ 423:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_DEBUGEVT_Msk              (1UL << SCB_HFSR_DEBUGEVT_Pos)                 /*!< SCB 
+ 424:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 425:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_FORCED_Pos                30                                             /*!< SCB 
+ 426:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_FORCED_Msk                (1UL << SCB_HFSR_FORCED_Pos)                   /*!< SCB 
+ 427:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 428:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_VECTTBL_Pos                1                                             /*!< SCB 
+ 429:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_HFSR_VECTTBL_Msk               (1UL << SCB_HFSR_VECTTBL_Pos)                  /*!< SCB 
+ 430:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 431:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SCB Debug Fault Status Register Definitions */
+ 432:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_EXTERNAL_Pos               4                                             /*!< SCB 
+ 433:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_EXTERNAL_Msk              (1UL << SCB_DFSR_EXTERNAL_Pos)                 /*!< SCB 
+ 434:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 435:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_VCATCH_Pos                 3                                             /*!< SCB 
+ 436:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_VCATCH_Msk                (1UL << SCB_DFSR_VCATCH_Pos)                   /*!< SCB 
+ 437:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 438:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_DWTTRAP_Pos                2                                             /*!< SCB 
+ 439:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_DWTTRAP_Msk               (1UL << SCB_DFSR_DWTTRAP_Pos)                  /*!< SCB 
+ 440:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 441:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_BKPT_Pos                   1                                             /*!< SCB 
+ 442:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_BKPT_Msk                  (1UL << SCB_DFSR_BKPT_Pos)                     /*!< SCB 
+ 443:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 444:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_HALTED_Pos                 0                                             /*!< SCB 
+ 445:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_DFSR_HALTED_Msk                (1UL << SCB_DFSR_HALTED_Pos)                   /*!< SCB 
+ 446:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 447:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_SCB */
+ 448:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 449:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 450:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 451:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_SysTick CMSIS SysTick
+ 452:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M System Timer Registers
+ 453:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 454:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 455:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 456:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the System Timer (SysTick).
+ 457:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 458:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 459:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 460:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CTRL;                    /*!< Offset: 0x000 (R/W)  SysTick Control and Status Regis
+ 461:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t LOAD;                    /*!< Offset: 0x004 (R/W)  SysTick Reload Value Register   
+ 462:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t VAL;                     /*!< Offset: 0x008 (R/W)  SysTick Current Value Register  
+ 463:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CALIB;                   /*!< Offset: 0x00C (R/ )  SysTick Calibration Register    
+ 464:src/MightyBoard/Motherboard/system/core_cm3.h **** } SysTick_Type;
+ 465:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 466:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Control / Status Register Definitions */
+ 467:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_COUNTFLAG_Pos         16                                             /*!< SysT
+ 468:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_COUNTFLAG_Msk         (1UL << SysTick_CTRL_COUNTFLAG_Pos)            /*!< SysT
+ 469:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 470:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_CLKSOURCE_Pos          2                                             /*!< SysT
+ 471:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_CLKSOURCE_Msk         (1UL << SysTick_CTRL_CLKSOURCE_Pos)            /*!< SysT
+ 472:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 473:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_TICKINT_Pos            1                                             /*!< SysT
+ 474:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_TICKINT_Msk           (1UL << SysTick_CTRL_TICKINT_Pos)              /*!< SysT
+ 475:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 476:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_ENABLE_Pos             0                                             /*!< SysT
+ 477:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CTRL_ENABLE_Msk            (1UL << SysTick_CTRL_ENABLE_Pos)               /*!< SysT
+ 478:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 479:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Reload Register Definitions */
+ 480:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_LOAD_RELOAD_Pos             0                                             /*!< SysT
+ 481:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_LOAD_RELOAD_Msk            (0xFFFFFFUL << SysTick_LOAD_RELOAD_Pos)        /*!< SysT
+ 482:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 483:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Current Register Definitions */
+ 484:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_VAL_CURRENT_Pos             0                                             /*!< SysT
+ 485:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_VAL_CURRENT_Msk            (0xFFFFFFUL << SysTick_VAL_CURRENT_Pos)        /*!< SysT
+ 486:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 487:src/MightyBoard/Motherboard/system/core_cm3.h **** /* SysTick Calibration Register Definitions */
+ 488:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_NOREF_Pos            31                                             /*!< SysT
+ 489:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_NOREF_Msk            (1UL << SysTick_CALIB_NOREF_Pos)               /*!< SysT
+ 490:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 491:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_SKEW_Pos             30                                             /*!< SysT
+ 492:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_SKEW_Msk             (1UL << SysTick_CALIB_SKEW_Pos)                /*!< SysT
+ 493:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 494:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_TENMS_Pos             0                                             /*!< SysT
+ 495:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_CALIB_TENMS_Msk            (0xFFFFFFUL << SysTick_VAL_CURRENT_Pos)        /*!< SysT
+ 496:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 497:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_SysTick */
+ 498:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 499:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 500:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 501:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_ITM CMSIS ITM
+ 502:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Instrumentation Trace Macrocell (ITM)
+ 503:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 504:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 505:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 506:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Instrumentation Trace Macrocell Register (ITM).
+ 507:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 508:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 509:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 510:src/MightyBoard/Motherboard/system/core_cm3.h ****   __O  union
+ 511:src/MightyBoard/Motherboard/system/core_cm3.h ****   {
+ 512:src/MightyBoard/Motherboard/system/core_cm3.h ****     __O  uint8_t    u8;                  /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 8-bit         
+ 513:src/MightyBoard/Motherboard/system/core_cm3.h ****     __O  uint16_t   u16;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 16-bit        
+ 514:src/MightyBoard/Motherboard/system/core_cm3.h ****     __O  uint32_t   u32;                 /*!< Offset: 0x000 ( /W)  ITM Stimulus Port 32-bit        
+ 515:src/MightyBoard/Motherboard/system/core_cm3.h ****   }  PORT [32];                          /*!< Offset: 0x000 ( /W)  ITM Stimulus Port Registers     
+ 516:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED0[864];
+ 517:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t TER;                     /*!< Offset:       (R/W)  ITM Trace Enable Register       
+ 518:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED1[15];
+ 519:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t TPR;                     /*!< Offset:       (R/W)  ITM Trace Privilege Register    
+ 520:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED2[15];
+ 521:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t TCR;                     /*!< Offset:       (R/W)  ITM Trace Control Register      
+ 522:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED3[29];
+ 523:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IWR;                     /*!< Offset:       (R/W)  ITM Integration Write Register  
+ 524:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IRR;                     /*!< Offset:       (R/W)  ITM Integration Read Register   
+ 525:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t IMCR;                    /*!< Offset:       (R/W)  ITM Integration Mode Control Reg
+ 526:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED4[43];
+ 527:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t LAR;                     /*!< Offset:       (R/W)  ITM Lock Access Register        
+ 528:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t LSR;                     /*!< Offset:       (R/W)  ITM Lock Status Register        
+ 529:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED5[6];
+ 530:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID4;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 531:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID5;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 532:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID6;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 533:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID7;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 534:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID0;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 535:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID1;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 536:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID2;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 537:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t PID3;                    /*!< Offset:       (R/ )  ITM Peripheral Identification Re
+ 538:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID0;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 539:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID1;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 540:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID2;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 541:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t CID3;                    /*!< Offset:       (R/ )  ITM Component  Identification Re
+ 542:src/MightyBoard/Motherboard/system/core_cm3.h **** } ITM_Type;
+ 543:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 544:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Trace Privilege Register Definitions */
+ 545:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TPR_PRIVMASK_Pos                0                                             /*!< ITM 
+ 546:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TPR_PRIVMASK_Msk               (0xFUL << ITM_TPR_PRIVMASK_Pos)                /*!< ITM 
+ 547:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 548:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Trace Control Register Definitions */
+ 549:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_BUSY_Pos                   23                                             /*!< ITM 
+ 550:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_BUSY_Msk                   (1UL << ITM_TCR_BUSY_Pos)                      /*!< ITM 
+ 551:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 552:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ATBID_Pos                  16                                             /*!< ITM 
+ 553:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ATBID_Msk                  (0x7FUL << ITM_TCR_ATBID_Pos)                  /*!< ITM 
+ 554:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 555:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSPrescale_Pos              8                                             /*!< ITM 
+ 556:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSPrescale_Msk             (3UL << ITM_TCR_TSPrescale_Pos)                /*!< ITM 
+ 557:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 558:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SWOENA_Pos                  4                                             /*!< ITM 
+ 559:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SWOENA_Msk                 (1UL << ITM_TCR_SWOENA_Pos)                    /*!< ITM 
+ 560:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 561:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_DWTENA_Pos                  3                                             /*!< ITM 
+ 562:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_DWTENA_Msk                 (1UL << ITM_TCR_DWTENA_Pos)                    /*!< ITM 
+ 563:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 564:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SYNCENA_Pos                 2                                             /*!< ITM 
+ 565:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_SYNCENA_Msk                (1UL << ITM_TCR_SYNCENA_Pos)                   /*!< ITM 
+ 566:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 567:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSENA_Pos                   1                                             /*!< ITM 
+ 568:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_TSENA_Msk                  (1UL << ITM_TCR_TSENA_Pos)                     /*!< ITM 
+ 569:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 570:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ITMENA_Pos                  0                                             /*!< ITM 
+ 571:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_TCR_ITMENA_Msk                 (1UL << ITM_TCR_ITMENA_Pos)                    /*!< ITM 
+ 572:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 573:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Integration Write Register Definitions */
+ 574:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IWR_ATVALIDM_Pos                0                                             /*!< ITM 
+ 575:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IWR_ATVALIDM_Msk               (1UL << ITM_IWR_ATVALIDM_Pos)                  /*!< ITM 
+ 576:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 577:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Integration Read Register Definitions */
+ 578:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IRR_ATREADYM_Pos                0                                             /*!< ITM 
+ 579:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IRR_ATREADYM_Msk               (1UL << ITM_IRR_ATREADYM_Pos)                  /*!< ITM 
+ 580:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 581:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Integration Mode Control Register Definitions */
+ 582:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IMCR_INTEGRATION_Pos            0                                             /*!< ITM 
+ 583:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_IMCR_INTEGRATION_Msk           (1UL << ITM_IMCR_INTEGRATION_Pos)              /*!< ITM 
+ 584:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 585:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ITM Lock Status Register Definitions */
+ 586:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_ByteAcc_Pos                 2                                             /*!< ITM 
+ 587:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_ByteAcc_Msk                (1UL << ITM_LSR_ByteAcc_Pos)                   /*!< ITM 
+ 588:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 589:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Access_Pos                  1                                             /*!< ITM 
+ 590:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Access_Msk                 (1UL << ITM_LSR_Access_Pos)                    /*!< ITM 
+ 591:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 592:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Present_Pos                 0                                             /*!< ITM 
+ 593:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_LSR_Present_Msk                (1UL << ITM_LSR_Present_Pos)                   /*!< ITM 
+ 594:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 595:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@}*/ /* end of group CMSIS_ITM */
+ 596:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 597:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 598:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 599:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_InterruptType CMSIS Interrupt Type
+ 600:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Interrupt Type Register
+ 601:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 602:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 603:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 604:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Interrupt Type Register.
+ 605:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 606:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 607:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 608:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED0;
+ 609:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t ICTR;                    /*!< Offset: 0x004 (R/ )  Interrupt Control Type Register 
+ 610:src/MightyBoard/Motherboard/system/core_cm3.h **** #if ((defined __CM3_REV) && (__CM3_REV >= 0x200))
+ 611:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t ACTLR;                   /*!< Offset: 0x008 (R/W)  Auxiliary Control Register      
+ 612:src/MightyBoard/Motherboard/system/core_cm3.h **** #else
+ 613:src/MightyBoard/Motherboard/system/core_cm3.h ****        uint32_t RESERVED1;
+ 614:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 615:src/MightyBoard/Motherboard/system/core_cm3.h **** } InterruptType_Type;
+ 616:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 617:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Interrupt Controller Type Register Definitions */
+ 618:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ICTR_INTLINESNUM_Pos  0                                                   /*!< Inte
+ 619:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ICTR_INTLINESNUM_Msk (0x1FUL << IntType_ICTR_INTLINESNUM_Pos)             /*!< Inte
+ 620:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 621:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Auxiliary Control Register Definitions */
+ 622:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISFOLD_Pos     2                                                   /*!< Inte
+ 623:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISFOLD_Msk    (1UL << IntType_ACTLR_DISFOLD_Pos)                   /*!< Inte
+ 624:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 625:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISDEFWBUF_Pos  1                                                   /*!< Inte
+ 626:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISDEFWBUF_Msk (1UL << IntType_ACTLR_DISDEFWBUF_Pos)                /*!< Inte
+ 627:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 628:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISMCYCINT_Pos  0                                                   /*!< Inte
+ 629:src/MightyBoard/Motherboard/system/core_cm3.h **** #define IntType_ACTLR_DISMCYCINT_Msk (1UL << IntType_ACTLR_DISMCYCINT_Pos)                /*!< Inte
+ 630:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 631:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@}*/ /* end of group CMSIS_InterruptType */
+ 632:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 633:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 634:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__MPU_PRESENT == 1)
+ 635:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 636:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_MPU CMSIS MPU
+ 637:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Memory Protection Unit (MPU)
+ 638:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 639:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 640:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 641:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Memory Protection Unit (MPU).
+ 642:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 643:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 644:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 645:src/MightyBoard/Motherboard/system/core_cm3.h ****   __I  uint32_t TYPE;                    /*!< Offset: 0x000 (R/ )  MPU Type Register               
+ 646:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t CTRL;                    /*!< Offset: 0x004 (R/W)  MPU Control Register            
+ 647:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RNR;                     /*!< Offset: 0x008 (R/W)  MPU Region RNRber Register      
+ 648:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR;                    /*!< Offset: 0x00C (R/W)  MPU Region Base Address Register
+ 649:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR;                    /*!< Offset: 0x010 (R/W)  MPU Region Attribute and Size Re
+ 650:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR_A1;                 /*!< Offset: 0x014 (R/W)  MPU Alias 1 Region Base Address 
+ 651:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR_A1;                 /*!< Offset: 0x018 (R/W)  MPU Alias 1 Region Attribute and
+ 652:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR_A2;                 /*!< Offset: 0x01C (R/W)  MPU Alias 2 Region Base Address 
+ 653:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR_A2;                 /*!< Offset: 0x020 (R/W)  MPU Alias 2 Region Attribute and
+ 654:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RBAR_A3;                 /*!< Offset: 0x024 (R/W)  MPU Alias 3 Region Base Address 
+ 655:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t RASR_A3;                 /*!< Offset: 0x028 (R/W)  MPU Alias 3 Region Attribute and
+ 656:src/MightyBoard/Motherboard/system/core_cm3.h **** } MPU_Type;
+ 657:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 658:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Type Register */
+ 659:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_IREGION_Pos               16                                             /*!< MPU 
+ 660:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_IREGION_Msk               (0xFFUL << MPU_TYPE_IREGION_Pos)               /*!< MPU 
+ 661:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 662:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_DREGION_Pos                8                                             /*!< MPU 
+ 663:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_DREGION_Msk               (0xFFUL << MPU_TYPE_DREGION_Pos)               /*!< MPU 
+ 664:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 665:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_SEPARATE_Pos               0                                             /*!< MPU 
+ 666:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_TYPE_SEPARATE_Msk              (1UL << MPU_TYPE_SEPARATE_Pos)                 /*!< MPU 
+ 667:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 668:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Control Register */
+ 669:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_PRIVDEFENA_Pos             2                                             /*!< MPU 
+ 670:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_PRIVDEFENA_Msk            (1UL << MPU_CTRL_PRIVDEFENA_Pos)               /*!< MPU 
+ 671:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 672:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_HFNMIENA_Pos               1                                             /*!< MPU 
+ 673:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_HFNMIENA_Msk              (1UL << MPU_CTRL_HFNMIENA_Pos)                 /*!< MPU 
+ 674:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 675:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_ENABLE_Pos                 0                                             /*!< MPU 
+ 676:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_CTRL_ENABLE_Msk                (1UL << MPU_CTRL_ENABLE_Pos)                   /*!< MPU 
+ 677:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 678:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Region Number Register */
+ 679:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RNR_REGION_Pos                  0                                             /*!< MPU 
+ 680:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RNR_REGION_Msk                 (0xFFUL << MPU_RNR_REGION_Pos)                 /*!< MPU 
+ 681:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 682:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Region Base Address Register */
+ 683:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_ADDR_Pos                   5                                             /*!< MPU 
+ 684:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_ADDR_Msk                  (0x7FFFFFFUL << MPU_RBAR_ADDR_Pos)             /*!< MPU 
+ 685:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 686:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_VALID_Pos                  4                                             /*!< MPU 
+ 687:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_VALID_Msk                 (1UL << MPU_RBAR_VALID_Pos)                    /*!< MPU 
+ 688:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 689:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_REGION_Pos                 0                                             /*!< MPU 
+ 690:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RBAR_REGION_Msk                (0xFUL << MPU_RBAR_REGION_Pos)                 /*!< MPU 
+ 691:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 692:src/MightyBoard/Motherboard/system/core_cm3.h **** /* MPU Region Attribute and Size Register */
+ 693:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_XN_Pos                    28                                             /*!< MPU 
+ 694:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_XN_Msk                    (1UL << MPU_RASR_XN_Pos)                       /*!< MPU 
+ 695:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 696:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_AP_Pos                    24                                             /*!< MPU 
+ 697:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_AP_Msk                    (7UL << MPU_RASR_AP_Pos)                       /*!< MPU 
+ 698:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 699:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_TEX_Pos                   19                                             /*!< MPU 
+ 700:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_TEX_Msk                   (7UL << MPU_RASR_TEX_Pos)                      /*!< MPU 
+ 701:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 702:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_S_Pos                     18                                             /*!< MPU 
+ 703:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_S_Msk                     (1UL << MPU_RASR_S_Pos)                        /*!< MPU 
+ 704:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 705:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_C_Pos                     17                                             /*!< MPU 
+ 706:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_C_Msk                     (1UL << MPU_RASR_C_Pos)                        /*!< MPU 
+ 707:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 708:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_B_Pos                     16                                             /*!< MPU 
+ 709:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_B_Msk                     (1UL << MPU_RASR_B_Pos)                        /*!< MPU 
+ 710:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 711:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SRD_Pos                    8                                             /*!< MPU 
+ 712:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SRD_Msk                   (0xFFUL << MPU_RASR_SRD_Pos)                   /*!< MPU 
+ 713:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 714:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SIZE_Pos                   1                                             /*!< MPU 
+ 715:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_SIZE_Msk                  (0x1FUL << MPU_RASR_SIZE_Pos)                  /*!< MPU 
+ 716:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 717:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_ENA_Pos                     0                                            /*!< MPU 
+ 718:src/MightyBoard/Motherboard/system/core_cm3.h **** #define MPU_RASR_ENA_Msk                    (0x1UL << MPU_RASR_ENA_Pos)                   /*!< MPU 
+ 719:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 720:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_MPU */
+ 721:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 722:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 723:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 724:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 725:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_CoreDebug CMSIS Core Debug
+ 726:src/MightyBoard/Motherboard/system/core_cm3.h ****   Type definitions for the Cortex-M Core Debug Registers
+ 727:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 728:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 729:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 730:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Structure type to access the Core Debug Register (CoreDebug).
+ 731:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 732:src/MightyBoard/Motherboard/system/core_cm3.h **** typedef struct
+ 733:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 734:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DHCSR;                   /*!< Offset: 0x000 (R/W)  Debug Halting Control and Status
+ 735:src/MightyBoard/Motherboard/system/core_cm3.h ****   __O  uint32_t DCRSR;                   /*!< Offset: 0x004 ( /W)  Debug Core Register Selector Reg
+ 736:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DCRDR;                   /*!< Offset: 0x008 (R/W)  Debug Core Register Data Registe
+ 737:src/MightyBoard/Motherboard/system/core_cm3.h ****   __IO uint32_t DEMCR;                   /*!< Offset: 0x00C (R/W)  Debug Exception and Monitor Cont
+ 738:src/MightyBoard/Motherboard/system/core_cm3.h **** } CoreDebug_Type;
+ 739:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 740:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Debug Halting Control and Status Register */
+ 741:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_DBGKEY_Pos         16                                             /*!< Core
+ 742:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_DBGKEY_Msk         (0xFFFFUL << CoreDebug_DHCSR_DBGKEY_Pos)       /*!< Core
+ 743:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 744:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RESET_ST_Pos     25                                             /*!< Core
+ 745:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RESET_ST_Msk     (1UL << CoreDebug_DHCSR_S_RESET_ST_Pos)        /*!< Core
+ 746:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 747:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RETIRE_ST_Pos    24                                             /*!< Core
+ 748:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_RETIRE_ST_Msk    (1UL << CoreDebug_DHCSR_S_RETIRE_ST_Pos)       /*!< Core
+ 749:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 750:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_LOCKUP_Pos       19                                             /*!< Core
+ 751:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_LOCKUP_Msk       (1UL << CoreDebug_DHCSR_S_LOCKUP_Pos)          /*!< Core
+ 752:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 753:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_SLEEP_Pos        18                                             /*!< Core
+ 754:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_SLEEP_Msk        (1UL << CoreDebug_DHCSR_S_SLEEP_Pos)           /*!< Core
+ 755:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 756:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_HALT_Pos         17                                             /*!< Core
+ 757:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_HALT_Msk         (1UL << CoreDebug_DHCSR_S_HALT_Pos)            /*!< Core
+ 758:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 759:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_REGRDY_Pos       16                                             /*!< Core
+ 760:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_S_REGRDY_Msk       (1UL << CoreDebug_DHCSR_S_REGRDY_Pos)          /*!< Core
+ 761:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 762:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_SNAPSTALL_Pos     5                                             /*!< Core
+ 763:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_SNAPSTALL_Msk    (1UL << CoreDebug_DHCSR_C_SNAPSTALL_Pos)       /*!< Core
+ 764:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 765:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_MASKINTS_Pos      3                                             /*!< Core
+ 766:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_MASKINTS_Msk     (1UL << CoreDebug_DHCSR_C_MASKINTS_Pos)        /*!< Core
+ 767:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 768:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_STEP_Pos          2                                             /*!< Core
+ 769:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_STEP_Msk         (1UL << CoreDebug_DHCSR_C_STEP_Pos)            /*!< Core
+ 770:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 771:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_HALT_Pos          1                                             /*!< Core
+ 772:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_HALT_Msk         (1UL << CoreDebug_DHCSR_C_HALT_Pos)            /*!< Core
+ 773:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 774:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_DEBUGEN_Pos       0                                             /*!< Core
+ 775:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DHCSR_C_DEBUGEN_Msk      (1UL << CoreDebug_DHCSR_C_DEBUGEN_Pos)         /*!< Core
+ 776:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 777:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Debug Core Register Selector Register */
+ 778:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGWnR_Pos         16                                             /*!< Core
+ 779:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGWnR_Msk         (1UL << CoreDebug_DCRSR_REGWnR_Pos)            /*!< Core
+ 780:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 781:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGSEL_Pos          0                                             /*!< Core
+ 782:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DCRSR_REGSEL_Msk         (0x1FUL << CoreDebug_DCRSR_REGSEL_Pos)         /*!< Core
+ 783:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 784:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Debug Exception and Monitor Control Register */
+ 785:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_TRCENA_Pos         24                                             /*!< Core
+ 786:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_TRCENA_Msk         (1UL << CoreDebug_DEMCR_TRCENA_Pos)            /*!< Core
+ 787:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 788:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_REQ_Pos        19                                             /*!< Core
+ 789:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_REQ_Msk        (1UL << CoreDebug_DEMCR_MON_REQ_Pos)           /*!< Core
+ 790:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 791:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_STEP_Pos       18                                             /*!< Core
+ 792:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_STEP_Msk       (1UL << CoreDebug_DEMCR_MON_STEP_Pos)          /*!< Core
+ 793:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 794:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_PEND_Pos       17                                             /*!< Core
+ 795:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_PEND_Msk       (1UL << CoreDebug_DEMCR_MON_PEND_Pos)          /*!< Core
+ 796:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 797:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_EN_Pos         16                                             /*!< Core
+ 798:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_MON_EN_Msk         (1UL << CoreDebug_DEMCR_MON_EN_Pos)            /*!< Core
+ 799:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 800:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_HARDERR_Pos     10                                             /*!< Core
+ 801:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_HARDERR_Msk     (1UL << CoreDebug_DEMCR_VC_HARDERR_Pos)        /*!< Core
+ 802:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 803:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_INTERR_Pos       9                                             /*!< Core
+ 804:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_INTERR_Msk      (1UL << CoreDebug_DEMCR_VC_INTERR_Pos)         /*!< Core
+ 805:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 806:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_BUSERR_Pos       8                                             /*!< Core
+ 807:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_BUSERR_Msk      (1UL << CoreDebug_DEMCR_VC_BUSERR_Pos)         /*!< Core
+ 808:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 809:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_STATERR_Pos      7                                             /*!< Core
+ 810:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_STATERR_Msk     (1UL << CoreDebug_DEMCR_VC_STATERR_Pos)        /*!< Core
+ 811:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 812:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CHKERR_Pos       6                                             /*!< Core
+ 813:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CHKERR_Msk      (1UL << CoreDebug_DEMCR_VC_CHKERR_Pos)         /*!< Core
+ 814:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 815:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_NOCPERR_Pos      5                                             /*!< Core
+ 816:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_NOCPERR_Msk     (1UL << CoreDebug_DEMCR_VC_NOCPERR_Pos)        /*!< Core
+ 817:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 818:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_MMERR_Pos        4                                             /*!< Core
+ 819:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_MMERR_Msk       (1UL << CoreDebug_DEMCR_VC_MMERR_Pos)          /*!< Core
+ 820:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 821:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CORERESET_Pos    0                                             /*!< Core
+ 822:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_DEMCR_VC_CORERESET_Msk   (1UL << CoreDebug_DEMCR_VC_CORERESET_Pos)      /*!< Core
+ 823:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 824:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} end of group CMSIS_CoreDebug */
+ 825:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 826:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 827:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_core_register
+ 828:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 829:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 830:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 831:src/MightyBoard/Motherboard/system/core_cm3.h **** /* Memory mapping of Cortex-M3 Hardware */
+ 832:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCS_BASE            (0xE000E000UL)                            /*!< System Control Space Bas
+ 833:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM_BASE            (0xE0000000UL)                            /*!< ITM Base Address        
+ 834:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug_BASE      (0xE000EDF0UL)                            /*!< Core Debug Base Address 
+ 835:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick_BASE        (SCS_BASE +  0x0010UL)                    /*!< SysTick Base Address    
+ 836:src/MightyBoard/Motherboard/system/core_cm3.h **** #define NVIC_BASE           (SCS_BASE +  0x0100UL)                    /*!< NVIC Base Address       
+ 837:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB_BASE            (SCS_BASE +  0x0D00UL)                    /*!< System Control Block Bas
+ 838:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 839:src/MightyBoard/Motherboard/system/core_cm3.h **** #define InterruptType       ((InterruptType_Type *) SCS_BASE)         /*!< Interrupt Type Register 
+ 840:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SCB                 ((SCB_Type *)           SCB_BASE)         /*!< SCB configuration struct
+ 841:src/MightyBoard/Motherboard/system/core_cm3.h **** #define SysTick             ((SysTick_Type *)       SysTick_BASE)     /*!< SysTick configuration st
+ 842:src/MightyBoard/Motherboard/system/core_cm3.h **** #define NVIC                ((NVIC_Type *)          NVIC_BASE)        /*!< NVIC configuration struc
+ 843:src/MightyBoard/Motherboard/system/core_cm3.h **** #define ITM                 ((ITM_Type *)           ITM_BASE)         /*!< ITM configuration struct
+ 844:src/MightyBoard/Motherboard/system/core_cm3.h **** #define CoreDebug           ((CoreDebug_Type *)     CoreDebug_BASE)   /*!< Core Debug configuration
+ 845:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 846:src/MightyBoard/Motherboard/system/core_cm3.h **** #if (__MPU_PRESENT == 1)
+ 847:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define MPU_BASE          (SCS_BASE +  0x0D90UL)                    /*!< Memory Protection Unit  
+ 848:src/MightyBoard/Motherboard/system/core_cm3.h ****   #define MPU               ((MPU_Type*)            MPU_BASE)         /*!< Memory Protection Unit  
+ 849:src/MightyBoard/Motherboard/system/core_cm3.h **** #endif
+ 850:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 851:src/MightyBoard/Motherboard/system/core_cm3.h **** /*@} */
+ 852:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 853:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 854:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 855:src/MightyBoard/Motherboard/system/core_cm3.h **** /*******************************************************************************
+ 856:src/MightyBoard/Motherboard/system/core_cm3.h ****  *                Hardware Abstraction Layer
+ 857:src/MightyBoard/Motherboard/system/core_cm3.h ****  ******************************************************************************/
+ 858:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS
+ 859:src/MightyBoard/Motherboard/system/core_cm3.h ****   \addtogroup CMSIS_Core_FunctionInterface CMSIS Core Function Interface
+ 860:src/MightyBoard/Motherboard/system/core_cm3.h ****   Core Function Interface contains:
+ 861:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core NVIC Functions
+ 862:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core SysTick Functions
+ 863:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Debug Functions
+ 864:src/MightyBoard/Motherboard/system/core_cm3.h ****   - Core Register Access Functions
+ 865:src/MightyBoard/Motherboard/system/core_cm3.h **** */
+ 866:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 867:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 868:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 869:src/MightyBoard/Motherboard/system/core_cm3.h **** /* ##########################   NVIC functions  #################################### */
+ 870:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 871:src/MightyBoard/Motherboard/system/core_cm3.h ****     \defgroup CMSIS_Core_NVICFunctions CMSIS Core NVIC Functions
+ 872:src/MightyBoard/Motherboard/system/core_cm3.h ****   @{
+ 873:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 874:src/MightyBoard/Motherboard/system/core_cm3.h **** /** @addtogroup CMSIS_Core_NVICFunctions
+ 875:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @{
+ 876:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 877:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Set Priority Grouping
+ 878:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 879:src/MightyBoard/Motherboard/system/core_cm3.h ****   This function sets the priority grouping field using the required unlock sequence.
+ 880:src/MightyBoard/Motherboard/system/core_cm3.h ****   The parameter PriorityGroup is assigned to the field SCB->AIRCR [10:8] PRIGROUP field.
+ 881:src/MightyBoard/Motherboard/system/core_cm3.h ****   Only values from 0..7 are used.
+ 882:src/MightyBoard/Motherboard/system/core_cm3.h ****   In case of a conflict between priority grouping and available
+ 883:src/MightyBoard/Motherboard/system/core_cm3.h ****   priority bits (__NVIC_PRIO_BITS) the smallest possible priority group is set.
+ 884:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 885:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      PriorityGroup  Priority grouping field
+ 886:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 887:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_SetPriorityGrouping(uint32_t PriorityGroup)
+ 888:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 889:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t reg_value;
+ 890:src/MightyBoard/Motherboard/system/core_cm3.h ****   uint32_t PriorityGroupTmp = (PriorityGroup & 0x07);                         /* only values 0..7 a
+ 891:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 892:src/MightyBoard/Motherboard/system/core_cm3.h ****   reg_value  =  SCB->AIRCR;                                                   /* read old register 
+ 893:src/MightyBoard/Motherboard/system/core_cm3.h ****   reg_value &= ~(SCB_AIRCR_VECTKEY_Msk | SCB_AIRCR_PRIGROUP_Msk);             /* clear bits to chan
+ 894:src/MightyBoard/Motherboard/system/core_cm3.h ****   reg_value  =  (reg_value                       |
+ 895:src/MightyBoard/Motherboard/system/core_cm3.h ****                 (0x5FA << SCB_AIRCR_VECTKEY_Pos) |
+ 896:src/MightyBoard/Motherboard/system/core_cm3.h ****                 (PriorityGroupTmp << 8));                                     /* Insert write key a
+ 897:src/MightyBoard/Motherboard/system/core_cm3.h ****   SCB->AIRCR =  reg_value;
+ 898:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 899:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 900:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 901:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Get Priority Grouping
+ 902:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 903:src/MightyBoard/Motherboard/system/core_cm3.h ****   This function gets the priority grouping from NVIC Interrupt Controller.
+ 904:src/MightyBoard/Motherboard/system/core_cm3.h ****   Priority grouping is SCB->AIRCR [10:8] PRIGROUP field.
+ 905:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 906:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return                Priority grouping field
+ 907:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 908:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE uint32_t NVIC_GetPriorityGrouping(void)
+ 909:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 910:src/MightyBoard/Motherboard/system/core_cm3.h ****   return ((SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) >> SCB_AIRCR_PRIGROUP_Pos);   /* read priority grou
+ 911:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 912:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 913:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 914:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Enable External Interrupt
+ 915:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 916:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function enables a device specific interupt in the NVIC interrupt controller.
+ 917:src/MightyBoard/Motherboard/system/core_cm3.h ****     The interrupt number cannot be a negative value.
+ 918:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 919:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the external interrupt to enable
+ 920:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 921:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
+ 922:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
+ 924:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 925:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 926:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 927:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Disable External Interrupt
+ 928:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 929:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function disables a device specific interupt in the NVIC interrupt controller.
+ 930:src/MightyBoard/Motherboard/system/core_cm3.h ****     The interrupt number cannot be a negative value.
+ 931:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 932:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the external interrupt to disable
+ 933:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 934:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_DisableIRQ(IRQn_Type IRQn)
+ 935:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 936:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ICER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* disable interrupt */
+ 937:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 938:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 939:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 940:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Get Pending Interrupt
+ 941:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 942:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function reads the pending register in the NVIC and returns the pending bit
+ 943:src/MightyBoard/Motherboard/system/core_cm3.h ****     for the specified interrupt.
+ 944:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 945:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the interrupt for get pending
+ 946:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return             0  Interrupt status is not pending
+ 947:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return             1  Interrupt status is pending
+ 948:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 949:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn)
+ 950:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 951:src/MightyBoard/Motherboard/system/core_cm3.h ****   return((uint32_t) ((NVIC->ISPR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0)); 
+ 952:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 953:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 954:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 955:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Set Pending Interrupt
+ 956:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 957:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function sets the pending bit for the specified interrupt.
+ 958:src/MightyBoard/Motherboard/system/core_cm3.h ****     The interrupt number cannot be a negative value.
+ 959:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 960:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the interrupt for set pending
+ 961:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 962:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_SetPendingIRQ(IRQn_Type IRQn)
+ 963:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 964:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISPR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* set interrupt pending 
+ 965:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 966:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 967:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 968:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Clear Pending Interrupt
+ 969:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 970:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function clears the pending bit for the specified interrupt.
+ 971:src/MightyBoard/Motherboard/system/core_cm3.h ****     The interrupt number cannot be a negative value.
+ 972:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 973:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the interrupt for clear pending
+ 974:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 975:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_ClearPendingIRQ(IRQn_Type IRQn)
+ 976:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 977:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ICPR[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* Clear pending interrup
+ 978:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 979:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 980:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 981:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Get Active Interrupt
+ 982:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 983:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function reads the active register in NVIC and returns the active bit.
+ 984:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the interrupt for get active
+ 985:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return             0  Interrupt status is not active
+ 986:src/MightyBoard/Motherboard/system/core_cm3.h ****     \return             1  Interrupt status is active
+ 987:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+ 988:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE uint32_t NVIC_GetActive(IRQn_Type IRQn)
+ 989:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+ 990:src/MightyBoard/Motherboard/system/core_cm3.h ****   return((uint32_t)((NVIC->IABR[(uint32_t)(IRQn) >> 5] & (1 << ((uint32_t)(IRQn) & 0x1F)))?1:0)); /
+ 991:src/MightyBoard/Motherboard/system/core_cm3.h **** }
+ 992:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 993:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 994:src/MightyBoard/Motherboard/system/core_cm3.h **** /** \brief  Set Interrupt Priority
+ 995:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+ 996:src/MightyBoard/Motherboard/system/core_cm3.h ****     This function sets the priority for the specified interrupt. The interrupt
+ 997:src/MightyBoard/Motherboard/system/core_cm3.h ****     number can be positive to specify an external (device specific)
+ 998:src/MightyBoard/Motherboard/system/core_cm3.h ****     interrupt, or negative to specify an internal (core) interrupt.
+ 999:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+1000:src/MightyBoard/Motherboard/system/core_cm3.h ****     Note: The priority cannot be set for every core interrupt.
+1001:src/MightyBoard/Motherboard/system/core_cm3.h **** 
+1002:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]      IRQn  Number of the interrupt for set priority
+1003:src/MightyBoard/Motherboard/system/core_cm3.h ****     \param [in]  priority  Priority to set
+1004:src/MightyBoard/Motherboard/system/core_cm3.h ****  */
+1005:src/MightyBoard/Motherboard/system/core_cm3.h **** static __INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
+1006:src/MightyBoard/Motherboard/system/core_cm3.h **** {
+1007:src/MightyBoard/Motherboard/system/core_cm3.h ****   if(IRQn < 0) {
+1008:src/MightyBoard/Motherboard/system/core_cm3.h ****     SCB->SHP[((uint32_t)(IRQn) & 0xF)-4] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff); } /* set 
+1009:src/MightyBoard/Motherboard/system/core_cm3.h ****   else {
+1010:src/MightyBoard/Motherboard/system/core_cm3.h ****     NVIC->IP[(uint32_t)(IRQn)] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff);    }        /* set 
+ 201              	 .loc 2 1010 0
+ 202 00a4 4FF46143 	 mov r3,#57600
+ 203 00a8 CEF20003 	 movt r3,57344
+ 204 00ac 4FF05002 	 mov r2,#80
+ 205 00b0 83F80523 	 strb r2,[r3,#773]
+ 206              	.LVL5:
+ 207              	.LBE12:
+ 208              	.LBE11:
+ 209              	.LBB13:
+ 210              	.LBB14:
+ 923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
+ 211              	 .loc 2 923 0
+ 212 00b4 4FF02002 	 mov r2,#32
+ 213 00b8 1A60     	 str r2,[r3,#0]
+ 214              	.LBE14:
+ 215              	.LBE13:
+ 255:src/MightyBoard/Motherboard/comm.c **** 
+ 256:src/MightyBoard/Motherboard/comm.c ****     /* preemption = 1, sub-priority = 1 */
+ 257:src/MightyBoard/Motherboard/comm.c ****     NVIC_SetPriority(UART0_IRQn, 10);
+ 258:src/MightyBoard/Motherboard/comm.c **** 	/* Enable Interrupt for UART0 channel */
+ 259:src/MightyBoard/Motherboard/comm.c ****     NVIC_EnableIRQ(UART0_IRQn);
+ 260:src/MightyBoard/Motherboard/comm.c **** #endif
+ 261:src/MightyBoard/Motherboard/comm.c **** }
+ 216              	 .loc 1 261 0
+ 217 00ba 04B0     	 add sp,sp,#16
+ 218 00bc BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 219              	 .cfi_endproc
+ 220              	.LFE61:
+ 222              	 .section .text.UART_IntReceive,"ax",%progbits
+ 223              	 .align 2
+ 224              	 .global UART_IntReceive
+ 225              	 .thumb
+ 226              	 .thumb_func
+ 228              	UART_IntReceive:
+ 229              	.LFB63:
+ 262:src/MightyBoard/Motherboard/comm.c **** 
+ 263:src/MightyBoard/Motherboard/comm.c **** 
+ 264:src/MightyBoard/Motherboard/comm.c **** #if 1
+ 265:src/MightyBoard/Motherboard/comm.c **** /*----------------- INTERRUPT SERVICE ROUTINES --------------------------*/
+ 266:src/MightyBoard/Motherboard/comm.c **** /*********************************************************************//**
+ 267:src/MightyBoard/Motherboard/comm.c ****  * @brief		UART0 interrupt handler sub-routine
+ 268:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	None
+ 269:src/MightyBoard/Motherboard/comm.c ****  * @return 		None
+ 270:src/MightyBoard/Motherboard/comm.c ****  **********************************************************************/
+ 271:src/MightyBoard/Motherboard/comm.c **** void UART0_IRQHandler(void)
+ 272:src/MightyBoard/Motherboard/comm.c **** {
+ 273:src/MightyBoard/Motherboard/comm.c **** 	uint32_t intsrc, tmp, tmp1;
+ 274:src/MightyBoard/Motherboard/comm.c **** 
+ 275:src/MightyBoard/Motherboard/comm.c **** 	/* Determine the interrupt source */
+ 276:src/MightyBoard/Motherboard/comm.c **** 	intsrc = UART_GetIntId(LPC_UART0);
+ 277:src/MightyBoard/Motherboard/comm.c **** 	tmp = intsrc & UART_IIR_INTID_MASK;
+ 278:src/MightyBoard/Motherboard/comm.c **** 
+ 279:src/MightyBoard/Motherboard/comm.c **** 
+ 280:src/MightyBoard/Motherboard/comm.c **** 	// Receive Line Status
+ 281:src/MightyBoard/Motherboard/comm.c **** 	if (tmp == UART_IIR_INTID_RLS){
+ 282:src/MightyBoard/Motherboard/comm.c **** 		// Check line status
+ 283:src/MightyBoard/Motherboard/comm.c **** 		tmp1 = UART_GetLineStatus(LPC_UART0);
+ 284:src/MightyBoard/Motherboard/comm.c **** 		// Mask out the Receive Ready and Transmit Holding empty status
+ 285:src/MightyBoard/Motherboard/comm.c **** 		tmp1 &= (UART_LSR_OE | UART_LSR_PE | UART_LSR_FE \
+ 286:src/MightyBoard/Motherboard/comm.c **** 				| UART_LSR_BI | UART_LSR_RXFE);
+ 287:src/MightyBoard/Motherboard/comm.c **** 		// If any error exist
+ 288:src/MightyBoard/Motherboard/comm.c **** 		if (tmp1) {
+ 289:src/MightyBoard/Motherboard/comm.c **** 			UART_IntErr(tmp1);
+ 290:src/MightyBoard/Motherboard/comm.c **** 		}
+ 291:src/MightyBoard/Motherboard/comm.c **** 	}
+ 292:src/MightyBoard/Motherboard/comm.c **** 
+ 293:src/MightyBoard/Motherboard/comm.c **** 	// Receive Data Available or Character time-out
+ 294:src/MightyBoard/Motherboard/comm.c **** 	if ((tmp == UART_IIR_INTID_RDA) || (tmp == UART_IIR_INTID_CTI)){
+ 295:src/MightyBoard/Motherboard/comm.c **** 		UART_IntReceive();
+ 296:src/MightyBoard/Motherboard/comm.c **** 	}
+ 297:src/MightyBoard/Motherboard/comm.c **** 
+ 298:src/MightyBoard/Motherboard/comm.c **** 	// Transmit Holding Empty
+ 299:src/MightyBoard/Motherboard/comm.c **** 	if (tmp == UART_IIR_INTID_THRE){
+ 300:src/MightyBoard/Motherboard/comm.c **** 		UART_IntTransmit();
+ 301:src/MightyBoard/Motherboard/comm.c **** 	}
+ 302:src/MightyBoard/Motherboard/comm.c **** 
+ 303:src/MightyBoard/Motherboard/comm.c **** }
+ 304:src/MightyBoard/Motherboard/comm.c **** 
+ 305:src/MightyBoard/Motherboard/comm.c **** /********************************************************************//**
+ 306:src/MightyBoard/Motherboard/comm.c ****  * @brief 		UART receive function (ring buffer used)
+ 307:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	None
+ 308:src/MightyBoard/Motherboard/comm.c ****  * @return 		None
+ 309:src/MightyBoard/Motherboard/comm.c ****  *********************************************************************/
+ 310:src/MightyBoard/Motherboard/comm.c **** void UART_IntReceive(void)
+ 311:src/MightyBoard/Motherboard/comm.c **** {
+ 230              	 .loc 1 311 0
+ 231              	 .cfi_startproc
+ 232              	 
+ 233              	 
+ 234 0000 70B5     	 push {r4,r5,r6,lr}
+ 235              	.LCFI5:
+ 236              	 .cfi_def_cfa_offset 16
+ 237              	 .cfi_offset 14,-4
+ 238              	 .cfi_offset 6,-8
+ 239              	 .cfi_offset 5,-12
+ 240              	 .cfi_offset 4,-16
+ 241 0002 82B0     	 sub sp,sp,#8
+ 242              	.LCFI6:
+ 243              	 .cfi_def_cfa_offset 24
+ 312:src/MightyBoard/Motherboard/comm.c **** 	uint8_t tmpc;
+ 313:src/MightyBoard/Motherboard/comm.c **** 	uint32_t rLen;
+ 314:src/MightyBoard/Motherboard/comm.c **** /*
+ 315:src/MightyBoard/Motherboard/comm.c **** 	if(RX_TOG)
+ 316:src/MightyBoard/Motherboard/comm.c **** 		GPIO_SetValue(LED_3_PORT, LED_3_BIT);
+ 317:src/MightyBoard/Motherboard/comm.c **** 	else
+ 318:src/MightyBoard/Motherboard/comm.c **** 		GPIO_ClearValue(LED_3_PORT, LED_3_BIT);
+ 319:src/MightyBoard/Motherboard/comm.c **** 	RX_TOG=!RX_TOG;
+ 320:src/MightyBoard/Motherboard/comm.c **** */
+ 321:src/MightyBoard/Motherboard/comm.c **** 	while(1){
+ 322:src/MightyBoard/Motherboard/comm.c **** 		// Call UART read function in UART driver
+ 323:src/MightyBoard/Motherboard/comm.c **** 		rLen = UART_Receive((LPC_UART_TypeDef *)LPC_UART0, &tmpc, 1, NONE_BLOCKING);
+ 324:src/MightyBoard/Motherboard/comm.c **** 		// If data received
+ 325:src/MightyBoard/Motherboard/comm.c **** 		if (rLen){
+ 326:src/MightyBoard/Motherboard/comm.c **** 			UART_LINE[UART_LINE_LEN++]=tmpc;
+ 244              	 .loc 1 326 0
+ 245 0004 40F20004 	 movw r4,#:lower16:.LANCHOR1
+ 246 0008 C0F20004 	 movt r4,#:upper16:.LANCHOR1
+ 247 000c 40F20005 	 movw r5,#:lower16:UART_LINE
+ 248 0010 C0F20005 	 movt r5,#:upper16:UART_LINE
+ 327:src/MightyBoard/Motherboard/comm.c **** 			if((tmpc=='\r')||(tmpc=='\n')){
+ 328:src/MightyBoard/Motherboard/comm.c **** 				LINE_READY = 1;
+ 249              	 .loc 1 328 0
+ 250 0014 40F20006 	 movw r6,#:lower16:.LANCHOR2
+ 251 0018 C0F20006 	 movt r6,#:upper16:.LANCHOR2
+ 252              	.LVL6:
+ 253              	.L15:
+ 323:src/MightyBoard/Motherboard/comm.c **** 		rLen = UART_Receive((LPC_UART_TypeDef *)LPC_UART0, &tmpc, 1, NONE_BLOCKING);
+ 254              	 .loc 1 323 0
+ 255 001c 4FF44040 	 mov r0,#49152
+ 256 0020 C4F20000 	 movt r0,16384
+ 257 0024 0DF10701 	 add r1,sp,#7
+ 258 0028 4FF00102 	 mov r2,#1
+ 259 002c 4FF00003 	 mov r3,#0
+ 260 0030 FFF7FEFF 	 bl UART_Receive
+ 261              	.LVL7:
+ 325:src/MightyBoard/Motherboard/comm.c **** 		if (rLen){
+ 262              	 .loc 1 325 0
+ 263 0034 0028     	 cmp r0,#0
+ 264 0036 39D0     	 beq .L8
+ 326:src/MightyBoard/Motherboard/comm.c **** 			UART_LINE[UART_LINE_LEN++]=tmpc;
+ 265              	 .loc 1 326 0
+ 266 0038 2368     	 ldr r3,[r4,#0]
+ 267 003a 9DF80720 	 ldrb r2,[sp,#7]
+ 268 003e EA54     	 strb r2,[r5,r3]
+ 269 0040 03F10103 	 add r3,r3,#1
+ 270 0044 2360     	 str r3,[r4,#0]
+ 327:src/MightyBoard/Motherboard/comm.c **** 			if((tmpc=='\r')||(tmpc=='\n')){
+ 271              	 .loc 1 327 0
+ 272 0046 0A2A     	 cmp r2,#10
+ 273 0048 14BF     	 ite ne
+ 274 004a 0023     	 movne r3,#0
+ 275 004c 0123     	 moveq r3,#1
+ 276 004e 0D2A     	 cmp r2,#13
+ 277 0050 08BF     	 it eq
+ 278 0052 43F00103 	 orreq r3,r3,#1
+ 279 0056 4BB1     	 cbz r3,.L10
+ 280              	 .loc 1 328 0
+ 281 0058 4FF00103 	 mov r3,#1
+ 282 005c 3360     	 str r3,[r6,#0]
+ 329:src/MightyBoard/Motherboard/comm.c **** 				UART_LINE[UART_LINE_LEN-1]='\0';
+ 283              	 .loc 1 329 0
+ 284 005e 2168     	 ldr r1,[r4,#0]
+ 285 0060 01F1FF31 	 add r1,r1,#-1
+ 286 0064 4FF00003 	 mov r3,#0
+ 287 0068 6B54     	 strb r3,[r5,r1]
+ 330:src/MightyBoard/Motherboard/comm.c **** 				UART_LINE_LEN=0;
+ 288              	 .loc 1 330 0
+ 289 006a 2360     	 str r3,[r4,#0]
+ 290              	.L10:
+ 331:src/MightyBoard/Motherboard/comm.c **** 			}
+ 332:src/MightyBoard/Motherboard/comm.c **** 			/* Check if buffer is more space
+ 333:src/MightyBoard/Motherboard/comm.c **** 			 * If no more space, remaining character will be trimmed out
+ 334:src/MightyBoard/Motherboard/comm.c **** 			 */
+ 335:src/MightyBoard/Motherboard/comm.c **** 			if (!__BUF_IS_FULL(rb.rx_head,rb.rx_tail)){
+ 291              	 .loc 1 335 0
+ 292 006c 40F20003 	 movw r3,#:lower16:rb
+ 293 0070 C0F20003 	 movt r3,#:upper16:rb
+ 294 0074 D968     	 ldr r1,[r3,#12]
+ 295 0076 9B68     	 ldr r3,[r3,#8]
+ 296 0078 03F10103 	 add r3,r3,#1
+ 297 007c 4B40     	 eors r3,r3,r1
+ 298 007e 4FEA8353 	 lsl r3,r3,#22
+ 299 0082 4FEA9353 	 lsr r3,r3,#22
+ 300 0086 002B     	 cmp r3,#0
+ 301 0088 C8D0     	 beq .L15
+ 336:src/MightyBoard/Motherboard/comm.c **** 				rb.rx[rb.rx_head] = tmpc;
+ 302              	 .loc 1 336 0
+ 303 008a 40F20003 	 movw r3,#:lower16:rb
+ 304 008e C0F20003 	 movt r3,#:upper16:rb
+ 305 0092 9968     	 ldr r1,[r3,#8]
+ 306 0094 5918     	 adds r1,r3,r1
+ 307 0096 81F81024 	 strb r2,[r1,#1040]
+ 337:src/MightyBoard/Motherboard/comm.c **** 				__BUF_INCR(rb.rx_head);
+ 308              	 .loc 1 337 0
+ 309 009a 9A68     	 ldr r2,[r3,#8]
+ 310 009c 02F10102 	 add r2,r2,#1
+ 311 00a0 4FEA8252 	 lsl r2,r2,#22
+ 312 00a4 4FEA9252 	 lsr r2,r2,#22
+ 313 00a8 9A60     	 str r2,[r3,#8]
+ 314 00aa B7E7     	 b .L15
+ 315              	.L8:
+ 338:src/MightyBoard/Motherboard/comm.c **** 			}
+ 339:src/MightyBoard/Motherboard/comm.c **** 		}
+ 340:src/MightyBoard/Motherboard/comm.c **** 		// no more data
+ 341:src/MightyBoard/Motherboard/comm.c **** 		else {
+ 342:src/MightyBoard/Motherboard/comm.c **** 			break;
+ 343:src/MightyBoard/Motherboard/comm.c **** 		}
+ 344:src/MightyBoard/Motherboard/comm.c **** 	}
+ 345:src/MightyBoard/Motherboard/comm.c **** }
+ 316              	 .loc 1 345 0
+ 317 00ac 02B0     	 add sp,sp,#8
+ 318 00ae 70BD     	 pop {r4,r5,r6,pc}
+ 319              	 .cfi_endproc
+ 320              	.LFE63:
+ 322              	 .section .text.UART_IntTransmit,"ax",%progbits
+ 323              	 .align 2
+ 324              	 .global UART_IntTransmit
+ 325              	 .thumb
+ 326              	 .thumb_func
+ 328              	UART_IntTransmit:
+ 329              	.LFB64:
+ 346:src/MightyBoard/Motherboard/comm.c **** 
+ 347:src/MightyBoard/Motherboard/comm.c **** /********************************************************************//**
+ 348:src/MightyBoard/Motherboard/comm.c ****  * @brief 		UART transmit function (ring buffer used)
+ 349:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	None
+ 350:src/MightyBoard/Motherboard/comm.c ****  * @return 		None
+ 351:src/MightyBoard/Motherboard/comm.c ****  *********************************************************************/
+ 352:src/MightyBoard/Motherboard/comm.c **** void UART_IntTransmit(void)
+ 353:src/MightyBoard/Motherboard/comm.c **** {
+ 330              	 .loc 1 353 0
+ 331              	 .cfi_startproc
+ 332              	 
+ 333              	 
+ 334 0000 70B5     	 push {r4,r5,r6,lr}
+ 335              	.LCFI7:
+ 336              	 .cfi_def_cfa_offset 16
+ 337              	 .cfi_offset 14,-4
+ 338              	 .cfi_offset 6,-8
+ 339              	 .cfi_offset 5,-12
+ 340              	 .cfi_offset 4,-16
+ 354:src/MightyBoard/Motherboard/comm.c **** /*
+ 355:src/MightyBoard/Motherboard/comm.c **** 	if(TX_TOG)
+ 356:src/MightyBoard/Motherboard/comm.c **** 		GPIO_SetValue(LED_2_PORT, LED_2_BIT);
+ 357:src/MightyBoard/Motherboard/comm.c **** 	else
+ 358:src/MightyBoard/Motherboard/comm.c **** 		GPIO_ClearValue(LED_2_PORT, LED_2_BIT);
+ 359:src/MightyBoard/Motherboard/comm.c **** 	TX_TOG=!TX_TOG;
+ 360:src/MightyBoard/Motherboard/comm.c **** */
+ 361:src/MightyBoard/Motherboard/comm.c **** 
+ 362:src/MightyBoard/Motherboard/comm.c ****     // Disable THRE interrupt
+ 363:src/MightyBoard/Motherboard/comm.c ****     UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_THRE, DISABLE);
+ 341              	 .loc 1 363 0
+ 342 0002 4FF44040 	 mov r0,#49152
+ 343 0006 C4F20000 	 movt r0,16384
+ 344 000a 4FF00101 	 mov r1,#1
+ 345 000e 4FF00002 	 mov r2,#0
+ 346 0012 FFF7FEFF 	 bl UART_IntConfig
+ 364:src/MightyBoard/Motherboard/comm.c **** 
+ 365:src/MightyBoard/Motherboard/comm.c **** 	/* Wait for FIFO buffer empty, transfer UART_TX_FIFO_SIZE bytes
+ 366:src/MightyBoard/Motherboard/comm.c **** 	 * of data or break whenever ring buffers are empty */
+ 367:src/MightyBoard/Motherboard/comm.c **** 	/* Wait until THR empty */
+ 368:src/MightyBoard/Motherboard/comm.c ****     while (UART_CheckBusy((LPC_UART_TypeDef *)LPC_UART0) == SET);
+ 347              	 .loc 1 368 0
+ 348 0016 4FF44044 	 mov r4,#49152
+ 349 001a C4F20004 	 movt r4,16384
+ 350              	.L17:
+ 351              	 .loc 1 368 0 is_stmt 0 discriminator 1
+ 352 001e 2046     	 mov r0,r4
+ 353 0020 FFF7FEFF 	 bl UART_CheckBusy
+ 354 0024 0128     	 cmp r0,#1
+ 355 0026 FAD0     	 beq .L17
+ 369:src/MightyBoard/Motherboard/comm.c **** 
+ 370:src/MightyBoard/Motherboard/comm.c **** 	while (!__BUF_IS_EMPTY(rb.tx_head,rb.tx_tail))
+ 356              	 .loc 1 370 0 is_stmt 1 discriminator 1
+ 357 0028 40F20003 	 movw r3,#:lower16:rb
+ 358 002c C0F20003 	 movt r3,#:upper16:rb
+ 359 0030 1A68     	 ldr r2,[r3,#0]
+ 360 0032 5B68     	 ldr r3,[r3,#4]
+ 361 0034 5340     	 eors r3,r3,r2
+ 362 0036 4FEA8353 	 lsl r3,r3,#22
+ 363 003a 4FEA9353 	 lsr r3,r3,#22
+ 364 003e 2BB3     	 cbz r3,.L18
+ 371:src/MightyBoard/Motherboard/comm.c ****     {
+ 372:src/MightyBoard/Motherboard/comm.c ****         /* Move a piece of data into the transmit FIFO */
+ 373:src/MightyBoard/Motherboard/comm.c ****     	if (UART_Send((LPC_UART_TypeDef *)LPC_UART0, (uint8_t *)&rb.tx[rb.tx_tail], 1, NONE_BLOCKING))
+ 365              	 .loc 1 373 0
+ 366 0040 40F20004 	 movw r4,#:lower16:rb
+ 367 0044 C0F20004 	 movt r4,#:upper16:rb
+ 368 0048 4FF44045 	 mov r5,#49152
+ 369 004c C4F20005 	 movt r5,16384
+ 370 0050 4FF00106 	 mov r6,#1
+ 371              	.L22:
+ 372 0054 6168     	 ldr r1,[r4,#4]
+ 373 0056 01F11001 	 add r1,r1,#16
+ 374 005a 2846     	 mov r0,r5
+ 375 005c 6118     	 adds r1,r4,r1
+ 376 005e 3246     	 mov r2,r6
+ 377 0060 4FF00003 	 mov r3,#0
+ 378 0064 FFF7FEFF 	 bl UART_Send
+ 379 0068 80B1     	 cbz r0,.L18
+ 374:src/MightyBoard/Motherboard/comm.c ****         /* Update transmit ring FIFO tail pointer */
+ 375:src/MightyBoard/Motherboard/comm.c ****         __BUF_INCR(rb.tx_tail);
+ 380              	 .loc 1 375 0
+ 381 006a 6368     	 ldr r3,[r4,#4]
+ 382 006c 03F10103 	 add r3,r3,#1
+ 383 0070 4FEA8353 	 lsl r3,r3,#22
+ 384 0074 4FEA9353 	 lsr r3,r3,#22
+ 385 0078 6360     	 str r3,[r4,#4]
+ 370:src/MightyBoard/Motherboard/comm.c **** 	while (!__BUF_IS_EMPTY(rb.tx_head,rb.tx_tail))
+ 386              	 .loc 1 370 0
+ 387 007a 2368     	 ldr r3,[r4,#0]
+ 388 007c 6268     	 ldr r2,[r4,#4]
+ 389 007e 5340     	 eors r3,r3,r2
+ 390 0080 4FEA8353 	 lsl r3,r3,#22
+ 391 0084 4FEA9353 	 lsr r3,r3,#22
+ 392 0088 002B     	 cmp r3,#0
+ 393 008a E3D1     	 bne .L22
+ 394              	.L18:
+ 376:src/MightyBoard/Motherboard/comm.c ****     	} else {
+ 377:src/MightyBoard/Motherboard/comm.c ****     		break;
+ 378:src/MightyBoard/Motherboard/comm.c ****     	}
+ 379:src/MightyBoard/Motherboard/comm.c ****     }
+ 380:src/MightyBoard/Motherboard/comm.c **** 
+ 381:src/MightyBoard/Motherboard/comm.c ****     /* If there is no more data to send, disable the transmit
+ 382:src/MightyBoard/Motherboard/comm.c ****        interrupt - else enable it or keep it enabled */
+ 383:src/MightyBoard/Motherboard/comm.c **** 	if (__BUF_IS_EMPTY(rb.tx_head, rb.tx_tail)) {
+ 395              	 .loc 1 383 0
+ 396 008c 40F20003 	 movw r3,#:lower16:rb
+ 397 0090 C0F20003 	 movt r3,#:upper16:rb
+ 398 0094 1A68     	 ldr r2,[r3,#0]
+ 399 0096 5B68     	 ldr r3,[r3,#4]
+ 400 0098 5340     	 eors r3,r3,r2
+ 401 009a 4FEA8353 	 lsl r3,r3,#22
+ 402 009e 4FEA9353 	 lsr r3,r3,#22
+ 403 00a2 8BB9     	 cbnz r3,.L20
+ 384:src/MightyBoard/Motherboard/comm.c ****     	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_THRE, DISABLE);
+ 404              	 .loc 1 384 0
+ 405 00a4 4FF44040 	 mov r0,#49152
+ 406 00a8 C4F20000 	 movt r0,16384
+ 407 00ac 4FF00101 	 mov r1,#1
+ 408 00b0 4FF00002 	 mov r2,#0
+ 409 00b4 FFF7FEFF 	 bl UART_IntConfig
+ 385:src/MightyBoard/Motherboard/comm.c ****     	// Reset Tx Interrupt state
+ 386:src/MightyBoard/Motherboard/comm.c ****     	TxIntStat = RESET;
+ 410              	 .loc 1 386 0
+ 411 00b8 40F20003 	 movw r3,#:lower16:TxIntStat
+ 412 00bc C0F20003 	 movt r3,#:upper16:TxIntStat
+ 413 00c0 4FF00002 	 mov r2,#0
+ 414 00c4 1A70     	 strb r2,[r3,#0]
+ 415 00c6 70BD     	 pop {r4,r5,r6,pc}
+ 416              	.L20:
+ 387:src/MightyBoard/Motherboard/comm.c ****     }
+ 388:src/MightyBoard/Motherboard/comm.c ****     else{
+ 389:src/MightyBoard/Motherboard/comm.c ****       	// Set Tx Interrupt state
+ 390:src/MightyBoard/Motherboard/comm.c **** 		TxIntStat = SET;
+ 417              	 .loc 1 390 0
+ 418 00c8 40F20003 	 movw r3,#:lower16:TxIntStat
+ 419 00cc C0F20003 	 movt r3,#:upper16:TxIntStat
+ 420 00d0 4FF00102 	 mov r2,#1
+ 421 00d4 1A70     	 strb r2,[r3,#0]
+ 391:src/MightyBoard/Motherboard/comm.c ****     	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_THRE, ENABLE);
+ 422              	 .loc 1 391 0
+ 423 00d6 4FF44040 	 mov r0,#49152
+ 424 00da C4F20000 	 movt r0,16384
+ 425 00de 1146     	 mov r1,r2
+ 426 00e0 FFF7FEFF 	 bl UART_IntConfig
+ 427 00e4 70BD     	 pop {r4,r5,r6,pc}
+ 428              	 .cfi_endproc
+ 429              	.LFE64:
+ 431 00e6 00BF     	 .section .text.UART_IntErr,"ax",%progbits
+ 432              	 .align 2
+ 433              	 .global UART_IntErr
+ 434              	 .thumb
+ 435              	 .thumb_func
+ 437              	UART_IntErr:
+ 438              	.LFB65:
+ 392:src/MightyBoard/Motherboard/comm.c ****     }
+ 393:src/MightyBoard/Motherboard/comm.c **** }
+ 394:src/MightyBoard/Motherboard/comm.c **** 
+ 395:src/MightyBoard/Motherboard/comm.c **** 
+ 396:src/MightyBoard/Motherboard/comm.c **** /*********************************************************************//**
+ 397:src/MightyBoard/Motherboard/comm.c ****  * @brief		UART Line Status Error
+ 398:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	bLSErrType	UART Line Status Error Type
+ 399:src/MightyBoard/Motherboard/comm.c ****  * @return		None
+ 400:src/MightyBoard/Motherboard/comm.c ****  **********************************************************************/
+ 401:src/MightyBoard/Motherboard/comm.c **** void UART_IntErr(uint8_t bLSErrType)
+ 402:src/MightyBoard/Motherboard/comm.c **** {
+ 439              	 .loc 1 402 0
+ 440              	 .cfi_startproc
+ 441              	 
+ 442              	 
+ 443              	 
+ 444              	.LVL8:
+ 445              	.L26:
+ 446 0000 FEE7     	 b .L26
+ 447              	 .cfi_endproc
+ 448              	.LFE65:
+ 450 0002 00BF     	 .section .text.UART0_IRQHandler,"ax",%progbits
+ 451              	 .align 2
+ 452              	 .global UART0_IRQHandler
+ 453              	 .thumb
+ 454              	 .thumb_func
+ 456              	UART0_IRQHandler:
+ 457              	.LFB62:
+ 272:src/MightyBoard/Motherboard/comm.c **** {
+ 458              	 .loc 1 272 0
+ 459              	 .cfi_startproc
+ 460              	 
+ 461              	 
+ 272:src/MightyBoard/Motherboard/comm.c **** {
+ 462              	 .loc 1 272 0
+ 463 0000 10B5     	 push {r4,lr}
+ 464              	.LCFI8:
+ 465              	 .cfi_def_cfa_offset 8
+ 466              	 .cfi_offset 14,-4
+ 467              	 .cfi_offset 4,-8
+ 276:src/MightyBoard/Motherboard/comm.c **** 	intsrc = UART_GetIntId(LPC_UART0);
+ 468              	 .loc 1 276 0
+ 469 0002 4FF44040 	 mov r0,#49152
+ 470 0006 C4F20000 	 movt r0,16384
+ 471 000a FFF7FEFF 	 bl UART_GetIntId
+ 472              	.LVL9:
+ 277:src/MightyBoard/Motherboard/comm.c **** 	tmp = intsrc & UART_IIR_INTID_MASK;
+ 473              	 .loc 1 277 0
+ 474 000e 00F00E04 	 and r4,r0,#14
+ 475              	.LVL10:
+ 281:src/MightyBoard/Motherboard/comm.c **** 	if (tmp == UART_IIR_INTID_RLS){
+ 476              	 .loc 1 281 0
+ 477 0012 062C     	 cmp r4,#6
+ 478 0014 0AD1     	 bne .L28
+ 283:src/MightyBoard/Motherboard/comm.c **** 		tmp1 = UART_GetLineStatus(LPC_UART0);
+ 479              	 .loc 1 283 0
+ 480 0016 4FF44040 	 mov r0,#49152
+ 481              	.LVL11:
+ 482 001a C4F20000 	 movt r0,16384
+ 483 001e FFF7FEFF 	 bl UART_GetLineStatus
+ 484              	.LVL12:
+ 288:src/MightyBoard/Motherboard/comm.c **** 		if (tmp1) {
+ 485              	 .loc 1 288 0
+ 486 0022 10F09E00 	 ands r0,r0,#158
+ 487              	.LVL13:
+ 488 0026 10D0     	 beq .L27
+ 289:src/MightyBoard/Motherboard/comm.c **** 			UART_IntErr(tmp1);
+ 489              	 .loc 1 289 0
+ 490 0028 FFF7FEFF 	 bl UART_IntErr
+ 491              	.LVL14:
+ 492              	.L28:
+ 294:src/MightyBoard/Motherboard/comm.c **** 	if ((tmp == UART_IIR_INTID_RDA) || (tmp == UART_IIR_INTID_CTI)){
+ 493              	 .loc 1 294 0
+ 494 002c 0C2C     	 cmp r4,#12
+ 495 002e 14BF     	 ite ne
+ 496 0030 0023     	 movne r3,#0
+ 497 0032 0123     	 moveq r3,#1
+ 498 0034 042C     	 cmp r4,#4
+ 499 0036 08BF     	 it eq
+ 500 0038 43F00103 	 orreq r3,r3,#1
+ 501 003c 0BB1     	 cbz r3,.L30
+ 295:src/MightyBoard/Motherboard/comm.c **** 		UART_IntReceive();
+ 502              	 .loc 1 295 0
+ 503 003e FFF7FEFF 	 bl UART_IntReceive
+ 504              	.LVL15:
+ 505              	.L30:
+ 299:src/MightyBoard/Motherboard/comm.c **** 	if (tmp == UART_IIR_INTID_THRE){
+ 506              	 .loc 1 299 0
+ 507 0042 022C     	 cmp r4,#2
+ 508 0044 01D1     	 bne .L27
+ 300:src/MightyBoard/Motherboard/comm.c **** 		UART_IntTransmit();
+ 509              	 .loc 1 300 0
+ 510 0046 FFF7FEFF 	 bl UART_IntTransmit
+ 511              	.L27:
+ 512 004a 10BD     	 pop {r4,pc}
+ 513              	 .cfi_endproc
+ 514              	.LFE62:
+ 516              	 .section .text.UARTSend,"ax",%progbits
+ 517              	 .align 2
+ 518              	 .global UARTSend
+ 519              	 .thumb
+ 520              	 .thumb_func
+ 522              	UARTSend:
+ 523              	.LFB66:
+ 403:src/MightyBoard/Motherboard/comm.c **** 	uint8_t test;
+ 404:src/MightyBoard/Motherboard/comm.c **** 	// Loop forever
+ 405:src/MightyBoard/Motherboard/comm.c **** 	while (1){
+ 406:src/MightyBoard/Motherboard/comm.c **** 		// For testing purpose
+ 407:src/MightyBoard/Motherboard/comm.c **** 		test = bLSErrType;
+ 408:src/MightyBoard/Motherboard/comm.c **** 	}
+ 409:src/MightyBoard/Motherboard/comm.c **** }
+ 410:src/MightyBoard/Motherboard/comm.c **** 
+ 411:src/MightyBoard/Motherboard/comm.c **** /*-------------------------PRIVATE FUNCTIONS------------------------------*/
+ 412:src/MightyBoard/Motherboard/comm.c **** /*********************************************************************//**
+ 413:src/MightyBoard/Motherboard/comm.c ****  * @brief		UART transmit function for interrupt mode (using ring buffers)
+ 414:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	UARTPort	Selected UART peripheral used to send data,
+ 415:src/MightyBoard/Motherboard/comm.c ****  * 				should be UART0
+ 416:src/MightyBoard/Motherboard/comm.c ****  * @param[out]	txbuf Pointer to Transmit buffer
+ 417:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	buflen Length of Transmit buffer
+ 418:src/MightyBoard/Motherboard/comm.c ****  * @return 		Number of bytes actually sent to the ring buffer
+ 419:src/MightyBoard/Motherboard/comm.c ****  **********************************************************************/
+ 420:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTSend(LPC_UART_TypeDef *UARTPort, uint8_t *txbuf, uint8_t buflen)
+ 421:src/MightyBoard/Motherboard/comm.c **** {
+ 524              	 .loc 1 421 0
+ 525              	 .cfi_startproc
+ 526              	 
+ 527              	 
+ 528              	.LVL16:
+ 529 0000 70B5     	 push {r4,r5,r6,lr}
+ 530              	.LCFI9:
+ 531              	 .cfi_def_cfa_offset 16
+ 532              	 .cfi_offset 14,-4
+ 533              	 .cfi_offset 6,-8
+ 534              	 .cfi_offset 5,-12
+ 535              	 .cfi_offset 4,-16
+ 536 0002 0646     	 mov r6,r0
+ 537 0004 0D46     	 mov r5,r1
+ 538 0006 1446     	 mov r4,r2
+ 539              	.LVL17:
+ 422:src/MightyBoard/Motherboard/comm.c ****     uint8_t *data = (uint8_t *) txbuf;
+ 423:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
+ 424:src/MightyBoard/Motherboard/comm.c **** 
+ 425:src/MightyBoard/Motherboard/comm.c **** 	/* Temporarily lock out UART transmit interrupts during this
+ 426:src/MightyBoard/Motherboard/comm.c **** 	   read so the UART transmit interrupt won't cause problems
+ 427:src/MightyBoard/Motherboard/comm.c **** 	   with the index values */
+ 428:src/MightyBoard/Motherboard/comm.c ****     UART_IntConfig(UARTPort, UART_INTCFG_THRE, DISABLE);
+ 540              	 .loc 1 428 0
+ 541 0008 4FF00101 	 mov r1,#1
+ 542              	.LVL18:
+ 543 000c 4FF00002 	 mov r2,#0
+ 544              	.LVL19:
+ 545 0010 FFF7FEFF 	 bl UART_IntConfig
+ 546              	.LVL20:
+ 429:src/MightyBoard/Motherboard/comm.c **** 
+ 430:src/MightyBoard/Motherboard/comm.c **** 	/* Loop until transmit run buffer is full or until n_bytes
+ 431:src/MightyBoard/Motherboard/comm.c **** 	   expires */
+ 432:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!__BUF_IS_FULL(rb.tx_head, rb.tx_tail)))
+ 547              	 .loc 1 432 0
+ 548 0014 002C     	 cmp r4,#0
+ 549 0016 34D0     	 beq .L36
+ 550 0018 40F20003 	 movw r3,#:lower16:rb
+ 551 001c C0F20003 	 movt r3,#:upper16:rb
+ 552 0020 5A68     	 ldr r2,[r3,#4]
+ 553 0022 1B68     	 ldr r3,[r3,#0]
+ 554 0024 03F10103 	 add r3,r3,#1
+ 555 0028 5340     	 eors r3,r3,r2
+ 556 002a 4FEA8353 	 lsl r3,r3,#22
+ 557 002e 4FEA9353 	 lsr r3,r3,#22
+ 558 0032 4BB3     	 cbz r3,.L37
+ 420:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTSend(LPC_UART_TypeDef *UARTPort, uint8_t *txbuf, uint8_t buflen)
+ 559              	 .loc 1 420 0
+ 560 0034 04F1FF30 	 add r0,r4,#-1
+ 561 0038 C0B2     	 uxtb r0,r0
+ 562 003a 00F10100 	 add r0,r0,#1
+ 423:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
+ 563              	 .loc 1 423 0
+ 564 003e 4FF00004 	 mov r4,#0
+ 565              	.LVL21:
+ 433:src/MightyBoard/Motherboard/comm.c **** 	{
+ 434:src/MightyBoard/Motherboard/comm.c **** 		/* Write data from buffer into ring buffer */
+ 435:src/MightyBoard/Motherboard/comm.c **** 		rb.tx[rb.tx_head] = *data;
+ 566              	 .loc 1 435 0
+ 567 0042 40F20003 	 movw r3,#:lower16:rb
+ 568 0046 C0F20003 	 movt r3,#:upper16:rb
+ 569              	.LVL22:
+ 570              	.L33:
+ 571 004a 1A68     	 ldr r2,[r3,#0]
+ 572 004c 295D     	 ldrb r1,[r5,r4]
+ 573 004e 9A18     	 adds r2,r3,r2
+ 574 0050 1174     	 strb r1,[r2,#16]
+ 436:src/MightyBoard/Motherboard/comm.c **** 		data++;
+ 437:src/MightyBoard/Motherboard/comm.c **** 
+ 438:src/MightyBoard/Motherboard/comm.c **** 		/* Increment head pointer */
+ 439:src/MightyBoard/Motherboard/comm.c **** 		__BUF_INCR(rb.tx_head);
+ 575              	 .loc 1 439 0
+ 576 0052 1A68     	 ldr r2,[r3,#0]
+ 577 0054 02F10102 	 add r2,r2,#1
+ 578 0058 4FEA8252 	 lsl r2,r2,#22
+ 579 005c 4FEA9252 	 lsr r2,r2,#22
+ 580 0060 1A60     	 str r2,[r3,#0]
+ 440:src/MightyBoard/Motherboard/comm.c **** 
+ 441:src/MightyBoard/Motherboard/comm.c **** 		/* Increment data count and decrement buffer size count */
+ 442:src/MightyBoard/Motherboard/comm.c **** 		bytes++;
+ 581              	 .loc 1 442 0
+ 582 0062 04F10104 	 add r4,r4,#1
+ 583              	.LVL23:
+ 432:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!__BUF_IS_FULL(rb.tx_head, rb.tx_tail)))
+ 584              	 .loc 1 432 0
+ 585 0066 8442     	 cmp r4,r0
+ 586 0068 10D0     	 beq .L32
+ 432:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!__BUF_IS_FULL(rb.tx_head, rb.tx_tail)))
+ 587              	 .loc 1 432 0 is_stmt 0 discriminator 2
+ 588 006a 5968     	 ldr r1,[r3,#4]
+ 589 006c 1A68     	 ldr r2,[r3,#0]
+ 590 006e 02F10102 	 add r2,r2,#1
+ 591 0072 4A40     	 eors r2,r2,r1
+ 592 0074 4FEA8252 	 lsl r2,r2,#22
+ 593 0078 4FEA9252 	 lsr r2,r2,#22
+ 594 007c 002A     	 cmp r2,#0
+ 595 007e E4D1     	 bne .L33
+ 596 0080 04E0     	 b .L32
+ 597              	.LVL24:
+ 598              	.L36:
+ 423:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
+ 599              	 .loc 1 423 0 is_stmt 1
+ 600 0082 4FF00004 	 mov r4,#0
+ 601              	.LVL25:
+ 602 0086 01E0     	 b .L32
+ 603              	.LVL26:
+ 604              	.L37:
+ 605 0088 4FF00004 	 mov r4,#0
+ 606              	.LVL27:
+ 607              	.L32:
+ 443:src/MightyBoard/Motherboard/comm.c **** 		buflen--;
+ 444:src/MightyBoard/Motherboard/comm.c **** 	}
+ 445:src/MightyBoard/Motherboard/comm.c **** 
+ 446:src/MightyBoard/Motherboard/comm.c **** 	/*
+ 447:src/MightyBoard/Motherboard/comm.c **** 	 * Check if current Tx interrupt enable is reset,
+ 448:src/MightyBoard/Motherboard/comm.c **** 	 * that means the Tx interrupt must be re-enabled
+ 449:src/MightyBoard/Motherboard/comm.c **** 	 * due to call UART_IntTransmit() function to trigger
+ 450:src/MightyBoard/Motherboard/comm.c **** 	 * this interrupt type
+ 451:src/MightyBoard/Motherboard/comm.c **** 	 */
+ 452:src/MightyBoard/Motherboard/comm.c **** 	if (TxIntStat == RESET) {
+ 608              	 .loc 1 452 0
+ 609 008c 40F20003 	 movw r3,#:lower16:TxIntStat
+ 610 0090 C0F20003 	 movt r3,#:upper16:TxIntStat
+ 611 0094 1B78     	 ldrb r3,[r3,#0]
+ 612 0096 13B9     	 cbnz r3,.L34
+ 453:src/MightyBoard/Motherboard/comm.c **** 		UART_IntTransmit();
+ 613              	 .loc 1 453 0
+ 614 0098 FFF7FEFF 	 bl UART_IntTransmit
+ 615 009c 05E0     	 b .L35
+ 616              	.L34:
+ 454:src/MightyBoard/Motherboard/comm.c **** 	}
+ 455:src/MightyBoard/Motherboard/comm.c **** 	/*
+ 456:src/MightyBoard/Motherboard/comm.c **** 	 * Otherwise, re-enables Tx Interrupt
+ 457:src/MightyBoard/Motherboard/comm.c **** 	 */
+ 458:src/MightyBoard/Motherboard/comm.c **** 	else {
+ 459:src/MightyBoard/Motherboard/comm.c **** 		UART_IntConfig(UARTPort, UART_INTCFG_THRE, ENABLE);
+ 617              	 .loc 1 459 0
+ 618 009e 3046     	 mov r0,r6
+ 619 00a0 4FF00101 	 mov r1,#1
+ 620 00a4 0A46     	 mov r2,r1
+ 621 00a6 FFF7FEFF 	 bl UART_IntConfig
+ 622              	.L35:
+ 460:src/MightyBoard/Motherboard/comm.c **** 	}
+ 461:src/MightyBoard/Motherboard/comm.c **** 
+ 462:src/MightyBoard/Motherboard/comm.c ****     return bytes;
+ 463:src/MightyBoard/Motherboard/comm.c **** }
+ 623              	 .loc 1 463 0
+ 624 00aa 2046     	 mov r0,r4
+ 625 00ac 70BD     	 pop {r4,r5,r6,pc}
+ 626              	 .cfi_endproc
+ 627              	.LFE66:
+ 629 00ae 00BF     	 .section .text.comm_put,"ax",%progbits
+ 630              	 .align 2
+ 631              	 .global comm_put
+ 632              	 .thumb
+ 633              	 .thumb_func
+ 635              	comm_put:
+ 636              	.LFB60:
+ 182:src/MightyBoard/Motherboard/comm.c **** void comm_put(uint8_t d){
+ 637              	 .loc 1 182 0
+ 638              	 .cfi_startproc
+ 639              	 
+ 640              	 
+ 641              	.LVL28:
+ 642 0000 00B5     	 push {lr}
+ 643              	.LCFI10:
+ 644              	 .cfi_def_cfa_offset 4
+ 645              	 .cfi_offset 14,-4
+ 646 0002 83B0     	 sub sp,sp,#12
+ 647              	.LCFI11:
+ 648              	 .cfi_def_cfa_offset 16
+ 649 0004 02A9     	 add r1,sp,#8
+ 650 0006 01F8010D 	 strb r0,[r1,#-1]!
+ 184:src/MightyBoard/Motherboard/comm.c **** 	UARTSend(LPC_UART0, &d, 1);//with interrupt
+ 651              	 .loc 1 184 0
+ 652 000a 4FF44040 	 mov r0,#49152
+ 653              	.LVL29:
+ 654 000e C4F20000 	 movt r0,16384
+ 655 0012 4FF00102 	 mov r2,#1
+ 656 0016 FFF7FEFF 	 bl UARTSend
+ 186:src/MightyBoard/Motherboard/comm.c **** }
+ 657              	 .loc 1 186 0
+ 658 001a 03B0     	 add sp,sp,#12
+ 659 001c 00BD     	 pop {pc}
+ 660              	 .cfi_endproc
+ 661              	.LFE60:
+ 663 001e 00BF     	 .section .text.UARTReceive,"ax",%progbits
+ 664              	 .align 2
+ 665              	 .global UARTReceive
+ 666              	 .thumb
+ 667              	 .thumb_func
+ 669              	UARTReceive:
+ 670              	.LFB67:
+ 464:src/MightyBoard/Motherboard/comm.c **** 
+ 465:src/MightyBoard/Motherboard/comm.c **** 
+ 466:src/MightyBoard/Motherboard/comm.c **** /*********************************************************************//**
+ 467:src/MightyBoard/Motherboard/comm.c ****  * @brief		UART read function for interrupt mode (using ring buffers)
+ 468:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	UARTPort	Selected UART peripheral used to send data,
+ 469:src/MightyBoard/Motherboard/comm.c ****  * 				should be UART0
+ 470:src/MightyBoard/Motherboard/comm.c ****  * @param[out]	rxbuf Pointer to Received buffer
+ 471:src/MightyBoard/Motherboard/comm.c ****  * @param[in]	buflen Length of Received buffer
+ 472:src/MightyBoard/Motherboard/comm.c ****  * @return 		Number of bytes actually read from the ring buffer
+ 473:src/MightyBoard/Motherboard/comm.c ****  **********************************************************************/
+ 474:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTReceive(LPC_UART_TypeDef *UARTPort, uint8_t *rxbuf, uint8_t buflen)
+ 475:src/MightyBoard/Motherboard/comm.c **** {
+ 671              	 .loc 1 475 0
+ 672              	 .cfi_startproc
+ 673              	 
+ 674              	 
+ 675              	.LVL30:
+ 676 0000 70B5     	 push {r4,r5,r6,lr}
+ 677              	.LCFI12:
+ 678              	 .cfi_def_cfa_offset 16
+ 679              	 .cfi_offset 14,-4
+ 680              	 .cfi_offset 6,-8
+ 681              	 .cfi_offset 5,-12
+ 682              	 .cfi_offset 4,-16
+ 683 0002 0646     	 mov r6,r0
+ 684 0004 0D46     	 mov r5,r1
+ 685 0006 1446     	 mov r4,r2
+ 686              	.LVL31:
+ 476:src/MightyBoard/Motherboard/comm.c ****     uint8_t *data = (uint8_t *) rxbuf;
+ 477:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
+ 478:src/MightyBoard/Motherboard/comm.c **** 
+ 479:src/MightyBoard/Motherboard/comm.c **** 	/* Temporarily lock out UART receive interrupts during this
+ 480:src/MightyBoard/Motherboard/comm.c **** 	   read so the UART receive interrupt won't cause problems
+ 481:src/MightyBoard/Motherboard/comm.c **** 	   with the index values */
+ 482:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig(UARTPort, UART_INTCFG_RBR, DISABLE);
+ 687              	 .loc 1 482 0
+ 688 0008 4FF00001 	 mov r1,#0
+ 689              	.LVL32:
+ 690 000c 0A46     	 mov r2,r1
+ 691              	.LVL33:
+ 692 000e FFF7FEFF 	 bl UART_IntConfig
+ 693              	.LVL34:
+ 483:src/MightyBoard/Motherboard/comm.c **** 
+ 484:src/MightyBoard/Motherboard/comm.c **** 	/* Loop until receive buffer ring is empty or
+ 485:src/MightyBoard/Motherboard/comm.c **** 		until max_bytes expires */
+ 486:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!(__BUF_IS_EMPTY(rb.rx_head, rb.rx_tail))))
+ 694              	 .loc 1 486 0
+ 695 0012 8CB3     	 cbz r4,.L43
+ 696 0014 40F20003 	 movw r3,#:lower16:rb
+ 697 0018 C0F20003 	 movt r3,#:upper16:rb
+ 698 001c 9A68     	 ldr r2,[r3,#8]
+ 699 001e DB68     	 ldr r3,[r3,#12]
+ 700 0020 5340     	 eors r3,r3,r2
+ 701 0022 4FEA8353 	 lsl r3,r3,#22
+ 702 0026 4FEA9353 	 lsr r3,r3,#22
+ 703 002a 43B3     	 cbz r3,.L44
+ 474:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTReceive(LPC_UART_TypeDef *UARTPort, uint8_t *rxbuf, uint8_t buflen)
+ 704              	 .loc 1 474 0
+ 705 002c 04F1FF31 	 add r1,r4,#-1
+ 706 0030 C9B2     	 uxtb r1,r1
+ 707 0032 01F10101 	 add r1,r1,#1
+ 477:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
+ 708              	 .loc 1 477 0
+ 709 0036 4FF00004 	 mov r4,#0
+ 710              	.LVL35:
+ 487:src/MightyBoard/Motherboard/comm.c **** 	{
+ 488:src/MightyBoard/Motherboard/comm.c **** 		/* Read data from ring buffer into user buffer */
+ 489:src/MightyBoard/Motherboard/comm.c **** 		*data = rb.rx[rb.rx_tail];
+ 711              	 .loc 1 489 0
+ 712 003a 40F20003 	 movw r3,#:lower16:rb
+ 713 003e C0F20003 	 movt r3,#:upper16:rb
+ 714              	.LVL36:
+ 715              	.L42:
+ 716 0042 DA68     	 ldr r2,[r3,#12]
+ 717 0044 9A18     	 adds r2,r3,r2
+ 718 0046 92F81024 	 ldrb r2,[r2,#1040]
+ 719 004a 2A55     	 strb r2,[r5,r4]
+ 490:src/MightyBoard/Motherboard/comm.c **** 		data++;
+ 491:src/MightyBoard/Motherboard/comm.c **** 
+ 492:src/MightyBoard/Motherboard/comm.c **** 		/* Update tail pointer */
+ 493:src/MightyBoard/Motherboard/comm.c **** 		__BUF_INCR(rb.rx_tail);
+ 720              	 .loc 1 493 0
+ 721 004c DA68     	 ldr r2,[r3,#12]
+ 722 004e 02F10102 	 add r2,r2,#1
+ 723 0052 4FEA8252 	 lsl r2,r2,#22
+ 724 0056 4FEA9252 	 lsr r2,r2,#22
+ 725 005a DA60     	 str r2,[r3,#12]
+ 494:src/MightyBoard/Motherboard/comm.c **** 
+ 495:src/MightyBoard/Motherboard/comm.c **** 		/* Increment data count and decrement buffer size count */
+ 496:src/MightyBoard/Motherboard/comm.c **** 		bytes++;
+ 726              	 .loc 1 496 0
+ 727 005c 04F10104 	 add r4,r4,#1
+ 728              	.LVL37:
+ 486:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!(__BUF_IS_EMPTY(rb.rx_head, rb.rx_tail))))
+ 729              	 .loc 1 486 0
+ 730 0060 8C42     	 cmp r4,r1
+ 731 0062 0ED0     	 beq .L41
+ 486:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!(__BUF_IS_EMPTY(rb.rx_head, rb.rx_tail))))
+ 732              	 .loc 1 486 0 is_stmt 0 discriminator 2
+ 733 0064 9A68     	 ldr r2,[r3,#8]
+ 734 0066 D868     	 ldr r0,[r3,#12]
+ 735 0068 4240     	 eors r2,r2,r0
+ 736 006a 4FEA8252 	 lsl r2,r2,#22
+ 737 006e 4FEA9252 	 lsr r2,r2,#22
+ 738 0072 002A     	 cmp r2,#0
+ 739 0074 E5D1     	 bne .L42
+ 740 0076 04E0     	 b .L41
+ 741              	.LVL38:
+ 742              	.L43:
+ 477:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
+ 743              	 .loc 1 477 0 is_stmt 1
+ 744 0078 4FF00004 	 mov r4,#0
+ 745              	.LVL39:
+ 746 007c 01E0     	 b .L41
+ 747              	.LVL40:
+ 748              	.L44:
+ 749 007e 4FF00004 	 mov r4,#0
+ 750              	.LVL41:
+ 751              	.L41:
+ 497:src/MightyBoard/Motherboard/comm.c **** 		buflen--;
+ 498:src/MightyBoard/Motherboard/comm.c **** 	}
+ 499:src/MightyBoard/Motherboard/comm.c **** 
+ 500:src/MightyBoard/Motherboard/comm.c **** 	/* Re-enable UART interrupts */
+ 501:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig(UARTPort, UART_INTCFG_RBR, ENABLE);
+ 752              	 .loc 1 501 0
+ 753 0082 3046     	 mov r0,r6
+ 754 0084 4FF00001 	 mov r1,#0
+ 755 0088 4FF00102 	 mov r2,#1
+ 756 008c FFF7FEFF 	 bl UART_IntConfig
+ 502:src/MightyBoard/Motherboard/comm.c **** 
+ 503:src/MightyBoard/Motherboard/comm.c ****     return bytes;
+ 504:src/MightyBoard/Motherboard/comm.c **** }
+ 757              	 .loc 1 504 0
+ 758 0090 2046     	 mov r0,r4
+ 759 0092 70BD     	 pop {r4,r5,r6,pc}
+ 760              	 .cfi_endproc
+ 761              	.LFE67:
+ 763              	 .section .text.comm_flush,"ax",%progbits
+ 764              	 .align 2
+ 765              	 .global comm_flush
+ 766              	 .thumb
+ 767              	 .thumb_func
+ 769              	comm_flush:
+ 770              	.LFB59:
+ 164:src/MightyBoard/Motherboard/comm.c **** void comm_flush(void){
+ 771              	 .loc 1 164 0
+ 772              	 .cfi_startproc
+ 773              	 
+ 774              	 
+ 775 0000 10B5     	 push {r4,lr}
+ 776              	.LCFI13:
+ 777              	 .cfi_def_cfa_offset 8
+ 778              	 .cfi_offset 14,-4
+ 779              	 .cfi_offset 4,-8
+ 780 0002 82B0     	 sub sp,sp,#8
+ 781              	.LCFI14:
+ 782              	 .cfi_def_cfa_offset 16
+ 167:src/MightyBoard/Motherboard/comm.c **** 	while (UARTReceive(LPC_UART0, buffer, 1));
+ 783              	 .loc 1 167 0
+ 784 0004 4FF44044 	 mov r4,#49152
+ 785 0008 C4F20004 	 movt r4,16384
+ 786              	.L47:
+ 167:src/MightyBoard/Motherboard/comm.c **** 	while (UARTReceive(LPC_UART0, buffer, 1));
+ 787              	 .loc 1 167 0 is_stmt 0 discriminator 1
+ 788 000c 2046     	 mov r0,r4
+ 789 000e 01A9     	 add r1,sp,#4
+ 790 0010 4FF00102 	 mov r2,#1
+ 791 0014 FFF7FEFF 	 bl UARTReceive
+ 792 0018 0028     	 cmp r0,#0
+ 793 001a F7D1     	 bne .L47
+ 169:src/MightyBoard/Motherboard/comm.c **** }
+ 794              	 .loc 1 169 0 is_stmt 1
+ 795 001c 02B0     	 add sp,sp,#8
+ 796 001e 10BD     	 pop {r4,pc}
+ 797              	 .cfi_endproc
+ 798              	.LFE59:
+ 800              	 .section .text.exec_cmd,"ax",%progbits
+ 801              	 .align 2
+ 802              	 .global exec_cmd
+ 803              	 .thumb
+ 804              	 .thumb_func
+ 806              	exec_cmd:
+ 807              	.LFB55:
+  70:src/MightyBoard/Motherboard/comm.c **** void exec_cmd(char *cmd){
+ 808              	 .loc 1 70 0
+ 809              	 .cfi_startproc
+ 810              	 
+ 811              	 
+ 812              	.LVL42:
+ 813 0000 10B5     	 push {r4,lr}
+ 814              	.LCFI15:
+ 815              	 .cfi_def_cfa_offset 8
+ 816              	 .cfi_offset 14,-4
+ 817              	 .cfi_offset 4,-8
+ 818 0002 0446     	 mov r4,r0
+  71:src/MightyBoard/Motherboard/comm.c **** 	comm_flush();
+ 819              	 .loc 1 71 0
+ 820 0004 FFF7FEFF 	 bl comm_flush
+ 821              	.LVL43:
+  72:src/MightyBoard/Motherboard/comm.c **** 	if(stricmp(cmd,"b")==0){
+ 822              	 .loc 1 72 0
+ 823 0008 2046     	 mov r0,r4
+ 824 000a 40F20001 	 movw r1,#:lower16:.LC1
+ 825 000e C0F20001 	 movt r1,#:upper16:.LC1
+ 826 0012 FFF7FEFF 	 bl strcasecmp
+ 827 0016 50BB     	 cbnz r0,.L50
+ 828              	.LBB15:
+  73:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "resetting to bootloader" " (%s:%d)\n",_F_,_L_);
+ 829              	 .loc 1 73 0 discriminator 1
+ 830 0018 40F20000 	 movw r0,#:lower16:.LC2
+ 831 001c C0F20000 	 movt r0,#:upper16:.LC2
+ 832 0020 4449     	 ldr r1,.L57
+ 833 0022 4FF04902 	 mov r2,#73
+ 834 0026 FFF7FEFF 	 bl xprintf
+  74:src/MightyBoard/Motherboard/comm.c **** 		SCB->VTOR = (BOOTLOADER_START & 0x1FFFFF80);
+ 835              	 .loc 1 74 0 discriminator 1
+ 836 002a 4FF46D43 	 mov r3,#60672
+ 837 002e CEF20003 	 movt r3,57344
+ 838 0032 4FF00002 	 mov r2,#0
+ 839 0036 9A60     	 str r2,[r3,#8]
+  75:src/MightyBoard/Motherboard/comm.c **** 		RTC_WriteGPREG(LPC_RTC, 2, 0xbbbbbbbb);
+ 840              	 .loc 1 75 0 discriminator 1
+ 841 0038 4FF48040 	 mov r0,#16384
+ 842 003c C4F20200 	 movt r0,16386
+ 843 0040 4FF00201 	 mov r1,#2
+ 844 0044 4FF0BB32 	 mov r2,#-1145324613
+ 845 0048 FFF7FEFF 	 bl RTC_WriteGPREG
+  76:src/MightyBoard/Motherboard/comm.c **** 		WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+ 846              	 .loc 1 76 0 discriminator 1
+ 847 004c 4FF00100 	 mov r0,#1
+ 848 0050 0146     	 mov r1,r0
+ 849 0052 FFF7FEFF 	 bl WDT_Init
+  77:src/MightyBoard/Motherboard/comm.c **** 		WDT_Start(1);
+ 850              	 .loc 1 77 0 discriminator 1
+ 851 0056 4FF00100 	 mov r0,#1
+ 852 005a FFF7FEFF 	 bl WDT_Start
+ 853              	.LVL44:
+ 854              	.LBB16:
+ 855              	.LBB17:
+ 923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
+ 856              	 .loc 2 923 0 discriminator 1
+ 857 005e 4FF46143 	 mov r3,#57600
+ 858 0062 CEF20003 	 movt r3,57344
+ 859 0066 4FF00102 	 mov r2,#1
+ 860 006a 1A60     	 str r2,[r3,#0]
+ 861 006c 10BD     	 pop {r4,pc}
+ 862              	.LVL45:
+ 863              	.L50:
+ 864              	.LBE17:
+ 865              	.LBE16:
+ 866              	.LBE15:
+  80:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"r")==0){
+ 867              	 .loc 1 80 0
+ 868 006e 2046     	 mov r0,r4
+ 869 0070 40F20001 	 movw r1,#:lower16:.LC4
+ 870 0074 C0F20001 	 movt r1,#:upper16:.LC4
+ 871 0078 FFF7FEFF 	 bl strcasecmp
+ 872 007c C8B9     	 cbnz r0,.L52
+  81:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "reseting" " (%s:%d)\n",_F_,_L_);
+ 873              	 .loc 1 81 0 discriminator 1
+ 874 007e 40F20000 	 movw r0,#:lower16:.LC5
+ 875 0082 C0F20000 	 movt r0,#:upper16:.LC5
+ 876 0086 2B49     	 ldr r1,.L57
+ 877 0088 4FF05102 	 mov r2,#81
+ 878 008c FFF7FEFF 	 bl xprintf
+  82:src/MightyBoard/Motherboard/comm.c **** 		WDT_Init(WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+ 879              	 .loc 1 82 0 discriminator 1
+ 880 0090 4FF00100 	 mov r0,#1
+ 881 0094 0146     	 mov r1,r0
+ 882 0096 FFF7FEFF 	 bl WDT_Init
+  83:src/MightyBoard/Motherboard/comm.c **** 		WDT_Start(1);
+ 883              	 .loc 1 83 0 discriminator 1
+ 884 009a 4FF00100 	 mov r0,#1
+ 885 009e FFF7FEFF 	 bl WDT_Start
+ 886              	.LVL46:
+ 887              	.LBB18:
+ 888              	.LBB19:
+ 923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
+ 889              	 .loc 2 923 0 discriminator 1
+ 890 00a2 4FF46143 	 mov r3,#57600
+ 891 00a6 CEF20003 	 movt r3,57344
+ 892 00aa 4FF00102 	 mov r2,#1
+ 893 00ae 1A60     	 str r2,[r3,#0]
+ 894              	.L53:
+ 895 00b0 FEE7     	 b .L53
+ 896              	.LVL47:
+ 897              	.L52:
+ 898              	.LBE19:
+ 899              	.LBE18:
+  88:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"t")==0){
+ 900              	 .loc 1 88 0
+ 901 00b2 2046     	 mov r0,r4
+ 902 00b4 40F20001 	 movw r1,#:lower16:.LC6
+ 903 00b8 C0F20001 	 movt r1,#:upper16:.LC6
+ 904 00bc FFF7FEFF 	 bl strcasecmp
+ 905 00c0 48B9     	 cbnz r0,.L54
+  89:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "tests running" " (%s:%d)\n",_F_,_L_);
+ 906              	 .loc 1 89 0 discriminator 1
+ 907 00c2 40F20000 	 movw r0,#:lower16:.LC7
+ 908 00c6 C0F20000 	 movt r0,#:upper16:.LC7
+ 909 00ca 1A49     	 ldr r1,.L57
+ 910 00cc 4FF05902 	 mov r2,#89
+ 911 00d0 FFF7FEFF 	 bl xprintf
+ 912 00d4 10BD     	 pop {r4,pc}
+ 913              	.L54:
+  91:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"q")==0){
+ 914              	 .loc 1 91 0
+ 915 00d6 2046     	 mov r0,r4
+ 916 00d8 40F20001 	 movw r1,#:lower16:.LC8
+ 917 00dc C0F20001 	 movt r1,#:upper16:.LC8
+ 918 00e0 FFF7FEFF 	 bl strcasecmp
+ 919 00e4 48B9     	 cbnz r0,.L55
+  92:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "q" " (%s:%d)\n",_F_,_L_);
+ 920              	 .loc 1 92 0 discriminator 1
+ 921 00e6 40F20000 	 movw r0,#:lower16:.LC9
+ 922 00ea C0F20000 	 movt r0,#:upper16:.LC9
+ 923 00ee 1149     	 ldr r1,.L57
+ 924 00f0 4FF05C02 	 mov r2,#92
+ 925 00f4 FFF7FEFF 	 bl xprintf
+ 926 00f8 10BD     	 pop {r4,pc}
+ 927              	.L55:
+  94:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"")==0){
+ 928              	 .loc 1 94 0
+ 929 00fa 2046     	 mov r0,r4
+ 930 00fc 40F20001 	 movw r1,#:lower16:.LC10
+ 931 0100 C0F20001 	 movt r1,#:upper16:.LC10
+ 932 0104 FFF7FEFF 	 bl strcasecmp
+ 933 0108 48B9     	 cbnz r0,.L56
+  95:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "\r\nr-Resets board\r\nb-Resets to bootloader\r\nt-led test\r\n" " (%s:%d)\n",_F_,_L
+ 934              	 .loc 1 95 0 discriminator 1
+ 935 010a 40F20000 	 movw r0,#:lower16:.LC11
+ 936 010e C0F20000 	 movt r0,#:upper16:.LC11
+ 937 0112 0849     	 ldr r1,.L57
+ 938 0114 4FF05F02 	 mov r2,#95
+ 939 0118 FFF7FEFF 	 bl xprintf
+ 940 011c 10BD     	 pop {r4,pc}
+ 941              	.L56:
+  98:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "Command not found (cmd=%s)" " (%s:%d)\n",cmd,_F_,_L_);
+ 942              	 .loc 1 98 0 discriminator 1
+ 943 011e 40F20000 	 movw r0,#:lower16:.LC12
+ 944 0122 C0F20000 	 movt r0,#:upper16:.LC12
+ 945 0126 2146     	 mov r1,r4
+ 946 0128 024A     	 ldr r2,.L57
+ 947 012a 4FF06203 	 mov r3,#98
+ 948 012e FFF7FEFF 	 bl xprintf
+ 949 0132 10BD     	 pop {r4,pc}
+ 950              	.L58:
+ 951              	 .align 2
+ 952              	.L57:
+ 953 0134 1C000000 	 .word .LC3+28
+ 954              	 .cfi_endproc
+ 955              	.LFE55:
+ 957              	 .section .text.comm_get,"ax",%progbits
+ 958              	 .align 2
+ 959              	 .global comm_get
+ 960              	 .thumb
+ 961              	 .thumb_func
+ 963              	comm_get:
+ 964              	.LFB58:
+ 146:src/MightyBoard/Motherboard/comm.c **** uint8_t comm_get(void){
+ 965              	 .loc 1 146 0
+ 966              	 .cfi_startproc
+ 967              	 
+ 968              	 
+ 969 0000 30B5     	 push {r4,r5,lr}
+ 970              	.LCFI16:
+ 971              	 .cfi_def_cfa_offset 12
+ 972              	 .cfi_offset 14,-4
+ 973              	 .cfi_offset 5,-8
+ 974              	 .cfi_offset 4,-12
+ 975 0002 83B0     	 sub sp,sp,#12
+ 976              	.LCFI17:
+ 977              	 .cfi_def_cfa_offset 24
+ 156:src/MightyBoard/Motherboard/comm.c **** 		len = UARTReceive(LPC_UART0, buffer, 1);
+ 978              	 .loc 1 156 0
+ 979 0004 4FF44044 	 mov r4,#49152
+ 980 0008 C4F20004 	 movt r4,16384
+ 981 000c 4FF00105 	 mov r5,#1
+ 982              	.L62:
+ 983 0010 2046     	 mov r0,r4
+ 984 0012 01A9     	 add r1,sp,#4
+ 985 0014 2A46     	 mov r2,r5
+ 986 0016 FFF7FEFF 	 bl UARTReceive
+ 987              	.LVL48:
+ 155:src/MightyBoard/Motherboard/comm.c **** 	while (len == 0){
+ 988              	 .loc 1 155 0
+ 989 001a C0B2     	 uxtb r0,r0
+ 990 001c 0028     	 cmp r0,#0
+ 991 001e F7D0     	 beq .L62
+ 158:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE_LEN=0;
+ 992              	 .loc 1 158 0
+ 993 0020 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 994 0024 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 995 0028 4FF00002 	 mov r2,#0
+ 996 002c 1A60     	 str r2,[r3,#0]
+ 159:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE[0]='\0';
+ 997              	 .loc 1 159 0
+ 998 002e 40F20003 	 movw r3,#:lower16:UART_LINE
+ 999 0032 C0F20003 	 movt r3,#:upper16:UART_LINE
+ 1000 0036 1A70     	 strb r2,[r3,#0]
+ 160:src/MightyBoard/Motherboard/comm.c **** 	return buffer;
+ 1001              	 .loc 1 160 0
+ 1002 0038 01A8     	 add r0,sp,#4
+ 1003              	.LVL49:
+ 162:src/MightyBoard/Motherboard/comm.c **** }
+ 1004              	 .loc 1 162 0
+ 1005 003a 00F0FC00 	 and r0,r0,#252
+ 1006 003e 03B0     	 add sp,sp,#12
+ 1007 0040 30BD     	 pop {r4,r5,pc}
+ 1008              	 .cfi_endproc
+ 1009              	.LFE58:
+ 1011              	 .comm TxIntStat,1,1
+ 1012              	 .comm rb,2064,4
+ 1013              	 .global UART_LINE_LEN
+ 1014              	 .comm UART_LINE,50,4
+ 1015              	 .global TX_TOG
+ 1016              	 .global RX_TOG
+ 1017              	 .global LINE_READY
+ 1018 0042 00BF     	 .section .bss.TX_TOG,"aw",%nobits
+ 1019              	 .align 2
+ 1022              	TX_TOG:
+ 1023 0000 00000000 	 .space 4
+ 1024              	 .section .rodata.__func__.7002,"a",%progbits
+ 1025              	 .align 2
+ 1026              	 .set .LANCHOR0,.+0
+ 1029              	__func__.7002:
+ 1030 0000 636F6D6D 	 .ascii "comm_test\000"
+ 1030      5F746573 
+ 1030      7400
+ 1031 000a 0000     	 .section .bss.UART_LINE_LEN,"aw",%nobits
+ 1032              	 .align 2
+ 1033              	 .set .LANCHOR1,.+0
+ 1036              	UART_LINE_LEN:
+ 1037 0000 00000000 	 .space 4
+ 1038              	 .section .bss.LINE_READY,"aw",%nobits
+ 1039              	 .align 2
+ 1040              	 .set .LANCHOR2,.+0
+ 1043              	LINE_READY:
+ 1044 0000 00000000 	 .space 4
+ 1045              	 .section .rodata.str1.4,"aMS",%progbits,1
+ 1046              	 .align 2
+ 1047              	.LC0:
+ 1048 0000 25737B0A 	 .ascii "%s{\012\000"
+ 1048      00
+ 1049 0005 000000   	 .space 3
+ 1050              	.LC1:
+ 1051 0008 6200     	 .ascii "b\000"
+ 1052 000a 0000     	 .space 2
+ 1053              	.LC2:
+ 1054 000c 5B494E46 	 .ascii "[INFO]-resetting to bootloader (%s:%d)\012\000"
+ 1054      4F5D2D72 
+ 1054      65736574 
+ 1054      74696E67 
+ 1054      20746F20 
+ 1055              	.LC3:
+ 1056 0034 7372632F 	 .ascii "src/MightyBoard/Motherboard/comm.c\000"
+ 1056      4D696768 
+ 1056      7479426F 
+ 1056      6172642F 
+ 1056      4D6F7468 
+ 1057 0057 00       	 .space 1
+ 1058              	.LC4:
+ 1059 0058 7200     	 .ascii "r\000"
+ 1060 005a 0000     	 .space 2
+ 1061              	.LC5:
+ 1062 005c 5B494E46 	 .ascii "[INFO]-reseting (%s:%d)\012\000"
+ 1062      4F5D2D72 
+ 1062      65736574 
+ 1062      696E6720 
+ 1062      2825733A 
+ 1063 0075 000000   	 .space 3
+ 1064              	.LC6:
+ 1065 0078 7400     	 .ascii "t\000"
+ 1066 007a 0000     	 .space 2
+ 1067              	.LC7:
+ 1068 007c 5B494E46 	 .ascii "[INFO]-tests running (%s:%d)\012\000"
+ 1068      4F5D2D74 
+ 1068      65737473 
+ 1068      2072756E 
+ 1068      6E696E67 
+ 1069 009a 0000     	 .space 2
+ 1070              	.LC8:
+ 1071 009c 7100     	 .ascii "q\000"
+ 1072 009e 0000     	 .space 2
+ 1073              	.LC9:
+ 1074 00a0 5B494E46 	 .ascii "[INFO]-q (%s:%d)\012\000"
+ 1074      4F5D2D71 
+ 1074      20282573 
+ 1074      3A256429 
+ 1074      0A00
+ 1075 00b2 0000     	 .space 2
+ 1076              	.LC10:
+ 1077 00b4 00       	 .ascii "\000"
+ 1078 00b5 000000   	 .space 3
+ 1079              	.LC11:
+ 1080 00b8 5B494E46 	 .ascii "[INFO]-\015\012r-Resets board\015\012b-Resets to bo"
+ 1080      4F5D2D0D 
+ 1080      0A722D52 
+ 1080      65736574 
+ 1080      7320626F 
+ 1081 00df 6F746C6F 	 .ascii "otloader\015\012t-led test\015\012 (%s:%d)\012\000"
+ 1081      61646572 
+ 1081      0D0A742D 
+ 1081      6C656420 
+ 1081      74657374 
+ 1082 00ff 00       	 .space 1
+ 1083              	.LC12:
+ 1084 0100 5B494E46 	 .ascii "[INFO]-Command not found (cmd=%s) (%s:%d)\012\000"
+ 1084      4F5D2D43 
+ 1084      6F6D6D61 
+ 1084      6E64206E 
+ 1084      6F742066 
+ 1085 012b 00       	 .section .bss.RX_TOG,"aw",%nobits
+ 1086              	 .align 2
+ 1089              	RX_TOG:
+ 1090 0000 00000000 	 .space 4
+ 1091              	 .text
+ 1092              	.Letext0:
+ 1093              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 1094              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1095              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 1096              	 .file 6 "src/MightyBoard/Motherboard/lib/include/lpc17xx_uart.h"
+ 1097              	 .file 7 "src/MightyBoard/Motherboard/lib/include/lpc17xx_pinsel.h"
+ 1098              	 .file 8 "src/MightyBoard/Motherboard/lib/include/lpc17xx_wdt.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 comm.c
+    {standard input}:19     .text.comm_test:00000000 $t
+    {standard input}:24     .text.comm_test:00000000 comm_test
+    {standard input}:1047   .rodata.str1.4:00000000 .LC0
+    {standard input}:1026   .rodata.__func__.7002:00000000 .LANCHOR0
+    {standard input}:53     .text.comm_get2:00000000 $t
+    {standard input}:58     .text.comm_get2:00000000 comm_get2
+    {standard input}:101    .text.comm_init:00000000 $t
+    {standard input}:106    .text.comm_init:00000000 comm_init
+    {standard input}:1033   .bss.UART_LINE_LEN:00000000 .LANCHOR1
+                            *COM*:00000001 TxIntStat
+                            *COM*:00000810 rb
+    {standard input}:223    .text.UART_IntReceive:00000000 $t
+    {standard input}:228    .text.UART_IntReceive:00000000 UART_IntReceive
+                            *COM*:00000032 UART_LINE
+    {standard input}:1040   .bss.LINE_READY:00000000 .LANCHOR2
+    {standard input}:323    .text.UART_IntTransmit:00000000 $t
+    {standard input}:328    .text.UART_IntTransmit:00000000 UART_IntTransmit
+    {standard input}:432    .text.UART_IntErr:00000000 $t
+    {standard input}:437    .text.UART_IntErr:00000000 UART_IntErr
+    {standard input}:451    .text.UART0_IRQHandler:00000000 $t
+    {standard input}:456    .text.UART0_IRQHandler:00000000 UART0_IRQHandler
+    {standard input}:517    .text.UARTSend:00000000 $t
+    {standard input}:522    .text.UARTSend:00000000 UARTSend
+    {standard input}:630    .text.comm_put:00000000 $t
+    {standard input}:635    .text.comm_put:00000000 comm_put
+    {standard input}:664    .text.UARTReceive:00000000 $t
+    {standard input}:669    .text.UARTReceive:00000000 UARTReceive
+    {standard input}:764    .text.comm_flush:00000000 $t
+    {standard input}:769    .text.comm_flush:00000000 comm_flush
+    {standard input}:801    .text.exec_cmd:00000000 $t
+    {standard input}:806    .text.exec_cmd:00000000 exec_cmd
+    {standard input}:1050   .rodata.str1.4:00000008 .LC1
+    {standard input}:1053   .rodata.str1.4:0000000c .LC2
+    {standard input}:1058   .rodata.str1.4:00000058 .LC4
+    {standard input}:1061   .rodata.str1.4:0000005c .LC5
+    {standard input}:1064   .rodata.str1.4:00000078 .LC6
+    {standard input}:1067   .rodata.str1.4:0000007c .LC7
+    {standard input}:1070   .rodata.str1.4:0000009c .LC8
+    {standard input}:1073   .rodata.str1.4:000000a0 .LC9
+    {standard input}:1076   .rodata.str1.4:000000b4 .LC10
+    {standard input}:1079   .rodata.str1.4:000000b8 .LC11
+    {standard input}:1083   .rodata.str1.4:00000100 .LC12
+    {standard input}:953    .text.exec_cmd:00000134 $d
+    {standard input}:958    .text.comm_get:00000000 $t
+    {standard input}:963    .text.comm_get:00000000 comm_get
+    {standard input}:1036   .bss.UART_LINE_LEN:00000000 UART_LINE_LEN
+    {standard input}:1022   .bss.TX_TOG:00000000 TX_TOG
+    {standard input}:1089   .bss.RX_TOG:00000000 RX_TOG
+    {standard input}:1043   .bss.LINE_READY:00000000 LINE_READY
+    {standard input}:1019   .bss.TX_TOG:00000000 $d
+    {standard input}:1025   .rodata.__func__.7002:00000000 $d
+    {standard input}:1029   .rodata.__func__.7002:00000000 __func__.7002
+    {standard input}:1032   .bss.UART_LINE_LEN:00000000 $d
+    {standard input}:1039   .bss.LINE_READY:00000000 $d
+    {standard input}:1046   .rodata.str1.4:00000000 $d
+    {standard input}:1055   .rodata.str1.4:00000034 .LC3
+    {standard input}:1086   .bss.RX_TOG:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+xprintf
+UART_Receive
+PINSEL_ConfigPin
+UART_ConfigStructInit
+UART_Init
+UART_TxCmd
+UART_IntConfig
+UART_CheckBusy
+UART_Send
+UART_GetIntId
+UART_GetLineStatus
+strcasecmp
+RTC_WriteGPREG
+WDT_Init
+WDT_Start

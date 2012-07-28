@@ -1,0 +1,738 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "ButtonArray.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN11ButtonArray4initEv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN11ButtonArray4initEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN11ButtonArray4initEv:
+  25              	.LFB60:
+  26              	 .file 1 "src/MightyBoard/Motherboard/ButtonArray.cc"
+   1:src/MightyBoard/Motherboard/ButtonArray.cc **** #include "ButtonArray.hh"
+   2:src/MightyBoard/Motherboard/ButtonArray.cc **** #include "Configuration.hh"
+   3:src/MightyBoard/Motherboard/ButtonArray.cc **** #include "Pin.hh"
+   4:src/MightyBoard/Motherboard/ButtonArray.cc **** //#include <util/delay.h>
+   5:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+   6:src/MightyBoard/Motherboard/ButtonArray.cc **** static uint8_t previousJ;
+   7:src/MightyBoard/Motherboard/ButtonArray.cc **** bool  center_holding = false;
+   8:src/MightyBoard/Motherboard/ButtonArray.cc **** bool right_holding = false;
+   9:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+  10:src/MightyBoard/Motherboard/ButtonArray.cc **** void ButtonArray::init() {
+  27              	 .loc 1 10 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  11:src/MightyBoard/Motherboard/ButtonArray.cc ****         previousJ = 0;
+  33              	 .loc 1 11 0
+  34 0000 40F20003 	 movw r3,#:lower16:.LANCHOR0
+  35 0004 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+  36 0008 4FF00002 	 mov r2,#0
+  37 000c 1A70     	 strb r2,[r3,#0]
+  12:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+  13:src/MightyBoard/Motherboard/ButtonArray.cc ****         // TODO: set for LPC1768
+  14:src/MightyBoard/Motherboard/ButtonArray.cc ****         // Set all of the known buttons to inputs (see above note)
+  15:src/MightyBoard/Motherboard/ButtonArray.cc **** //        DDRJ = DDRJ & 0xE0;
+  16:src/MightyBoard/Motherboard/ButtonArray.cc **** //        PORTJ = PORTJ & 0xE0;
+  17:src/MightyBoard/Motherboard/ButtonArray.cc **** }
+  38              	 .loc 1 17 0
+  39 000e 7047     	 bx lr
+  40              	 .cfi_endproc
+  41              	.LFE60:
+  43              	 .section .text._ZN11ButtonArray11scanButtonsEv,"ax",%progbits
+  44              	 .align 2
+  45              	 .global _ZN11ButtonArray11scanButtonsEv
+  46              	 .thumb
+  47              	 .thumb_func
+  49              	_ZN11ButtonArray11scanButtonsEv:
+  50              	.LFB61:
+  18:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+  19:src/MightyBoard/Motherboard/ButtonArray.cc **** void ButtonArray::scanButtons() {
+  51              	 .loc 1 19 0
+  52              	 .cfi_startproc
+  53              	 
+  54              	 
+  55              	.LVL1:
+  56 0000 2DE9F047 	 push {r4,r5,r6,r7,r8,r9,sl,lr}
+  57              	.LCFI0:
+  58              	 .cfi_def_cfa_offset 32
+  59              	 .cfi_offset 14,-4
+  60              	 .cfi_offset 10,-8
+  61              	 .cfi_offset 9,-12
+  62              	 .cfi_offset 8,-16
+  63              	 .cfi_offset 7,-20
+  64              	 .cfi_offset 6,-24
+  65              	 .cfi_offset 5,-28
+  66              	 .cfi_offset 4,-32
+  67 0004 90B0     	 sub sp,sp,#64
+  68              	.LCFI1:
+  69              	 .cfi_def_cfa_offset 96
+  70 0006 0546     	 mov r5,r0
+  71              	.LBB8:
+  20:src/MightyBoard/Motherboard/ButtonArray.cc ****         // Don't bother scanning if we already have a button 
+  21:src/MightyBoard/Motherboard/ButtonArray.cc ****         // or if sufficient time has not elapsed between the last button push
+  22:src/MightyBoard/Motherboard/ButtonArray.cc ****         if (buttonPressWaiting || (buttonTimeout.isActive() && !buttonTimeout.hasElapsed())) {
+  72              	 .loc 1 22 0
+  73 0008 4378     	 ldrb r3,[r0,#1]
+  74 000a 002B     	 cmp r3,#0
+  75 000c 40F0AD80 	 bne .L2
+  76              	.LVL2:
+  77              	 .loc 1 22 0 is_stmt 0 discriminator 2
+  78 0010 0379     	 ldrb r3,[r0,#4]
+  79 0012 002B     	 cmp r3,#0
+  80 0014 00F09980 	 beq .L4
+  81              	 .loc 1 22 0 discriminator 3
+  82 0018 00F10400 	 add r0,r0,#4
+  83              	.LVL3:
+  84 001c FFF7FEFF 	 bl _ZN7Timeout10hasElapsedEv
+  85 0020 0028     	 cmp r0,#0
+  86 0022 00F0A280 	 beq .L2
+  87 0026 90E0     	 b .L4
+  88              	.L17:
+  23:src/MightyBoard/Motherboard/ButtonArray.cc ****                 return;
+  24:src/MightyBoard/Motherboard/ButtonArray.cc ****         }
+  25:src/MightyBoard/Motherboard/ButtonArray.cc ****         
+  26:src/MightyBoard/Motherboard/ButtonArray.cc ****         buttonTimeout.clear();
+  27:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+  28:src/MightyBoard/Motherboard/ButtonArray.cc ****         // TODO: set for LPC1768
+  29:src/MightyBoard/Motherboard/ButtonArray.cc **** //        uint8_t newJ = PINJ;// & 0xFE;
+  30:src/MightyBoard/Motherboard/ButtonArray.cc ****     	uint8_t newJ;
+  31:src/MightyBoard/Motherboard/ButtonArray.cc ****         
+  32:src/MightyBoard/Motherboard/ButtonArray.cc ****         /// test for special holds
+  33:src/MightyBoard/Motherboard/ButtonArray.cc ****         /// center hold
+  34:src/MightyBoard/Motherboard/ButtonArray.cc ****         if(!(newJ & (1 << CENTER))){
+  35:src/MightyBoard/Motherboard/ButtonArray.cc **** 			if(!center_holding){
+  36:src/MightyBoard/Motherboard/ButtonArray.cc **** 				centerHold.start(10000000);
+  89              	 .loc 1 36 0 is_stmt 1
+  90 0028 05F11400 	 add r0,r5,#20
+  91 002c 49F28061 	 movw r1,#38528
+  92 0030 C0F29801 	 movt r1,152
+  93 0034 FFF7FEFF 	 bl _ZN7Timeout5startEm
+  37:src/MightyBoard/Motherboard/ButtonArray.cc **** 				center_holding = true;
+  94              	 .loc 1 37 0
+  95 0038 40F20003 	 movw r3,#:lower16:.LANCHOR1
+  96 003c C0F20003 	 movt r3,#:upper16:.LANCHOR1
+  97 0040 4FF00102 	 mov r2,#1
+  98 0044 1A70     	 strb r2,[r3,#0]
+  99              	.L5:
+  38:src/MightyBoard/Motherboard/ButtonArray.cc **** 			}
+  39:src/MightyBoard/Motherboard/ButtonArray.cc **** 		}
+  40:src/MightyBoard/Motherboard/ButtonArray.cc **** 		else{
+  41:src/MightyBoard/Motherboard/ButtonArray.cc **** 			centerHold = Timeout();
+  42:src/MightyBoard/Motherboard/ButtonArray.cc **** 			center_holding = false;
+  43:src/MightyBoard/Motherboard/ButtonArray.cc **** 		}
+  44:src/MightyBoard/Motherboard/ButtonArray.cc **** 			
+  45:src/MightyBoard/Motherboard/ButtonArray.cc **** 		if(centerHold.hasElapsed()){
+ 100              	 .loc 1 45 0
+ 101 0046 05F11400 	 add r0,r5,#20
+ 102 004a FFF7FEFF 	 bl _ZN7Timeout10hasElapsedEv
+ 103 004e 80B1     	 cbz r0,.L6
+  46:src/MightyBoard/Motherboard/ButtonArray.cc **** 			buttonPress = RESET;
+ 104              	 .loc 1 46 0
+ 105 0050 4FF00503 	 mov r3,#5
+ 106 0054 2B70     	 strb r3,[r5,#0]
+  47:src/MightyBoard/Motherboard/ButtonArray.cc **** 			buttonPressWaiting = true;
+ 107              	 .loc 1 47 0
+ 108 0056 4FF00103 	 mov r3,#1
+ 109 005a 6B70     	 strb r3,[r5,#1]
+  48:src/MightyBoard/Motherboard/ButtonArray.cc **** 			centerHold = Timeout();
+ 110              	 .loc 1 48 0
+ 111 005c 04AC     	 add r4,sp,#16
+ 112 005e 2046     	 mov r0,r4
+ 113 0060 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 114 0064 05F11405 	 add r5,r5,#20
+ 115              	.LVL4:
+ 116 0068 94E80F00 	 ldmia r4,{r0,r1,r2,r3}
+ 117 006c 85E80F00 	 stmia r5,{r0,r1,r2,r3}
+  49:src/MightyBoard/Motherboard/ButtonArray.cc **** 			return;
+ 118              	 .loc 1 49 0
+ 119 0070 7BE0     	 b .L2
+ 120              	.LVL5:
+ 121              	.L6:
+  50:src/MightyBoard/Motherboard/ButtonArray.cc **** 		}
+  51:src/MightyBoard/Motherboard/ButtonArray.cc **** 		/// right hold
+  52:src/MightyBoard/Motherboard/ButtonArray.cc **** 		if(!(newJ & (1 << RIGHT))){
+ 122              	 .loc 1 52 0
+ 123 0072 16F0020F 	 tst r6,#2
+ 124 0076 15D1     	 bne .L7
+  53:src/MightyBoard/Motherboard/ButtonArray.cc **** 			if(!right_holding){
+ 125              	 .loc 1 53 0
+ 126 0078 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 127 007c C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 128 0080 1B78     	 ldrb r3,[r3,#0]
+ 129 0082 03BB     	 cbnz r3,.L8
+  54:src/MightyBoard/Motherboard/ButtonArray.cc **** 				rightHold.start(10000000);
+ 130              	 .loc 1 54 0
+ 131 0084 05F12400 	 add r0,r5,#36
+ 132 0088 49F28061 	 movw r1,#38528
+ 133 008c C0F29801 	 movt r1,152
+ 134 0090 FFF7FEFF 	 bl _ZN7Timeout5startEm
+  55:src/MightyBoard/Motherboard/ButtonArray.cc **** 				right_holding = true;
+ 135              	 .loc 1 55 0
+ 136 0094 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 137 0098 C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 138 009c 4FF00102 	 mov r2,#1
+ 139 00a0 1A70     	 strb r2,[r3,#0]
+ 140 00a2 10E0     	 b .L8
+ 141              	.L7:
+  56:src/MightyBoard/Motherboard/ButtonArray.cc **** 			}
+  57:src/MightyBoard/Motherboard/ButtonArray.cc **** 		}
+  58:src/MightyBoard/Motherboard/ButtonArray.cc **** 		else{
+  59:src/MightyBoard/Motherboard/ButtonArray.cc **** 			rightHold = Timeout();
+ 142              	 .loc 1 59 0
+ 143 00a4 08AC     	 add r4,sp,#32
+ 144 00a6 2046     	 mov r0,r4
+ 145 00a8 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 146 00ac 05F12407 	 add r7,r5,#36
+ 147 00b0 94E80F00 	 ldmia r4,{r0,r1,r2,r3}
+ 148 00b4 87E80F00 	 stmia r7,{r0,r1,r2,r3}
+  60:src/MightyBoard/Motherboard/ButtonArray.cc **** 			right_holding = false;
+ 149              	 .loc 1 60 0
+ 150 00b8 40F20003 	 movw r3,#:lower16:.LANCHOR2
+ 151 00bc C0F20003 	 movt r3,#:upper16:.LANCHOR2
+ 152 00c0 4FF00002 	 mov r2,#0
+ 153 00c4 1A70     	 strb r2,[r3,#0]
+ 154              	.L8:
+  61:src/MightyBoard/Motherboard/ButtonArray.cc **** 		}
+  62:src/MightyBoard/Motherboard/ButtonArray.cc **** 			
+  63:src/MightyBoard/Motherboard/ButtonArray.cc **** 		if(rightHold.hasElapsed()){
+ 155              	 .loc 1 63 0
+ 156 00c6 05F12400 	 add r0,r5,#36
+ 157 00ca FFF7FEFF 	 bl _ZN7Timeout10hasElapsedEv
+ 158 00ce 80B1     	 cbz r0,.L9
+  64:src/MightyBoard/Motherboard/ButtonArray.cc **** 			buttonPress = EGG;
+ 159              	 .loc 1 64 0
+ 160 00d0 4FF00603 	 mov r3,#6
+ 161 00d4 2B70     	 strb r3,[r5,#0]
+  65:src/MightyBoard/Motherboard/ButtonArray.cc **** 			buttonPressWaiting = true;
+ 162              	 .loc 1 65 0
+ 163 00d6 4FF00103 	 mov r3,#1
+ 164 00da 6B70     	 strb r3,[r5,#1]
+  66:src/MightyBoard/Motherboard/ButtonArray.cc **** 			rightHold = Timeout();
+ 165              	 .loc 1 66 0
+ 166 00dc 0CAC     	 add r4,sp,#48
+ 167 00de 2046     	 mov r0,r4
+ 168 00e0 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 169 00e4 05F12405 	 add r5,r5,#36
+ 170              	.LVL6:
+ 171 00e8 94E80F00 	 ldmia r4,{r0,r1,r2,r3}
+ 172 00ec 85E80F00 	 stmia r5,{r0,r1,r2,r3}
+  67:src/MightyBoard/Motherboard/ButtonArray.cc **** 			return;
+ 173              	 .loc 1 67 0
+ 174 00f0 3BE0     	 b .L2
+ 175              	.LVL7:
+ 176              	.L9:
+ 177              	.LBB9:
+  68:src/MightyBoard/Motherboard/ButtonArray.cc **** 		}
+  69:src/MightyBoard/Motherboard/ButtonArray.cc **** 		
+  70:src/MightyBoard/Motherboard/ButtonArray.cc ****         
+  71:src/MightyBoard/Motherboard/ButtonArray.cc ****         if (newJ != previousJ) {
+ 178              	 .loc 1 71 0
+ 179 00f2 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 180 00f6 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 181 00fa 1F78     	 ldrb r7,[r3,#0]
+ 182 00fc EFB1     	 cbz r7,.L10
+ 183              	.LVL8:
+ 184              	.LBB10:
+  72:src/MightyBoard/Motherboard/ButtonArray.cc ****                 uint8_t diff = newJ ^ previousJ;
+ 185              	 .loc 1 72 0
+ 186 00fe 4FF00004 	 mov r4,#0
+ 187              	.LBB11:
+  73:src/MightyBoard/Motherboard/ButtonArray.cc ****                 for(uint8_t i = 0; i < 5; i++) {
+  74:src/MightyBoard/Motherboard/ButtonArray.cc ****                         if (diff&(1<<i)) {
+  75:src/MightyBoard/Motherboard/ButtonArray.cc ****                                 if (!(newJ&(1<<i))) {
+  76:src/MightyBoard/Motherboard/ButtonArray.cc ****                                         if (!buttonPressWaiting) {
+  77:src/MightyBoard/Motherboard/ButtonArray.cc ****                                                 buttonPress = i;
+  78:src/MightyBoard/Motherboard/ButtonArray.cc ****                                                 buttonPressWaiting = true;
+ 188              	 .loc 1 78 0
+ 189 0102 4FF0010A 	 mov sl,#1
+  79:src/MightyBoard/Motherboard/ButtonArray.cc ****                                                 buttonTimeout.start(ButtonDelay);
+ 190              	 .loc 1 79 0
+ 191 0106 44F24028 	 movw r8,#16960
+ 192 010a C0F20F08 	 movt r8,15
+ 193              	.LVL9:
+ 194              	.L12:
+ 195              	.LBE11:
+  72:src/MightyBoard/Motherboard/ButtonArray.cc ****                 uint8_t diff = newJ ^ previousJ;
+ 196              	 .loc 1 72 0
+ 197 010e E2B2     	 uxtb r2,r4
+ 198              	.LBB12:
+  74:src/MightyBoard/Motherboard/ButtonArray.cc ****                         if (diff&(1<<i)) {
+ 199              	 .loc 1 74 0
+ 200 0110 47FA04F3 	 asr r3,r7,r4
+ 201 0114 13F0010F 	 tst r3,#1
+ 202 0118 0BD0     	 beq .L11
+  75:src/MightyBoard/Motherboard/ButtonArray.cc ****                                 if (!(newJ&(1<<i))) {
+ 203              	 .loc 1 75 0
+ 204 011a 56FA04F3 	 asrs r3,r6,r4
+ 205 011e 08D1     	 bne .L11
+  76:src/MightyBoard/Motherboard/ButtonArray.cc ****                                         if (!buttonPressWaiting) {
+ 206              	 .loc 1 76 0
+ 207 0120 6B78     	 ldrb r3,[r5,#1]
+ 208 0122 33B9     	 cbnz r3,.L11
+  77:src/MightyBoard/Motherboard/ButtonArray.cc ****                                                 buttonPress = i;
+ 209              	 .loc 1 77 0
+ 210 0124 2A70     	 strb r2,[r5,#0]
+  78:src/MightyBoard/Motherboard/ButtonArray.cc ****                                                 buttonPressWaiting = true;
+ 211              	 .loc 1 78 0
+ 212 0126 85F801A0 	 strb sl,[r5,#1]
+ 213              	 .loc 1 79 0
+ 214 012a 4846     	 mov r0,r9
+ 215 012c 4146     	 mov r1,r8
+ 216 012e FFF7FEFF 	 bl _ZN7Timeout5startEm
+ 217              	.L11:
+ 218 0132 04F10104 	 add r4,r4,#1
+  73:src/MightyBoard/Motherboard/ButtonArray.cc ****                 for(uint8_t i = 0; i < 5; i++) {
+ 219              	 .loc 1 73 0
+ 220 0136 052C     	 cmp r4,#5
+ 221 0138 E9D1     	 bne .L12
+ 222              	.LVL10:
+ 223              	.L10:
+ 224              	.LBE12:
+ 225              	.LBE10:
+ 226              	.LBE9:
+  80:src/MightyBoard/Motherboard/ButtonArray.cc ****                                         }
+  81:src/MightyBoard/Motherboard/ButtonArray.cc ****                                 }
+  82:src/MightyBoard/Motherboard/ButtonArray.cc ****                         }
+  83:src/MightyBoard/Motherboard/ButtonArray.cc ****                 }
+  84:src/MightyBoard/Motherboard/ButtonArray.cc ****         }
+  85:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+  86:src/MightyBoard/Motherboard/ButtonArray.cc ****         previousJ = newJ;
+ 227              	 .loc 1 86 0
+ 228 013a 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 229 013e C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 230 0142 4FF00006 	 mov r6,#0
+ 231 0146 1E70     	 strb r6,[r3,#0]
+ 232 0148 0FE0     	 b .L2
+ 233              	.L4:
+  26:src/MightyBoard/Motherboard/ButtonArray.cc ****         buttonTimeout.clear();
+ 234              	 .loc 1 26 0
+ 235 014a 05F10409 	 add r9,r5,#4
+ 236 014e 4846     	 mov r0,r9
+ 237 0150 FFF7FEFF 	 bl _ZN7Timeout5clearEv
+  34:src/MightyBoard/Motherboard/ButtonArray.cc ****         if(!(newJ & (1 << CENTER))){
+ 238              	 .loc 1 34 0
+ 239 0154 4FF00006 	 mov r6,#0
+  35:src/MightyBoard/Motherboard/ButtonArray.cc **** 			if(!center_holding){
+ 240              	 .loc 1 35 0
+ 241 0158 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 242 015c C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 243 0160 1B78     	 ldrb r3,[r3,#0]
+ 244 0162 002B     	 cmp r3,#0
+ 245 0164 7FF46FAF 	 bne .L5
+ 246 0168 5EE7     	 b .L17
+ 247              	.LVL11:
+ 248              	.L2:
+ 249              	.LBE8:
+  87:src/MightyBoard/Motherboard/ButtonArray.cc **** }
+ 250              	 .loc 1 87 0
+ 251 016a 10B0     	 add sp,sp,#64
+ 252 016c BDE8F087 	 pop {r4,r5,r6,r7,r8,r9,sl,pc}
+ 253              	 .cfi_endproc
+ 254              	.LFE61:
+ 256              	 .section .text._ZN11ButtonArray9getButtonERNS_10ButtonNameE,"ax",%progbits
+ 257              	 .align 2
+ 258              	 .global _ZN11ButtonArray9getButtonERNS_10ButtonNameE
+ 259              	 .thumb
+ 260              	 .thumb_func
+ 262              	_ZN11ButtonArray9getButtonERNS_10ButtonNameE:
+ 263              	.LFB62:
+  88:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+  89:src/MightyBoard/Motherboard/ButtonArray.cc **** bool ButtonArray::getButton(ButtonName& button) {
+ 264              	 .loc 1 89 0
+ 265              	 .cfi_startproc
+ 266              	 
+ 267              	 
+ 268              	 
+ 269              	.LVL12:
+ 270 0000 10B4     	 push {r4}
+ 271              	.LCFI2:
+ 272              	 .cfi_def_cfa_offset 4
+ 273              	 .cfi_offset 4,-4
+ 274 0002 0346     	 mov r3,r0
+ 275              	.LBB13:
+  90:src/MightyBoard/Motherboard/ButtonArray.cc ****         bool buttonValid;
+  91:src/MightyBoard/Motherboard/ButtonArray.cc ****         uint8_t buttonNumber;
+  92:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+  93:src/MightyBoard/Motherboard/ButtonArray.cc **** //        ATOMIC_BLOCK(ATOMIC_FORCEON)
+  94:src/MightyBoard/Motherboard/ButtonArray.cc **** //        {
+  95:src/MightyBoard/Motherboard/ButtonArray.cc ****                 buttonValid =  buttonPressWaiting;
+ 276              	 .loc 1 95 0
+ 277 0004 4078     	 ldrb r0,[r0,#1]
+ 278              	.LVL13:
+  96:src/MightyBoard/Motherboard/ButtonArray.cc ****                 buttonNumber = buttonPress;        
+ 279              	 .loc 1 96 0
+ 280 0006 1C78     	 ldrb r4,[r3,#0]
+ 281              	.LVL14:
+  97:src/MightyBoard/Motherboard/ButtonArray.cc ****                 buttonPressWaiting = false;             
+ 282              	 .loc 1 97 0
+ 283 0008 4FF00002 	 mov r2,#0
+ 284 000c 5A70     	 strb r2,[r3,#1]
+  98:src/MightyBoard/Motherboard/ButtonArray.cc **** //        }
+  99:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+ 100:src/MightyBoard/Motherboard/ButtonArray.cc ****         if (buttonValid) {
+ 285              	 .loc 1 100 0
+ 286 000e 00B1     	 cbz r0,.L19
+ 101:src/MightyBoard/Motherboard/ButtonArray.cc ****                 button = (ButtonName)(buttonNumber);
+ 287              	 .loc 1 101 0
+ 288 0010 0C70     	 strb r4,[r1,#0]
+ 289              	.L19:
+ 290              	.LBE13:
+ 102:src/MightyBoard/Motherboard/ButtonArray.cc ****         }
+ 103:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+ 104:src/MightyBoard/Motherboard/ButtonArray.cc ****         return buttonValid;
+ 105:src/MightyBoard/Motherboard/ButtonArray.cc **** }
+ 291              	 .loc 1 105 0
+ 292 0012 10BC     	 pop {r4}
+ 293 0014 7047     	 bx lr
+ 294              	 .cfi_endproc
+ 295              	.LFE62:
+ 297 0016 00BF     	 .section .text._ZN11ButtonArray16clearButtonPressEv,"ax",%progbits
+ 298              	 .align 2
+ 299              	 .global _ZN11ButtonArray16clearButtonPressEv
+ 300              	 .thumb
+ 301              	 .thumb_func
+ 303              	_ZN11ButtonArray16clearButtonPressEv:
+ 304              	.LFB63:
+ 106:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+ 107:src/MightyBoard/Motherboard/ButtonArray.cc **** void ButtonArray::clearButtonPress(){
+ 305              	 .loc 1 107 0
+ 306              	 .cfi_startproc
+ 307              	 
+ 308              	 
+ 309              	 
+ 310              	.LVL15:
+ 108:src/MightyBoard/Motherboard/ButtonArray.cc **** 
+ 109:src/MightyBoard/Motherboard/ButtonArray.cc **** 		previousJ = 0x1F;
+ 311              	 .loc 1 109 0
+ 312 0000 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 313 0004 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 314 0008 4FF01F02 	 mov r2,#31
+ 315 000c 1A70     	 strb r2,[r3,#0]
+ 110:src/MightyBoard/Motherboard/ButtonArray.cc **** }
+ 316              	 .loc 1 110 0
+ 317 000e 7047     	 bx lr
+ 318              	 .cfi_endproc
+ 319              	.LFE63:
+ 321              	 .section .text._GLOBAL__sub_I_center_holding,"ax",%progbits
+ 322              	 .align 2
+ 323              	 .thumb
+ 324              	 .thumb_func
+ 326              	_GLOBAL__sub_I_center_holding:
+ 327              	.LFB65:
+ 328              	 .loc 1 110 0
+ 329              	 .cfi_startproc
+ 330              	 
+ 331              	 
+ 332 0000 10B5     	 push {r4,lr}
+ 333              	.LCFI3:
+ 334              	 .cfi_def_cfa_offset 8
+ 335              	 .cfi_offset 14,-4
+ 336              	 .cfi_offset 4,-8
+ 337              	.LVL16:
+ 338              	.LBB16:
+ 339              	.LBB17:
+ 340              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 341              	 .loc 2 49 0
+ 342 0002 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 343 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 344 000a 4FF00001 	 mov r1,#0
+ 345 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 346              	 .loc 2 50 0
+ 347 0012 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 348 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 349 001a 4FF00101 	 mov r1,#1
+ 350 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 351              	 .loc 2 51 0
+ 352 0022 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 353 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 354 002a 4FF00201 	 mov r1,#2
+ 355 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 356              	 .loc 2 52 0
+ 357 0032 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 358 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 359 003a 4FF00301 	 mov r1,#3
+ 360 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 361              	 .loc 2 53 0
+ 362 0042 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 363 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 364 004a 4FF00401 	 mov r1,#4
+ 365 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 366              	 .loc 2 55 0
+ 367 0052 40F20004 	 movw r4,#:lower16:.LANCHOR8
+ 368 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR8
+ 369 005a 2046     	 mov r0,r4
+ 370 005c 4FF0FF01 	 mov r1,#255
+ 371 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 372              	 .file 3 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 373              	 .loc 3 76 0
+ 374 0064 40F20000 	 movw r0,#:lower16:.LANCHOR9
+ 375 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR9
+ 376 006c 2146     	 mov r1,r4
+ 377 006e 4FF00002 	 mov r2,#0
+ 378 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 379              	.LBE17:
+ 380              	.LBE16:
+ 381              	 .loc 1 110 0
+ 382 0076 10BD     	 pop {r4,pc}
+ 383              	 .cfi_endproc
+ 384              	.LFE65:
+ 386              	 .section .init_array,"aw",%init_array
+ 387              	 .align 2
+ 388 0000 00000000 	 .word _GLOBAL__sub_I_center_holding(target1)
+ 389              	 .global right_holding
+ 390              	 .global center_holding
+ 391              	 .section .bss.center_holding,"aw",%nobits
+ 392              	 .set .LANCHOR1,.+0
+ 395              	center_holding:
+ 396 0000 00       	 .space 1
+ 397              	 .section .bss._ZL9previousJ,"aw",%nobits
+ 398              	 .set .LANCHOR0,.+0
+ 401              	_ZL9previousJ:
+ 402 0000 00       	 .space 1
+ 403              	 .section .bss._ZL5Port0,"aw",%nobits
+ 404              	 .align 2
+ 405              	 .set .LANCHOR3,.+0
+ 408              	_ZL5Port0:
+ 409 0000 00       	 .space 1
+ 410 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 411              	 .align 2
+ 412              	 .set .LANCHOR4,.+0
+ 415              	_ZL5Port1:
+ 416 0000 00       	 .space 1
+ 417 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 418              	 .align 2
+ 419              	 .set .LANCHOR5,.+0
+ 422              	_ZL5Port2:
+ 423 0000 00       	 .space 1
+ 424 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 425              	 .align 2
+ 426              	 .set .LANCHOR6,.+0
+ 429              	_ZL5Port3:
+ 430 0000 00       	 .space 1
+ 431 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 432              	 .align 2
+ 433              	 .set .LANCHOR7,.+0
+ 436              	_ZL5Port4:
+ 437 0000 00       	 .space 1
+ 438 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 439              	 .align 2
+ 440              	 .set .LANCHOR8,.+0
+ 443              	_ZL8NullPort:
+ 444 0000 00       	 .space 1
+ 445 0001 000000   	 .section .bss.right_holding,"aw",%nobits
+ 446              	 .set .LANCHOR2,.+0
+ 449              	right_holding:
+ 450 0000 00       	 .space 1
+ 451              	 .section .bss._ZL7NullPin,"aw",%nobits
+ 452              	 .align 2
+ 453              	 .set .LANCHOR9,.+0
+ 456              	_ZL7NullPin:
+ 457 0000 00000000 	 .space 5
+ 457      00
+ 458 0005 000000   	 .text
+ 459              	.Letext0:
+ 460              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 461              	 .file 5 "src/MightyBoard/shared/Types.hh"
+ 462              	 .file 6 "src/MightyBoard/shared/Timeout.hh"
+ 463              	 .file 7 "src/MightyBoard/shared/ButtonArray.hh"
+ 464              	 .file 8 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 ButtonArray.cc
+    {standard input}:19     .text._ZN11ButtonArray4initEv:00000000 $t
+    {standard input}:24     .text._ZN11ButtonArray4initEv:00000000 _ZN11ButtonArray4initEv
+    {standard input}:398    .bss._ZL9previousJ:00000000 .LANCHOR0
+    {standard input}:44     .text._ZN11ButtonArray11scanButtonsEv:00000000 $t
+    {standard input}:49     .text._ZN11ButtonArray11scanButtonsEv:00000000 _ZN11ButtonArray11scanButtonsEv
+    {standard input}:392    .bss.center_holding:00000000 .LANCHOR1
+    {standard input}:446    .bss.right_holding:00000000 .LANCHOR2
+    {standard input}:257    .text._ZN11ButtonArray9getButtonERNS_10ButtonNameE:00000000 $t
+    {standard input}:262    .text._ZN11ButtonArray9getButtonERNS_10ButtonNameE:00000000 _ZN11ButtonArray9getButtonERNS_10ButtonNameE
+    {standard input}:298    .text._ZN11ButtonArray16clearButtonPressEv:00000000 $t
+    {standard input}:303    .text._ZN11ButtonArray16clearButtonPressEv:00000000 _ZN11ButtonArray16clearButtonPressEv
+    {standard input}:322    .text._GLOBAL__sub_I_center_holding:00000000 $t
+    {standard input}:326    .text._GLOBAL__sub_I_center_holding:00000000 _GLOBAL__sub_I_center_holding
+    {standard input}:405    .bss._ZL5Port0:00000000 .LANCHOR3
+    {standard input}:412    .bss._ZL5Port1:00000000 .LANCHOR4
+    {standard input}:419    .bss._ZL5Port2:00000000 .LANCHOR5
+    {standard input}:426    .bss._ZL5Port3:00000000 .LANCHOR6
+    {standard input}:433    .bss._ZL5Port4:00000000 .LANCHOR7
+    {standard input}:440    .bss._ZL8NullPort:00000000 .LANCHOR8
+    {standard input}:453    .bss._ZL7NullPin:00000000 .LANCHOR9
+    {standard input}:387    .init_array:00000000 $d
+    {standard input}:449    .bss.right_holding:00000000 right_holding
+    {standard input}:395    .bss.center_holding:00000000 center_holding
+    {standard input}:396    .bss.center_holding:00000000 $d
+    {standard input}:401    .bss._ZL9previousJ:00000000 _ZL9previousJ
+    {standard input}:402    .bss._ZL9previousJ:00000000 $d
+    {standard input}:404    .bss._ZL5Port0:00000000 $d
+    {standard input}:408    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:411    .bss._ZL5Port1:00000000 $d
+    {standard input}:415    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:418    .bss._ZL5Port2:00000000 $d
+    {standard input}:422    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:425    .bss._ZL5Port3:00000000 $d
+    {standard input}:429    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:432    .bss._ZL5Port4:00000000 $d
+    {standard input}:436    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:439    .bss._ZL8NullPort:00000000 $d
+    {standard input}:443    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:450    .bss.right_holding:00000000 $d
+    {standard input}:452    .bss._ZL7NullPin:00000000 $d
+    {standard input}:456    .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN7Timeout10hasElapsedEv
+_ZN7Timeout5startEm
+_ZN7TimeoutC1Ev
+_ZN7Timeout5clearEv
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth

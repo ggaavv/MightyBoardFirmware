@@ -1,0 +1,233 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "usbdesc.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .global USB_StringDescriptor
+  19              	 .global USB_ConfigDescriptor
+  20              	 .global USB_DeviceDescriptor
+  21              	 .section .rodata.USB_ConfigDescriptor,"a",%progbits
+  22              	 .align 2
+  25              	USB_ConfigDescriptor:
+  26 0000 09       	 .byte 9
+  27 0001 02       	 .byte 2
+  28 0002 43       	 .byte 67
+  29 0003 00       	 .byte 0
+  30 0004 02       	 .byte 2
+  31 0005 01       	 .byte 1
+  32 0006 00       	 .byte 0
+  33 0007 80       	 .byte -128
+  34 0008 32       	 .byte 50
+  35 0009 09       	 .byte 9
+  36 000a 04       	 .byte 4
+  37 000b 00       	 .byte 0
+  38 000c 00       	 .byte 0
+  39 000d 01       	 .byte 1
+  40 000e 02       	 .byte 2
+  41 000f 02       	 .byte 2
+  42 0010 00       	 .byte 0
+  43 0011 5E       	 .byte 94
+  44 0012 05       	 .byte 5
+  45 0013 24       	 .byte 36
+  46 0014 00       	 .byte 0
+  47 0015 10       	 .byte 16
+  48 0016 01       	 .byte 1
+  49 0017 05       	 .byte 5
+  50 0018 24       	 .byte 36
+  51 0019 01       	 .byte 1
+  52 001a 01       	 .byte 1
+  53 001b 01       	 .byte 1
+  54 001c 04       	 .byte 4
+  55 001d 24       	 .byte 36
+  56 001e 02       	 .byte 2
+  57 001f 02       	 .byte 2
+  58 0020 05       	 .byte 5
+  59 0021 24       	 .byte 36
+  60 0022 06       	 .byte 6
+  61 0023 00       	 .byte 0
+  62 0024 01       	 .byte 1
+  63 0025 07       	 .byte 7
+  64 0026 05       	 .byte 5
+  65 0027 81       	 .byte -127
+  66 0028 03       	 .byte 3
+  67 0029 10       	 .byte 16
+  68 002a 00       	 .byte 0
+  69 002b 02       	 .byte 2
+  70 002c 09       	 .byte 9
+  71 002d 04       	 .byte 4
+  72 002e 01       	 .byte 1
+  73 002f 00       	 .byte 0
+  74 0030 02       	 .byte 2
+  75 0031 0A       	 .byte 10
+  76 0032 00       	 .byte 0
+  77 0033 00       	 .byte 0
+  78 0034 5E       	 .byte 94
+  79 0035 07       	 .byte 7
+  80 0036 05       	 .byte 5
+  81 0037 02       	 .byte 2
+  82 0038 02       	 .byte 2
+  83 0039 40       	 .byte 64
+  84 003a 00       	 .byte 0
+  85 003b 00       	 .byte 0
+  86 003c 07       	 .byte 7
+  87 003d 05       	 .byte 5
+  88 003e 82       	 .byte -126
+  89 003f 02       	 .byte 2
+  90 0040 40       	 .byte 64
+  91 0041 00       	 .byte 0
+  92 0042 00       	 .byte 0
+  93 0043 00       	 .byte 0
+  94              	 .section .rodata.USB_StringDescriptor,"a",%progbits
+  95              	 .align 2
+  98              	USB_StringDescriptor:
+  99 0000 04       	 .byte 4
+ 100 0001 03       	 .byte 3
+ 101 0002 09       	 .byte 9
+ 102 0003 04       	 .byte 4
+ 103 0004 1C       	 .byte 28
+ 104 0005 03       	 .byte 3
+ 105 0006 4E       	 .byte 78
+ 106 0007 00       	 .byte 0
+ 107 0008 58       	 .byte 88
+ 108 0009 00       	 .byte 0
+ 109 000a 50       	 .byte 80
+ 110 000b 00       	 .byte 0
+ 111 000c 20       	 .byte 32
+ 112 000d 00       	 .byte 0
+ 113 000e 53       	 .byte 83
+ 114 000f 00       	 .byte 0
+ 115 0010 45       	 .byte 69
+ 116 0011 00       	 .byte 0
+ 117 0012 4D       	 .byte 77
+ 118 0013 00       	 .byte 0
+ 119 0014 49       	 .byte 73
+ 120 0015 00       	 .byte 0
+ 121 0016 43       	 .byte 67
+ 122 0017 00       	 .byte 0
+ 123 0018 4F       	 .byte 79
+ 124 0019 00       	 .byte 0
+ 125 001a 4E       	 .byte 78
+ 126 001b 00       	 .byte 0
+ 127 001c 44       	 .byte 68
+ 128 001d 00       	 .byte 0
+ 129 001e 20       	 .byte 32
+ 130 001f 00       	 .byte 0
+ 131 0020 24       	 .byte 36
+ 132 0021 03       	 .byte 3
+ 133 0022 4E       	 .byte 78
+ 134 0023 00       	 .byte 0
+ 135 0024 58       	 .byte 88
+ 136 0025 00       	 .byte 0
+ 137 0026 50       	 .byte 80
+ 138 0027 00       	 .byte 0
+ 139 0028 20       	 .byte 32
+ 140 0029 00       	 .byte 0
+ 141 002a 4C       	 .byte 76
+ 142 002b 00       	 .byte 0
+ 143 002c 50       	 .byte 80
+ 144 002d 00       	 .byte 0
+ 145 002e 43       	 .byte 67
+ 146 002f 00       	 .byte 0
+ 147 0030 31       	 .byte 49
+ 148 0031 00       	 .byte 0
+ 149 0032 37       	 .byte 55
+ 150 0033 00       	 .byte 0
+ 151 0034 78       	 .byte 120
+ 152 0035 00       	 .byte 0
+ 153 0036 78       	 .byte 120
+ 154 0037 00       	 .byte 0
+ 155 0038 20       	 .byte 32
+ 156 0039 00       	 .byte 0
+ 157 003a 56       	 .byte 86
+ 158 003b 00       	 .byte 0
+ 159 003c 43       	 .byte 67
+ 160 003d 00       	 .byte 0
+ 161 003e 4F       	 .byte 79
+ 162 003f 00       	 .byte 0
+ 163 0040 4D       	 .byte 77
+ 164 0041 00       	 .byte 0
+ 165 0042 20       	 .byte 32
+ 166 0043 00       	 .byte 0
+ 167 0044 1A       	 .byte 26
+ 168 0045 03       	 .byte 3
+ 169 0046 44       	 .byte 68
+ 170 0047 00       	 .byte 0
+ 171 0048 45       	 .byte 69
+ 172 0049 00       	 .byte 0
+ 173 004a 4D       	 .byte 77
+ 174 004b 00       	 .byte 0
+ 175 004c 4F       	 .byte 79
+ 176 004d 00       	 .byte 0
+ 177 004e 30       	 .byte 48
+ 178 004f 00       	 .byte 0
+ 179 0050 30       	 .byte 48
+ 180 0051 00       	 .byte 0
+ 181 0052 30       	 .byte 48
+ 182 0053 00       	 .byte 0
+ 183 0054 30       	 .byte 48
+ 184 0055 00       	 .byte 0
+ 185 0056 30       	 .byte 48
+ 186 0057 00       	 .byte 0
+ 187 0058 30       	 .byte 48
+ 188 0059 00       	 .byte 0
+ 189 005a 30       	 .byte 48
+ 190 005b 00       	 .byte 0
+ 191 005c 30       	 .byte 48
+ 192 005d 00       	 .byte 0
+ 193 005e 0A       	 .byte 10
+ 194 005f 03       	 .byte 3
+ 195 0060 56       	 .byte 86
+ 196 0061 00       	 .byte 0
+ 197 0062 43       	 .byte 67
+ 198 0063 00       	 .byte 0
+ 199 0064 4F       	 .byte 79
+ 200 0065 00       	 .byte 0
+ 201 0066 4D       	 .byte 77
+ 202 0067 00       	 .byte 0
+ 203              	 .section .rodata.USB_DeviceDescriptor,"a",%progbits
+ 204              	 .align 2
+ 207              	USB_DeviceDescriptor:
+ 208 0000 12       	 .byte 18
+ 209 0001 01       	 .byte 1
+ 210 0002 00       	 .byte 0
+ 211 0003 02       	 .byte 2
+ 212 0004 02       	 .byte 2
+ 213 0005 00       	 .byte 0
+ 214 0006 00       	 .byte 0
+ 215 0007 08       	 .byte 8
+ 216 0008 C1       	 .byte -63
+ 217 0009 23       	 .byte 35
+ 218 000a 04       	 .byte 4
+ 219 000b B4       	 .byte -76
+ 220 000c 00       	 .byte 0
+ 221 000d 01       	 .byte 1
+ 222 000e 01       	 .byte 1
+ 223 000f 02       	 .byte 2
+ 224 0010 03       	 .byte 3
+ 225 0011 01       	 .byte 1
+ 226 0012 0000     	 .text
+ 227              	.Letext0:
+ 228              	 .file 1 "src/MightyBoard/Motherboard/USBCDC/usbdesc.c"
+ 229              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 usbdesc.c
+    {standard input}:98     .rodata.USB_StringDescriptor:00000000 USB_StringDescriptor
+    {standard input}:25     .rodata.USB_ConfigDescriptor:00000000 USB_ConfigDescriptor
+    {standard input}:207    .rodata.USB_DeviceDescriptor:00000000 USB_DeviceDescriptor
+    {standard input}:22     .rodata.USB_ConfigDescriptor:00000000 $d
+    {standard input}:95     .rodata.USB_StringDescriptor:00000000 $d
+    {standard input}:204    .rodata.USB_DeviceDescriptor:00000000 $d
+
+NO UNDEFINED SYMBOLS

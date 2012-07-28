@@ -1,0 +1,1337 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_spi.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.SPI_SetClock,"ax",%progbits
+  19              	 .align 2
+  20              	 .global SPI_SetClock
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	SPI_SetClock:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * $Id$		lpc17xx_spi.c				2010-05-21
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @file		lpc17xx_spi.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @brief	Contains all functions support for SPI firmware library on LPC17xx
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @version	2.0
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @date		21. May. 2010
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @author	NXP MCU SW Application Team
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * Copyright(C) 2010, NXP Semiconductor
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * All rights reserved.
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** ***********************************************************************
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * Software that is described herein is for illustrative purposes only
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * which provides customers with programming information regarding the
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * products. This software is supplied "AS IS" without any warranties.
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * use of the software, conveys no license or title under any patent,
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * reserves the right to make changes in the software without
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * notification. NXP Semiconductors also make no representation or
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * warranty that such application will be suitable for the specified
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * use without further testing or modification.
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** **********************************************************************/
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /* Peripheral group ----------------------------------------------------------- */
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /** @addtogroup SPI
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @{
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  */
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /* Includes ------------------------------------------------------------------- */
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #include "lpc17xx_spi.h"
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #include "lpc17xx_clkpwr.h"
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /* If this source file built with example, the LPC17xx FW library configuration
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * file in each example directory ("lpc17xx_libcfg.h") must be included,
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * otherwise the default FW library configuration file must be included instead
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  */
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #ifdef __BUILD_WITH_EXAMPLE__
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #include "lpc17xx_libcfg.h"
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #else
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #include "lpc17xx_libcfg_default.h"
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #endif /* __BUILD_WITH_EXAMPLE__ */
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** #ifdef _SPI
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /* Public Functions ----------------------------------------------------------- */
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /** @addtogroup SPI_Public_Functions
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @{
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  */
+  52:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  53:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /*********************************************************************//**
+  54:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief 		Setup clock rate for SPI device
+  55:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in] 	SPIx	SPI peripheral definition, should be LPC_SPI
+  56:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	target_clock : clock of SPI (Hz)
+  57:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		None
+  58:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  ***********************************************************************/
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_SetClock (LPC_SPI_TypeDef *SPIx, uint32_t target_clock)
+  60:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+  27              	 .loc 1 60 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 10B5     	 push {r4,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 8
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 4,-8
+  37 0002 0C46     	 mov r4,r1
+  61:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	uint32_t spi_pclk;
+  62:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	uint32_t prescale, temp;
+  63:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  64:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+  38              	 .loc 1 64 0
+  39 0004 4FF00003 	 mov r3,#0
+  40 0008 C4F20203 	 movt r3,16386
+  41 000c 9842     	 cmp r0,r3
+  42 000e 08D0     	 beq .L2
+  43              	 .loc 1 64 0 is_stmt 0 discriminator 1
+  44 0010 40F20000 	 movw r0,#:lower16:.LC0
+  45              	.LVL1:
+  46 0014 C0F20000 	 movt r0,#:upper16:.LC0
+  47 0018 4FF04001 	 mov r1,#64
+  48              	.LVL2:
+  49 001c FFF7FEFF 	 bl check_failed
+  50 0020 10BD     	 pop {r4,pc}
+  51              	.LVL3:
+  52              	.L2:
+  65:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  66:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if (SPIx == LPC_SPI){
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		spi_pclk =  CLKPWR_GetPCLK (CLKPWR_PCLKSEL_SPI);
+  53              	 .loc 1 67 0 is_stmt 1
+  54 0022 4FF01000 	 mov r0,#16
+  55              	.LVL4:
+  56 0026 FFF7FEFF 	 bl CLKPWR_GetPCLK
+  57              	.LVL5:
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_SetClock (LPC_SPI_TypeDef *SPIx, uint32_t target_clock)
+  58              	 .loc 1 59 0
+  59 002a 4FEA4402 	 lsl r2,r4,#1
+  60 002e 4FEAC404 	 lsl r4,r4,#3
+  61              	.LVL6:
+  68:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	} else {
+  69:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		return;
+  70:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  72:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	prescale = 8;
+  62              	 .loc 1 72 0
+  63 0032 4FF00803 	 mov r3,#8
+  64              	.LVL7:
+  65              	.L5:
+  73:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	// Find closest clock to target clock
+  74:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	while (1){
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		temp = target_clock * prescale;
+  76:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if (temp >= spi_pclk){
+  66              	 .loc 1 76 0
+  67 0036 A042     	 cmp r0,r4
+  68 0038 04D9     	 bls .L4
+  77:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			break;
+  78:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		}
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		prescale += 2;
+  69              	 .loc 1 79 0
+  70 003a 03F10203 	 add r3,r3,#2
+  71              	.LVL8:
+  72 003e A418     	 adds r4,r4,r2
+  80:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if(prescale >= 254){
+  73              	 .loc 1 80 0
+  74 0040 FE2B     	 cmp r3,#254
+  75 0042 F8D1     	 bne .L5
+  76              	.L4:
+  81:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			break;
+  82:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		}
+  83:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	// Write to register
+  86:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPIx->SPCCR = SPI_SPCCR_COUNTER(prescale);
+  77              	 .loc 1 86 0
+  78 0044 DBB2     	 uxtb r3,r3
+  79              	.LVL9:
+  80 0046 4FF00002 	 mov r2,#0
+  81 004a C4F20202 	 movt r2,16386
+  82 004e D360     	 str r3,[r2,#12]
+  83 0050 10BD     	 pop {r4,pc}
+  84              	 .cfi_endproc
+  85              	.LFE55:
+  87 0052 00BF     	 .section .text.SPI_DeInit,"ax",%progbits
+  88              	 .align 2
+  89              	 .global SPI_DeInit
+  90              	 .thumb
+  91              	 .thumb_func
+  93              	SPI_DeInit:
+  94              	.LFB56:
+  87:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+  88:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  89:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /*********************************************************************//**
+  91:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief		De-initializes the SPIx peripheral registers to their
+  92:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *                  default reset values.
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+  94:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		None
+  95:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  **********************************************************************/
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_DeInit(LPC_SPI_TypeDef *SPIx)
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+  95              	 .loc 1 97 0
+  96              	 .cfi_startproc
+  97              	 
+  98              	 
+  99              	.LVL10:
+ 100 0000 08B5     	 push {r3,lr}
+ 101              	.LCFI1:
+ 102              	 .cfi_def_cfa_offset 8
+ 103              	 .cfi_offset 14,-4
+ 104              	 .cfi_offset 3,-8
+  98:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 105              	 .loc 1 98 0
+ 106 0002 4FF00003 	 mov r3,#0
+ 107 0006 C4F20203 	 movt r3,16386
+ 108 000a 9842     	 cmp r0,r3
+ 109 000c 08D0     	 beq .L8
+ 110              	 .loc 1 98 0 is_stmt 0 discriminator 1
+ 111 000e 40F20000 	 movw r0,#:lower16:.LC0
+ 112              	.LVL11:
+ 113 0012 C0F20000 	 movt r0,#:upper16:.LC0
+ 114 0016 4FF06201 	 mov r1,#98
+ 115 001a FFF7FEFF 	 bl check_failed
+ 116 001e 08BD     	 pop {r3,pc}
+ 117              	.LVL12:
+ 118              	.L8:
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if (SPIx == LPC_SPI){
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		/* Set up clock and power for SPI module */
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCSPI, DISABLE);
+ 119              	 .loc 1 102 0 is_stmt 1
+ 120 0020 4FF48070 	 mov r0,#256
+ 121              	.LVL13:
+ 122 0024 4FF00001 	 mov r1,#0
+ 123 0028 FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 124 002c 08BD     	 pop {r3,pc}
+ 125              	 .cfi_endproc
+ 126              	.LFE56:
+ 128 002e 00BF     	 .section .text.SPI_GetDataSize,"ax",%progbits
+ 129              	 .align 2
+ 130              	 .global SPI_GetDataSize
+ 131              	 .thumb
+ 132              	 .thumb_func
+ 134              	SPI_GetDataSize:
+ 135              	.LFB57:
+ 103:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 106:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /*********************************************************************//**
+ 107:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief		Get data bit size per transfer
+ 108:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 109:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		number of bit per transfer, could be 8-16
+ 110:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  **********************************************************************/
+ 111:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** uint8_t SPI_GetDataSize (LPC_SPI_TypeDef *SPIx)
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 136              	 .loc 1 112 0
+ 137              	 .cfi_startproc
+ 138              	 
+ 139              	 
+ 140              	.LVL14:
+ 141 0000 10B5     	 push {r4,lr}
+ 142              	.LCFI2:
+ 143              	 .cfi_def_cfa_offset 8
+ 144              	 .cfi_offset 14,-4
+ 145              	 .cfi_offset 4,-8
+ 146 0002 0446     	 mov r4,r0
+ 113:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 147              	 .loc 1 113 0
+ 148 0004 4FF00003 	 mov r3,#0
+ 149 0008 C4F20203 	 movt r3,16386
+ 150 000c 9842     	 cmp r0,r3
+ 151 000e 07D0     	 beq .L11
+ 152              	 .loc 1 113 0 is_stmt 0 discriminator 1
+ 153 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 154              	.LVL15:
+ 155 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 156 0018 4FF07101 	 mov r1,#113
+ 157 001c FFF7FEFF 	 bl check_failed
+ 158              	.L11:
+ 114:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	return ((SPIx->SPCR)>>8 & 0xF);
+ 159              	 .loc 1 114 0 is_stmt 1
+ 160 0020 2068     	 ldr r0,[r4,#0]
+ 115:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 161              	 .loc 1 115 0
+ 162 0022 C0F30320 	 ubfx r0,r0,#8,#4
+ 163 0026 10BD     	 pop {r4,pc}
+ 164              	 .cfi_endproc
+ 165              	.LFE57:
+ 167              	 .section .text.SPI_Init,"ax",%progbits
+ 168              	 .align 2
+ 169              	 .global SPI_Init
+ 170              	 .thumb
+ 171              	 .thumb_func
+ 173              	SPI_Init:
+ 174              	.LFB58:
+ 116:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /********************************************************************//**
+ 118:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief		Initializes the SPIx peripheral according to the specified
+ 119:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *               parameters in the UART_ConfigStruct.
+ 120:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPI_ConfigStruct Pointer to a SPI_CFG_Type structure
+ 122:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *                    that contains the configuration information for the
+ 123:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *                    specified SPI peripheral.
+ 124:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		None
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  *********************************************************************/
+ 126:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_Init(LPC_SPI_TypeDef *SPIx, SPI_CFG_Type *SPI_ConfigStruct)
+ 127:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 175              	 .loc 1 127 0
+ 176              	 .cfi_startproc
+ 177              	 
+ 178              	 
+ 179              	.LVL16:
+ 180 0000 38B5     	 push {r3,r4,r5,lr}
+ 181              	.LCFI3:
+ 182              	 .cfi_def_cfa_offset 16
+ 183              	 .cfi_offset 14,-4
+ 184              	 .cfi_offset 5,-8
+ 185              	 .cfi_offset 4,-12
+ 186              	 .cfi_offset 3,-16
+ 187 0002 0C46     	 mov r4,r1
+ 128:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	uint32_t tmp;
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 130:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 188              	 .loc 1 130 0
+ 189 0004 4FF00003 	 mov r3,#0
+ 190 0008 C4F20203 	 movt r3,16386
+ 191 000c 9842     	 cmp r0,r3
+ 192 000e 08D0     	 beq .L13
+ 193              	 .loc 1 130 0 is_stmt 0 discriminator 1
+ 194 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 195              	.LVL17:
+ 196 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 197 0018 4FF08201 	 mov r1,#130
+ 198              	.LVL18:
+ 199 001c FFF7FEFF 	 bl check_failed
+ 200 0020 38BD     	 pop {r3,r4,r5,pc}
+ 201              	.LVL19:
+ 202              	.L13:
+ 131:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 132:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if(SPIx == LPC_SPI){
+ 133:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		/* Set up clock and power for UART module */
+ 134:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCSPI, ENABLE);
+ 203              	 .loc 1 134 0 is_stmt 1
+ 204 0022 4FF48070 	 mov r0,#256
+ 205              	.LVL20:
+ 206 0026 4FF00101 	 mov r1,#1
+ 207 002a FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 135:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	} else {
+ 136:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		return;
+ 137:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+ 138:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 139:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	// Configure SPI, interrupt is disable as default
+ 140:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	tmp = ((SPI_ConfigStruct->CPHA) | (SPI_ConfigStruct->CPOL) \
+ 208              	 .loc 1 140 0
+ 209 002e A268     	 ldr r2,[r4,#8]
+ 210 0030 6368     	 ldr r3,[r4,#4]
+ 211 0032 1A43     	 orrs r2,r2,r3
+ 141:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		| (SPI_ConfigStruct->DataOrder) | (SPI_ConfigStruct->Databit) \
+ 212              	 .loc 1 141 0
+ 213 0034 2369     	 ldr r3,[r4,#16]
+ 214 0036 1A43     	 orrs r2,r2,r3
+ 215 0038 2368     	 ldr r3,[r4,#0]
+ 216 003a 1A43     	 orrs r2,r2,r3
+ 142:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		| (SPI_ConfigStruct->Mode) | SPI_SPCR_BIT_EN) & SPI_SPCR_BITMASK;
+ 217              	 .loc 1 142 0
+ 218 003c E368     	 ldr r3,[r4,#12]
+ 219 003e 1A43     	 orrs r2,r2,r3
+ 220 0040 40F6F873 	 movw r3,#4088
+ 221 0044 1340     	 ands r3,r3,r2
+ 140:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	tmp = ((SPI_ConfigStruct->CPHA) | (SPI_ConfigStruct->CPOL) \
+ 222              	 .loc 1 140 0
+ 223 0046 43F00403 	 orr r3,r3,#4
+ 224              	.LVL21:
+ 143:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	// write back to SPI control register
+ 144:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPIx->SPCR = tmp;
+ 225              	 .loc 1 144 0
+ 226 004a 4FF00005 	 mov r5,#0
+ 227 004e C4F20205 	 movt r5,16386
+ 228 0052 2B60     	 str r3,[r5,#0]
+ 145:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 146:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	// Set clock rate for SPI peripheral
+ 147:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPI_SetClock(SPIx, SPI_ConfigStruct->ClockRate);
+ 229              	 .loc 1 147 0
+ 230 0054 2846     	 mov r0,r5
+ 231 0056 6169     	 ldr r1,[r4,#20]
+ 232 0058 FFF7FEFF 	 bl SPI_SetClock
+ 233              	.LVL22:
+ 148:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 149:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	// If interrupt flag is set, Write '1' to Clear interrupt flag
+ 150:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if (SPIx->SPINT & SPI_SPINT_INTFLAG){
+ 234              	 .loc 1 150 0
+ 235 005c EB69     	 ldr r3,[r5,#28]
+ 236 005e 13F0010F 	 tst r3,#1
+ 151:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		SPIx->SPINT = SPI_SPINT_INTFLAG;
+ 237              	 .loc 1 151 0
+ 238 0062 1FBF     	 itttt ne
+ 239 0064 0023     	 movne r3,#0
+ 240 0066 C4F20203 	 movtne r3,16386
+ 241 006a 0122     	 movne r2,#1
+ 242 006c DA61     	 strne r2,[r3,#28]
+ 243 006e 38BD     	 pop {r3,r4,r5,pc}
+ 244              	 .cfi_endproc
+ 245              	.LFE58:
+ 247              	 .section .text.SPI_ConfigStructInit,"ax",%progbits
+ 248              	 .align 2
+ 249              	 .global SPI_ConfigStructInit
+ 250              	 .thumb
+ 251              	 .thumb_func
+ 253              	SPI_ConfigStructInit:
+ 254              	.LFB59:
+ 152:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+ 153:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 154:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 155:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 156:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 157:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /*****************************************************************************//**
+ 158:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @brief		Fills each SPI_InitStruct member with its default value:
+ 159:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * 				- CPHA = SPI_CPHA_FIRST
+ 160:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * 				- CPOL = SPI_CPOL_HI
+ 161:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * 				- ClockRate = 1000000
+ 162:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * 				- DataOrder = SPI_DATA_MSB_FIRST
+ 163:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * 				- Databit = SPI_DATABIT_8
+ 164:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * 				- Mode = SPI_MASTER_MODE
+ 165:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @param[in]	SPI_InitStruct Pointer to a SPI_CFG_Type structure
+ 166:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *                    which will be initialized.
+ 167:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * @return		None
+ 168:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** *******************************************************************************/
+ 169:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_ConfigStructInit(SPI_CFG_Type *SPI_InitStruct)
+ 170:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 255              	 .loc 1 170 0
+ 256              	 .cfi_startproc
+ 257              	 
+ 258              	 
+ 259              	 
+ 260              	.LVL23:
+ 171:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPI_InitStruct->CPHA = SPI_CPHA_FIRST;
+ 261              	 .loc 1 171 0
+ 262 0000 4FF00003 	 mov r3,#0
+ 263 0004 4360     	 str r3,[r0,#4]
+ 172:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPI_InitStruct->CPOL = SPI_CPOL_HI;
+ 264              	 .loc 1 172 0
+ 265 0006 8360     	 str r3,[r0,#8]
+ 173:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPI_InitStruct->ClockRate = 1000000;
+ 266              	 .loc 1 173 0
+ 267 0008 44F24022 	 movw r2,#16960
+ 268 000c C0F20F02 	 movt r2,15
+ 269 0010 4261     	 str r2,[r0,#20]
+ 174:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPI_InitStruct->DataOrder = SPI_DATA_MSB_FIRST;
+ 270              	 .loc 1 174 0
+ 271 0012 0361     	 str r3,[r0,#16]
+ 175:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPI_InitStruct->Databit = SPI_DATABIT_8;
+ 272              	 .loc 1 175 0
+ 273 0014 4FF40063 	 mov r3,#2048
+ 274 0018 0360     	 str r3,[r0,#0]
+ 176:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPI_InitStruct->Mode = SPI_MASTER_MODE;
+ 275              	 .loc 1 176 0
+ 276 001a 4FF02003 	 mov r3,#32
+ 277 001e C360     	 str r3,[r0,#12]
+ 177:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 278              	 .loc 1 177 0
+ 279 0020 7047     	 bx lr
+ 280              	 .cfi_endproc
+ 281              	.LFE59:
+ 283 0022 00BF     	 .section .text.SPI_SendData,"ax",%progbits
+ 284              	 .align 2
+ 285              	 .global SPI_SendData
+ 286              	 .thumb
+ 287              	 .thumb_func
+ 289              	SPI_SendData:
+ 290              	.LFB60:
+ 178:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 179:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /*********************************************************************//**
+ 180:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief		Transmit a single data through SPIx peripheral
+ 181:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 182:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	Data	Data to transmit (must be 16 or 8-bit long,
+ 183:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 						this depend on SPI data bit number configured)
+ 184:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		none
+ 185:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  **********************************************************************/
+ 186:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_SendData(LPC_SPI_TypeDef* SPIx, uint16_t Data)
+ 187:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 291              	 .loc 1 187 0
+ 292              	 .cfi_startproc
+ 293              	 
+ 294              	 
+ 295              	.LVL24:
+ 296 0000 38B5     	 push {r3,r4,r5,lr}
+ 297              	.LCFI4:
+ 298              	 .cfi_def_cfa_offset 16
+ 299              	 .cfi_offset 14,-4
+ 300              	 .cfi_offset 5,-8
+ 301              	 .cfi_offset 4,-12
+ 302              	 .cfi_offset 3,-16
+ 303 0002 0446     	 mov r4,r0
+ 304 0004 0D46     	 mov r5,r1
+ 188:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 305              	 .loc 1 188 0
+ 306 0006 4FF00003 	 mov r3,#0
+ 307 000a C4F20203 	 movt r3,16386
+ 308 000e 9842     	 cmp r0,r3
+ 309 0010 07D0     	 beq .L17
+ 310              	 .loc 1 188 0 is_stmt 0 discriminator 1
+ 311 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 312              	.LVL25:
+ 313 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 314 001a 4FF0BC01 	 mov r1,#188
+ 315              	.LVL26:
+ 316 001e FFF7FEFF 	 bl check_failed
+ 317              	.L17:
+ 189:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 190:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPIx->SPDR = Data & SPI_SPDR_BITMASK;
+ 318              	 .loc 1 190 0 is_stmt 1
+ 319 0022 A560     	 str r5,[r4,#8]
+ 191:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 320              	 .loc 1 191 0
+ 321 0024 38BD     	 pop {r3,r4,r5,pc}
+ 322              	 .cfi_endproc
+ 323              	.LFE60:
+ 325 0026 00BF     	 .section .text.SPI_ReceiveData,"ax",%progbits
+ 326              	 .align 2
+ 327              	 .global SPI_ReceiveData
+ 328              	 .thumb
+ 329              	 .thumb_func
+ 331              	SPI_ReceiveData:
+ 332              	.LFB61:
+ 192:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 193:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 194:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 195:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /*********************************************************************//**
+ 196:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief		Receive a single data from SPIx peripheral
+ 197:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 198:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		Data received (16-bit long)
+ 199:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  **********************************************************************/
+ 200:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** uint16_t SPI_ReceiveData(LPC_SPI_TypeDef* SPIx)
+ 201:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 333              	 .loc 1 201 0
+ 334              	 .cfi_startproc
+ 335              	 
+ 336              	 
+ 337              	.LVL27:
+ 338 0000 10B5     	 push {r4,lr}
+ 339              	.LCFI5:
+ 340              	 .cfi_def_cfa_offset 8
+ 341              	 .cfi_offset 14,-4
+ 342              	 .cfi_offset 4,-8
+ 343 0002 0446     	 mov r4,r0
+ 202:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 344              	 .loc 1 202 0
+ 345 0004 4FF00003 	 mov r3,#0
+ 346 0008 C4F20203 	 movt r3,16386
+ 347 000c 9842     	 cmp r0,r3
+ 348 000e 07D0     	 beq .L19
+ 349              	 .loc 1 202 0 is_stmt 0 discriminator 1
+ 350 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 351              	.LVL28:
+ 352 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 353 0018 4FF0CA01 	 mov r1,#202
+ 354 001c FFF7FEFF 	 bl check_failed
+ 355              	.L19:
+ 203:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 204:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	return ((uint16_t) (SPIx->SPDR & SPI_SPDR_BITMASK));
+ 356              	 .loc 1 204 0 is_stmt 1
+ 357 0020 A068     	 ldr r0,[r4,#8]
+ 205:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 358              	 .loc 1 205 0
+ 359 0022 80B2     	 uxth r0,r0
+ 360 0024 10BD     	 pop {r4,pc}
+ 361              	 .cfi_endproc
+ 362              	.LFE61:
+ 364 0026 00BF     	 .section .text.SPI_IntCmd,"ax",%progbits
+ 365              	 .align 2
+ 366              	 .global SPI_IntCmd
+ 367              	 .thumb
+ 368              	 .thumb_func
+ 370              	SPI_IntCmd:
+ 371              	.LFB63:
+ 206:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 207:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /*********************************************************************//**
+ 208:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief 		SPI 	Read write data function
+ 209:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx 	Pointer to SPI peripheral, should be LPC_SPI
+ 210:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	dataCfg	Pointer to a SPI_DATA_SETUP_Type structure that
+ 211:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 						contains specified information about transmit
+ 212:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 						data configuration.
+ 213:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	xfType	Transfer type, should be:
+ 214:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 						- SPI_TRANSFER_POLLING: Polling mode
+ 215:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 						- SPI_TRANSFER_INTERRUPT: Interrupt mode
+ 216:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		Actual Data length has been transferred in polling mode.
+ 217:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 				In interrupt mode, always return (0)
+ 218:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 				Return (-1) if error.
+ 219:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * Note: This function can be used in both master and slave mode.
+ 220:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  ***********************************************************************/
+ 221:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** int32_t SPI_ReadWrite (LPC_SPI_TypeDef *SPIx, SPI_DATA_SETUP_Type *dataCfg, \
+ 222:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 						SPI_TRANSFER_Type xfType)
+ 223:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 224:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	uint8_t *rdata8;
+ 225:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****     uint8_t *wdata8;
+ 226:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	uint16_t *rdata16;
+ 227:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****     uint16_t *wdata16;
+ 228:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****     uint32_t stat;
+ 229:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****     uint32_t temp;
+ 230:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****     uint8_t dataword;
+ 231:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 232:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	//read for empty buffer
+ 233:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	temp = SPIx->SPDR;
+ 234:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	//dummy to clear status
+ 235:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	temp = SPIx->SPSR;
+ 236:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	dataCfg->counter = 0;
+ 237:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	dataCfg->status = 0;
+ 238:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 239:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if(SPI_GetDataSize (SPIx) == 8)
+ 240:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		dataword = 0;
+ 241:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	else dataword = 1;
+ 242:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if (xfType == SPI_TRANSFER_POLLING){
+ 243:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 244:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if (dataword == 0){
+ 245:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			rdata8 = (uint8_t *)dataCfg->rx_data;
+ 246:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			wdata8 = (uint8_t *)dataCfg->tx_data;
+ 247:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		} else {
+ 248:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			rdata16 = (uint16_t *)dataCfg->rx_data;
+ 249:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			wdata16 = (uint16_t *)dataCfg->tx_data;
+ 250:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		}
+ 251:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 252:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		while(dataCfg->counter < dataCfg->length)
+ 253:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		{
+ 254:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Write data to buffer
+ 255:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if(dataCfg->tx_data == NULL){
+ 256:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 257:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFF);
+ 258:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				} else {
+ 259:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFFFF);
+ 260:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				}
+ 261:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			} else {
+ 262:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 263:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, *wdata8);
+ 264:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					wdata8++;
+ 265:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				} else {
+ 266:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, *wdata16);
+ 267:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					wdata16++;
+ 268:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				}
+ 269:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			}
+ 270:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Wait for transfer complete
+ 271:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			while (!((stat = SPIx->SPSR) & SPI_SPSR_SPIF));
+ 272:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Check for error
+ 273:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if (stat & (SPI_SPSR_ABRT | SPI_SPSR_MODF | SPI_SPSR_ROVR | SPI_SPSR_WCOL)){
+ 274:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				// save status
+ 275:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				dataCfg->status = stat | SPI_STAT_ERROR;
+ 276:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				return (dataCfg->counter);
+ 277:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			}
+ 278:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Read data from SPI dat
+ 279:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			temp = (uint32_t) SPI_ReceiveData(SPIx);
+ 280:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 281:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Store data to destination
+ 282:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if (dataCfg->rx_data != NULL)
+ 283:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			{
+ 284:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 285:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					*(rdata8) = (uint8_t) temp;
+ 286:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					rdata8++;
+ 287:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				} else {
+ 288:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					*(rdata16) = (uint16_t) temp;
+ 289:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					rdata16++;
+ 290:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				}
+ 291:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			}
+ 292:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Increase counter
+ 293:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if (dataword == 0){
+ 294:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				dataCfg->counter++;
+ 295:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			} else {
+ 296:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				dataCfg->counter += 2;
+ 297:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			}
+ 298:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		}
+ 299:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 300:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		// Return length of actual data transferred
+ 301:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		// save status
+ 302:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		dataCfg->status = stat | SPI_STAT_DONE;
+ 303:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		return (dataCfg->counter);
+ 304:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+ 305:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	// Interrupt mode
+ 306:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	else {
+ 307:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 308:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		// Check if interrupt flag is already set
+ 309:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if(SPIx->SPINT & SPI_SPINT_INTFLAG){
+ 310:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			SPIx->SPINT = SPI_SPINT_INTFLAG;
+ 311:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		}
+ 312:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if (dataCfg->counter < dataCfg->length){
+ 313:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Write data to buffer
+ 314:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if(dataCfg->tx_data == NULL){
+ 315:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 316:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFF);
+ 317:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				} else {
+ 318:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFFFF);
+ 319:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				}
+ 320:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			} else {
+ 321:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 322:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, (*(uint8_t *)dataCfg->tx_data));
+ 323:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				} else {
+ 324:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, (*(uint16_t *)dataCfg->tx_data));
+ 325:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				}
+ 326:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			}
+ 327:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			SPI_IntCmd(SPIx, ENABLE);
+ 328:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		} else {
+ 329:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			// Save status
+ 330:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			dataCfg->status = SPI_STAT_DONE;
+ 331:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		}
+ 332:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		return (0);
+ 333:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+ 334:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 335:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 336:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 337:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /********************************************************************//**
+ 338:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief 		Enable or disable SPIx interrupt.
+ 339:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 340:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	NewState New state of specified UART interrupt type,
+ 341:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 				should be:
+ 342:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 				- ENALBE: Enable this SPI interrupt.
+ 343:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** * 				- DISALBE: Disable this SPI interrupt.
+ 344:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		None
+ 345:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  *********************************************************************/
+ 346:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_IntCmd(LPC_SPI_TypeDef *SPIx, FunctionalState NewState)
+ 347:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 372              	 .loc 1 347 0
+ 373              	 .cfi_startproc
+ 374              	 
+ 375              	 
+ 376              	.LVL29:
+ 377 0000 38B5     	 push {r3,r4,r5,lr}
+ 378              	.LCFI6:
+ 379              	 .cfi_def_cfa_offset 16
+ 380              	 .cfi_offset 14,-4
+ 381              	 .cfi_offset 5,-8
+ 382              	 .cfi_offset 4,-12
+ 383              	 .cfi_offset 3,-16
+ 384 0002 0446     	 mov r4,r0
+ 385 0004 0D46     	 mov r5,r1
+ 348:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 386              	 .loc 1 348 0
+ 387 0006 4FF00003 	 mov r3,#0
+ 388 000a C4F20203 	 movt r3,16386
+ 389 000e 9842     	 cmp r0,r3
+ 390 0010 07D0     	 beq .L21
+ 391              	 .loc 1 348 0 is_stmt 0 discriminator 1
+ 392 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 393              	.LVL30:
+ 394 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 395 001a 4FF4AE71 	 mov r1,#348
+ 396              	.LVL31:
+ 397 001e FFF7FEFF 	 bl check_failed
+ 398              	.L21:
+ 349:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_FUNCTIONALSTATE(NewState));
+ 399              	 .loc 1 349 0 is_stmt 1
+ 400 0022 012D     	 cmp r5,#1
+ 401 0024 07D9     	 bls .L22
+ 402              	 .loc 1 349 0 is_stmt 0 discriminator 1
+ 403 0026 40F20000 	 movw r0,#:lower16:.LC0
+ 404 002a C0F20000 	 movt r0,#:upper16:.LC0
+ 405 002e 40F25D11 	 movw r1,#349
+ 406 0032 FFF7FEFF 	 bl check_failed
+ 407              	.L22:
+ 350:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 351:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if (NewState == ENABLE)
+ 408              	 .loc 1 351 0 is_stmt 1
+ 409 0036 012D     	 cmp r5,#1
+ 352:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	{
+ 353:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		SPIx->SPCR |= SPI_SPCR_SPIE;
+ 410              	 .loc 1 353 0
+ 411 0038 07BF     	 ittee eq
+ 412 003a 2368     	 ldreq r3,[r4,#0]
+ 413 003c 43F08003 	 orreq r3,r3,#128
+ 354:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+ 355:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	else
+ 356:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	{
+ 357:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		SPIx->SPCR &= (~SPI_SPCR_SPIE) & SPI_SPCR_BITMASK;
+ 414              	 .loc 1 357 0
+ 415 0040 2268     	 ldrne r2,[r4,#0]
+ 416 0042 40F67C73 	 movwne r3,#3964
+ 417 0046 18BF     	 it ne
+ 418 0048 1340     	 andne r3,r2,r3
+ 419 004a 2360     	 str r3,[r4,#0]
+ 420 004c 38BD     	 pop {r3,r4,r5,pc}
+ 421              	 .cfi_endproc
+ 422              	.LFE63:
+ 424 004e 00BF     	 .section .text.SPI_ReadWrite,"ax",%progbits
+ 425              	 .align 2
+ 426              	 .global SPI_ReadWrite
+ 427              	 .thumb
+ 428              	 .thumb_func
+ 430              	SPI_ReadWrite:
+ 431              	.LFB62:
+ 223:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 432              	 .loc 1 223 0
+ 433              	 .cfi_startproc
+ 434              	 
+ 435              	 
+ 436              	.LVL32:
+ 437 0000 2DE9F04F 	 push {r4,r5,r6,r7,r8,r9,sl,fp,lr}
+ 438              	.LCFI7:
+ 439              	 .cfi_def_cfa_offset 36
+ 440              	 .cfi_offset 14,-4
+ 441              	 .cfi_offset 11,-8
+ 442              	 .cfi_offset 10,-12
+ 443              	 .cfi_offset 9,-16
+ 444              	 .cfi_offset 8,-20
+ 445              	 .cfi_offset 7,-24
+ 446              	 .cfi_offset 6,-28
+ 447              	 .cfi_offset 5,-32
+ 448              	 .cfi_offset 4,-36
+ 449 0004 83B0     	 sub sp,sp,#12
+ 450              	.LCFI8:
+ 451              	 .cfi_def_cfa_offset 48
+ 452 0006 0646     	 mov r6,r0
+ 453 0008 0D46     	 mov r5,r1
+ 454 000a 0192     	 str r2,[sp,#4]
+ 233:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	temp = SPIx->SPDR;
+ 455              	 .loc 1 233 0
+ 456 000c 8368     	 ldr r3,[r0,#8]
+ 235:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	temp = SPIx->SPSR;
+ 457              	 .loc 1 235 0
+ 458 000e 4368     	 ldr r3,[r0,#4]
+ 236:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	dataCfg->counter = 0;
+ 459              	 .loc 1 236 0
+ 460 0010 4FF00003 	 mov r3,#0
+ 461 0014 CB60     	 str r3,[r1,#12]
+ 237:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	dataCfg->status = 0;
+ 462              	 .loc 1 237 0
+ 463 0016 0B61     	 str r3,[r1,#16]
+ 239:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if(SPI_GetDataSize (SPIx) == 8)
+ 464              	 .loc 1 239 0
+ 465 0018 FFF7FEFF 	 bl SPI_GetDataSize
+ 466              	.LVL33:
+ 240:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		dataword = 0;
+ 467              	 .loc 1 240 0
+ 468 001c B0F10807 	 subs r7,r0,#8
+ 469 0020 18BF     	 it ne
+ 470 0022 0127     	 movne r7,#1
+ 471              	.LVL34:
+ 242:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	if (xfType == SPI_TRANSFER_POLLING){
+ 472              	 .loc 1 242 0
+ 473 0024 019B     	 ldr r3,[sp,#4]
+ 474 0026 002B     	 cmp r3,#0
+ 475 0028 4FD1     	 bne .L26
+ 244:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if (dataword == 0){
+ 476              	 .loc 1 244 0
+ 477 002a 27B9     	 cbnz r7,.L27
+ 245:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			rdata8 = (uint8_t *)dataCfg->rx_data;
+ 478              	 .loc 1 245 0
+ 479 002c D5F804B0 	 ldr fp,[r5,#4]
+ 480              	.LVL35:
+ 246:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			wdata8 = (uint8_t *)dataCfg->tx_data;
+ 481              	 .loc 1 246 0
+ 482 0030 D5F80090 	 ldr r9,[r5,#0]
+ 483              	.LVL36:
+ 484 0034 41E0     	 b .L52
+ 485              	.LVL37:
+ 486              	.L27:
+ 248:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			rdata16 = (uint16_t *)dataCfg->rx_data;
+ 487              	 .loc 1 248 0
+ 488 0036 D5F804A0 	 ldr sl,[r5,#4]
+ 489              	.LVL38:
+ 249:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			wdata16 = (uint16_t *)dataCfg->tx_data;
+ 490              	 .loc 1 249 0
+ 491 003a D5F80080 	 ldr r8,[r5,#0]
+ 492              	.LVL39:
+ 493 003e 3CE0     	 b .L52
+ 494              	.LVL40:
+ 495              	.L42:
+ 255:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if(dataCfg->tx_data == NULL){
+ 496              	 .loc 1 255 0
+ 497 0040 2B68     	 ldr r3,[r5,#0]
+ 498 0042 63B9     	 cbnz r3,.L30
+ 256:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 499              	 .loc 1 256 0
+ 500 0044 2FB9     	 cbnz r7,.L31
+ 257:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFF);
+ 501              	 .loc 1 257 0
+ 502 0046 3046     	 mov r0,r6
+ 503 0048 4FF0FF01 	 mov r1,#255
+ 504 004c FFF7FEFF 	 bl SPI_SendData
+ 505 0050 11E0     	 b .L49
+ 506              	.L31:
+ 259:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFFFF);
+ 507              	 .loc 1 259 0
+ 508 0052 3046     	 mov r0,r6
+ 509 0054 4FF6FF71 	 movw r1,#65535
+ 510 0058 FFF7FEFF 	 bl SPI_SendData
+ 511 005c 0BE0     	 b .L49
+ 512              	.L30:
+ 262:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 513              	 .loc 1 262 0
+ 514 005e 2FB9     	 cbnz r7,.L33
+ 263:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, *wdata8);
+ 515              	 .loc 1 263 0
+ 516 0060 3046     	 mov r0,r6
+ 517 0062 19F8011B 	 ldrb r1,[r9],#1
+ 518              	.LVL41:
+ 519 0066 FFF7FEFF 	 bl SPI_SendData
+ 520              	.LVL42:
+ 521 006a 04E0     	 b .L49
+ 522              	.L33:
+ 266:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, *wdata16);
+ 523              	 .loc 1 266 0
+ 524 006c 3046     	 mov r0,r6
+ 525 006e 38F8021B 	 ldrh r1,[r8],#2
+ 526              	.LVL43:
+ 527 0072 FFF7FEFF 	 bl SPI_SendData
+ 528              	.LVL44:
+ 529              	.L49:
+ 271:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			while (!((stat = SPIx->SPSR) & SPI_SPSR_SPIF));
+ 530              	 .loc 1 271 0 discriminator 1
+ 531 0076 7468     	 ldr r4,[r6,#4]
+ 532              	.LVL45:
+ 533 0078 14F0800F 	 tst r4,#128
+ 534 007c FBD0     	 beq .L49
+ 273:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if (stat & (SPI_SPSR_ABRT | SPI_SPSR_MODF | SPI_SPSR_ROVR | SPI_SPSR_WCOL)){
+ 535              	 .loc 1 273 0
+ 536 007e 14F0780F 	 tst r4,#120
+ 537 0082 04D0     	 beq .L35
+ 275:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				dataCfg->status = stat | SPI_STAT_ERROR;
+ 538              	 .loc 1 275 0
+ 539 0084 44F40074 	 orr r4,r4,#512
+ 540              	.LVL46:
+ 541 0088 2C61     	 str r4,[r5,#16]
+ 276:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				return (dataCfg->counter);
+ 542              	 .loc 1 276 0
+ 543 008a E868     	 ldr r0,[r5,#12]
+ 544 008c 4CE0     	 b .L36
+ 545              	.LVL47:
+ 546              	.L35:
+ 279:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			temp = (uint32_t) SPI_ReceiveData(SPIx);
+ 547              	 .loc 1 279 0
+ 548 008e 3046     	 mov r0,r6
+ 549 0090 FFF7FEFF 	 bl SPI_ReceiveData
+ 550              	.LVL48:
+ 282:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if (dataCfg->rx_data != NULL)
+ 551              	 .loc 1 282 0
+ 552 0094 6B68     	 ldr r3,[r5,#4]
+ 553 0096 33B1     	 cbz r3,.L37
+ 284:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 554              	 .loc 1 284 0
+ 555 0098 17B9     	 cbnz r7,.L38
+ 285:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					*(rdata8) = (uint8_t) temp;
+ 556              	 .loc 1 285 0
+ 557 009a 0BF8010B 	 strb r0,[fp],#1
+ 558              	.LVL49:
+ 559 009e 03E0     	 b .L39
+ 560              	.L38:
+ 288:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					*(rdata16) = (uint16_t) temp;
+ 561              	 .loc 1 288 0
+ 562 00a0 2AF8020B 	 strh r0,[sl],#2
+ 563              	.LVL50:
+ 564 00a4 05E0     	 b .L40
+ 565              	.L37:
+ 293:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if (dataword == 0){
+ 566              	 .loc 1 293 0
+ 567 00a6 27B9     	 cbnz r7,.L40
+ 568              	.L39:
+ 294:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				dataCfg->counter++;
+ 569              	 .loc 1 294 0
+ 570 00a8 EB68     	 ldr r3,[r5,#12]
+ 571 00aa 03F10103 	 add r3,r3,#1
+ 572 00ae EB60     	 str r3,[r5,#12]
+ 573 00b0 03E0     	 b .L52
+ 574              	.L40:
+ 296:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				dataCfg->counter += 2;
+ 575              	 .loc 1 296 0
+ 576 00b2 EB68     	 ldr r3,[r5,#12]
+ 577 00b4 03F10203 	 add r3,r3,#2
+ 578 00b8 EB60     	 str r3,[r5,#12]
+ 579              	.LVL51:
+ 580              	.L52:
+ 252:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		while(dataCfg->counter < dataCfg->length)
+ 581              	 .loc 1 252 0 discriminator 1
+ 582 00ba E868     	 ldr r0,[r5,#12]
+ 583 00bc AB68     	 ldr r3,[r5,#8]
+ 584 00be 9842     	 cmp r0,r3
+ 585 00c0 BED3     	 bcc .L42
+ 302:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		dataCfg->status = stat | SPI_STAT_DONE;
+ 586              	 .loc 1 302 0
+ 587 00c2 44F48074 	 orr r4,r4,#256
+ 588              	.LVL52:
+ 589 00c6 2C61     	 str r4,[r5,#16]
+ 303:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		return (dataCfg->counter);
+ 590              	 .loc 1 303 0
+ 591 00c8 2EE0     	 b .L36
+ 592              	.LVL53:
+ 593              	.L26:
+ 309:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if(SPIx->SPINT & SPI_SPINT_INTFLAG){
+ 594              	 .loc 1 309 0
+ 595 00ca F369     	 ldr r3,[r6,#28]
+ 596 00cc 13F0010F 	 tst r3,#1
+ 310:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			SPIx->SPINT = SPI_SPINT_INTFLAG;
+ 597              	 .loc 1 310 0
+ 598 00d0 1CBF     	 itt ne
+ 599 00d2 0123     	 movne r3,#1
+ 600 00d4 F361     	 strne r3,[r6,#28]
+ 312:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if (dataCfg->counter < dataCfg->length){
+ 601              	 .loc 1 312 0
+ 602 00d6 EA68     	 ldr r2,[r5,#12]
+ 603 00d8 AB68     	 ldr r3,[r5,#8]
+ 604 00da 9A42     	 cmp r2,r3
+ 330:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			dataCfg->status = SPI_STAT_DONE;
+ 605              	 .loc 1 330 0
+ 606 00dc 22BF     	 ittt cs
+ 607 00de 4FF48073 	 movcs r3,#256
+ 608 00e2 2B61     	 strcs r3,[r5,#16]
+ 332:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		return (0);
+ 609              	 .loc 1 332 0
+ 610 00e4 0020     	 movcs r0,#0
+ 611              	.LVL54:
+ 312:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		if (dataCfg->counter < dataCfg->length){
+ 612              	 .loc 1 312 0
+ 613 00e6 1FD2     	 bcs .L36
+ 314:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			if(dataCfg->tx_data == NULL){
+ 614              	 .loc 1 314 0
+ 615 00e8 2B68     	 ldr r3,[r5,#0]
+ 616 00ea 63B9     	 cbnz r3,.L45
+ 315:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 617              	 .loc 1 315 0
+ 618 00ec 2FB9     	 cbnz r7,.L46
+ 316:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFF);
+ 619              	 .loc 1 316 0
+ 620 00ee 3046     	 mov r0,r6
+ 621 00f0 4FF0FF01 	 mov r1,#255
+ 622 00f4 FFF7FEFF 	 bl SPI_SendData
+ 623 00f8 0FE0     	 b .L47
+ 624              	.L46:
+ 318:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, 0xFFFF);
+ 625              	 .loc 1 318 0
+ 626 00fa 3046     	 mov r0,r6
+ 627 00fc 4FF6FF71 	 movw r1,#65535
+ 628 0100 FFF7FEFF 	 bl SPI_SendData
+ 629 0104 09E0     	 b .L47
+ 630              	.L45:
+ 321:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				if (dataword == 0){
+ 631              	 .loc 1 321 0
+ 632 0106 27B9     	 cbnz r7,.L48
+ 322:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, (*(uint8_t *)dataCfg->tx_data));
+ 633              	 .loc 1 322 0
+ 634 0108 3046     	 mov r0,r6
+ 635 010a 1978     	 ldrb r1,[r3,#0]
+ 636 010c FFF7FEFF 	 bl SPI_SendData
+ 637 0110 03E0     	 b .L47
+ 638              	.L48:
+ 324:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 					SPI_SendData(SPIx, (*(uint16_t *)dataCfg->tx_data));
+ 639              	 .loc 1 324 0
+ 640 0112 3046     	 mov r0,r6
+ 641 0114 1988     	 ldrh r1,[r3,#0]
+ 642 0116 FFF7FEFF 	 bl SPI_SendData
+ 643              	.L47:
+ 327:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 			SPI_IntCmd(SPIx, ENABLE);
+ 644              	 .loc 1 327 0
+ 645 011a 3046     	 mov r0,r6
+ 646 011c 4FF00101 	 mov r1,#1
+ 647 0120 FFF7FEFF 	 bl SPI_IntCmd
+ 332:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 		return (0);
+ 648              	 .loc 1 332 0
+ 649 0124 4FF00000 	 mov r0,#0
+ 650              	.L36:
+ 334:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 651              	 .loc 1 334 0
+ 652 0128 03B0     	 add sp,sp,#12
+ 653 012a BDE8F08F 	 pop {r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 654              	 .cfi_endproc
+ 655              	.LFE62:
+ 657 012e 00BF     	 .section .text.SPI_GetIntStatus,"ax",%progbits
+ 658              	 .align 2
+ 659              	 .global SPI_GetIntStatus
+ 660              	 .thumb
+ 661              	 .thumb_func
+ 663              	SPI_GetIntStatus:
+ 664              	.LFB64:
+ 358:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	}
+ 359:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 360:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 361:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 362:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /********************************************************************//**
+ 363:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief 		Checks whether the SPI interrupt flag is set or not.
+ 364:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 365:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		The new state of SPI Interrupt Flag (SET or RESET)
+ 366:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  *********************************************************************/
+ 367:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** IntStatus SPI_GetIntStatus (LPC_SPI_TypeDef *SPIx)
+ 368:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 665              	 .loc 1 368 0
+ 666              	 .cfi_startproc
+ 667              	 
+ 668              	 
+ 669              	.LVL55:
+ 670 0000 10B5     	 push {r4,lr}
+ 671              	.LCFI9:
+ 672              	 .cfi_def_cfa_offset 8
+ 673              	 .cfi_offset 14,-4
+ 674              	 .cfi_offset 4,-8
+ 675 0002 0446     	 mov r4,r0
+ 369:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 676              	 .loc 1 369 0
+ 677 0004 4FF00003 	 mov r3,#0
+ 678 0008 C4F20203 	 movt r3,16386
+ 679 000c 9842     	 cmp r0,r3
+ 680 000e 07D0     	 beq .L54
+ 681              	 .loc 1 369 0 is_stmt 0 discriminator 1
+ 682 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 683              	.LVL56:
+ 684 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 685 0018 40F27111 	 movw r1,#369
+ 686 001c FFF7FEFF 	 bl check_failed
+ 687              	.L54:
+ 370:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 371:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	return ((SPIx->SPINT & SPI_SPINT_INTFLAG) ? SET : RESET);
+ 688              	 .loc 1 371 0 is_stmt 1
+ 689 0020 E069     	 ldr r0,[r4,#28]
+ 372:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 690              	 .loc 1 372 0
+ 691 0022 00F00100 	 and r0,r0,#1
+ 692 0026 10BD     	 pop {r4,pc}
+ 693              	 .cfi_endproc
+ 694              	.LFE64:
+ 696              	 .section .text.SPI_ClearIntPending,"ax",%progbits
+ 697              	 .align 2
+ 698              	 .global SPI_ClearIntPending
+ 699              	 .thumb
+ 700              	 .thumb_func
+ 702              	SPI_ClearIntPending:
+ 703              	.LFB65:
+ 373:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 374:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /********************************************************************//**
+ 375:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief 		Clear SPI interrupt flag.
+ 376:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 377:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		None
+ 378:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  *********************************************************************/
+ 379:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** void SPI_ClearIntPending(LPC_SPI_TypeDef *SPIx)
+ 380:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 704              	 .loc 1 380 0
+ 705              	 .cfi_startproc
+ 706              	 
+ 707              	 
+ 708              	.LVL57:
+ 709 0000 10B5     	 push {r4,lr}
+ 710              	.LCFI10:
+ 711              	 .cfi_def_cfa_offset 8
+ 712              	 .cfi_offset 14,-4
+ 713              	 .cfi_offset 4,-8
+ 714 0002 0446     	 mov r4,r0
+ 381:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 715              	 .loc 1 381 0
+ 716 0004 4FF00003 	 mov r3,#0
+ 717 0008 C4F20203 	 movt r3,16386
+ 718 000c 9842     	 cmp r0,r3
+ 719 000e 07D0     	 beq .L56
+ 720              	 .loc 1 381 0 is_stmt 0 discriminator 1
+ 721 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 722              	.LVL58:
+ 723 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 724 0018 40F27D11 	 movw r1,#381
+ 725 001c FFF7FEFF 	 bl check_failed
+ 726              	.L56:
+ 382:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 383:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	SPIx->SPINT = SPI_SPINT_INTFLAG;
+ 727              	 .loc 1 383 0 is_stmt 1
+ 728 0020 4FF00103 	 mov r3,#1
+ 729 0024 E361     	 str r3,[r4,#28]
+ 384:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 730              	 .loc 1 384 0
+ 731 0026 10BD     	 pop {r4,pc}
+ 732              	 .cfi_endproc
+ 733              	.LFE65:
+ 735              	 .section .text.SPI_GetStatus,"ax",%progbits
+ 736              	 .align 2
+ 737              	 .global SPI_GetStatus
+ 738              	 .thumb
+ 739              	 .thumb_func
+ 741              	SPI_GetStatus:
+ 742              	.LFB66:
+ 385:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 386:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /********************************************************************//**
+ 387:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief 		Get current value of SPI Status register in SPIx peripheral.
+ 388:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIx	SPI peripheral selected, should be LPC_SPI
+ 389:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return		Current value of SPI Status register in SPI peripheral.
+ 390:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * Note:	The return value of this function must be used with
+ 391:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 			SPI_CheckStatus() to determine current flag status
+ 392:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 			corresponding to each SPI status type. Because some flags in
+ 393:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 			SPI Status register will be cleared after reading, the next reading
+ 394:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 			SPI Status register could not be correct. So this function used to
+ 395:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 			read SPI status register in one time only, then the return value
+ 396:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 			used to check all flags.
+ 397:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  *********************************************************************/
+ 398:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** uint32_t SPI_GetStatus(LPC_SPI_TypeDef* SPIx)
+ 399:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 743              	 .loc 1 399 0
+ 744              	 .cfi_startproc
+ 745              	 
+ 746              	 
+ 747              	.LVL59:
+ 748 0000 10B5     	 push {r4,lr}
+ 749              	.LCFI11:
+ 750              	 .cfi_def_cfa_offset 8
+ 751              	 .cfi_offset 14,-4
+ 752              	 .cfi_offset 4,-8
+ 753 0002 0446     	 mov r4,r0
+ 400:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPIx(SPIx));
+ 754              	 .loc 1 400 0
+ 755 0004 4FF00003 	 mov r3,#0
+ 756 0008 C4F20203 	 movt r3,16386
+ 757 000c 9842     	 cmp r0,r3
+ 758 000e 07D0     	 beq .L58
+ 759              	 .loc 1 400 0 is_stmt 0 discriminator 1
+ 760 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 761              	.LVL60:
+ 762 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 763 0018 4FF4C871 	 mov r1,#400
+ 764 001c FFF7FEFF 	 bl check_failed
+ 765              	.L58:
+ 401:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 402:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	return (SPIx->SPSR & SPI_SPSR_BITMASK);
+ 766              	 .loc 1 402 0 is_stmt 1
+ 767 0020 6068     	 ldr r0,[r4,#4]
+ 403:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 768              	 .loc 1 403 0
+ 769 0022 00F0F800 	 and r0,r0,#248
+ 770 0026 10BD     	 pop {r4,pc}
+ 771              	 .cfi_endproc
+ 772              	.LFE66:
+ 774              	 .section .text.SPI_CheckStatus,"ax",%progbits
+ 775              	 .align 2
+ 776              	 .global SPI_CheckStatus
+ 777              	 .thumb
+ 778              	 .thumb_func
+ 780              	SPI_CheckStatus:
+ 781              	.LFB67:
+ 404:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 405:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** /********************************************************************//**
+ 406:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @brief 		Checks whether the specified SPI Status flag is set or not
+ 407:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 				via inputSPIStatus parameter.
+ 408:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	inputSPIStatus Value to check status of each flag type.
+ 409:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 				This value is the return value from SPI_GetStatus().
+ 410:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @param[in]	SPIStatus	Specifies the SPI status flag to check,
+ 411:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * 				should be one of the following:
+ 412:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				- SPI_STAT_ABRT: Slave abort.
+ 413:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				- SPI_STAT_MODF: Mode fault.
+ 414:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				- SPI_STAT_ROVR: Read overrun.
+ 415:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				- SPI_STAT_WCOL: Write collision.
+ 416:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 				- SPI_STAT_SPIF: SPI transfer complete.
+ 417:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  * @return 		The new state of SPIStatus (SET or RESET)
+ 418:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c ****  *********************************************************************/
+ 419:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** FlagStatus SPI_CheckStatus (uint32_t inputSPIStatus,  uint8_t SPIStatus)
+ 420:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** {
+ 782              	 .loc 1 420 0
+ 783              	 .cfi_startproc
+ 784              	 
+ 785              	 
+ 786              	.LVL61:
+ 787 0000 38B5     	 push {r3,r4,r5,lr}
+ 788              	.LCFI12:
+ 789              	 .cfi_def_cfa_offset 16
+ 790              	 .cfi_offset 14,-4
+ 791              	 .cfi_offset 5,-8
+ 792              	 .cfi_offset 4,-12
+ 793              	 .cfi_offset 3,-16
+ 794 0002 0546     	 mov r5,r0
+ 795 0004 0C46     	 mov r4,r1
+ 421:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	CHECK_PARAM(PARAM_SPI_STAT(SPIStatus));
+ 796              	 .loc 1 421 0
+ 797 0006 B1F11003 	 subs r3,r1,#16
+ 798 000a 18BF     	 it ne
+ 799 000c 0123     	 movne r3,#1
+ 800 000e 0829     	 cmp r1,#8
+ 801 0010 0CBF     	 ite eq
+ 802 0012 0023     	 moveq r3,#0
+ 803 0014 03F00103 	 andne r3,r3,#1
+ 804 0018 9BB1     	 cbz r3,.L60
+ 805              	 .loc 1 421 0 is_stmt 0 discriminator 1
+ 806 001a B1F14003 	 subs r3,r1,#64
+ 807 001e 18BF     	 it ne
+ 808 0020 0123     	 movne r3,#1
+ 809 0022 2029     	 cmp r1,#32
+ 810 0024 0CBF     	 ite eq
+ 811 0026 0023     	 moveq r3,#0
+ 812 0028 03F00103 	 andne r3,r3,#1
+ 813 002c 4BB1     	 cbz r3,.L60
+ 814              	 .loc 1 421 0 discriminator 2
+ 815 002e 8029     	 cmp r1,#128
+ 816 0030 07D0     	 beq .L60
+ 817              	 .loc 1 421 0 discriminator 3
+ 818 0032 40F20000 	 movw r0,#:lower16:.LC0
+ 819              	.LVL62:
+ 820 0036 C0F20000 	 movt r0,#:upper16:.LC0
+ 821 003a 40F2A511 	 movw r1,#421
+ 822              	.LVL63:
+ 823 003e FFF7FEFF 	 bl check_failed
+ 824              	.L60:
+ 422:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 
+ 423:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** 	return ((inputSPIStatus & SPIStatus) ? SET : RESET);
+ 825              	 .loc 1 423 0 is_stmt 1
+ 826 0042 2C42     	 tst r4,r5
+ 424:src/MightyBoard/Motherboard/lib/source/lpc17xx_spi.c **** }
+ 827              	 .loc 1 424 0
+ 828 0044 0CBF     	 ite eq
+ 829 0046 0020     	 moveq r0,#0
+ 830 0048 0120     	 movne r0,#1
+ 831 004a 38BD     	 pop {r3,r4,r5,pc}
+ 832              	 .cfi_endproc
+ 833              	.LFE67:
+ 835              	 .section .rodata.str1.4,"aMS",%progbits,1
+ 836              	 .align 2
+ 837              	.LC0:
+ 838 0000 7372632F 	 .ascii "src/MightyBoard/Motherboard/lib/source/lpc17xx_spi."
+ 838      4D696768 
+ 838      7479426F 
+ 838      6172642F 
+ 838      4D6F7468 
+ 839 0033 6300     	 .ascii "c\000"
+ 840 0035 000000   	 .text
+ 841              	.Letext0:
+ 842              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 843              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 844              	 .file 4 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 845              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc17xx_spi.h"
+ 846              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_spi.c
+    {standard input}:19     .text.SPI_SetClock:00000000 $t
+    {standard input}:24     .text.SPI_SetClock:00000000 SPI_SetClock
+    {standard input}:837    .rodata.str1.4:00000000 .LC0
+    {standard input}:88     .text.SPI_DeInit:00000000 $t
+    {standard input}:93     .text.SPI_DeInit:00000000 SPI_DeInit
+    {standard input}:129    .text.SPI_GetDataSize:00000000 $t
+    {standard input}:134    .text.SPI_GetDataSize:00000000 SPI_GetDataSize
+    {standard input}:168    .text.SPI_Init:00000000 $t
+    {standard input}:173    .text.SPI_Init:00000000 SPI_Init
+    {standard input}:248    .text.SPI_ConfigStructInit:00000000 $t
+    {standard input}:253    .text.SPI_ConfigStructInit:00000000 SPI_ConfigStructInit
+    {standard input}:284    .text.SPI_SendData:00000000 $t
+    {standard input}:289    .text.SPI_SendData:00000000 SPI_SendData
+    {standard input}:326    .text.SPI_ReceiveData:00000000 $t
+    {standard input}:331    .text.SPI_ReceiveData:00000000 SPI_ReceiveData
+    {standard input}:365    .text.SPI_IntCmd:00000000 $t
+    {standard input}:370    .text.SPI_IntCmd:00000000 SPI_IntCmd
+    {standard input}:425    .text.SPI_ReadWrite:00000000 $t
+    {standard input}:430    .text.SPI_ReadWrite:00000000 SPI_ReadWrite
+    {standard input}:658    .text.SPI_GetIntStatus:00000000 $t
+    {standard input}:663    .text.SPI_GetIntStatus:00000000 SPI_GetIntStatus
+    {standard input}:697    .text.SPI_ClearIntPending:00000000 $t
+    {standard input}:702    .text.SPI_ClearIntPending:00000000 SPI_ClearIntPending
+    {standard input}:736    .text.SPI_GetStatus:00000000 $t
+    {standard input}:741    .text.SPI_GetStatus:00000000 SPI_GetStatus
+    {standard input}:775    .text.SPI_CheckStatus:00000000 $t
+    {standard input}:780    .text.SPI_CheckStatus:00000000 SPI_CheckStatus
+    {standard input}:836    .rodata.str1.4:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+check_failed
+CLKPWR_GetPCLK
+CLKPWR_ConfigPPWR

@@ -1,0 +1,674 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Point.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN5PointC2Ev,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN5PointC2Ev
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN5PointC2Ev:
+  25              	.LFB59:
+  26              	 .file 1 "src/MightyBoard/Motherboard/Point.cc"
+   1:src/MightyBoard/Motherboard/Point.cc **** #include "Point.hh"
+   2:src/MightyBoard/Motherboard/Point.cc **** #include <stdlib.h> // for labs()
+   3:src/MightyBoard/Motherboard/Point.cc **** 
+   4:src/MightyBoard/Motherboard/Point.cc **** /* Setup some utilities -- TODO: Move this to a common file */
+   5:src/MightyBoard/Motherboard/Point.cc **** 
+   6:src/MightyBoard/Motherboard/Point.cc **** // undefine stdlib's abs if encountered
+   7:src/MightyBoard/Motherboard/Point.cc **** #ifdef abs
+   8:src/MightyBoard/Motherboard/Point.cc **** #undef abs
+   9:src/MightyBoard/Motherboard/Point.cc **** #endif
+  10:src/MightyBoard/Motherboard/Point.cc **** 
+  11:src/MightyBoard/Motherboard/Point.cc **** #ifdef labs
+  12:src/MightyBoard/Motherboard/Point.cc **** #undef labs
+  13:src/MightyBoard/Motherboard/Point.cc **** #endif
+  14:src/MightyBoard/Motherboard/Point.cc **** 
+  15:src/MightyBoard/Motherboard/Point.cc **** template <typename T>
+  16:src/MightyBoard/Motherboard/Point.cc **** inline T abs(T x) { return (x)>0?(x):-(x); }
+  17:src/MightyBoard/Motherboard/Point.cc **** 
+  18:src/MightyBoard/Motherboard/Point.cc **** template <>
+  19:src/MightyBoard/Motherboard/Point.cc **** inline int abs(int x) { return __builtin_abs(x); }
+  20:src/MightyBoard/Motherboard/Point.cc **** 
+  21:src/MightyBoard/Motherboard/Point.cc **** template <>
+  22:src/MightyBoard/Motherboard/Point.cc **** inline long abs(long x) { return __builtin_labs(x); }
+  23:src/MightyBoard/Motherboard/Point.cc **** 
+  24:src/MightyBoard/Motherboard/Point.cc **** 
+  25:src/MightyBoard/Motherboard/Point.cc **** /* end utilities */
+  26:src/MightyBoard/Motherboard/Point.cc **** 
+  27:src/MightyBoard/Motherboard/Point.cc **** Point::Point()
+  27              	 .loc 1 27 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  28:src/MightyBoard/Motherboard/Point.cc **** {
+  29:src/MightyBoard/Motherboard/Point.cc **** 	// coordinates[0] = 0;
+  30:src/MightyBoard/Motherboard/Point.cc **** 	// coordinates[1] = 0;
+  31:src/MightyBoard/Motherboard/Point.cc **** 	// coordinates[2] = 0;
+  32:src/MightyBoard/Motherboard/Point.cc **** 	// coordinates[3] = 0;
+  33:src/MightyBoard/Motherboard/Point.cc **** 	// coordinates[4] = 0;
+  34:src/MightyBoard/Motherboard/Point.cc **** }
+  33              	 .loc 1 34 0
+  34 0000 7047     	 bx lr
+  35              	 .cfi_endproc
+  36              	.LFE59:
+  38 0002 00BF     	 .section .text._ZN5PointC2Elllll,"ax",%progbits
+  39              	 .align 2
+  40              	 .global _ZN5PointC2Elllll
+  41              	 .thumb
+  42              	 .thumb_func
+  44              	_ZN5PointC2Elllll:
+  45              	.LFB62:
+  35:src/MightyBoard/Motherboard/Point.cc **** 
+  36:src/MightyBoard/Motherboard/Point.cc **** // Point::Point(const Point &other)
+  37:src/MightyBoard/Motherboard/Point.cc **** // {
+  38:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[0] = other.coordinates[0];
+  39:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[1] = other.coordinates[1];
+  40:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[2] = other.coordinates[2];
+  41:src/MightyBoard/Motherboard/Point.cc **** // #if AXIS_COUNT > 3
+  42:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[3] = other.coordinates[3];
+  43:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[4] = other.coordinates[4];
+  44:src/MightyBoard/Motherboard/Point.cc **** // #endif
+  45:src/MightyBoard/Motherboard/Point.cc **** // }
+  46:src/MightyBoard/Motherboard/Point.cc **** 
+  47:src/MightyBoard/Motherboard/Point.cc **** 
+  48:src/MightyBoard/Motherboard/Point.cc **** Point::Point(const int32_t x, const int32_t y, const int32_t z, const int32_t a, const int32_t b) {
+  46              	 .loc 1 48 0
+  47              	 .cfi_startproc
+  48              	 
+  49              	 
+  50              	 
+  51              	.LVL1:
+  52 0000 10B4     	 push {r4}
+  53              	.LCFI0:
+  54              	 .cfi_def_cfa_offset 4
+  55              	 .cfi_offset 4,-4
+  56              	.LBB13:
+  49:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[0] = x;
+  57              	 .loc 1 49 0
+  58 0002 0160     	 str r1,[r0,#0]
+  50:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[1] = y;
+  59              	 .loc 1 50 0
+  60 0004 4260     	 str r2,[r0,#4]
+  51:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[2] = z;
+  61              	 .loc 1 51 0
+  62 0006 8360     	 str r3,[r0,#8]
+  52:src/MightyBoard/Motherboard/Point.cc **** #if AXIS_COUNT > 3
+  53:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[3] = a;
+  63              	 .loc 1 53 0
+  64 0008 019B     	 ldr r3,[sp,#4]
+  65              	.LVL2:
+  66 000a C360     	 str r3,[r0,#12]
+  54:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[4] = b;
+  67              	 .loc 1 54 0
+  68 000c 029B     	 ldr r3,[sp,#8]
+  69 000e 0361     	 str r3,[r0,#16]
+  70              	.LBE13:
+  55:src/MightyBoard/Motherboard/Point.cc **** #endif
+  56:src/MightyBoard/Motherboard/Point.cc **** }
+  71              	 .loc 1 56 0
+  72 0010 10BC     	 pop {r4}
+  73 0012 7047     	 bx lr
+  74              	 .cfi_endproc
+  75              	.LFE62:
+  77              	 .section .text._ZN5PointC2Elll,"ax",%progbits
+  78              	 .align 2
+  79              	 .global _ZN5PointC2Elll
+  80              	 .thumb
+  81              	 .thumb_func
+  83              	_ZN5PointC2Elll:
+  84              	.LFB65:
+  57:src/MightyBoard/Motherboard/Point.cc **** 
+  58:src/MightyBoard/Motherboard/Point.cc **** Point::Point(const int32_t x, const int32_t y, const int32_t z) {
+  85              	 .loc 1 58 0
+  86              	 .cfi_startproc
+  87              	 
+  88              	 
+  89              	 
+  90              	.LVL3:
+  91 0000 10B4     	 push {r4}
+  92              	.LCFI1:
+  93              	 .cfi_def_cfa_offset 4
+  94              	 .cfi_offset 4,-4
+  95              	.LBB14:
+  59:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[0] = x;
+  96              	 .loc 1 59 0
+  97 0002 0160     	 str r1,[r0,#0]
+  60:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[1] = y;
+  98              	 .loc 1 60 0
+  99 0004 4260     	 str r2,[r0,#4]
+  61:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[2] = z;
+ 100              	 .loc 1 61 0
+ 101 0006 8360     	 str r3,[r0,#8]
+  62:src/MightyBoard/Motherboard/Point.cc **** #if AXIS_COUNT > 3
+  63:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[3] = 0;
+ 102              	 .loc 1 63 0
+ 103 0008 4FF00003 	 mov r3,#0
+ 104              	.LVL4:
+ 105 000c 0373     	 strb r3,[r0,#12]
+ 106 000e 4373     	 strb r3,[r0,#13]
+ 107 0010 8373     	 strb r3,[r0,#14]
+ 108 0012 C373     	 strb r3,[r0,#15]
+  64:src/MightyBoard/Motherboard/Point.cc **** 	coordinates[4] = 0;
+ 109              	 .loc 1 64 0
+ 110 0014 0374     	 strb r3,[r0,#16]
+ 111 0016 4374     	 strb r3,[r0,#17]
+ 112 0018 8374     	 strb r3,[r0,#18]
+ 113 001a C374     	 strb r3,[r0,#19]
+ 114              	.LBE14:
+  65:src/MightyBoard/Motherboard/Point.cc **** #endif
+  66:src/MightyBoard/Motherboard/Point.cc **** }
+ 115              	 .loc 1 66 0
+ 116 001c 10BC     	 pop {r4}
+ 117 001e 7047     	 bx lr
+ 118              	 .cfi_endproc
+ 119              	.LFE65:
+ 121              	 .section .text._ZNK5PointixEj,"ax",%progbits
+ 122              	 .align 2
+ 123              	 .global _ZNK5PointixEj
+ 124              	 .thumb
+ 125              	 .thumb_func
+ 127              	_ZNK5PointixEj:
+ 128              	.LFB67:
+  67:src/MightyBoard/Motherboard/Point.cc **** 
+  68:src/MightyBoard/Motherboard/Point.cc **** const int32_t& Point::operator[](const unsigned int index) const {
+ 129              	 .loc 1 68 0
+ 130              	 .cfi_startproc
+ 131              	 
+ 132              	 
+ 133              	 
+ 134              	.LVL5:
+  69:src/MightyBoard/Motherboard/Point.cc **** 	return coordinates[index];
+  70:src/MightyBoard/Motherboard/Point.cc **** }
+ 135              	 .loc 1 70 0
+ 136 0000 00EB8100 	 add r0,r0,r1,lsl#2
+ 137              	.LVL6:
+ 138 0004 7047     	 bx lr
+ 139              	 .cfi_endproc
+ 140              	.LFE67:
+ 142 0006 00BF     	 .section .text._ZN5PointixEj,"ax",%progbits
+ 143              	 .align 2
+ 144              	 .global _ZN5PointixEj
+ 145              	 .thumb
+ 146              	 .thumb_func
+ 148              	_ZN5PointixEj:
+ 149              	.LFB68:
+  71:src/MightyBoard/Motherboard/Point.cc **** 
+  72:src/MightyBoard/Motherboard/Point.cc **** int32_t& Point::operator[](const unsigned int index) {
+ 150              	 .loc 1 72 0
+ 151              	 .cfi_startproc
+ 152              	 
+ 153              	 
+ 154              	 
+ 155              	.LVL7:
+  73:src/MightyBoard/Motherboard/Point.cc **** 	return coordinates[index];
+  74:src/MightyBoard/Motherboard/Point.cc **** }
+ 156              	 .loc 1 74 0
+ 157 0000 00EB8100 	 add r0,r0,r1,lsl#2
+ 158              	.LVL8:
+ 159 0004 7047     	 bx lr
+ 160              	 .cfi_endproc
+ 161              	.LFE68:
+ 163 0006 00BF     	 .section .text._ZmiRK5PointS1_,"ax",%progbits
+ 164              	 .align 2
+ 165              	 .global _ZmiRK5PointS1_
+ 166              	 .thumb
+ 167              	 .thumb_func
+ 169              	_ZmiRK5PointS1_:
+ 170              	.LFB69:
+  75:src/MightyBoard/Motherboard/Point.cc **** 
+  76:src/MightyBoard/Motherboard/Point.cc **** /// Subtraction operator, for fast deltas
+  77:src/MightyBoard/Motherboard/Point.cc **** Point operator- (const Point &a, const Point &b) {
+ 171              	 .loc 1 77 0
+ 172              	 .cfi_startproc
+ 173              	 
+ 174              	 
+ 175              	.LVL9:
+ 176 0000 2DE9F043 	 push {r4,r5,r6,r7,r8,r9,lr}
+ 177              	.LCFI2:
+ 178              	 .cfi_def_cfa_offset 28
+ 179              	 .cfi_offset 14,-4
+ 180              	 .cfi_offset 9,-8
+ 181              	 .cfi_offset 8,-12
+ 182              	 .cfi_offset 7,-16
+ 183              	 .cfi_offset 6,-20
+ 184              	 .cfi_offset 5,-24
+ 185              	 .cfi_offset 4,-28
+ 186 0004 83B0     	 sub sp,sp,#12
+ 187              	.LCFI3:
+ 188              	 .cfi_def_cfa_offset 40
+ 189 0006 0446     	 mov r4,r0
+ 190              	.LBB15:
+  78:src/MightyBoard/Motherboard/Point.cc **** 	Point c = Point(
+  79:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[0] - b.coordinates[0],
+ 191              	 .loc 1 79 0
+ 192 0008 D1F800C0 	 ldr ip,[r1,#0]
+ 193 000c D2F800E0 	 ldr lr,[r2,#0]
+  80:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[1] - b.coordinates[1],
+ 194              	 .loc 1 80 0
+ 195 0010 4F68     	 ldr r7,[r1,#4]
+ 196 0012 5668     	 ldr r6,[r2,#4]
+  81:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[2] - b.coordinates[2],
+ 197              	 .loc 1 81 0
+ 198 0014 8D68     	 ldr r5,[r1,#8]
+ 199 0016 9368     	 ldr r3,[r2,#8]
+  82:src/MightyBoard/Motherboard/Point.cc **** #if AXIS_COUNT > 3
+  83:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[3] - b.coordinates[3],
+ 200              	 .loc 1 83 0
+ 201 0018 D1F80C90 	 ldr r9,[r1,#12]
+ 202 001c D2F80C80 	 ldr r8,[r2,#12]
+  84:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[4] - b.coordinates[4]
+  85:src/MightyBoard/Motherboard/Point.cc **** #endif
+  86:src/MightyBoard/Motherboard/Point.cc **** 	);
+ 203              	 .loc 1 86 0
+ 204 0020 C8EB0908 	 rsb r8,r8,r9
+ 205 0024 CDF80080 	 str r8,[sp,#0]
+  84:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[4] - b.coordinates[4]
+ 206              	 .loc 1 84 0
+ 207 0028 0969     	 ldr r1,[r1,#16]
+ 208              	.LVL10:
+ 209 002a 1269     	 ldr r2,[r2,#16]
+ 210              	.LVL11:
+ 211              	 .loc 1 86 0
+ 212 002c 8A1A     	 subs r2,r1,r2
+ 213 002e 0192     	 str r2,[sp,#4]
+ 214 0030 CEEB0C01 	 rsb r1,lr,ip
+ 215 0034 BA1B     	 subs r2,r7,r6
+ 216 0036 EB1A     	 subs r3,r5,r3
+ 217 0038 FFF7FEFF 	 bl _ZN5PointC1Elllll
+ 218              	.LVL12:
+ 219              	.LBE15:
+  87:src/MightyBoard/Motherboard/Point.cc **** 	return c;
+  88:src/MightyBoard/Motherboard/Point.cc **** }
+ 220              	 .loc 1 88 0
+ 221 003c 2046     	 mov r0,r4
+ 222 003e 03B0     	 add sp,sp,#12
+ 223 0040 BDE8F083 	 pop {r4,r5,r6,r7,r8,r9,pc}
+ 224              	 .cfi_endproc
+ 225              	.LFE69:
+ 227              	 .section .text._ZplRK5PointS1_,"ax",%progbits
+ 228              	 .align 2
+ 229              	 .global _ZplRK5PointS1_
+ 230              	 .thumb
+ 231              	 .thumb_func
+ 233              	_ZplRK5PointS1_:
+ 234              	.LFB70:
+  89:src/MightyBoard/Motherboard/Point.cc **** 
+  90:src/MightyBoard/Motherboard/Point.cc **** /// Addition operator, for offsets
+  91:src/MightyBoard/Motherboard/Point.cc **** Point operator+ (const Point &a, const Point &b) {
+ 235              	 .loc 1 91 0
+ 236              	 .cfi_startproc
+ 237              	 
+ 238              	 
+ 239              	.LVL13:
+ 240 0000 2DE9F043 	 push {r4,r5,r6,r7,r8,r9,lr}
+ 241              	.LCFI4:
+ 242              	 .cfi_def_cfa_offset 28
+ 243              	 .cfi_offset 14,-4
+ 244              	 .cfi_offset 9,-8
+ 245              	 .cfi_offset 8,-12
+ 246              	 .cfi_offset 7,-16
+ 247              	 .cfi_offset 6,-20
+ 248              	 .cfi_offset 5,-24
+ 249              	 .cfi_offset 4,-28
+ 250 0004 83B0     	 sub sp,sp,#12
+ 251              	.LCFI5:
+ 252              	 .cfi_def_cfa_offset 40
+ 253 0006 0446     	 mov r4,r0
+ 254              	.LBB16:
+  92:src/MightyBoard/Motherboard/Point.cc **** 	Point c = Point(
+  93:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[0] + b.coordinates[0],
+ 255              	 .loc 1 93 0
+ 256 0008 D1F800C0 	 ldr ip,[r1,#0]
+ 257 000c D2F800E0 	 ldr lr,[r2,#0]
+  94:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[1] + b.coordinates[1],
+ 258              	 .loc 1 94 0
+ 259 0010 4F68     	 ldr r7,[r1,#4]
+ 260 0012 5668     	 ldr r6,[r2,#4]
+  95:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[2] + b.coordinates[2],
+ 261              	 .loc 1 95 0
+ 262 0014 8D68     	 ldr r5,[r1,#8]
+ 263 0016 9368     	 ldr r3,[r2,#8]
+  96:src/MightyBoard/Motherboard/Point.cc **** #if AXIS_COUNT > 3
+  97:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[3] + b.coordinates[3],
+ 264              	 .loc 1 97 0
+ 265 0018 D1F80C90 	 ldr r9,[r1,#12]
+ 266 001c D2F80C80 	 ldr r8,[r2,#12]
+  98:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[4] + b.coordinates[4]
+  99:src/MightyBoard/Motherboard/Point.cc **** #endif
+ 100:src/MightyBoard/Motherboard/Point.cc **** 	);
+ 267              	 .loc 1 100 0
+ 268 0020 C844     	 add r8,r9,r8
+ 269 0022 CDF80080 	 str r8,[sp,#0]
+  98:src/MightyBoard/Motherboard/Point.cc **** 		a.coordinates[4] + b.coordinates[4]
+ 270              	 .loc 1 98 0
+ 271 0026 0969     	 ldr r1,[r1,#16]
+ 272              	.LVL14:
+ 273 0028 1269     	 ldr r2,[r2,#16]
+ 274              	.LVL15:
+ 275              	 .loc 1 100 0
+ 276 002a 8A18     	 adds r2,r1,r2
+ 277 002c 0192     	 str r2,[sp,#4]
+ 278 002e 0CEB0E01 	 add r1,ip,lr
+ 279 0032 BA19     	 adds r2,r7,r6
+ 280 0034 EB18     	 adds r3,r5,r3
+ 281 0036 FFF7FEFF 	 bl _ZN5PointC1Elllll
+ 282              	.LVL16:
+ 283              	.LBE16:
+ 101:src/MightyBoard/Motherboard/Point.cc **** 	return c;
+ 102:src/MightyBoard/Motherboard/Point.cc **** }
+ 284              	 .loc 1 102 0
+ 285 003a 2046     	 mov r0,r4
+ 286 003c 03B0     	 add sp,sp,#12
+ 287 003e BDE8F083 	 pop {r4,r5,r6,r7,r8,r9,pc}
+ 288              	 .cfi_endproc
+ 289              	.LFE70:
+ 291 0042 00BF     	 .section .text._ZN5Point3absEv,"ax",%progbits
+ 292              	 .align 2
+ 293              	 .global _ZN5Point3absEv
+ 294              	 .thumb
+ 295              	 .thumb_func
+ 297              	_ZN5Point3absEv:
+ 298              	.LFB71:
+ 103:src/MightyBoard/Motherboard/Point.cc **** 
+ 104:src/MightyBoard/Motherboard/Point.cc **** // Point &Point::operator=(const Point &other) {
+ 105:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[0] = other.coordinates[0];
+ 106:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[1] = other.coordinates[1];
+ 107:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[2] = other.coordinates[2];
+ 108:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[3] = other.coordinates[3];
+ 109:src/MightyBoard/Motherboard/Point.cc **** // 	coordinates[4] = other.coordinates[4];
+ 110:src/MightyBoard/Motherboard/Point.cc **** // 	return *this;
+ 111:src/MightyBoard/Motherboard/Point.cc **** // }
+ 112:src/MightyBoard/Motherboard/Point.cc **** 
+ 113:src/MightyBoard/Motherboard/Point.cc **** 
+ 114:src/MightyBoard/Motherboard/Point.cc **** Point Point::abs() {
+ 299              	 .loc 1 114 0
+ 300              	 .cfi_startproc
+ 301              	 
+ 302              	 
+ 303              	.LVL17:
+ 304 0000 70B5     	 push {r4,r5,r6,lr}
+ 305              	.LCFI6:
+ 306              	 .cfi_def_cfa_offset 16
+ 307              	 .cfi_offset 14,-4
+ 308              	 .cfi_offset 6,-8
+ 309              	 .cfi_offset 5,-12
+ 310              	 .cfi_offset 4,-16
+ 311 0002 82B0     	 sub sp,sp,#8
+ 312              	.LCFI7:
+ 313              	 .cfi_def_cfa_offset 24
+ 314 0004 0446     	 mov r4,r0
+ 315              	.LVL18:
+ 316              	.LBB17:
+ 115:src/MightyBoard/Motherboard/Point.cc **** 	Point absPoint = Point(
+ 116:src/MightyBoard/Motherboard/Point.cc **** 		::abs(coordinates[0]),
+ 117:src/MightyBoard/Motherboard/Point.cc **** 		::abs(coordinates[1]),
+ 118:src/MightyBoard/Motherboard/Point.cc **** 		::abs(coordinates[2]),
+ 119:src/MightyBoard/Motherboard/Point.cc **** #if AXIS_COUNT > 3
+ 120:src/MightyBoard/Motherboard/Point.cc **** 		::abs(coordinates[3]),
+ 121:src/MightyBoard/Motherboard/Point.cc **** 		::abs(coordinates[4])
+ 122:src/MightyBoard/Motherboard/Point.cc **** #endif
+ 123:src/MightyBoard/Motherboard/Point.cc **** 	);
+ 317              	 .loc 1 123 0
+ 318 0006 0D68     	 ldr r5,[r1,#0]
+ 319 0008 4A68     	 ldr r2,[r1,#4]
+ 320 000a 8B68     	 ldr r3,[r1,#8]
+ 321 000c CE68     	 ldr r6,[r1,#12]
+ 322              	.LBB18:
+ 323              	.LBB19:
+  22:src/MightyBoard/Motherboard/Point.cc **** inline long abs(long x) { return __builtin_labs(x); }
+ 324              	 .loc 1 22 0
+ 325 000e 002E     	 cmp r6,#0
+ 326 0010 B8BF     	 it lt
+ 327 0012 7642     	 rsblt r6,r6,#0
+ 328              	.LBE19:
+ 329              	.LBE18:
+ 330              	 .loc 1 123 0
+ 331 0014 0096     	 str r6,[sp,#0]
+ 332 0016 0969     	 ldr r1,[r1,#16]
+ 333              	.LVL19:
+ 334              	.LBB20:
+ 335              	.LBB21:
+  22:src/MightyBoard/Motherboard/Point.cc **** inline long abs(long x) { return __builtin_labs(x); }
+ 336              	 .loc 1 22 0
+ 337 0018 0029     	 cmp r1,#0
+ 338 001a B8BF     	 it lt
+ 339 001c 4942     	 rsblt r1,r1,#0
+ 340              	.LBE21:
+ 341              	.LBE20:
+ 342              	 .loc 1 123 0
+ 343 001e 0191     	 str r1,[sp,#4]
+ 344 0020 85EAE571 	 eor r1,r5,r5,asr#31
+ 345 0024 A1EBE571 	 sub r1,r1,r5,asr#31
+ 346 0028 002A     	 cmp r2,#0
+ 347 002a B8BF     	 it lt
+ 348 002c 5242     	 rsblt r2,r2,#0
+ 349 002e 002B     	 cmp r3,#0
+ 350 0030 B8BF     	 it lt
+ 351 0032 5B42     	 rsblt r3,r3,#0
+ 352 0034 FFF7FEFF 	 bl _ZN5PointC1Elllll
+ 353              	.LVL20:
+ 354              	.LBE17:
+ 124:src/MightyBoard/Motherboard/Point.cc **** 	return absPoint;
+ 125:src/MightyBoard/Motherboard/Point.cc **** }...
+ 355              	 .loc 1 125 0
+ 356 0038 2046     	 mov r0,r4
+ 357 003a 02B0     	 add sp,sp,#8
+ 358 003c 70BD     	 pop {r4,r5,r6,pc}
+ 359              	 .cfi_endproc
+ 360              	.LFE71:
+ 362 003e 00BF     	 .section .text._GLOBAL__sub_I__ZN5PointC2Ev,"ax",%progbits
+ 363              	 .align 2
+ 364              	 .thumb
+ 365              	 .thumb_func
+ 367              	_GLOBAL__sub_I__ZN5PointC2Ev:
+ 368              	.LFB73:
+ 369              	 .loc 1 125 0
+ 370              	 .cfi_startproc
+ 371              	 
+ 372              	 
+ 373 0000 08B5     	 push {r3,lr}
+ 374              	.LCFI8:
+ 375              	 .cfi_def_cfa_offset 8
+ 376              	 .cfi_offset 14,-4
+ 377              	 .cfi_offset 3,-8
+ 378              	.LVL21:
+ 379              	.LBB24:
+ 380              	.LBB25:
+ 381              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 382              	 .loc 2 49 0
+ 383 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 384 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 385 000a 4FF00001 	 mov r1,#0
+ 386 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 387              	 .loc 2 50 0
+ 388 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 389 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 390 001a 4FF00101 	 mov r1,#1
+ 391 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 392              	 .loc 2 51 0
+ 393 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 394 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 395 002a 4FF00201 	 mov r1,#2
+ 396 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 397              	 .loc 2 52 0
+ 398 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 399 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 400 003a 4FF00301 	 mov r1,#3
+ 401 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 402              	 .loc 2 53 0
+ 403 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 404 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 405 004a 4FF00401 	 mov r1,#4
+ 406 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 407              	 .loc 2 55 0
+ 408 0052 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 409 0056 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 410 005a 4FF0FF01 	 mov r1,#255
+ 411 005e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 412              	.LBE25:
+ 413              	.LBE24:
+ 414              	 .loc 1 125 0
+ 415 0062 08BD     	 pop {r3,pc}
+ 416              	 .cfi_endproc
+ 417              	.LFE73:
+ 419              	 .section .init_array,"aw",%init_array
+ 420              	 .align 2
+ 421 0000 00000000 	 .word _GLOBAL__sub_I__ZN5PointC2Ev(target1)
+ 422              	 .global _ZN5PointC1Ev
+ 423              	 .thumb_set _ZN5PointC1Ev,_ZN5PointC2Ev
+ 424              	 .global _ZN5PointC1Elllll
+ 425              	 .thumb_set _ZN5PointC1Elllll,_ZN5PointC2Elllll
+ 426              	 .global _ZN5PointC1Elll
+ 427              	 .thumb_set _ZN5PointC1Elll,_ZN5PointC2Elll
+ 428              	 .section .bss._ZL5Port0,"aw",%nobits
+ 429              	 .align 2
+ 430              	 .set .LANCHOR0,.+0
+ 433              	_ZL5Port0:
+ 434 0000 00       	 .space 1
+ 435 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 436              	 .align 2
+ 437              	 .set .LANCHOR1,.+0
+ 440              	_ZL5Port1:
+ 441 0000 00       	 .space 1
+ 442 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 443              	 .align 2
+ 444              	 .set .LANCHOR2,.+0
+ 447              	_ZL5Port2:
+ 448 0000 00       	 .space 1
+ 449 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 450              	 .align 2
+ 451              	 .set .LANCHOR3,.+0
+ 454              	_ZL5Port3:
+ 455 0000 00       	 .space 1
+ 456 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 457              	 .align 2
+ 458              	 .set .LANCHOR4,.+0
+ 461              	_ZL5Port4:
+ 462 0000 00       	 .space 1
+ 463 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 464              	 .align 2
+ 465              	 .set .LANCHOR5,.+0
+ 468              	_ZL8NullPort:
+ 469 0000 00       	 .space 1
+ 470 0001 000000   	 .text
+ 471              	.Letext0:
+ 472              	 .file 3 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 473              	 .file 4 "src/MightyBoard/Motherboard/Point.hh"
+ 474              	 .file 5 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Point.cc
+    {standard input}:19     .text._ZN5PointC2Ev:00000000 $t
+    {standard input}:24     .text._ZN5PointC2Ev:00000000 _ZN5PointC2Ev
+    {standard input}:39     .text._ZN5PointC2Elllll:00000000 $t
+    {standard input}:44     .text._ZN5PointC2Elllll:00000000 _ZN5PointC2Elllll
+    {standard input}:78     .text._ZN5PointC2Elll:00000000 $t
+    {standard input}:83     .text._ZN5PointC2Elll:00000000 _ZN5PointC2Elll
+    {standard input}:122    .text._ZNK5PointixEj:00000000 $t
+    {standard input}:127    .text._ZNK5PointixEj:00000000 _ZNK5PointixEj
+    {standard input}:143    .text._ZN5PointixEj:00000000 $t
+    {standard input}:148    .text._ZN5PointixEj:00000000 _ZN5PointixEj
+    {standard input}:164    .text._ZmiRK5PointS1_:00000000 $t
+    {standard input}:169    .text._ZmiRK5PointS1_:00000000 _ZmiRK5PointS1_
+    {standard input}:44     .text._ZN5PointC2Elllll:00000000 _ZN5PointC1Elllll
+    {standard input}:228    .text._ZplRK5PointS1_:00000000 $t
+    {standard input}:233    .text._ZplRK5PointS1_:00000000 _ZplRK5PointS1_
+    {standard input}:292    .text._ZN5Point3absEv:00000000 $t
+    {standard input}:297    .text._ZN5Point3absEv:00000000 _ZN5Point3absEv
+    {standard input}:363    .text._GLOBAL__sub_I__ZN5PointC2Ev:00000000 $t
+    {standard input}:367    .text._GLOBAL__sub_I__ZN5PointC2Ev:00000000 _GLOBAL__sub_I__ZN5PointC2Ev
+    {standard input}:430    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:437    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:444    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:451    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:458    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:465    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:420    .init_array:00000000 $d
+    {standard input}:24     .text._ZN5PointC2Ev:00000000 _ZN5PointC1Ev
+    {standard input}:83     .text._ZN5PointC2Elll:00000000 _ZN5PointC1Elll
+    {standard input}:429    .bss._ZL5Port0:00000000 $d
+    {standard input}:433    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:436    .bss._ZL5Port1:00000000 $d
+    {standard input}:440    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:443    .bss._ZL5Port2:00000000 $d
+    {standard input}:447    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:450    .bss._ZL5Port3:00000000 $d
+    {standard input}:454    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:457    .bss._ZL5Port4:00000000 $d
+    {standard input}:461    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:464    .bss._ZL8NullPort:00000000 $d
+    {standard input}:468    .bss._ZL8NullPort:00000000 _ZL8NullPort
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+_ZN7LPCPortC1Eh

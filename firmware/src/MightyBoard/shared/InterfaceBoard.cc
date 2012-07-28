@@ -9,7 +9,6 @@
 #if defined HAS_INTERFACE_BOARD
 
 Timeout button_timeout;
-bool pop2 = false;
 
 InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
                                LiquidCrystalSerial& lcd_in,
@@ -31,11 +30,12 @@ InterfaceBoard::InterfaceBoard(ButtonArray& buttons_in,
 }
 
 void InterfaceBoard::init() {
-        buttons.init();
+	buttons.init();
 
-        lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
-        lcd.clear();
-        lcd.home();
+	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+	
+	lcd.clear();
+	lcd.home();
 
 	LEDs[0].setDirection(true);
 	LEDs[1].setDirection(true);
@@ -46,6 +46,12 @@ void InterfaceBoard::init() {
 	waitingMask = 0;
     pushScreen(mainScreen);
     screen_locked = false;
+}
+
+void InterfaceBoard::resetLCD() {
+	
+	lcd.begin(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
+
 }
 
 void InterfaceBoard::doInterrupt() {
@@ -61,91 +67,100 @@ void InterfaceBoard::errorMessage(char buf[]){
 
 		messageScreen->clearMessage();
 		messageScreen->setXY(0,0);
-		messageScreen->addMessage(buf, true);
+		messageScreen->addMessage(buf);
 		pushScreen(messageScreen);
 }
+
+bool onboard_build = false;
 
 void InterfaceBoard::doUpdate() {
 
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
-//	switch(host::getHostState()) {
-//    case host::HOST_STATE_BUILDING_ONBOARD:
-            pop2 = true;
-//	case host::HOST_STATE_BUILDING:
-//	case host::HOST_STATE_BUILDING_FROM_SD:
+	switch(host::getHostState()) {
+    case host::HOST_STATE_BUILDING_ONBOARD:
+            onboard_build = true;
+	case host::HOST_STATE_BUILDING:
+	case host::HOST_STATE_BUILDING_FROM_SD:
 		if (!building ){
 			
 			// if a message screen is still active, wait until it times out to push the monitor mode screen
 			// move the current screen up an index so when it pops off, it will load buildScreen
 			// as desired instead of popping to main menu first
-//			if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
-//			{
+			// ie this is a push behind, instead of push on top
+			if(screenStack[screenIndex]->screenWaiting() || command::isWaiting())
+			{
 					if (screenIndex < SCREEN_STACK_DEPTH - 1) {
 						screenIndex++;
 						screenStack[screenIndex] = screenStack[screenIndex-1];
 					}
 					screenStack[screenIndex -1] = buildScreen;
 					buildScreen->reset();
-//			}
-//			else
+			}
+			else
                  pushScreen(buildScreen);
 			building = true;
 		}
-//		break;
-//	case host::HOST_STATE_HEAT_SHUTDOWN:
-//		break;
-//	default:
+		break;
+	case host::HOST_STATE_HEAT_SHUTDOWN:
+		break;
+	default:
 		if (building) {
 			if(!(screenStack[screenIndex]->screenWaiting())){	
-                    popScreen();
-				building = false;
-                // when using onboard scrips, pop two screens to get past monitor screen
-                // if monitor screen is second in stack
-				if((screenStack[screenIndex] == buildScreen) && pop2){
-					popScreen();
-					pop2 = false;
+                // when using onboard scrips, we want to return to the Utilites menu
+                // which is one screen deep in the stack
+                if(onboard_build){
+					while(screenIndex > 1){
+						popScreen();
+					}
 				}
+				// else, after a build, we'll want to go back to the main menu
+				else{
+					while(screenIndex > 0){
+						popScreen();
+					}
+				}
+				building = false;
 			}
 
 		}
 		
-//		break;
-//	}
+		break;
+	}
     static ButtonArray::ButtonName button;
 
-//    if(!screen_locked){
-//        if (buttons.getButton(button)) {
-//            if (button == ButtonArray::RESET){
-//                host::stopBuild();
- //               return;
+    if(!screen_locked){
+        if (buttons.getButton(button)) {
+            if (button == ButtonArray::RESET){
+                host::stopBuild();
+                return;
             // respond to button press if waiting
             // pass on to screen if a cancel screen is active
-//            } else if((((1<<button) & waitingMask) != 0) &&
-//                      (!screenStack[screenIndex]->isCancelScreen())){
- //                waitingMask = 0;
- //           } else if (button == ButtonArray::EGG){
- //               pushScreen(&snake);
- //           } else {
- //               screenStack[screenIndex]->notifyButtonPressed(button);
- //               if(screenStack[screenIndex]->continuousButtons()) {
-//                    button_timeout.start(100000);// .1s timeout
- //               }
- //           }
+            } else if((((1<<button) & waitingMask) != 0) &&
+                      (!screenStack[screenIndex]->isCancelScreen())){
+                 waitingMask = 0;
+            } else if (button == ButtonArray::EGG){
+                pushScreen(&snake);
+            } else {
+                screenStack[screenIndex]->notifyButtonPressed(button);
+                if(screenStack[screenIndex]->continuousButtons()) {
+                    button_timeout.start(100000);// .1s timeout
+                }
+            }
             // reset user input timeout when buttons are pressed
- //           Motherboard::getBoard().resetUserInputTimeout();
-//        }
+            Motherboard::getBoard().resetUserInputTimeout();
+        }
         // clear button press if button timeout occurs in continuous press mode
-//        if(button_timeout.hasElapsed())
-//        {
-//            buttons.clearButtonPress();
-//            button_timeout.clear();
-//        }
+        if(button_timeout.hasElapsed())
+        {
+            buttons.clearButtonPress();
+            button_timeout.clear();
+        }
 
         // update build data
-//        screenStack[screenIndex]->setBuildPercentage(buildPercentage);
-//        screenStack[screenIndex]->update(lcd, false);
-//    }
+        screenStack[screenIndex]->setBuildPercentage(buildPercentage);
+        screenStack[screenIndex]->update(lcd, false);
+    }
 }
 
 

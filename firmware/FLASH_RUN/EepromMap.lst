@@ -1,0 +1,2754 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "EepromMap.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text._ZN6eeprom15write_ff_to_ramEv,"ax",%progbits
+  19              	 .align 2
+  20              	 .global _ZN6eeprom15write_ff_to_ramEv
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	_ZN6eeprom15write_ff_to_ramEv:
+  25              	.LFB91:
+  26              	 .file 1 "src/MightyBoard/Motherboard/EepromMap.cc"
+   1:src/MightyBoard/Motherboard/EepromMap.cc **** /*
+   2:src/MightyBoard/Motherboard/EepromMap.cc ****  * Copyright 2010 by Adam Mayer <adam@makerbot.com>
+   3:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+   4:src/MightyBoard/Motherboard/EepromMap.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/Motherboard/EepromMap.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/Motherboard/EepromMap.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/Motherboard/EepromMap.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+   9:src/MightyBoard/Motherboard/EepromMap.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/Motherboard/EepromMap.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/Motherboard/EepromMap.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/Motherboard/EepromMap.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+  14:src/MightyBoard/Motherboard/EepromMap.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/Motherboard/EepromMap.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+  17:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  18:src/MightyBoard/Motherboard/EepromMap.cc **** #include "EepromMap.hh"
+  19:src/MightyBoard/Motherboard/EepromMap.cc **** #include "Eeprom.hh"
+  20:src/MightyBoard/Motherboard/EepromMap.cc **** //#include <avr/eeprom.h>
+  21:src/MightyBoard/Motherboard/EepromMap.cc **** //#include <avr/delay.h>
+  22:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  23:src/MightyBoard/Motherboard/EepromMap.cc **** //for thermistor generation
+  24:src/MightyBoard/Motherboard/EepromMap.cc **** #include "ThermistorTable.hh"
+  25:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  26:src/MightyBoard/Motherboard/EepromMap.cc **** // for sound definition
+  27:src/MightyBoard/Motherboard/EepromMap.cc **** #include "Piezo.hh"
+  28:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  29:src/MightyBoard/Motherboard/EepromMap.cc **** // for LED definition
+  30:src/MightyBoard/Motherboard/EepromMap.cc **** #include "RGB_LED.hh"
+  31:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  32:src/MightyBoard/Motherboard/EepromMap.cc **** // for cooling fan definition
+  33:src/MightyBoard/Motherboard/EepromMap.cc **** #include "CoolingFan.hh"
+  34:src/MightyBoard/Motherboard/EepromMap.cc **** #include "IAP.hh"
+  35:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  36:src/MightyBoard/Motherboard/EepromMap.cc **** #include "Delay.hh"
+  37:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  38:src/MightyBoard/Motherboard/EepromMap.cc **** extern "C" {
+  39:src/MightyBoard/Motherboard/EepromMap.cc **** 	#include "lpc_types.h"
+  40:src/MightyBoard/Motherboard/EepromMap.cc **** 	#include "comm.h"
+  41:src/MightyBoard/Motherboard/EepromMap.cc **** }
+  42:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  43:src/MightyBoard/Motherboard/EepromMap.cc **** namespace eeprom {
+  44:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  45:src/MightyBoard/Motherboard/EepromMap.cc **** #define DEFAULT_P_VALUE  (7.0f)
+  46:src/MightyBoard/Motherboard/EepromMap.cc **** #define DEFAULT_I_VALUE  (0.325f)
+  47:src/MightyBoard/Motherboard/EepromMap.cc **** #define DEFAULT_D_VALUE  (36.0f)
+  48:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  49:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  50:src/MightyBoard/Motherboard/EepromMap.cc **** #define THERM_R0_DEFAULT_VALUE (100000)
+  51:src/MightyBoard/Motherboard/EepromMap.cc **** #define THERM_T0_DEFAULT_VALUE (25)
+  52:src/MightyBoard/Motherboard/EepromMap.cc **** #define THERM_BETA_DEFAULT_VALUE (4067)
+  53:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  54:src/MightyBoard/Motherboard/EepromMap.cc **** void write_ff_to_ram (void){
+  27              	 .loc 1 54 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LBB26:
+  33              	.LBB27:
+  34              	.LBB28:
+  35              	 .file 2 "src/MightyBoard/Motherboard/system/core_cmFunc.h"
+   1:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /**************************************************************************//**
+   2:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @file     core_cmFunc.h
+   3:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @brief    CMSIS Cortex-M Core Function Access Header File
+   4:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @version  V2.01
+   5:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @date     06. December 2010
+   6:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+   7:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @note
+   8:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * Copyright (C) 2009-2010 ARM Limited. All rights reserved.
+   9:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+  10:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @par
+  11:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * ARM Limited (ARM) is supplying this software for use with Cortex-M 
+  12:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * processor based microcontrollers.  This file can be freely distributed 
+  13:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * within development tools that are supporting such ARM based processors. 
+  14:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+  15:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * @par
+  16:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
+  17:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+  18:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
+  19:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * ARM SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR
+  20:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  * CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
+  21:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  *
+  22:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  ******************************************************************************/
+  23:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  24:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #ifndef __CORE_CMFUNC_H__
+  25:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __CORE_CMFUNC_H__
+  26:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  27:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* ###########################  Core Function Access  ########################### */
+  28:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \ingroup  CMSIS_Core_FunctionInterface   
+  29:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+  30:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   @{
+  31:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  32:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  33:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if defined ( __CC_ARM   ) /*------------------ RealView Compiler ----------------*/
+  34:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* ARM armcc specific functions */
+  35:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  36:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __enable_irq();     */
+  37:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __disable_irq();    */
+  38:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  39:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Control Register
+  40:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  41:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the Control Register.
+  42:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  43:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Control Register value
+  44:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  45:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  46:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_CONTROL(void);
+  47:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  48:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_CONTROL(void)
+  49:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+  50:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regControl         __ASM("control");
+  51:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regControl);
+  52:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+  53:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+  54:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  55:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  56:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Control Register
+  57:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  58:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function writes the given value to the Control Register.
+  59:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  60:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    control  Control Register value to set
+  61:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  62:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  63:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_CONTROL(uint32_t control);
+  64:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  65:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_CONTROL(uint32_t control)
+  66:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+  67:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regControl         __ASM("control");
+  68:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regControl = control;
+  69:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+  70:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+  71:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  72:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  73:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get ISPR Register
+  74:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  75:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the ISPR Register.
+  76:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  77:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               ISPR Register value
+  78:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  79:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  80:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_IPSR(void);
+  81:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  82:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_IPSR(void)
+  83:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+  84:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regIPSR          __ASM("ipsr");
+  85:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regIPSR);
+  86:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+  87:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+  88:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  89:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  90:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get APSR Register
+  91:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  92:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the APSR Register.
+  93:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+  94:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               APSR Register value
+  95:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+  96:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+  97:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_APSR(void);
+  98:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+  99:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_APSR(void)
+ 100:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 101:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regAPSR          __ASM("apsr");
+ 102:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regAPSR);
+ 103:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 104:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 105:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 106:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 107:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get xPSR Register
+ 108:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 109:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the xPSR Register.
+ 110:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 111:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               xPSR Register value
+ 112:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 113:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 114:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_xPSR(void);
+ 115:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 116:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_xPSR(void)
+ 117:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 118:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regXPSR          __ASM("xpsr");
+ 119:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regXPSR);
+ 120:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 121:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 122:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 123:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 124:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Process Stack Pointer
+ 125:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 126:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Process Stack Pointer (PSP).
+ 127:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 128:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               PSP Register value
+ 129:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 130:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 131:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_PSP(void);
+ 132:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 133:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_PSP(void)
+ 134:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 135:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regProcessStackPointer  __ASM("psp");
+ 136:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regProcessStackPointer);
+ 137:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 138:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 139:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 140:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 141:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Process Stack Pointer
+ 142:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 143:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Process Stack Pointer (PSP).
+ 144:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 145:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfProcStack  Process Stack Pointer value to set
+ 146:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 147:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 148:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_PSP(uint32_t topOfProcStack);
+ 149:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 150:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_PSP(uint32_t topOfProcStack)
+ 151:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 152:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regProcessStackPointer  __ASM("psp");
+ 153:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regProcessStackPointer = topOfProcStack;
+ 154:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 155:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 156:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 157:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 158:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Main Stack Pointer
+ 159:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 160:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Main Stack Pointer (MSP).
+ 161:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 162:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               MSP Register value
+ 163:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 164:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 165:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_MSP(void);
+ 166:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 167:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_MSP(void)
+ 168:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 169:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regMainStackPointer     __ASM("msp");
+ 170:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regMainStackPointer);
+ 171:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 172:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 173:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 174:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 175:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Main Stack Pointer
+ 176:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 177:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Main Stack Pointer (MSP).
+ 178:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 179:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfMainStack  Main Stack Pointer value to set
+ 180:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 181:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 182:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_MSP(uint32_t topOfMainStack);
+ 183:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 184:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_MSP(uint32_t topOfMainStack)
+ 185:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 186:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regMainStackPointer     __ASM("msp");
+ 187:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regMainStackPointer = topOfMainStack;
+ 188:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 189:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 190:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 191:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 192:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Priority Mask
+ 193:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 194:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current state of the priority mask bit from the Priority Mask Registe
+ 195:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 196:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Priority Mask value
+ 197:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 198:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 199:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_PRIMASK(void);
+ 200:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 201:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_PRIMASK(void)
+ 202:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 203:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regPriMask         __ASM("primask");
+ 204:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regPriMask);
+ 205:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 206:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 207:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 208:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 209:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Priority Mask
+ 210:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 211:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Priority Mask Register.
+ 212:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 213:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    priMask  Priority Mask
+ 214:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 215:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 216:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_PRIMASK(uint32_t priMask);
+ 217:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 218:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_PRIMASK(uint32_t priMask)
+ 219:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 220:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regPriMask         __ASM("primask");
+ 221:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regPriMask = (priMask);
+ 222:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 223:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 224:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 225:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 226:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M >= 0x03)
+ 227:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 228:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable FIQ
+ 229:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 230:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function enables FIQ interrupts by clearing the F-bit in the CPSR.
+ 231:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 232:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 233:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __enable_fault_irq                __enable_fiq
+ 234:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 235:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 236:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable FIQ
+ 237:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 238:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function disables FIQ interrupts by setting the F-bit in the CPSR.
+ 239:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 240:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 241:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __disable_fault_irq               __disable_fiq
+ 242:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 243:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 244:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Base Priority
+ 245:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 246:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Base Priority register.
+ 247:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 248:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Base Priority register value
+ 249:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 250:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 251:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_BASEPRI(void);
+ 252:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 253:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t  __get_BASEPRI(void)
+ 254:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 255:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regBasePri         __ASM("basepri");
+ 256:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regBasePri);
+ 257:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 258:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 259:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 260:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 261:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Base Priority
+ 262:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 263:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Base Priority register.
+ 264:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 265:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    basePri  Base Priority value to set
+ 266:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 267:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 268:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_BASEPRI(uint32_t basePri);
+ 269:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 270:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_BASEPRI(uint32_t basePri)
+ 271:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 272:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regBasePri         __ASM("basepri");
+ 273:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regBasePri = (basePri & 0xff);
+ 274:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 275:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 276:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 277:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 278:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Fault Mask
+ 279:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 280:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Fault Mask register.
+ 281:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 282:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Fault Mask register value
+ 283:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 284:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 285:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          uint32_t __get_FAULTMASK(void);
+ 286:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 287:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_FAULTMASK(void)
+ 288:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 289:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regFaultMask       __ASM("faultmask");
+ 290:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regFaultMask);
+ 291:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 292:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 293:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 294:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 295:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Fault Mask
+ 296:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 297:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Fault Mask register.
+ 298:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 299:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    faultMask  Fault Mask value to set
+ 300:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 301:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__ARMCC_VERSION <  400000)
+ 302:src/MightyBoard/Motherboard/system/core_cmFunc.h **** extern          void __set_FAULTMASK(uint32_t faultMask);
+ 303:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else  /* (__ARMCC_VERSION >= 400000) */
+ 304:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_FAULTMASK(uint32_t faultMask)
+ 305:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 306:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regFaultMask       __ASM("faultmask");
+ 307:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regFaultMask = (faultMask & 1);
+ 308:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 309:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /*  __ARMCC_VERSION  */ 
+ 310:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 311:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M >= 0x03) */
+ 312:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 313:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 314:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M == 0x04)
+ 315:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 316:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get FPSCR
+ 317:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 318:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Floating Point Status/Control register.
+ 319:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 320:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Floating Point Status/Control register value
+ 321:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 322:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE uint32_t __get_FPSCR(void)
+ 323:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 324:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 325:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regfpscr         __ASM("fpscr");
+ 326:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(__regfpscr);
+ 327:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else
+ 328:src/MightyBoard/Motherboard/system/core_cmFunc.h ****    return(0);
+ 329:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 330:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 331:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 332:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 333:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set FPSCR
+ 334:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 335:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Floating Point Status/Control register.
+ 336:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 337:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    fpscr  Floating Point Status/Control value to set
+ 338:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 339:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __set_FPSCR(uint32_t fpscr)
+ 340:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 341:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 342:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   register uint32_t __regfpscr         __ASM("fpscr");
+ 343:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __regfpscr = (fpscr);
+ 344:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 345:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 346:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 347:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M == 0x04) */
+ 348:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 349:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 350:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  #elif (defined (__ICCARM__)) /*---------------- ICC Compiler ---------------------*/
+ 351:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* IAR iccarm specific functions */
+ 352:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 353:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if defined (__ICCARM__)
+ 354:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   #include <intrinsics.h>                     /* IAR Intrinsics   */
+ 355:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 356:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 357:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #pragma diag_suppress=Pe940
+ 358:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 359:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable IRQ Interrupts
+ 360:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 361:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 362:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 363:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 364:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __enable_irq                              __enable_interrupt
+ 365:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 366:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 367:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable IRQ Interrupts
+ 368:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 369:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function disables IRQ interrupts by setting the I-bit in the CPSR.
+ 370:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 371:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 372:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #define __disable_irq                             __disable_interrupt
+ 373:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 374:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 375:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_CONTROL( void ); (see intrinsic.h) */
+ 376:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_CONTROL( unsigned long ); (see intrinsic.h) */
+ 377:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 378:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 379:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get ISPR Register
+ 380:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 381:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the ISPR Register.
+ 382:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 383:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               ISPR Register value
+ 384:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 385:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_IPSR(void)
+ 386:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 387:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, ipsr");
+ 388:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 389:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 390:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 391:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get APSR Register
+ 392:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 393:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the APSR Register.
+ 394:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 395:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               APSR Register value
+ 396:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 397:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_APSR(void)
+ 398:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 399:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, apsr");
+ 400:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 401:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 402:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 403:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get xPSR Register
+ 404:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 405:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the content of the xPSR Register.
+ 406:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 407:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               xPSR Register value
+ 408:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 409:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_xPSR(void)
+ 410:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 411:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, psr");           // assembler does not know "xpsr"
+ 412:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 413:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 414:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 415:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Process Stack Pointer
+ 416:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 417:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Process Stack Pointer (PSP).
+ 418:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 419:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               PSP Register value
+ 420:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 421:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_PSP(void)
+ 422:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 423:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, psp");
+ 424:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 425:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 426:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 427:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Process Stack Pointer
+ 428:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 429:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Process Stack Pointer (PSP).
+ 430:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 431:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfProcStack  Process Stack Pointer value to set
+ 432:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 433:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static void __set_PSP(uint32_t topOfProcStack)
+ 434:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 435:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("msr psp, r0");
+ 436:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 437:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 438:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 439:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get Main Stack Pointer
+ 440:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 441:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Main Stack Pointer (MSP).
+ 442:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 443:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               MSP Register value
+ 444:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 445:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_MSP(void)
+ 446:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 447:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("mrs r0, msp");
+ 448:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 449:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 450:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 451:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set Main Stack Pointer
+ 452:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 453:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Main Stack Pointer (MSP).
+ 454:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 455:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    topOfMainStack  Main Stack Pointer value to set
+ 456:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 457:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static void __set_MSP(uint32_t topOfMainStack)
+ 458:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 459:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("msr msp, r0");
+ 460:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 461:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 462:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 463:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_PRIMASK( void ); (see intrinsic.h) */
+ 464:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_PRIMASK( unsigned long ); (see intrinsic.h) */
+ 465:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  
+ 466:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 467:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M >= 0x03)
+ 468:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 469:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable FIQ
+ 470:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 471:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function enables FIQ interrupts by clearing the F-bit in the CPSR.
+ 472:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 473:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 474:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __enable_fault_irq(void)
+ 475:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 476:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM ("cpsie f");
+ 477:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 478:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 479:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 480:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable FIQ
+ 481:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 482:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function disables FIQ interrupts by setting the F-bit in the CPSR.
+ 483:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     Can only be executed in Privileged modes.
+ 484:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 485:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static __INLINE void __disable_fault_irq(void)
+ 486:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 487:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM ("cpsid f");
+ 488:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 489:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 490:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 491:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_BASEPRI( void );   (see intrinsic.h) */
+ 492:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_BASEPRI( unsigned long );   (see intrinsic.h) */
+ 493:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic unsigned long __get_FAULTMASK( void ); (see intrinsic.h) */
+ 494:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* intrinsic void __set_FAULTMASK(unsigned long);   (see intrinsic.h) */
+ 495:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 496:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M >= 0x03) */
+ 497:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 498:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 499:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if       (__CORTEX_M == 0x04)
+ 500:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 501:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Get FPSCR
+ 502:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 503:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function returns the current value of the Floating Point Status/Control register.
+ 504:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 505:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \return               Floating Point Status/Control register value
+ 506:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 507:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static uint32_t __get_FPSCR(void)
+ 508:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 509:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 510:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("vmrs r0, fpscr"); 
+ 511:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #else
+ 512:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   return(0);
+ 513:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 514:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 515:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 516:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 517:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Set FPSCR
+ 518:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 519:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     This function assigns the given value to the Floating Point Status/Control register.
+ 520:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 521:src/MightyBoard/Motherboard/system/core_cmFunc.h ****     \param [in]    fpscr  Floating Point Status/Control value to set
+ 522:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 523:src/MightyBoard/Motherboard/system/core_cmFunc.h **** static void __set_FPSCR(uint32_t fpscr)
+ 524:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 525:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #if (__FPU_PRESENT == 1)
+ 526:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM("vmsr fpscr, r0");
+ 527:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif
+ 528:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 529:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 530:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #endif /* (__CORTEX_M == 0x04) */
+ 531:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 532:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #pragma diag_default=Pe940
+ 533:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 534:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 535:src/MightyBoard/Motherboard/system/core_cmFunc.h **** #elif (defined (__GNUC__)) /*------------------ GNU Compiler ---------------------*/
+ 536:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /* GNU gcc specific functions */
+ 537:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 538:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Enable IRQ Interrupts
+ 539:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 540:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 541:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 542:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 543:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE void __enable_irq(void)
+ 544:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 545:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsie i");
+ 546:src/MightyBoard/Motherboard/system/core_cmFunc.h **** }
+ 547:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 548:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 549:src/MightyBoard/Motherboard/system/core_cmFunc.h **** /** \brief  Disable IRQ Interrupts
+ 550:src/MightyBoard/Motherboard/system/core_cmFunc.h **** 
+ 551:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   This function disables IRQ interrupts by setting the I-bit in the CPSR.
+ 552:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   Can only be executed in Privileged modes.
+ 553:src/MightyBoard/Motherboard/system/core_cmFunc.h ****  */
+ 554:src/MightyBoard/Motherboard/system/core_cmFunc.h **** __attribute__( ( always_inline ) ) static __INLINE void __disable_irq(void)
+ 555:src/MightyBoard/Motherboard/system/core_cmFunc.h **** {
+ 556:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsid i");
+  36              	 .loc 2 556 0
+  37              	
+  38 0000 72B6     	 cpsid i
+  39              	
+  40              	.LVL0:
+  41              	 .thumb
+  42 0002 4FF4E043 	 mov r3,#28672
+  43 0006 C1F20003 	 movt r3,4096
+  44              	.LBE28:
+  45              	.LBE27:
+  55:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t i;
+  56:src/MightyBoard/Motherboard/EepromMap.cc **** 	__disable_irq ();
+  57:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (i = 0x00000000; i < eeprom_info::EEPROM_SIZE; i++,i++,i++,i++) {
+  58:src/MightyBoard/Motherboard/EepromMap.cc **** 		eeprom_address(EEPROM_START_ADDRESS + i, 0) = 0xffffffff;
+  46              	 .loc 1 58 0
+  47 000a 4FF0FF31 	 mov r1,#-1
+  57:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (i = 0x00000000; i < eeprom_info::EEPROM_SIZE; i++,i++,i++,i++) {
+  48              	 .loc 1 57 0
+  49 000e 4FF4F042 	 mov r2,#30720
+  50 0012 C1F20002 	 movt r2,4096
+  51              	.LVL1:
+  52              	.L2:
+  53              	 .loc 1 58 0 discriminator 2
+  54 0016 43F8041B 	 str r1,[r3],#4
+  57:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (i = 0x00000000; i < eeprom_info::EEPROM_SIZE; i++,i++,i++,i++) {
+  55              	 .loc 1 57 0 discriminator 2
+  56 001a 9342     	 cmp r3,r2
+  57 001c FBD1     	 bne .L2
+  58              	.LBB29:
+  59              	.LBB30:
+ 545:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsie i");
+  60              	 .loc 2 545 0
+  61              	
+  62 001e 62B6     	 cpsie i
+  63              	
+  64              	 .thumb
+  65              	.LBE30:
+  66              	.LBE29:
+  67              	.LBE26:
+  59:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %x" " (%s:%d)\n",EEPROM_START_ADDRESS + i,eeprom_address(EEPROM_START_ADDRESS + i, 
+  60:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+  61:src/MightyBoard/Motherboard/EepromMap.cc **** 	__enable_irq ();
+  62:src/MightyBoard/Motherboard/EepromMap.cc **** };
+  68              	 .loc 1 62 0
+  69 0020 7047     	 bx lr
+  70              	 .cfi_endproc
+  71              	.LFE91:
+  73 0022 00BF     	 .section .text._ZN6eeprom19read_all_from_flashEv,"ax",%progbits
+  74              	 .align 2
+  75              	 .global _ZN6eeprom19read_all_from_flashEv
+  76              	 .thumb
+  77              	 .thumb_func
+  79              	_ZN6eeprom19read_all_from_flashEv:
+  80              	.LFB92:
+  63:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  64:src/MightyBoard/Motherboard/EepromMap.cc **** void read_all_from_flash (void){
+  81              	 .loc 1 64 0
+  82              	 .cfi_startproc
+  83              	 
+  84              	 
+  85              	 
+  86              	.LBB31:
+  87              	.LBB32:
+  88              	.LBB33:
+  89              	 .loc 2 556 0
+  90              	
+  91 0000 72B6     	 cpsid i
+  92              	
+  93              	.LVL2:
+  94              	 .thumb
+  95 0002 4FF40053 	 mov r3,#8192
+  96              	.LVL3:
+  97              	.L5:
+  98              	 .loc 1 64 0 discriminator 2
+  99 0006 03F18052 	 add r2,r3,#268435456
+ 100 000a 02F5A042 	 add r2,r2,#20480
+ 101              	.LBE33:
+ 102              	.LBE32:
+  65:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t i;
+  66:src/MightyBoard/Motherboard/EepromMap.cc **** 	__disable_irq ();
+  67:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %x" " (%s:%d)\n",EEPROM_START_ADDRESS+i,eeprom_address(EEPROM_START_ADDRESS+i, 0),_
+  68:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (i = 0x00000000; i < eeprom_info::EEPROM_SIZE; i++,i++,i++,i++) {
+  69:src/MightyBoard/Motherboard/EepromMap.cc **** 		eeprom_address(EEPROM_START_ADDRESS + i, 0) = eeprom_address(EEPROM_FLASH_AREA_START + i, 0);
+ 103              	 .loc 1 69 0 discriminator 2
+ 104 000e 53F8041B 	 ldr r1,[r3],#4
+ 105 0012 1160     	 str r1,[r2,#0]
+  68:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (i = 0x00000000; i < eeprom_info::EEPROM_SIZE; i++,i++,i++,i++) {
+ 106              	 .loc 1 68 0 discriminator 2
+ 107 0014 B3F5205F 	 cmp r3,#10240
+ 108 0018 F5D1     	 bne .L5
+ 109              	.LBB34:
+ 110              	.LBB35:
+ 545:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsie i");
+ 111              	 .loc 2 545 0
+ 112              	
+ 113 001a 62B6     	 cpsie i
+ 114              	
+ 115              	 .thumb
+ 116              	.LBE35:
+ 117              	.LBE34:
+ 118              	.LBE31:
+  70:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %x" " (%s:%d)\n",EEPROM_FLASH_AREA_START+i,eeprom_address(EEPROM_FLASH_AREA_START+i
+  71:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+  72:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %x" " (%s:%d)\n",EEPROM_START_ADDRESS+i,eeprom_address(EEPROM_START_ADDRESS+i, 0),_
+  73:src/MightyBoard/Motherboard/EepromMap.cc **** 	__enable_irq ();
+  74:src/MightyBoard/Motherboard/EepromMap.cc **** };
+ 119              	 .loc 1 74 0
+ 120 001c 7047     	 bx lr
+ 121              	 .cfi_endproc
+ 122              	.LFE92:
+ 124 001e 00BF     	 .section .text._ZN6eeprom13save_to_flashEv,"ax",%progbits
+ 125              	 .align 2
+ 126              	 .global _ZN6eeprom13save_to_flashEv
+ 127              	 .thumb
+ 128              	 .thumb_func
+ 130              	_ZN6eeprom13save_to_flashEv:
+ 131              	.LFB93:
+  75:src/MightyBoard/Motherboard/EepromMap.cc **** 
+  76:src/MightyBoard/Motherboard/EepromMap.cc **** void save_to_flash (void) {
+ 132              	 .loc 1 76 0
+ 133              	 .cfi_startproc
+ 134              	 
+ 135              	 
+ 136 0000 00B5     	 push {lr}
+ 137              	.LCFI0:
+ 138              	 .cfi_def_cfa_offset 4
+ 139              	 .cfi_offset 14,-4
+ 140 0002 8DB0     	 sub sp,sp,#52
+ 141              	.LCFI1:
+ 142              	 .cfi_def_cfa_offset 56
+ 143              	.LBB36:
+  77:src/MightyBoard/Motherboard/EepromMap.cc **** 	xprintf("save_to_flash" " (%s:%d)\n",_F_,_L_);
+ 144              	 .loc 1 77 0
+ 145 0004 40F20000 	 movw r0,#:lower16:.LC5
+ 146 0008 C0F20000 	 movt r0,#:upper16:.LC5
+ 147 000c 1149     	 ldr r1,.L9
+ 148 000e 4FF04D02 	 mov r2,#77
+ 149 0012 FFF7FEFF 	 bl xprintf
+ 150              	.LBB37:
+ 151              	.LBB38:
+ 152              	 .loc 2 556 0
+ 153              	
+ 154 0016 72B6     	 cpsid i
+ 155              	
+ 156              	.LVL4:
+ 157              	 .thumb
+ 158              	.LBE38:
+ 159              	.LBE37:
+ 160              	.LBB39:
+ 161              	.LBB40:
+ 162              	.LBB41:
+ 163              	 .file 3 "src/MightyBoard/Motherboard/IAP/IAP.hh"
+   1:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    IAP : internal Flash memory access library
+   2:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+   3:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        The internal Flash memory access is described in the LPC1768 usermanual. 
+   4:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *            http://www.nxp.com/documents/user_manual/UM10360.pdf
+   5:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+   6:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *            Chapter  2: "LPC17xx Memory map"
+   7:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *            Chapter 32: "LPC17xx Flash memory interface and programming"
+   8:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *                refering Rev. 01 - 4 January 2010
+   9:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+  10:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Released under the MIT License: http://mbed.org/license/mit
+  11:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+  12:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        revision 1.0  09-Mar-2010   1st release
+  13:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        revision 1.1  12-Mar-2010   chaged: to make possible to reserve flash area for user
+  14:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *                                            it can be set by USER_FLASH_AREA_START and USER_FLASH
+  15:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
+  16:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+  17:src/MightyBoard/Motherboard/IAP/IAP.hh **** #ifndef        MBED_IAP
+  18:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define        MBED_IAP
+  19:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+  20:src/MightyBoard/Motherboard/IAP/IAP.hh **** //#include    "mbed.h"
+  21:src/MightyBoard/Motherboard/IAP/IAP.hh **** extern "C" {
+  22:src/MightyBoard/Motherboard/IAP/IAP.hh **** 	#include    "system_LPC17xx.h"
+  23:src/MightyBoard/Motherboard/IAP/IAP.hh **** }
+  24:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+  25:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     USER_FLASH_AREA_START   FLASH_SECTOR_2
+  26:src/MightyBoard/Motherboard/IAP/IAP.hh **** //#define     USER_FLASH_AREA_START   FLASH_SECTOR_29
+  27:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     USER_FLASH_AREA_SIZE    (FLASH_SECTOR_SIZE_0_TO_15 * 1)
+  28:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+  29:src/MightyBoard/Motherboard/IAP/IAP.hh **** /*
+  30:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  memory map information is available in next URL also.
+  31:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *    http://mbed.org/projects/libraries/svn/mbed/trunk/LPC1768/LPC17xx.h
+  32:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
+  33:src/MightyBoard/Motherboard/IAP/IAP.hh ****  
+  34:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    Table for start adress of sectors
+  35:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *    
+  36:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        LPC1768 internal flash memory sector numbers and addresses
+  37:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+  38:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        LPC1768 flash memory are and sector number/size
+  39:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Table 568 "Sectors in a LPC17xx device", Section 5. "Sector numbers", usermanual
+  40:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+  41:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        0x00000000 - 0x0007FFFF        flash (29 sectors)
+  42:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+  43:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector0:     0x00000000 - 0x00000FFF        4K
+  44:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector1:     0x00001000 - 0x00001FFF        4K
+  45:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector2:     0x00002000 - 0x00002FFF        4K
+  46:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector3:     0x00003000 - 0x00003FFF        4K
+  47:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector4:     0x00004000 - 0x00004FFF        4K
+  48:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector5:     0x00005000 - 0x00005FFF        4K
+  49:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector6:     0x00006000 - 0x00006FFF        4K
+  50:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector7:     0x00007000 - 0x00007FFF        4K
+  51:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector8:     0x00008000 - 0x00008FFF        4K
+  52:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector9:     0x00009000 - 0x00009FFF        4K
+  53:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector10:    0x0000A000 - 0x0000AFFF        4K
+  54:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector11:    0x0000B000 - 0x0000BFFF        4K
+  55:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector12:    0x0000C000 - 0x0000CFFF        4K
+  56:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector13:    0x0000D000 - 0x0000DFFF        4K
+  57:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector14:    0x0000E000 - 0x0000EFFF        4K
+  58:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector15:    0x0000F000 - 0x0000FFFF        4K
+  59:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+  60:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector16:    0x00010000 - 0x00017FFF        32K
+  61:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector17:    0x00018000 - 0x0001FFFF        32K
+  62:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector18:    0x00020000 - 0x00027FFF        32K
+  63:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector19:    0x00028000 - 0x0002FFFF        32K
+  64:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector20:    0x00030000 - 0x00037FFF        32K
+  65:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector21:    0x00038000 - 0x0003FFFF        32K
+  66:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector22:    0x00040000 - 0x00047FFF        32K
+  67:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector23:    0x00048000 - 0x0004FFFF        32K
+  68:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector24:    0x00050000 - 0x00057FFF        32K
+  69:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector25:    0x00058000 - 0x0005FFFF        32K
+  70:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector26:    0x00060000 - 0x00067FFF        32K
+  71:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector27:    0x00068000 - 0x0006FFFF        32K
+  72:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector28:    0x00070000 - 0x00077FFF        32K
+  73:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector29:    0x00078000 - 0x0007FFFF        32K
+  74:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
+  75:src/MightyBoard/Motherboard/IAP/IAP.hh ****  
+  76:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_0       0x00000000
+  77:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_1       0x00001000
+  78:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_2       0x00002000
+  79:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_3       0x00003000
+  80:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_4       0x00004000
+  81:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_5       0x00005000
+  82:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_6       0x00006000
+  83:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_7       0x00007000
+  84:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_8       0x00008000
+  85:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_9       0x00009000
+  86:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_10      0x0000A000
+  87:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_11      0x0000B000
+  88:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_12      0x0000C000
+  89:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_13      0x0000D000
+  90:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_14      0x0000E000
+  91:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_15      0x0000F000
+  92:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_16      0x00010000
+  93:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_17      0x00018000
+  94:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_18      0x00020000
+  95:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_19      0x00028000
+  96:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_20      0x00030000
+  97:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_21      0x00038000
+  98:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_22      0x00040000
+  99:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_23      0x00048000
+ 100:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_24      0x00050000
+ 101:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_25      0x00058000
+ 102:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_26      0x00060000
+ 103:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_27      0x00068000
+ 104:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_28      0x00070000
+ 105:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_29      0x00078000
+ 106:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 107:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_SIZE_0_TO_15    ( 4 * 1024)
+ 108:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_SIZE_16_TO_29   (32 * 1024)
+ 109:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 110:src/MightyBoard/Motherboard/IAP/IAP.hh **** /*
+ 111:src/MightyBoard/Motherboard/IAP/IAP.hh **** static char * sector_start_adress[]    = {
+ 112:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_0,
+ 113:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_1,
+ 114:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_2,
+ 115:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_3,
+ 116:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_4,
+ 117:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_5,
+ 118:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_6,
+ 119:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_7,
+ 120:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_8,
+ 121:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_9,
+ 122:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_10,
+ 123:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_11,
+ 124:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_12,
+ 125:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_13,
+ 126:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_14,
+ 127:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_15,
+ 128:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_16,
+ 129:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_17,
+ 130:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_18,
+ 131:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_19,
+ 132:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_20,
+ 133:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_21,
+ 134:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_22,
+ 135:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_23,
+ 136:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_24,
+ 137:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_25,
+ 138:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_26,
+ 139:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_27,
+ 140:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_28,
+ 141:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_29    
+ 142:src/MightyBoard/Motherboard/IAP/IAP.hh **** };
+ 143:src/MightyBoard/Motherboard/IAP/IAP.hh **** */
+ 144:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 145:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    Error code by IAP routine
+ 146:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  
+ 147:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Table 588 "ISP Return Codes Summary", Section 7.15 "ISP Return Codes", usermanual
+ 148:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
+ 149:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 150:src/MightyBoard/Motherboard/IAP/IAP.hh **** enum error_code
+ 151:src/MightyBoard/Motherboard/IAP/IAP.hh ****     {
+ 152:src/MightyBoard/Motherboard/IAP/IAP.hh ****             CMD_SUCCESS,
+ 153:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_COMMAND,
+ 154:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SRC_ADDR_ERROR,
+ 155:src/MightyBoard/Motherboard/IAP/IAP.hh ****             DST_ADDR_ERROR,
+ 156:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SRC_ADDR_NOT_MAPPED,
+ 157:src/MightyBoard/Motherboard/IAP/IAP.hh ****             DST_ADDR_NOT_MAPPED,
+ 158:src/MightyBoard/Motherboard/IAP/IAP.hh ****             COUNT_ERROR,
+ 159:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_SECTOR,
+ 160:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SECTOR_NOT_BLANK,
+ 161:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SECTOR_NOT_PREPARED_FOR_WRITE_OPERATION,
+ 162:src/MightyBoard/Motherboard/IAP/IAP.hh ****             COMPARE_ERROR,
+ 163:src/MightyBoard/Motherboard/IAP/IAP.hh ****             BUSY,
+ 164:src/MightyBoard/Motherboard/IAP/IAP.hh ****             PARAM_ERROR,
+ 165:src/MightyBoard/Motherboard/IAP/IAP.hh ****             ADDR_ERROR,
+ 166:src/MightyBoard/Motherboard/IAP/IAP.hh ****             ADDR_NOT_MAPPED,
+ 167:src/MightyBoard/Motherboard/IAP/IAP.hh ****             CMD_LOCKED,
+ 168:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_CODE,
+ 169:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_BAUD_RATE,
+ 170:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_STOP_BIT,
+ 171:src/MightyBoard/Motherboard/IAP/IAP.hh ****             CODE_READ_PROTECTION_ENABLED
+ 172:src/MightyBoard/Motherboard/IAP/IAP.hh ****     };
+ 173:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 174:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 175:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 176:src/MightyBoard/Motherboard/IAP/IAP.hh **** /*
+ 177:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  IAP routine entry
+ 178:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
+ 179:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Chapter 8. "IAP commands", usermanual
+ 180:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
+ 181:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 182:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     IAP_LOCATION    0x1fff1ff1
+ 183:src/MightyBoard/Motherboard/IAP/IAP.hh **** typedef     void (*IAP_call)(unsigned int [], unsigned int []);
+ 184:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 185:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    IAP class
+ 186:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  
+ 187:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Interface for internal flash memory access
+ 188:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
+ 189:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 190:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 191:src/MightyBoard/Motherboard/IAP/IAP.hh **** class IAP {
+ 192:src/MightyBoard/Motherboard/IAP/IAP.hh **** public:
+ 193:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 194:src/MightyBoard/Motherboard/IAP/IAP.hh ****     /*
+ 195:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *  SystemCoreClock ??? :  
+ 196:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *    http://mbed.org/forum/mbed/topic/229/
+ 197:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *    http://mbed.org/users/simon/programs/SystemCoreClock/16mhsh/
+ 198:src/MightyBoard/Motherboard/IAP/IAP.hh ****      */
+ 199:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 200:src/MightyBoard/Motherboard/IAP/IAP.hh ****     
+ 201:src/MightyBoard/Motherboard/IAP/IAP.hh ****     /**    Constructor for IAP
+ 202:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *
+ 203:src/MightyBoard/Motherboard/IAP/IAP.hh ****      */
+ 204:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
+ 205:src/MightyBoard/Motherboard/IAP/IAP.hh ****     IAP() : iap_entry( reinterpret_cast<IAP_call>(IAP_LOCATION) ), cclk_kHz( SystemCoreClock / 1000
+ 164              	 .loc 3 205 0
+ 165 0018 41F6F173 	 movw r3,#8177
+ 166 001c C1F6FF73 	 movt r3,8191
+ 167 0020 0093     	 str r3,[sp,#0]
+ 168 0022 40F20003 	 movw r3,#:lower16:SystemCoreClock
+ 169 0026 C0F20003 	 movt r3,#:upper16:SystemCoreClock
+ 170 002a 1A68     	 ldr r2,[r3,#0]
+ 171 002c 44F6D353 	 movw r3,#19923
+ 172 0030 C1F26203 	 movt r3,4194
+ 173 0034 A3FB0213 	 umull r1,r3,r3,r2
+ 174 0038 4FEA9313 	 lsr r3,r3,#6
+ 175 003c 0B93     	 str r3,[sp,#44]
+ 176              	.LBE41:
+ 177              	.LBE40:
+ 178              	.LBE39:
+  78:src/MightyBoard/Motherboard/EepromMap.cc **** 	__disable_irq ();
+  79:src/MightyBoard/Motherboard/EepromMap.cc **** 	IAP in_ap_prog;
+  80:src/MightyBoard/Motherboard/EepromMap.cc **** 	int error_code_ret = in_ap_prog.erase(USER_FLASH_AREA_START, USER_FLASH_AREA_START);
+ 179              	 .loc 1 80 0
+ 180 003e 6846     	 mov r0,sp
+ 181 0040 4FF40051 	 mov r1,#8192
+ 182 0044 0A46     	 mov r2,r1
+ 183 0046 FFF7FEFF 	 bl _ZN3IAP5eraseEii
+ 184              	.LBB42:
+ 185              	.LBB43:
+ 545:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsie i");
+ 186              	 .loc 2 545 0
+ 187              	
+ 188 004a 62B6     	 cpsie i
+ 189              	
+ 190              	 .thumb
+ 191              	.LBE43:
+ 192              	.LBE42:
+  81:src/MightyBoard/Motherboard/EepromMap.cc **** //	error_code_ret = in_ap_prog.write((char)0x10007000, (char)USER_FLASH_AREA_START, (int)USER_FLASH
+  82:src/MightyBoard/Motherboard/EepromMap.cc **** 	// read all variables back into Ram
+  83:src/MightyBoard/Motherboard/EepromMap.cc **** 	__enable_irq ();
+  84:src/MightyBoard/Motherboard/EepromMap.cc **** 	clearflashupdate();
+ 193              	 .loc 1 84 0
+ 194 004c FFF7FEFF 	 bl _ZN6eeprom16clearflashupdateEv
+ 195              	.LBE36:
+  85:src/MightyBoard/Motherboard/EepromMap.cc **** };
+ 196              	 .loc 1 85 0
+ 197 0050 0DB0     	 add sp,sp,#52
+ 198 0052 00BD     	 pop {pc}
+ 199              	.L10:
+ 200              	 .align 2
+ 201              	.L9:
+ 202 0054 1C000000 	 .word .LC6+28
+ 203              	 .cfi_endproc
+ 204              	.LFE93:
+ 206              	 .section .text._ZN6eeprom20setDefaultCoolingFanEt,"ax",%progbits
+ 207              	 .align 2
+ 208              	 .global _ZN6eeprom20setDefaultCoolingFanEt
+ 209              	 .thumb
+ 210              	 .thumb_func
+ 212              	_ZN6eeprom20setDefaultCoolingFanEt:
+ 213              	.LFB94:
+  86:src/MightyBoard/Motherboard/EepromMap.cc **** /*
+  87:src/MightyBoard/Motherboard/EepromMap.cc **** uint8_t microstep_pinout(uint8_t port_no) {
+  88:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t microsteping_port;
+  89:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t ii = 0; ii < 5; ii++){   //Counts through STEPPER_COUNT
+  90:src/MightyBoard/Motherboard/EepromMap.cc **** 		for (uint8_t iii = 0; ii < 3; iii++){
+  91:src/MightyBoard/Motherboard/EepromMap.cc **** 			uint8_t port_bit = 0x1 << microstep_port_array [ii][iii][1];
+  92:src/MightyBoard/Motherboard/EepromMap.cc **** 			if (microstep_port_array [ii][iii][0] == port_no) {
+  93:src/MightyBoard/Motherboard/EepromMap.cc **** 				microsteping_port += (microstep_port_array [ii][iii][2] << port_bit);
+  94:src/MightyBoard/Motherboard/EepromMap.cc **** 			}
+  95:src/MightyBoard/Motherboard/EepromMap.cc **** 		}
+  96:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+  97:src/MightyBoard/Motherboard/EepromMap.cc **** 	return microsteping_port;
+  98:src/MightyBoard/Motherboard/EepromMap.cc **** }
+  99:src/MightyBoard/Motherboard/EepromMap.cc **** */
+ 100:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 101:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+ 102:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base start of eeprom map of cooling settings
+ 103:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 104:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultCoolingFan(uint16_t eeprom_base){
+ 214              	 .loc 1 104 0
+ 215              	 .cfi_startproc
+ 216              	 
+ 217              	 
+ 218              	.LVL5:
+ 219 0000 10B5     	 push {r4,lr}
+ 220              	.LCFI2:
+ 221              	 .cfi_def_cfa_offset 8
+ 222              	 .cfi_offset 14,-4
+ 223              	 .cfi_offset 4,-8
+ 224 0002 0446     	 mov r4,r0
+ 225              	.LVL6:
+ 226              	.LBB44:
+ 105:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 106:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t fan_settings[] = {1, DEFAULT_COOLING_FAN_SETPOINT_C};
+ 107:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET, fan_settings[0]);
+ 227              	 .loc 1 107 0
+ 228 0004 4FF00101 	 mov r1,#1
+ 229 0008 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 230              	.LVL7:
+ 108:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET+1, fan_settings[1]);
+ 231              	 .loc 1 108 0
+ 232 000c 04F10100 	 add r0,r4,#1
+ 233 0010 80B2     	 uxth r0,r0
+ 234 0012 4FF03201 	 mov r1,#50
+ 235 0016 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 236              	.LBE44:
+ 109:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block( fan_settings, (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFS
+ 110:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 237              	 .loc 1 110 0
+ 238 001a 10BD     	 pop {r4,pc}
+ 239              	 .cfi_endproc
+ 240              	.LFE94:
+ 242              	 .section .text._ZN6eeprom13setDefaultPIDEt,"ax",%progbits
+ 243              	 .align 2
+ 244              	 .global _ZN6eeprom13setDefaultPIDEt
+ 245              	 .thumb
+ 246              	 .thumb_func
+ 248              	_ZN6eeprom13setDefaultPIDEt:
+ 249              	.LFB95:
+ 111:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 112:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 113:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 114:src/MightyBoard/Motherboard/EepromMap.cc ****  * Start of PID block of EEPROM. Can be extruder or HPB
+ 115:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base
+ 116:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 117:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultPID(uint16_t eeprom_base)
+ 118:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 250              	 .loc 1 118 0
+ 251              	 .cfi_startproc
+ 252              	 
+ 253              	 
+ 254              	.LVL8:
+ 255 0000 10B5     	 push {r4,lr}
+ 256              	.LCFI3:
+ 257              	 .cfi_def_cfa_offset 8
+ 258              	 .cfi_offset 14,-4
+ 259              	 .cfi_offset 4,-8
+ 260 0002 0446     	 mov r4,r0
+ 119:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + pid_eeprom_offsets::P_TERM_OFFSET, DEFAULT_P_VALUE);
+ 261              	 .loc 1 119 0
+ 262 0004 4FF00701 	 mov r1,#7
+ 263 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 264              	.LVL9:
+ 120:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET, DEFAULT_I_VALUE);
+ 265              	 .loc 1 120 0
+ 266 000c 04F10200 	 add r0,r4,#2
+ 267 0010 80B2     	 uxth r0,r0
+ 268 0012 4FF00001 	 mov r1,#0
+ 269 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 121:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET, DEFAULT_D_VALUE);
+ 270              	 .loc 1 121 0
+ 271 001a 04F10400 	 add r0,r4,#4
+ 272 001e 80B2     	 uxth r0,r0
+ 273 0020 4FF02401 	 mov r1,#36
+ 274 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 122:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::P_TERM_OFFSET ), DEFAULT_P_VALUE);
+ 123:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET ), DEFAULT_I_VALUE);
+ 124:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET ), DEFAULT_D_VALUE);
+ 125:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 275              	 .loc 1 125 0
+ 276 0028 10BD     	 pop {r4,pc}
+ 277              	 .cfi_endproc
+ 278              	.LFE95:
+ 280 002a 00BF     	 .section .text._ZN6eeprom19setDefaultsExtruderEit,"ax",%progbits
+ 281              	 .align 2
+ 282              	 .global _ZN6eeprom19setDefaultsExtruderEit
+ 283              	 .thumb
+ 284              	 .thumb_func
+ 286              	_ZN6eeprom19setDefaultsExtruderEit:
+ 287              	.LFB96:
+ 126:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 127:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 128:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 129:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+ 130:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param index
+ 131:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base start of this extruder's data in the eeprom
+ 132:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 133:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultsExtruder(int index,uint16_t eeprom_base)
+ 134:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 288              	 .loc 1 134 0
+ 289              	 .cfi_startproc
+ 290              	 
+ 291              	 
+ 292              	.LVL10:
+ 293 0000 10B5     	 push {r4,lr}
+ 294              	.LCFI4:
+ 295              	 .cfi_def_cfa_offset 8
+ 296              	 .cfi_offset 14,-4
+ 297              	 .cfi_offset 4,-8
+ 298 0002 0C46     	 mov r4,r1
+ 299              	.LVL11:
+ 300              	.LBB45:
+ 301              	.LBB46:
+ 135:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR | eeprom_inf
+ 136:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR | eeprom_inf
+ 137:src/MightyBoard/Motherboard/EepromMap.cc **** 	if( index == 0 ){
+ 302              	 .loc 1 137 0
+ 303 0004 60B9     	 cbnz r0,.L14
+ 304              	.LVL12:
+ 305              	.LBB47:
+ 138:src/MightyBoard/Motherboard/EepromMap.cc **** 		int slaveId = '12';
+ 139:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::FEATURES, featuresT0);
+ 306              	 .loc 1 139 0
+ 307 0006 0846     	 mov r0,r1
+ 308              	.LVL13:
+ 309 0008 4FF00701 	 mov r1,#7
+ 310              	.LVL14:
+ 311 000c FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 140:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::SLAVE_ID, slaveId);
+ 312              	 .loc 1 140 0
+ 313 0010 04F11800 	 add r0,r4,#24
+ 314 0014 80B2     	 uxth r0,r0
+ 315 0016 4FF03201 	 mov r1,#50
+ 316 001a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 317 001e 0BE0     	 b .L15
+ 318              	.LVL15:
+ 319              	.L14:
+ 320              	.LBE47:
+ 321              	.LBB48:
+ 141:src/MightyBoard/Motherboard/EepromMap.cc **** //	    eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT0);
+ 142:src/MightyBoard/Motherboard/EepromMap.cc **** //		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
+ 143:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 144:src/MightyBoard/Motherboard/EepromMap.cc **** 	else{
+ 145:src/MightyBoard/Motherboard/EepromMap.cc **** 		int slaveId = '32';
+ 146:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::FEATURES, featuresT1);
+ 322              	 .loc 1 146 0
+ 323 0020 0846     	 mov r0,r1
+ 324              	.LVL16:
+ 325 0022 4FF03801 	 mov r1,#56
+ 326              	.LVL17:
+ 327 0026 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 147:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::SLAVE_ID, slaveId);
+ 328              	 .loc 1 147 0
+ 329 002a 04F11800 	 add r0,r4,#24
+ 330 002e 80B2     	 uxth r0,r0
+ 331 0030 4FF03201 	 mov r1,#50
+ 332 0034 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 333              	.LVL18:
+ 334              	.L15:
+ 335              	.LBE48:
+ 336              	.LBE46:
+ 148:src/MightyBoard/Motherboard/EepromMap.cc **** //		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT1);
+ 149:src/MightyBoard/Motherboard/EepromMap.cc **** //		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
+ 150:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 151:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultPID(eeprom_base + toolhead_eeprom_offsets::EXTRUDER_PID_BASE);
+ 337              	 .loc 1 151 0
+ 338 0038 04F10A00 	 add r0,r4,#10
+ 339 003c 80B2     	 uxth r0,r0
+ 340 003e FFF7FEFF 	 bl _ZN6eeprom13setDefaultPIDEt
+ 152:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultPID(eeprom_base + toolhead_eeprom_offsets::HBP_PID_BASE);
+ 341              	 .loc 1 152 0
+ 342 0042 04F11000 	 add r0,r4,#16
+ 343 0046 80B2     	 uxth r0,r0
+ 344 0048 FFF7FEFF 	 bl _ZN6eeprom13setDefaultPIDEt
+ 153:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultCoolingFan(eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS);
+ 345              	 .loc 1 153 0
+ 346 004c 04F11A00 	 add r0,r4,#26
+ 347 0050 80B2     	 uxth r0,r0
+ 348 0052 FFF7FEFF 	 bl _ZN6eeprom20setDefaultCoolingFanEt
+ 154:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 155:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_FORWARD_TIME, 500);
+ 349              	 .loc 1 155 0
+ 350 0056 04F10600 	 add r0,r4,#6
+ 351 005a 80B2     	 uxth r0,r0
+ 352 005c 4FF4FA71 	 mov r1,#500
+ 353 0060 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 156:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_STOP_TIME, 5);
+ 354              	 .loc 1 156 0
+ 355 0064 04F10200 	 add r0,r4,#2
+ 356 0068 80B2     	 uxth r0,r0
+ 357 006a 4FF00501 	 mov r1,#5
+ 358 006e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 157:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_REVERSE_TIME, 500);
+ 359              	 .loc 1 157 0
+ 360 0072 04F10400 	 add r0,r4,#4
+ 361 0076 80B2     	 uxth r0,r0
+ 362 0078 4FF4FA71 	 mov r1,#500
+ 363 007c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 158:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_TRIGGER_TIME, 300);
+ 364              	 .loc 1 158 0
+ 365 0080 04F10800 	 add r0,r4,#8
+ 366 0084 80B2     	 uxth r0,r0
+ 367 0086 4FF49671 	 mov r1,#300
+ 368 008a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 369              	.LBE45:
+ 159:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_FORWARD_TIME),50
+ 160:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_STOP_TIME),5);
+ 161:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_REVERSE_TIME),50
+ 162:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_TRIGGER_TIME),30
+ 163:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 370              	 .loc 1 163 0
+ 371 008e 10BD     	 pop {r4,pc}
+ 372              	 .cfi_endproc
+ 373              	.LFE96:
+ 375              	 .section .text._ZN6eeprom18SetDefaultsThermalEt,"ax",%progbits
+ 376              	 .align 2
+ 377              	 .global _ZN6eeprom18SetDefaultsThermalEt
+ 378              	 .thumb
+ 379              	 .thumb_func
+ 381              	_ZN6eeprom18SetDefaultsThermalEt:
+ 382              	.LFB97:
+ 164:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 165:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 166:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 167:src/MightyBoard/Motherboard/EepromMap.cc ****  * Set thermal table offsets
+ 168:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base
+ 169:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 170:src/MightyBoard/Motherboard/EepromMap.cc **** void SetDefaultsThermal(uint16_t eeprom_base)
+ 171:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 383              	 .loc 1 171 0
+ 384              	 .cfi_startproc
+ 385              	 
+ 386              	 
+ 387              	.LVL19:
+ 388 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+ 389              	.LCFI5:
+ 390              	 .cfi_def_cfa_offset 24
+ 391              	 .cfi_offset 14,-4
+ 392              	 .cfi_offset 7,-8
+ 393              	 .cfi_offset 6,-12
+ 394              	 .cfi_offset 5,-16
+ 395              	 .cfi_offset 4,-20
+ 396              	 .cfi_offset 3,-24
+ 397 0002 0446     	 mov r4,r0
+ 398              	.LBB49:
+ 172:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET, THERM_R0_DEFAULT_VALUE);
+ 399              	 .loc 1 172 0
+ 400 0004 48F2A061 	 movw r1,#34464
+ 401 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 402              	.LVL20:
+ 173:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET, THERM_T0_DEFAULT_VALUE);
+ 403              	 .loc 1 173 0
+ 404 000c 04F10400 	 add r0,r4,#4
+ 405 0010 80B2     	 uxth r0,r0
+ 406 0012 4FF01901 	 mov r1,#25
+ 407 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 174:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET, THERM_BETA_DEFAULT_VALUE);
+ 408              	 .loc 1 174 0
+ 409 001a 04F10800 	 add r0,r4,#8
+ 410 001e 80B2     	 uxth r0,r0
+ 411 0020 40F6E371 	 movw r1,#4067
+ 412 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 413              	.LVL21:
+ 414 0028 04F11004 	 add r4,r4,#16
+ 415 002c A4B2     	 uxth r4,r4
+ 416 002e 4FF00006 	 mov r6,#0
+ 417              	.LBB50:
+ 175:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_R
+ 176:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_T
+ 177:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_B
+ 178:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET), THERM_R0_D
+ 179:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET), THERM_T0_D
+ 180:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_dword( (uint32_t*)(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET), THERM_BE
+ 181:src/MightyBoard/Motherboard/EepromMap.cc **** 	/// write the default thermal table.
+ 182:src/MightyBoard/Motherboard/EepromMap.cc **** 	for(uint8_t i=0;i<NUMTEMPS;i++){
+ 183:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET+i, default_therm_table[i].adc);
+ 418              	 .loc 1 183 0
+ 419 0032 40F20007 	 movw r7,#:lower16:default_therm_table
+ 420 0036 C0F20007 	 movt r7,#:upper16:default_therm_table
+ 421              	.LVL22:
+ 422              	.L17:
+ 423              	 .loc 1 183 0 is_stmt 0 discriminator 2
+ 424 003a F519     	 adds r5,r6,r7
+ 425 003c 2046     	 mov r0,r4
+ 426 003e B95B     	 ldrh r1,[r7,r6]
+ 427 0040 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 184:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET+i+2, default_therm_table[i].val
+ 428              	 .loc 1 184 0 is_stmt 1 discriminator 2
+ 429 0044 04F10200 	 add r0,r4,#2
+ 430 0048 80B2     	 uxth r0,r0
+ 431 004a 6988     	 ldrh r1,[r5,#2]
+ 432 004c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 433 0050 06F10406 	 add r6,r6,#4
+ 434 0054 04F10104 	 add r4,r4,#1
+ 435 0058 A4B2     	 uxth r4,r4
+ 182:src/MightyBoard/Motherboard/EepromMap.cc **** 	for(uint8_t i=0;i<NUMTEMPS;i++){
+ 436              	 .loc 1 182 0 discriminator 2
+ 437 005a 7C2E     	 cmp r6,#124
+ 438 005c EDD1     	 bne .L17
+ 439              	.LBE50:
+ 440              	.LBE49:
+ 185:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_
+ 186:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_
+ 187:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 188:src/MightyBoard/Motherboard/EepromMap.cc **** 	//	eeprom_write_block( (const uint8_t*)default_therm_table,
+ 189:src/MightyBoard/Motherboard/EepromMap.cc **** //			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS
+ 190:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 441              	 .loc 1 190 0
+ 442 005e F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 443              	 .cfi_endproc
+ 444              	.LFE97:
+ 446              	 .section .text._ZN6eeprom20setDefaultLedEffectsEt,"ax",%progbits
+ 447              	 .align 2
+ 448              	 .global _ZN6eeprom20setDefaultLedEffectsEt
+ 449              	 .thumb
+ 450              	 .thumb_func
+ 452              	_ZN6eeprom20setDefaultLedEffectsEt:
+ 453              	.LFB98:
+ 191:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 192:src/MightyBoard/Motherboard/EepromMap.cc **** typedef struct Color {
+ 193:src/MightyBoard/Motherboard/EepromMap.cc **** 	int8_t red;
+ 194:src/MightyBoard/Motherboard/EepromMap.cc **** 	int8_t green;
+ 195:src/MightyBoard/Motherboard/EepromMap.cc **** 	int8_t blue;
+ 196:src/MightyBoard/Motherboard/EepromMap.cc **** } Color;
+ 197:src/MightyBoard/Motherboard/EepromMap.cc ****         
+ 198:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 199:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 200:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 201:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+ 202:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base start of Led effects table
+ 203:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 204:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultLedEffects(uint16_t eeprom_base)
+ 205:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 454              	 .loc 1 205 0
+ 455              	 .cfi_startproc
+ 456              	 
+ 457              	 
+ 458              	.LVL23:
+ 459 0000 10B5     	 push {r4,lr}
+ 460              	.LCFI6:
+ 461              	 .cfi_def_cfa_offset 8
+ 462              	 .cfi_offset 14,-4
+ 463              	 .cfi_offset 4,-8
+ 464 0002 0446     	 mov r4,r0
+ 465              	.LBB51:
+ 206:src/MightyBoard/Motherboard/EepromMap.cc **** 	Color colors;
+ 207:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 208:src/MightyBoard/Motherboard/EepromMap.cc **** 	// default color is white
+ 209:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LED_DEFAULT_WHITE);
+ 466              	 .loc 1 209 0
+ 467 0004 4FF00001 	 mov r1,#0
+ 468 0008 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 469              	.LVL24:
+ 210:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
+ 470              	 .loc 1 210 0
+ 471 000c 04F10200 	 add r0,r4,#2
+ 472 0010 80B2     	 uxth r0,r0
+ 473 0012 4FF00101 	 mov r1,#1
+ 474 0016 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 475              	.LVL25:
+ 211:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAUL
+ 212:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), 1);
+ 213:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 214:src/MightyBoard/Motherboard/EepromMap.cc **** 	colors.red=0xFF; colors.green =colors.blue =0x00;
+ 215:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, colors.red);
+ 476              	 .loc 1 215 0
+ 477 001a 04F10400 	 add r0,r4,#4
+ 478 001e 80B2     	 uxth r0,r0
+ 479 0020 4FF0FF01 	 mov r1,#255
+ 480 0024 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 216:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+1, colors.green);
+ 481              	 .loc 1 216 0
+ 482 0028 04F10500 	 add r0,r4,#5
+ 483 002c 80B2     	 uxth r0,r0
+ 484 002e 4FF00001 	 mov r1,#0
+ 485 0032 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 217:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+2, colors.blue);
+ 486              	 .loc 1 217 0
+ 487 0036 04F10600 	 add r0,r4,#6
+ 488 003a 80B2     	 uxth r0,r0
+ 489 003c 4FF00001 	 mov r1,#0
+ 490 0040 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 491              	.LBE51:
+ 218:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 219:src/MightyBoard/Motherboard/EepromMap.cc **** 	//	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_O
+ 220:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 492              	 .loc 1 220 0
+ 493 0044 10BD     	 pop {r4,pc}
+ 494              	 .cfi_endproc
+ 495              	.LFE98:
+ 497 0046 00BF     	 .section .text._ZN6eeprom14setCustomColorEhhh,"ax",%progbits
+ 498              	 .align 2
+ 499              	 .global _ZN6eeprom14setCustomColorEhhh
+ 500              	 .thumb
+ 501              	 .thumb_func
+ 503              	_ZN6eeprom14setCustomColorEhhh:
+ 504              	.LFB99:
+ 221:src/MightyBoard/Motherboard/EepromMap.cc ****     /**
+ 222:src/MightyBoard/Motherboard/EepromMap.cc ****      *
+ 223:src/MightyBoard/Motherboard/EepromMap.cc ****      * @param red value
+ 224:src/MightyBoard/Motherboard/EepromMap.cc ****      * @param green value
+ 225:src/MightyBoard/Motherboard/EepromMap.cc ****      * @param blue value
+ 226:src/MightyBoard/Motherboard/EepromMap.cc ****      */
+ 227:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 228:src/MightyBoard/Motherboard/EepromMap.cc **** void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
+ 505              	 .loc 1 228 0
+ 506              	 .cfi_startproc
+ 507              	 
+ 508              	 
+ 509              	.LVL26:
+ 510 0000 38B5     	 push {r3,r4,r5,lr}
+ 511              	.LCFI7:
+ 512              	 .cfi_def_cfa_offset 16
+ 513              	 .cfi_offset 14,-4
+ 514              	 .cfi_offset 5,-8
+ 515              	 .cfi_offset 4,-12
+ 516              	 .cfi_offset 3,-16
+ 517 0002 0346     	 mov r3,r0
+ 518 0004 0D46     	 mov r5,r1
+ 519 0006 1446     	 mov r4,r2
+ 520              	.LVL27:
+ 521              	.LBB52:
+ 229:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 230:src/MightyBoard/Motherboard/EepromMap.cc **** 	Color colors;
+ 231:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 232:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::
+ 233:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::BASIC_CO
+ 234:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 235:src/MightyBoard/Motherboard/EepromMap.cc **** 	colors.red=red; colors.green = green; colors.blue =blue;
+ 236:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, colors.
+ 522              	 .loc 1 236 0
+ 523 0008 4FF4A270 	 mov r0,#324
+ 524              	.LVL28:
+ 525 000c 1946     	 mov r1,r3
+ 526              	.LVL29:
+ 527 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 528              	.LVL30:
+ 237:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+1, color
+ 529              	 .loc 1 237 0
+ 530 0012 40F24510 	 movw r0,#325
+ 531 0016 2946     	 mov r1,r5
+ 532 0018 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 238:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+2, color
+ 533              	 .loc 1 238 0
+ 534 001c 4FF4A370 	 mov r0,#326
+ 535 0020 2146     	 mov r1,r4
+ 536 0022 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 537              	.LBE52:
+ 239:src/MightyBoard/Motherboard/EepromMap.cc **** 	//	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_
+ 240:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 538              	 .loc 1 240 0
+ 539 0026 38BD     	 pop {r3,r4,r5,pc}
+ 540              	 .cfi_endproc
+ 541              	.LFE99:
+ 543              	 .section .text._ZN6eeprom18eeprom_write_soundE5Soundt,"ax",%progbits
+ 544              	 .align 2
+ 545              	 .global _ZN6eeprom18eeprom_write_soundE5Soundt
+ 546              	 .thumb
+ 547              	 .thumb_func
+ 549              	_ZN6eeprom18eeprom_write_soundE5Soundt:
+ 550              	.LFB100:
+ 241:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 242:src/MightyBoard/Motherboard/EepromMap.cc ****     /**
+ 243:src/MightyBoard/Motherboard/EepromMap.cc ****      *
+ 244:src/MightyBoard/Motherboard/EepromMap.cc ****      * @param sound desired
+ 245:src/MightyBoard/Motherboard/EepromMap.cc ****      * @param dest in eeprom
+ 246:src/MightyBoard/Motherboard/EepromMap.cc ****      */   
+ 247:src/MightyBoard/Motherboard/EepromMap.cc **** void eeprom_write_sound(Sound sound, uint16_t dest)
+ 248:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 551              	 .loc 1 248 0
+ 552              	 .cfi_startproc
+ 553              	 
+ 554              	 
+ 555              	.LVL31:
+ 556 0000 10B5     	 push {r4,lr}
+ 557              	.LCFI8:
+ 558              	 .cfi_def_cfa_offset 8
+ 559              	 .cfi_offset 14,-4
+ 560              	 .cfi_offset 4,-8
+ 561 0002 82B0     	 sub sp,sp,#8
+ 562              	.LCFI9:
+ 563              	 .cfi_def_cfa_offset 16
+ 564 0004 0190     	 str r0,[sp,#4]
+ 565 0006 0C46     	 mov r4,r1
+ 249:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(dest,sound.freq);
+ 566              	 .loc 1 249 0
+ 567 0008 81B2     	 uxth r1,r0
+ 568              	.LVL32:
+ 569 000a 2046     	 mov r0,r4
+ 570 000c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 250:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(dest + 2, sound.durationMs);
+ 571              	 .loc 1 250 0
+ 572 0010 04F10200 	 add r0,r4,#2
+ 573 0014 80B2     	 uxth r0,r0
+ 574 0016 BDF80610 	 ldrh r1,[sp,#6]
+ 575 001a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 251:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)dest, 	sound.freq);
+ 252:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)dest + 2, sound.durationMs);
+ 253:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 576              	 .loc 1 253 0
+ 577 001e 02B0     	 add sp,sp,#8
+ 578 0020 10BD     	 pop {r4,pc}
+ 579              	 .cfi_endproc
+ 580              	.LFE100:
+ 582 0022 00BF     	 .section .text._ZN6eeprom21setDefaultBuzzEffectsEt,"ax",%progbits
+ 583              	 .align 2
+ 584              	 .global _ZN6eeprom21setDefaultBuzzEffectsEt
+ 585              	 .thumb
+ 586              	 .thumb_func
+ 588              	_ZN6eeprom21setDefaultBuzzEffectsEt:
+ 589              	.LFB101:
+ 254:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 255:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 256:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+ 257:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base start of buzz effects table
+ 258:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 259:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultBuzzEffects(uint16_t eeprom_base)
+ 260:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 590              	 .loc 1 260 0
+ 591              	 .cfi_startproc
+ 592              	 
+ 593              	 
+ 594              	.LVL33:
+ 595 0000 00B5     	 push {lr}
+ 596              	.LCFI10:
+ 597              	 .cfi_def_cfa_offset 4
+ 598              	 .cfi_offset 14,-4
+ 599 0002 83B0     	 sub sp,sp,#12
+ 600              	.LCFI11:
+ 601              	 .cfi_def_cfa_offset 16
+ 602 0004 0146     	 mov r1,r0
+ 603              	.LBB53:
+ 261:src/MightyBoard/Motherboard/EepromMap.cc **** 	Sound blare = {NOTE_B2, 500};
+ 604              	 .loc 1 261 0
+ 605 0006 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 606 000a C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 607 000e 1868     	 ldr r0,[r3,#0]
+ 608              	.LVL34:
+ 609 0010 0190     	 str r0,[sp,#4]
+ 262:src/MightyBoard/Motherboard/EepromMap.cc **** 	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET);
+ 610              	 .loc 1 262 0
+ 611 0012 0198     	 ldr r0,[sp,#4]
+ 612 0014 FFF7FEFF 	 bl _ZN6eeprom18eeprom_write_soundE5Soundt
+ 613              	.LBE53:
+ 263:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 614              	 .loc 1 263 0
+ 615 0018 03B0     	 add sp,sp,#12
+ 616 001a 00BD     	 pop {pc}
+ 617              	 .cfi_endproc
+ 618              	.LFE101:
+ 620              	 .section .text._ZN6eeprom18setDefaultsPreheatEt,"ax",%progbits
+ 621              	 .align 2
+ 622              	 .global _ZN6eeprom18setDefaultsPreheatEt
+ 623              	 .thumb
+ 624              	 .thumb_func
+ 626              	_ZN6eeprom18setDefaultsPreheatEt:
+ 627              	.LFB102:
+ 264:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 265:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 266:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+ 267:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base start of preheat settings table
+ 268:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 269:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultsPreheat(uint16_t eeprom_base)
+ 270:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 628              	 .loc 1 270 0
+ 629              	 .cfi_startproc
+ 630              	 
+ 631              	 
+ 632              	.LVL35:
+ 633 0000 10B5     	 push {r4,lr}
+ 634              	.LCFI12:
+ 635              	 .cfi_def_cfa_offset 8
+ 636              	 .cfi_offset 14,-4
+ 637              	 .cfi_offset 4,-8
+ 638 0002 0446     	 mov r4,r0
+ 271:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
+ 639              	 .loc 1 271 0
+ 640 0004 4FF0DC01 	 mov r1,#220
+ 641 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 642              	.LVL36:
+ 272:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
+ 643              	 .loc 1 272 0
+ 644 000c 04F10200 	 add r0,r4,#2
+ 645 0010 80B2     	 uxth r0,r0
+ 646 0012 4FF0DC01 	 mov r1,#220
+ 647 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 273:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 110);
+ 648              	 .loc 1 273 0
+ 649 001a 04F10400 	 add r0,r4,#4
+ 650 001e 80B2     	 uxth r0,r0
+ 651 0020 4FF06E01 	 mov r1,#110
+ 652 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 274:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET, (1<<HEAT_MASK_RIGHT) + (1
+ 653              	 .loc 1 274 0
+ 654 0028 04F10600 	 add r0,r4,#6
+ 655 002c 80B2     	 uxth r0,r0
+ 656 002e 4FF00501 	 mov r1,#5
+ 657 0032 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 275:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 22
+ 276:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 220
+ 277:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET),
+ 278:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1
+ 279:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 658              	 .loc 1 279 0
+ 659 0036 10BD     	 pop {r4,pc}
+ 660              	 .cfi_endproc
+ 661              	.LFE102:
+ 663              	 .section .text._ZN6eeprom23setDefaultsAccelerationEv,"ax",%progbits
+ 664              	 .align 2
+ 665              	 .global _ZN6eeprom23setDefaultsAccelerationEv
+ 666              	 .thumb
+ 667              	 .thumb_func
+ 669              	_ZN6eeprom23setDefaultsAccelerationEv:
+ 670              	.LFB103:
+ 280:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 281:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 282:src/MightyBoard/Motherboard/EepromMap.cc **** /**
+ 283:src/MightyBoard/Motherboard/EepromMap.cc ****  *
+ 284:src/MightyBoard/Motherboard/EepromMap.cc ****  * break with the form here as eeprom_base is available in class and we
+ 285:src/MightyBoard/Motherboard/EepromMap.cc ****  * want to cleanly call this function externally
+ 286:src/MightyBoard/Motherboard/EepromMap.cc ****  */
+ 287:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultsAcceleration(){
+ 671              	 .loc 1 287 0
+ 672              	 .cfi_startproc
+ 673              	 
+ 674              	 
+ 675 0000 08B5     	 push {r3,lr}
+ 676              	.LCFI13:
+ 677              	 .cfi_def_cfa_offset 8
+ 678              	 .cfi_offset 14,-4
+ 679              	 .cfi_offset 3,-8
+ 288:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::ACCELERATION_SETT
+ 289:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + eeprom_offsets::ACCELERATION_SETTINGS + accele
+ 290:src/MightyBoard/Motherboard/EepromMap.cc **** //	_delay_us(10000);
+ 291:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x0
+ 680              	 .loc 1 291 0
+ 681 0002 4FF4B770 	 mov r0,#366
+ 682 0006 4FF00101 	 mov r1,#1
+ 683 000a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 292:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE
+ 684              	 .loc 1 292 0
+ 685 000e 4FF4B870 	 mov r0,#368
+ 686 0012 40F6B831 	 movw r1,#3000
+ 687 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 293:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offs
+ 294:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_off
+ 295:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 296:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
+ 688              	 .loc 1 296 0
+ 689 001a 4FF4B970 	 mov r0,#370
+ 690 001e 40F6B831 	 movw r1,#3000
+ 691 0022 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 297:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
+ 692              	 .loc 1 297 0
+ 693 0026 4FF4BA70 	 mov r0,#372
+ 694 002a 40F6B831 	 movw r1,#3000
+ 695 002e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 298:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
+ 696              	 .loc 1 298 0
+ 697 0032 4FF4BB70 	 mov r0,#374
+ 698 0036 4FF47A71 	 mov r1,#1000
+ 699 003a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 299:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
+ 700              	 .loc 1 299 0
+ 701 003e 4FF4BC70 	 mov r0,#376
+ 702 0042 40F6B831 	 movw r1,#3000
+ 703 0046 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 300:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
+ 704              	 .loc 1 300 0
+ 705 004a 4FF4BD70 	 mov r0,#378
+ 706 004e 40F6B831 	 movw r1,#3000
+ 707 0052 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 301:src/MightyBoard/Motherboard/EepromMap.cc **** //  eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offse
+ 302:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
+ 303:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
+ 304:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
+ 305:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
+ 306:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 307:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
+ 708              	 .loc 1 307 0
+ 709 0056 4FF4BE70 	 mov r0,#380
+ 710 005a 4FF01401 	 mov r1,#20
+ 711 005e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 308:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
+ 712              	 .loc 1 308 0
+ 713 0062 4FF4C070 	 mov r0,#384
+ 714 0066 4FF00101 	 mov r1,#1
+ 715 006a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 309:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
+ 716              	 .loc 1 309 0
+ 717 006e 4FF4C170 	 mov r0,#386
+ 718 0072 4FF00201 	 mov r1,#2
+ 719 0076 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 310:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
+ 720              	 .loc 1 310 0
+ 721 007a 4FF4C270 	 mov r0,#388
+ 722 007e 4FF00201 	 mov r1,#2
+ 723 0082 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 311:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
+ 312:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
+ 313:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
+ 314:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
+ 315:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 316:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DE
+ 724              	 .loc 1 316 0
+ 725 0086 4FF4C370 	 mov r0,#390
+ 726 008a 4FF00F01 	 mov r1,#15
+ 727 008e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 317:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
+ 318:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 319:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, _BV
+ 728              	 .loc 1 319 0
+ 729 0092 4FF4C470 	 mov r0,#392
+ 730 0096 4FF08001 	 mov r1,#128
+ 731 009a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 320:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets
+ 321:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 732              	 .loc 1 321 0
+ 733 009e 08BD     	 pop {r3,pc}
+ 734              	 .cfi_endproc
+ 735              	.LFE103:
+ 737              	 .section .text._ZN6eeprom12isSingleToolEv,"ax",%progbits
+ 738              	 .align 2
+ 739              	 .global _ZN6eeprom12isSingleToolEv
+ 740              	 .thumb
+ 741              	 .thumb_func
+ 743              	_ZN6eeprom12isSingleToolEv:
+ 744              	.LFB107:
+ 322:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 323:src/MightyBoard/Motherboard/EepromMap.cc **** /// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
+ 324:src/MightyBoard/Motherboard/EepromMap.cc **** /// from idealized point-center of the toolhead
+ 325:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultAxisHomePositions()
+ 326:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 327:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_
+ 328:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(isSingleTool()){
+ 329:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
+ 330:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+ 331:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 332:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 333:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + (eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+i)
+ 334:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4), homes[i]);
+ 335:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 336:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 
+ 337:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 338:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 339:src/MightyBoard/Motherboard/EepromMap.cc **** /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
+ 340:src/MightyBoard/Motherboard/EepromMap.cc **** void factoryResetEEPROM() {
+ 341:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 342:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("factoryResetEEPROM" " (%s:%d)\n",_F_,_L_);
+ 343:src/MightyBoard/Motherboard/EepromMap.cc **** 	// Default: enstops inverted, Z axis inverted
+ 344:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
+ 345:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 346:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper in
+ 347:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 348:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+ 349:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
+ 350:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 351:src/MightyBoard/Motherboard/EepromMap.cc **** 	/// Write 'MainBoard' settings
+ 352:src/MightyBoard/Motherboard/EepromMap.cc **** 	char machine_name_in[] = "The Replicator";
+ 353:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
+ 354:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::MACHINE_NAME+i, machine_name_in[i]);
+ 355:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %c" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::MACHINE_NAME+i)*4,eeprom_a
+ 356:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 357:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+ 358:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 359:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::DIGI_POT_SETTINGS+i, vRefBase[i]);
+ 360:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %c" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::DIGI_POT_SETTINGS+i)*4,eep
+ 361:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 362:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
+ 363:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+ 364:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+ 365:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+ 366:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+ 367:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 368:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 369:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 370:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 371:src/MightyBoard/Motherboard/EepromMap.cc ****     /// store the default axis lengths for the machine
+ 372:src/MightyBoard/Motherboard/EepromMap.cc ****     for (uint8_t i=0;i<5;i++){
+ 373:src/MightyBoard/Motherboard/EepromMap.cc ****     	setEeprom32(eeprom_offsets::AXIS_LENGTHS+(i*4), replicator_axis_lengths::axis_lengths[i]);
+ 374:src/MightyBoard/Motherboard/EepromMap.cc ****     }
+ 375:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_o
+ 376:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 377:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsAcceleration();
+ 378:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 379:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 380:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 381:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 382:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Thermal table settings
+ 383:src/MightyBoard/Motherboard/EepromMap.cc ****     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+ 384:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 385:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Preheat heater settings
+ 386:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+ 387:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 388:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write MightyBoard VID/PID. Only after verification does production write
+ 389:src/MightyBoard/Motherboard/EepromMap.cc ****     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
+ 390:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO, vidPid[0]);
+ 391:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO+2, vidPid[1]);
+ 392:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
+ 393:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 394:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Write 'extruder 0' settings
+ 395:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
+ 396:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 397:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Write 'extruder 1' stttings
+ 398:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
+ 399:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 400:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write blink and buzz defaults
+ 401:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+ 402:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+ 403:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 404:src/MightyBoard/Motherboard/EepromMap.cc ****     // startup script flag is cleared
+ 405:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0);
+ 406:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
+ 407:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 408:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 409:src/MightyBoard/Motherboard/EepromMap.cc **** void setToolHeadCount(uint8_t count){
+ 410:src/MightyBoard/Motherboard/EepromMap.cc **** 	// update toolhead count
+ 411:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(count > 2)
+ 412:src/MightyBoard/Motherboard/EepromMap.cc **** 		count = 1;
+ 413:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, count);
+ 414:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
+ 415:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 416:src/MightyBoard/Motherboard/EepromMap.cc **** 	// update XY axis offsets to match tool head settins
+ 417:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 418:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 419:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 420:src/MightyBoard/Motherboard/EepromMap.cc ****     // check single / dual tool status
+ 421:src/MightyBoard/Motherboard/EepromMap.cc **** bool isSingleTool(){
+ 745              	 .loc 1 421 0
+ 746              	 .cfi_startproc
+ 747              	 
+ 748              	 
+ 749 0000 08B5     	 push {r3,lr}
+ 750              	.LCFI14:
+ 751              	 .cfi_def_cfa_offset 8
+ 752              	 .cfi_offset 14,-4
+ 753              	 .cfi_offset 3,-8
+ 422:src/MightyBoard/Motherboard/EepromMap.cc **** 	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1);
+ 754              	 .loc 1 422 0
+ 755 0002 4FF04200 	 mov r0,#66
+ 756 0006 4FF00101 	 mov r1,#1
+ 757 000a FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
+ 423:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 758              	 .loc 1 423 0
+ 759 000e 0128     	 cmp r0,#1
+ 760 0010 14BF     	 ite ne
+ 761 0012 0020     	 movne r0,#0
+ 762 0014 0120     	 moveq r0,#1
+ 763 0016 08BD     	 pop {r3,pc}
+ 764              	 .cfi_endproc
+ 765              	.LFE107:
+ 767              	 .section .text._ZN6eeprom27setDefaultAxisHomePositionsEv,"ax",%progbits
+ 768              	 .align 2
+ 769              	 .global _ZN6eeprom27setDefaultAxisHomePositionsEv
+ 770              	 .thumb
+ 771              	 .thumb_func
+ 773              	_ZN6eeprom27setDefaultAxisHomePositionsEv:
+ 774              	.LFB104:
+ 326:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 775              	 .loc 1 326 0
+ 776              	 .cfi_startproc
+ 777              	 
+ 778              	 
+ 779 0000 30B5     	 push {r4,r5,lr}
+ 780              	.LCFI15:
+ 781              	 .cfi_def_cfa_offset 12
+ 782              	 .cfi_offset 14,-4
+ 783              	 .cfi_offset 5,-8
+ 784              	 .cfi_offset 4,-12
+ 785 0002 87B0     	 sub sp,sp,#28
+ 786              	.LCFI16:
+ 787              	 .cfi_def_cfa_offset 40
+ 788              	.LBB54:
+ 327:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_
+ 789              	 .loc 1 327 0
+ 790 0004 01AC     	 add r4,sp,#4
+ 791 0006 0E4D     	 ldr r5,.L30
+ 792 0008 0FCD     	 ldmia r5!,{r0,r1,r2,r3}
+ 793 000a 0FC4     	 stmia r4!,{r0,r1,r2,r3}
+ 794 000c 2B68     	 ldr r3,[r5,#0]
+ 795 000e 2360     	 str r3,[r4,#0]
+ 328:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(isSingleTool()){
+ 796              	 .loc 1 328 0
+ 797 0010 FFF7FEFF 	 bl _ZN6eeprom12isSingleToolEv
+ 798 0014 28B1     	 cbz r0,.L27
+ 329:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
+ 799              	 .loc 1 329 0
+ 800 0016 43F2E573 	 movw r3,#14309
+ 801 001a 0193     	 str r3,[sp,#4]
+ 330:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+ 802              	 .loc 1 330 0
+ 803 001c 41F67A23 	 movw r3,#6778
+ 804 0020 0293     	 str r3,[sp,#8]
+ 805              	.L27:
+ 806              	.LVL37:
+ 330:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+ 807              	 .loc 1 330 0 is_stmt 0 discriminator 1
+ 808 0022 6D46     	 mov r5,sp
+ 809              	.LBE54:
+ 326:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 810              	 .loc 1 326 0 is_stmt 1 discriminator 1
+ 811 0024 4FF00E04 	 mov r4,#14
+ 812              	.LVL38:
+ 813              	.L28:
+ 814              	.LBB56:
+ 815              	.LBB55:
+ 334:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4), homes[i]);
+ 816              	 .loc 1 334 0 discriminator 2
+ 817 0028 2046     	 mov r0,r4
+ 818 002a 55F8041F 	 ldr r1,[r5,#4]!
+ 819 002e FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 820 0032 04F10404 	 add r4,r4,#4
+ 821 0036 A4B2     	 uxth r4,r4
+ 332:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 822              	 .loc 1 332 0 discriminator 2
+ 823 0038 222C     	 cmp r4,#34
+ 824 003a F5D1     	 bne .L28
+ 825              	.LBE55:
+ 826              	.LBE56:
+ 337:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 827              	 .loc 1 337 0
+ 828 003c 07B0     	 add sp,sp,#28
+ 829 003e 30BD     	 pop {r4,r5,pc}
+ 830              	.L31:
+ 831              	 .align 2
+ 832              	.L30:
+ 833 0040 04000000 	 .word .LANCHOR0+4
+ 834              	 .cfi_endproc
+ 835              	.LFE104:
+ 837              	 .section .text._ZN6eeprom16setToolHeadCountEh,"ax",%progbits
+ 838              	 .align 2
+ 839              	 .global _ZN6eeprom16setToolHeadCountEh
+ 840              	 .thumb
+ 841              	 .thumb_func
+ 843              	_ZN6eeprom16setToolHeadCountEh:
+ 844              	.LFB106:
+ 409:src/MightyBoard/Motherboard/EepromMap.cc **** void setToolHeadCount(uint8_t count){
+ 845              	 .loc 1 409 0
+ 846              	 .cfi_startproc
+ 847              	 
+ 848              	 
+ 849              	.LVL39:
+ 850 0000 08B5     	 push {r3,lr}
+ 851              	.LCFI17:
+ 852              	 .cfi_def_cfa_offset 8
+ 853              	 .cfi_offset 14,-4
+ 854              	 .cfi_offset 3,-8
+ 855 0002 0146     	 mov r1,r0
+ 856              	.LVL40:
+ 413:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, count);
+ 857              	 .loc 1 413 0
+ 858 0004 4FF04200 	 mov r0,#66
+ 859              	.LVL41:
+ 860 0008 0229     	 cmp r1,#2
+ 861 000a 88BF     	 it hi
+ 862 000c 0121     	 movhi r1,#1
+ 863              	.LVL42:
+ 864 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 417:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 865              	 .loc 1 417 0
+ 866 0012 FFF7FEFF 	 bl _ZN6eeprom27setDefaultAxisHomePositionsEv
+ 418:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 867              	 .loc 1 418 0
+ 868 0016 08BD     	 pop {r3,pc}
+ 869              	 .cfi_endproc
+ 870              	.LFE106:
+ 872              	 .section .text._ZN6eeprom18factoryResetEEPROMEv,"ax",%progbits
+ 873              	 .align 2
+ 874              	 .global _ZN6eeprom18factoryResetEEPROMEv
+ 875              	 .thumb
+ 876              	 .thumb_func
+ 878              	_ZN6eeprom18factoryResetEEPROMEv:
+ 879              	.LFB105:
+ 340:src/MightyBoard/Motherboard/EepromMap.cc **** void factoryResetEEPROM() {
+ 880              	 .loc 1 340 0
+ 881              	 .cfi_startproc
+ 882              	 
+ 883              	 
+ 884 0000 30B5     	 push {r4,r5,lr}
+ 885              	.LCFI18:
+ 886              	 .cfi_def_cfa_offset 12
+ 887              	 .cfi_offset 14,-4
+ 888              	 .cfi_offset 5,-8
+ 889              	 .cfi_offset 4,-12
+ 890 0002 87B0     	 sub sp,sp,#28
+ 891              	.LCFI19:
+ 892              	 .cfi_def_cfa_offset 40
+ 893              	.LVL43:
+ 894              	.LBB57:
+ 348:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+ 895              	 .loc 1 348 0
+ 896 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 897 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 898 000c 53F8180F 	 ldr r0,[r3,#24]!
+ 899 0010 0490     	 str r0,[sp,#16]
+ 900 0012 1B79     	 ldrb r3,[r3,#4]
+ 901 0014 8DF81430 	 strb r3,[sp,#20]
+ 902              	.LVL44:
+ 352:src/MightyBoard/Motherboard/EepromMap.cc **** 	char machine_name_in[] = "The Replicator";
+ 903              	 .loc 1 352 0
+ 904 0018 40F20003 	 movw r3,#:lower16:.LC7
+ 905 001c C0F20003 	 movt r3,#:upper16:.LC7
+ 906 0020 6C46     	 mov r4,sp
+ 907 0022 0FCB     	 ldmia r3,{r0,r1,r2,r3}
+ 908 0024 07C4     	 stmia r4!,{r0,r1,r2}
+ 909 0026 24F8023B 	 strh r3,[r4],#2
+ 910 002a 4FEA1343 	 lsr r3,r3,#16
+ 911 002e 2370     	 strb r3,[r4,#0]
+ 912              	.LVL45:
+ 913 0030 0DF1FF35 	 add r5,sp,#-1
+ 914 0034 4FF02204 	 mov r4,#34
+ 915              	.LVL46:
+ 916              	.L36:
+ 917              	.LBB58:
+ 354:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::MACHINE_NAME+i, machine_name_in[i]);
+ 918              	 .loc 1 354 0 discriminator 2
+ 919 0038 2046     	 mov r0,r4
+ 920 003a 15F8011F 	 ldrb r1,[r5,#1]!
+ 921 003e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 922 0042 04F10104 	 add r4,r4,#1
+ 923 0046 A4B2     	 uxth r4,r4
+ 353:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
+ 924              	 .loc 1 353 0 discriminator 2
+ 925 0048 322C     	 cmp r4,#50
+ 926 004a F5D1     	 bne .L36
+ 353:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
+ 927              	 .loc 1 353 0 is_stmt 0
+ 928 004c 0DF10F05 	 add r5,sp,#15
+ 929 0050 4FF00604 	 mov r4,#6
+ 930              	.L37:
+ 931              	.LBE58:
+ 932              	.LBB59:
+ 359:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::DIGI_POT_SETTINGS+i, vRefBase[i]);
+ 933              	 .loc 1 359 0 is_stmt 1 discriminator 2
+ 934 0054 2046     	 mov r0,r4
+ 935 0056 15F8011F 	 ldrb r1,[r5,#1]!
+ 936 005a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 937 005e 04F10104 	 add r4,r4,#1
+ 938 0062 A4B2     	 uxth r4,r4
+ 358:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 939              	 .loc 1 358 0 discriminator 2
+ 940 0064 0B2C     	 cmp r4,#11
+ 941 0066 F5D1     	 bne .L37
+ 942              	.LBE59:
+ 363:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+ 943              	 .loc 1 363 0
+ 944 0068 4FF00400 	 mov r0,#4
+ 945 006c 4FF09F01 	 mov r1,#159
+ 946 0070 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 365:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+ 947              	 .loc 1 365 0
+ 948 0074 4FF00C00 	 mov r0,#12
+ 949 0078 4FF01B01 	 mov r1,#27
+ 950 007c FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 369:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 951              	 .loc 1 369 0
+ 952 0080 FFF7FEFF 	 bl _ZN6eeprom27setDefaultAxisHomePositionsEv
+ 953              	.LVL47:
+ 954 0084 224D     	 ldr r5,.L42
+ 955 0086 4FF4C674 	 mov r4,#396
+ 956              	.LVL48:
+ 957              	.L38:
+ 958              	.LBB60:
+ 373:src/MightyBoard/Motherboard/EepromMap.cc ****     	setEeprom32(eeprom_offsets::AXIS_LENGTHS+(i*4), replicator_axis_lengths::axis_lengths[i]);
+ 959              	 .loc 1 373 0 discriminator 2
+ 960 008a 2046     	 mov r0,r4
+ 961 008c 55F8041F 	 ldr r1,[r5,#4]!
+ 962 0090 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 963 0094 04F10404 	 add r4,r4,#4
+ 964 0098 A4B2     	 uxth r4,r4
+ 372:src/MightyBoard/Motherboard/EepromMap.cc ****     for (uint8_t i=0;i<5;i++){
+ 965              	 .loc 1 372 0 discriminator 2
+ 966 009a B4F5D07F 	 cmp r4,#416
+ 967 009e F4D1     	 bne .L38
+ 968              	.LBE60:
+ 377:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsAcceleration();
+ 969              	 .loc 1 377 0
+ 970 00a0 FFF7FEFF 	 bl _ZN6eeprom23setDefaultsAccelerationEv
+ 379:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 971              	 .loc 1 379 0
+ 972 00a4 4FF4B070 	 mov r0,#352
+ 973 00a8 4FF00101 	 mov r1,#1
+ 974 00ac FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 383:src/MightyBoard/Motherboard/EepromMap.cc ****     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+ 975              	 .loc 1 383 0
+ 976 00b0 4FF07400 	 mov r0,#116
+ 977 00b4 FFF7FEFF 	 bl _ZN6eeprom18SetDefaultsThermalEt
+ 386:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+ 978              	 .loc 1 386 0
+ 979 00b8 4FF4AC70 	 mov r0,#344
+ 980 00bc FFF7FEFF 	 bl _ZN6eeprom18setDefaultsPreheatEt
+ 390:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO, vidPid[0]);
+ 981              	 .loc 1 390 0
+ 982 00c0 4FF04400 	 mov r0,#68
+ 983 00c4 42F2C131 	 movw r1,#9153
+ 984 00c8 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 391:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO+2, vidPid[1]);
+ 985              	 .loc 1 391 0
+ 986 00cc 4FF04600 	 mov r0,#70
+ 987 00d0 4BF20441 	 movw r1,#46084
+ 988 00d4 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 395:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
+ 989              	 .loc 1 395 0
+ 990 00d8 4FF00000 	 mov r0,#0
+ 991 00dc 4FF48071 	 mov r1,#256
+ 992 00e0 FFF7FEFF 	 bl _ZN6eeprom19setDefaultsExtruderEit
+ 398:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
+ 993              	 .loc 1 398 0
+ 994 00e4 4FF00100 	 mov r0,#1
+ 995 00e8 4FF48E71 	 mov r1,#284
+ 996 00ec FFF7FEFF 	 bl _ZN6eeprom19setDefaultsExtruderEit
+ 401:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+ 997              	 .loc 1 401 0
+ 998 00f0 4FF4A070 	 mov r0,#320
+ 999 00f4 FFF7FEFF 	 bl _ZN6eeprom20setDefaultLedEffectsEt
+ 402:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+ 1000              	 .loc 1 402 0
+ 1001 00f8 4FF4A570 	 mov r0,#330
+ 1002 00fc FFF7FEFF 	 bl _ZN6eeprom21setDefaultBuzzEffectsEt
+ 405:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0);
+ 1003              	 .loc 1 405 0
+ 1004 0100 4FF4AB70 	 mov r0,#342
+ 1005 0104 4FF00001 	 mov r1,#0
+ 1006 0108 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 1007              	.LBE57:
+ 407:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1008              	 .loc 1 407 0
+ 1009 010c 07B0     	 add sp,sp,#28
+ 1010 010e 30BD     	 pop {r4,r5,pc}
+ 1011              	.L43:
+ 1012              	 .align 2
+ 1013              	.L42:
+ 1014 0110 FCFFFFFF 	 .word .LANCHOR1-4
+ 1015              	 .cfi_endproc
+ 1016              	.LFE105:
+ 1018              	 .section .text._ZN6eeprom18setDefaultSettingsEv,"ax",%progbits
+ 1019              	 .align 2
+ 1020              	 .global _ZN6eeprom18setDefaultSettingsEv
+ 1021              	 .thumb
+ 1022              	 .thumb_func
+ 1024              	_ZN6eeprom18setDefaultSettingsEv:
+ 1025              	.LFB108:
+ 424:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 425:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 426:src/MightyBoard/Motherboard/EepromMap.cc **** // reset the settings that can be changed via the onboard UI to defaults
+ 427:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultSettings(){
+ 1026              	 .loc 1 427 0
+ 1027              	 .cfi_startproc
+ 1028              	 
+ 1029              	 
+ 1030 0000 08B5     	 push {r3,lr}
+ 1031              	.LCFI20:
+ 1032              	 .cfi_def_cfa_offset 8
+ 1033              	 .cfi_offset 14,-4
+ 1034              	 .cfi_offset 3,-8
+ 428:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write blink and buzz defaults
+ 429:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+ 1035              	 .loc 1 429 0
+ 1036 0002 4FF4A070 	 mov r0,#320
+ 1037 0006 FFF7FEFF 	 bl _ZN6eeprom20setDefaultLedEffectsEt
+ 430:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+ 1038              	 .loc 1 430 0
+ 1039 000a 4FF4A570 	 mov r0,#330
+ 1040 000e FFF7FEFF 	 bl _ZN6eeprom21setDefaultBuzzEffectsEt
+ 431:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+ 1041              	 .loc 1 431 0
+ 1042 0012 4FF4AC70 	 mov r0,#344
+ 1043 0016 FFF7FEFF 	 bl _ZN6eeprom18setDefaultsPreheatEt
+ 432:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 1044              	 .loc 1 432 0
+ 1045 001a 4FF4B070 	 mov r0,#352
+ 1046 001e 4FF00101 	 mov r1,#1
+ 1047 0022 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 433:src/MightyBoard/Motherboard/EepromMap.cc **** //   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 434:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1048              	 .loc 1 434 0
+ 1049 0026 08BD     	 pop {r3,pc}
+ 1050              	 .cfi_endproc
+ 1051              	.LFE108:
+ 1053              	 .section .text._ZN6eeprom30storeToolheadToleranceDefaultsEv,"ax",%progbits
+ 1054              	 .align 2
+ 1055              	 .global _ZN6eeprom30storeToolheadToleranceDefaultsEv
+ 1056              	 .thumb
+ 1057              	 .thumb_func
+ 1059              	_ZN6eeprom30storeToolheadToleranceDefaultsEv:
+ 1060              	.LFB109:
+ 435:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 436:src/MightyBoard/Motherboard/EepromMap.cc **** //
+ 437:src/MightyBoard/Motherboard/EepromMap.cc **** void storeToolheadToleranceDefaults(){
+ 1061              	 .loc 1 437 0
+ 1062              	 .cfi_startproc
+ 1063              	 
+ 1064              	 
+ 1065 0000 00B5     	 push {lr}
+ 1066              	.LCFI21:
+ 1067              	 .cfi_def_cfa_offset 4
+ 1068              	 .cfi_offset 14,-4
+ 1069 0002 85B0     	 sub sp,sp,#20
+ 1070              	.LCFI22:
+ 1071              	 .cfi_def_cfa_offset 24
+ 1072              	.LBB61:
+ 438:src/MightyBoard/Motherboard/EepromMap.cc **** 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
+ 439:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t offsets[3] = {0,0,0};
+ 1073              	 .loc 1 439 0
+ 1074 0004 4FF00001 	 mov r1,#0
+ 1075 0008 0191     	 str r1,[sp,#4]
+ 1076 000a 0291     	 str r1,[sp,#8]
+ 1077 000c 0391     	 str r1,[sp,#12]
+ 1078              	.LVL49:
+ 1079              	.LBB62:
+ 440:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<3;i++){
+ 441:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS+(i*4), offsets[i]);
+ 1080              	 .loc 1 441 0
+ 1081 000e 4FF4B170 	 mov r0,#354
+ 1082 0012 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 1083              	.LVL50:
+ 1084 0016 4FF4B370 	 mov r0,#358
+ 1085 001a 0299     	 ldr r1,[sp,#8]
+ 1086 001c FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 1087              	.LVL51:
+ 1088 0020 4FF4B570 	 mov r0,#362
+ 1089 0024 0399     	 ldr r1,[sp,#12]
+ 1090 0026 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 1091              	.LVL52:
+ 1092              	.LBE62:
+ 1093              	.LBE61:
+ 442:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::TOOLHEAD_OFFSET_
+ 443:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS+(i*4
+ 444:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 445:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS),
+ 446:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1094              	 .loc 1 446 0
+ 1095 002a 05B0     	 add sp,sp,#20
+ 1096 002c 00BD     	 pop {pc}
+ 1097              	 .cfi_endproc
+ 1098              	.LFE109:
+ 1100 002e 00BF     	 .section .text._ZN6eeprom15fullResetEEPROMEv,"ax",%progbits
+ 1101              	 .align 2
+ 1102              	 .global _ZN6eeprom15fullResetEEPROMEv
+ 1103              	 .thumb
+ 1104              	 .thumb_func
+ 1106              	_ZN6eeprom15fullResetEEPROMEv:
+ 1107              	.LFB110:
+ 447:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 448:src/MightyBoard/Motherboard/EepromMap.cc **** /// Initialize entire eeprom map, including factor-set settings
+ 449:src/MightyBoard/Motherboard/EepromMap.cc **** void fullResetEEPROM() {
+ 1108              	 .loc 1 449 0
+ 1109              	 .cfi_startproc
+ 1110              	 
+ 1111              	 
+ 1112 0000 08B5     	 push {r3,lr}
+ 1113              	.LCFI23:
+ 1114              	 .cfi_def_cfa_offset 8
+ 1115              	 .cfi_offset 14,-4
+ 1116              	 .cfi_offset 3,-8
+ 1117              	.LBB63:
+ 450:src/MightyBoard/Motherboard/EepromMap.cc **** 	write_ff_to_ram();
+ 1118              	 .loc 1 450 0
+ 1119 0002 FFF7FEFF 	 bl _ZN6eeprom15write_ff_to_ramEv
+ 1120              	.LVL53:
+ 451:src/MightyBoard/Motherboard/EepromMap.cc **** 	// axis inversion settings
+ 452:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t axis_invert = 0b10111; // invert XYBZ
+ 453:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_INVERSION, axis_invert);
+ 1121              	 .loc 1 453 0
+ 1122 0006 4FF00200 	 mov r0,#2
+ 1123 000a 4FF01701 	 mov r1,#23
+ 1124 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 454:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
+ 455:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 456:src/MightyBoard/Motherboard/EepromMap.cc **** 	// tool count settings
+ 457:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, 1);
+ 1125              	 .loc 1 457 0
+ 1126 0012 4FF04200 	 mov r0,#66
+ 1127 0016 4FF00101 	 mov r1,#1
+ 1128 001a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 458:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
+ 459:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 460:src/MightyBoard/Motherboard/EepromMap.cc **** 	// toolhead offset defaults
+ 461:src/MightyBoard/Motherboard/EepromMap.cc **** 	storeToolheadToleranceDefaults();
+ 1129              	 .loc 1 461 0
+ 1130 001e FFF7FEFF 	 bl _ZN6eeprom30storeToolheadToleranceDefaultsEv
+ 462:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 463:src/MightyBoard/Motherboard/EepromMap.cc **** 	factoryResetEEPROM();
+ 1131              	 .loc 1 463 0
+ 1132 0022 FFF7FEFF 	 bl _ZN6eeprom18factoryResetEEPROMEv
+ 1133              	.LBE63:
+ 464:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1134              	 .loc 1 464 0
+ 1135 0026 08BD     	 pop {r3,pc}
+ 1136              	 .cfi_endproc
+ 1137              	.LFE110:
+ 1139              	 .section .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv,"ax",%progbits
+ 1140              	 .align 2
+ 1141              	 .thumb
+ 1142              	 .thumb_func
+ 1144              	_GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:
+ 1145              	.LFB112:
+ 465:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 466:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1146              	 .loc 1 466 0
+ 1147              	 .cfi_startproc
+ 1148              	 
+ 1149              	 
+ 1150 0000 10B5     	 push {r4,lr}
+ 1151              	.LCFI24:
+ 1152              	 .cfi_def_cfa_offset 8
+ 1153              	 .cfi_offset 14,-4
+ 1154              	 .cfi_offset 4,-8
+ 1155              	.LVL54:
+ 1156              	.LBB66:
+ 1157              	.LBB67:
+ 1158              	 .file 4 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 1159              	 .loc 4 49 0
+ 1160 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 1161 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 1162 000a 4FF00001 	 mov r1,#0
+ 1163 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 1164              	 .loc 4 50 0
+ 1165 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 1166 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 1167 001a 4FF00101 	 mov r1,#1
+ 1168 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 1169              	 .loc 4 51 0
+ 1170 0022 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 1171 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 1172 002a 4FF00201 	 mov r1,#2
+ 1173 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 1174              	 .loc 4 52 0
+ 1175 0032 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 1176 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 1177 003a 4FF00301 	 mov r1,#3
+ 1178 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 1179              	 .loc 4 53 0
+ 1180 0042 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 1181 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 1182 004a 4FF00401 	 mov r1,#4
+ 1183 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 1184              	 .loc 4 55 0
+ 1185 0052 40F20004 	 movw r4,#:lower16:.LANCHOR7
+ 1186 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR7
+ 1187 005a 2046     	 mov r0,r4
+ 1188 005c 4FF0FF01 	 mov r1,#255
+ 1189 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1190              	 .file 5 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 1191              	 .loc 5 76 0
+ 1192 0064 40F20000 	 movw r0,#:lower16:.LANCHOR8
+ 1193 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR8
+ 1194 006c 2146     	 mov r1,r4
+ 1195 006e 4FF00002 	 mov r2,#0
+ 1196 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 1197              	.LBE67:
+ 1198              	.LBE66:
+ 1199              	 .loc 1 466 0
+ 1200 0076 10BD     	 pop {r4,pc}
+ 1201              	 .cfi_endproc
+ 1202              	.LFE112:
+ 1204              	 .section .init_array,"aw",%init_array
+ 1205              	 .align 2
+ 1206 0000 00000000 	 .word _GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv(target1)
+ 1207              	 .section .rodata
+ 1208              	 .align 2
+ 1209              	 .set .LANCHOR0,.+0
+ 1210              	.LC3:
+ 1211 0000 7B00     	 .short 123
+ 1212 0002 F401     	 .short 500
+ 1213              	.LC2:
+ 1214 0004 E5370000 	 .word 14309
+ 1215 0008 941B0000 	 .word 7060
+ 1216 000c 00000000 	 .word 0
+ 1217 0010 00000000 	 .word 0
+ 1218 0014 00000000 	 .word 0
+ 1219              	.LC0:
+ 1220 0018 76       	 .byte 118
+ 1221 0019 76       	 .byte 118
+ 1222 001a 28       	 .byte 40
+ 1223 001b 76       	 .byte 118
+ 1224 001c 76       	 .byte 118
+ 1225 001d 000000   	 .section .bss._ZL5Port0,"aw",%nobits
+ 1226              	 .align 2
+ 1227              	 .set .LANCHOR2,.+0
+ 1230              	_ZL5Port0:
+ 1231 0000 00       	 .space 1
+ 1232 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 1233              	 .align 2
+ 1234              	 .set .LANCHOR3,.+0
+ 1237              	_ZL5Port1:
+ 1238 0000 00       	 .space 1
+ 1239 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 1240              	 .align 2
+ 1241              	 .set .LANCHOR4,.+0
+ 1244              	_ZL5Port2:
+ 1245 0000 00       	 .space 1
+ 1246 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 1247              	 .align 2
+ 1248              	 .set .LANCHOR5,.+0
+ 1251              	_ZL5Port3:
+ 1252 0000 00       	 .space 1
+ 1253 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 1254              	 .align 2
+ 1255              	 .set .LANCHOR6,.+0
+ 1258              	_ZL5Port4:
+ 1259 0000 00       	 .space 1
+ 1260 0001 000000   	 .section .rodata.str1.4,"aMS",%progbits,1
+ 1261              	 .align 2
+ 1262              	.LC5:
+ 1263 0000 73617665 	 .ascii "save_to_flash (%s:%d)\012\000"
+ 1263      5F746F5F 
+ 1263      666C6173 
+ 1263      68202825 
+ 1263      733A2564 
+ 1264 0017 00       	 .space 1
+ 1265              	.LC6:
+ 1266 0018 7372632F 	 .ascii "src/MightyBoard/Motherboard/EepromMap.cc\000"
+ 1266      4D696768 
+ 1266      7479426F 
+ 1266      6172642F 
+ 1266      4D6F7468 
+ 1267 0041 000000   	 .space 3
+ 1268              	.LC7:
+ 1269 0044 54686520 	 .ascii "The Replicator\000"
+ 1269      5265706C 
+ 1269      69636174 
+ 1269      6F7200
+ 1270 0053 00       	 .section .bss._ZL8NullPort,"aw",%nobits
+ 1271              	 .align 2
+ 1272              	 .set .LANCHOR7,.+0
+ 1275              	_ZL8NullPort:
+ 1276 0000 00       	 .space 1
+ 1277 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 1278              	 .align 2
+ 1279              	 .set .LANCHOR8,.+0
+ 1282              	_ZL7NullPin:
+ 1283 0000 00000000 	 .space 5
+ 1283      00
+ 1284 0005 000000   	 .section .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE,"a",%progbits
+ 1285              	 .align 2
+ 1286              	 .set .LANCHOR1,.+0
+ 1289              	_ZN23replicator_axis_lengthsL12axis_lengthsE:
+ 1290 0000 BD290000 	 .word 10685
+ 1291 0004 4E110100 	 .word 69966
+ 1292 0008 60EA0000 	 .word 60000
+ 1293 000c 80E79200 	 .word 9627520
+ 1294 0010 80E79200 	 .word 9627520
+ 1295              	 .text
+ 1296              	.Letext0:
+ 1297              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1298              	 .file 7 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 1299              	 .file 8 "src/MightyBoard/shared/ThermistorTable.hh"
+ 1300              	 .file 9 "src/MightyBoard/Motherboard/Piezo.hh"
+ 1301              	 .file 10 "src/MightyBoard/Motherboard/RGB_LED.hh"
+ 1302              	 .file 11 "src/MightyBoard/shared/TemperatureSensor.hh"
+ 1303              	 .file 12 "src/MightyBoard/shared/HeatingElement.hh"
+ 1304              	 .file 13 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 1305              	 .file 14 "src/MightyBoard/Motherboard/system/system_LPC17xx.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 EepromMap.cc
+    {standard input}:19     .text._ZN6eeprom15write_ff_to_ramEv:00000000 $t
+    {standard input}:24     .text._ZN6eeprom15write_ff_to_ramEv:00000000 _ZN6eeprom15write_ff_to_ramEv
+    {standard input}:74     .text._ZN6eeprom19read_all_from_flashEv:00000000 $t
+    {standard input}:79     .text._ZN6eeprom19read_all_from_flashEv:00000000 _ZN6eeprom19read_all_from_flashEv
+    {standard input}:125    .text._ZN6eeprom13save_to_flashEv:00000000 $t
+    {standard input}:130    .text._ZN6eeprom13save_to_flashEv:00000000 _ZN6eeprom13save_to_flashEv
+    {standard input}:1262   .rodata.str1.4:00000000 .LC5
+    {standard input}:202    .text._ZN6eeprom13save_to_flashEv:00000054 $d
+    {standard input}:207    .text._ZN6eeprom20setDefaultCoolingFanEt:00000000 $t
+    {standard input}:212    .text._ZN6eeprom20setDefaultCoolingFanEt:00000000 _ZN6eeprom20setDefaultCoolingFanEt
+    {standard input}:243    .text._ZN6eeprom13setDefaultPIDEt:00000000 $t
+    {standard input}:248    .text._ZN6eeprom13setDefaultPIDEt:00000000 _ZN6eeprom13setDefaultPIDEt
+    {standard input}:281    .text._ZN6eeprom19setDefaultsExtruderEit:00000000 $t
+    {standard input}:286    .text._ZN6eeprom19setDefaultsExtruderEit:00000000 _ZN6eeprom19setDefaultsExtruderEit
+    {standard input}:376    .text._ZN6eeprom18SetDefaultsThermalEt:00000000 $t
+    {standard input}:381    .text._ZN6eeprom18SetDefaultsThermalEt:00000000 _ZN6eeprom18SetDefaultsThermalEt
+    {standard input}:447    .text._ZN6eeprom20setDefaultLedEffectsEt:00000000 $t
+    {standard input}:452    .text._ZN6eeprom20setDefaultLedEffectsEt:00000000 _ZN6eeprom20setDefaultLedEffectsEt
+    {standard input}:498    .text._ZN6eeprom14setCustomColorEhhh:00000000 $t
+    {standard input}:503    .text._ZN6eeprom14setCustomColorEhhh:00000000 _ZN6eeprom14setCustomColorEhhh
+    {standard input}:544    .text._ZN6eeprom18eeprom_write_soundE5Soundt:00000000 $t
+    {standard input}:549    .text._ZN6eeprom18eeprom_write_soundE5Soundt:00000000 _ZN6eeprom18eeprom_write_soundE5Soundt
+    {standard input}:583    .text._ZN6eeprom21setDefaultBuzzEffectsEt:00000000 $t
+    {standard input}:588    .text._ZN6eeprom21setDefaultBuzzEffectsEt:00000000 _ZN6eeprom21setDefaultBuzzEffectsEt
+    {standard input}:1209   .rodata:00000000 .LANCHOR0
+    {standard input}:621    .text._ZN6eeprom18setDefaultsPreheatEt:00000000 $t
+    {standard input}:626    .text._ZN6eeprom18setDefaultsPreheatEt:00000000 _ZN6eeprom18setDefaultsPreheatEt
+    {standard input}:664    .text._ZN6eeprom23setDefaultsAccelerationEv:00000000 $t
+    {standard input}:669    .text._ZN6eeprom23setDefaultsAccelerationEv:00000000 _ZN6eeprom23setDefaultsAccelerationEv
+    {standard input}:738    .text._ZN6eeprom12isSingleToolEv:00000000 $t
+    {standard input}:743    .text._ZN6eeprom12isSingleToolEv:00000000 _ZN6eeprom12isSingleToolEv
+    {standard input}:768    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000000 $t
+    {standard input}:773    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000000 _ZN6eeprom27setDefaultAxisHomePositionsEv
+    {standard input}:833    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000040 $d
+    {standard input}:838    .text._ZN6eeprom16setToolHeadCountEh:00000000 $t
+    {standard input}:843    .text._ZN6eeprom16setToolHeadCountEh:00000000 _ZN6eeprom16setToolHeadCountEh
+    {standard input}:873    .text._ZN6eeprom18factoryResetEEPROMEv:00000000 $t
+    {standard input}:878    .text._ZN6eeprom18factoryResetEEPROMEv:00000000 _ZN6eeprom18factoryResetEEPROMEv
+    {standard input}:1268   .rodata.str1.4:00000044 .LC7
+    {standard input}:1014   .text._ZN6eeprom18factoryResetEEPROMEv:00000110 $d
+    {standard input}:1019   .text._ZN6eeprom18setDefaultSettingsEv:00000000 $t
+    {standard input}:1024   .text._ZN6eeprom18setDefaultSettingsEv:00000000 _ZN6eeprom18setDefaultSettingsEv
+    {standard input}:1054   .text._ZN6eeprom30storeToolheadToleranceDefaultsEv:00000000 $t
+    {standard input}:1059   .text._ZN6eeprom30storeToolheadToleranceDefaultsEv:00000000 _ZN6eeprom30storeToolheadToleranceDefaultsEv
+    {standard input}:1101   .text._ZN6eeprom15fullResetEEPROMEv:00000000 $t
+    {standard input}:1106   .text._ZN6eeprom15fullResetEEPROMEv:00000000 _ZN6eeprom15fullResetEEPROMEv
+    {standard input}:1140   .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:00000000 $t
+    {standard input}:1144   .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:00000000 _GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv
+    {standard input}:1227   .bss._ZL5Port0:00000000 .LANCHOR2
+    {standard input}:1234   .bss._ZL5Port1:00000000 .LANCHOR3
+    {standard input}:1241   .bss._ZL5Port2:00000000 .LANCHOR4
+    {standard input}:1248   .bss._ZL5Port3:00000000 .LANCHOR5
+    {standard input}:1255   .bss._ZL5Port4:00000000 .LANCHOR6
+    {standard input}:1272   .bss._ZL8NullPort:00000000 .LANCHOR7
+    {standard input}:1279   .bss._ZL7NullPin:00000000 .LANCHOR8
+    {standard input}:1205   .init_array:00000000 $d
+    {standard input}:1208   .rodata:00000000 $d
+    {standard input}:1226   .bss._ZL5Port0:00000000 $d
+    {standard input}:1230   .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:1233   .bss._ZL5Port1:00000000 $d
+    {standard input}:1237   .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:1240   .bss._ZL5Port2:00000000 $d
+    {standard input}:1244   .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:1247   .bss._ZL5Port3:00000000 $d
+    {standard input}:1251   .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:1254   .bss._ZL5Port4:00000000 $d
+    {standard input}:1258   .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:1261   .rodata.str1.4:00000000 $d
+    {standard input}:1265   .rodata.str1.4:00000018 .LC6
+    {standard input}:1271   .bss._ZL8NullPort:00000000 $d
+    {standard input}:1275   .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:1278   .bss._ZL7NullPin:00000000 $d
+    {standard input}:1282   .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:1285   .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE:00000000 $d
+    {standard input}:1289   .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE:00000000 _ZN23replicator_axis_lengthsL12axis_lengthsE
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+xprintf
+SystemCoreClock
+_ZN3IAP5eraseEii
+_ZN6eeprom16clearflashupdateEv
+_ZN6eeprom10setEeprom8Eth
+_ZN6eeprom11setEeprom16Ett
+default_therm_table
+_ZN6eeprom10getEeprom8Eth
+_ZN6eeprom11setEeprom32Etm
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth

@@ -1,0 +1,2043 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "Heater.cc"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .global __aeabi_fcmpeq
+  19              	 .section .text._ZN6Heater5resetEv,"ax",%progbits
+  20              	 .align 2
+  21              	 .global _ZN6Heater5resetEv
+  22              	 .thumb
+  23              	 .thumb_func
+  25              	_ZN6Heater5resetEv:
+  26              	.LFB104:
+  27              	 .file 1 "src/MightyBoard/shared/Heater.cc"
+   1:src/MightyBoard/shared/Heater.cc **** /*
+   2:src/MightyBoard/shared/Heater.cc ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/Heater.cc ****  *
+   4:src/MightyBoard/shared/Heater.cc ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/Heater.cc ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/Heater.cc ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/Heater.cc ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/Heater.cc ****  *
+   9:src/MightyBoard/shared/Heater.cc ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/Heater.cc ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/Heater.cc ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/Heater.cc ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/Heater.cc ****  *
+  14:src/MightyBoard/shared/Heater.cc ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/Heater.cc ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/Heater.cc ****  */
+  17:src/MightyBoard/shared/Heater.cc **** 
+  18:src/MightyBoard/shared/Heater.cc **** #include "Configuration.hh"
+  19:src/MightyBoard/shared/Heater.cc **** #include "Heater.hh"
+  20:src/MightyBoard/shared/Heater.cc **** #include "HeatingElement.hh"
+  21:src/MightyBoard/shared/Heater.cc **** #include "Thermistor.hh"
+  22:src/MightyBoard/shared/Heater.cc **** #include "Eeprom.hh"
+  23:src/MightyBoard/shared/Heater.cc **** #include "EepromMap.hh"
+  24:src/MightyBoard/shared/Heater.cc **** #include "Motherboard.hh"
+  25:src/MightyBoard/shared/Heater.cc **** 
+  26:src/MightyBoard/shared/Heater.cc **** 
+  27:src/MightyBoard/shared/Heater.cc **** /// Offset to compensate for range clipping and bleed-off
+  28:src/MightyBoard/shared/Heater.cc **** #define HEATER_OFFSET_ADJUSTMENT 0
+  29:src/MightyBoard/shared/Heater.cc **** 
+  30:src/MightyBoard/shared/Heater.cc **** /// PID bypass: If the set point is more than this many degrees over the
+  31:src/MightyBoard/shared/Heater.cc **** ///             current temperature, bypass the PID loop altogether.
+  32:src/MightyBoard/shared/Heater.cc **** #define PID_BYPASS_DELTA 15
+  33:src/MightyBoard/shared/Heater.cc **** 
+  34:src/MightyBoard/shared/Heater.cc **** /// Number of bad sensor readings we need to get in a row before shutting off the heater
+  35:src/MightyBoard/shared/Heater.cc **** const uint8_t SENSOR_MAX_BAD_READINGS = 5;
+  36:src/MightyBoard/shared/Heater.cc **** 
+  37:src/MightyBoard/shared/Heater.cc **** /// Number of temp readings to be at target value before triggering newTargetReached
+  38:src/MightyBoard/shared/Heater.cc **** /// with bad seating of thermocouples, we sometimes get innacurate reads
+  39:src/MightyBoard/shared/Heater.cc **** const uint16_t TARGET_CHECK_COUNT = 5;
+  40:src/MightyBoard/shared/Heater.cc **** 
+  41:src/MightyBoard/shared/Heater.cc **** /// If we read a temperature higher than this, shut down the heater
+  42:src/MightyBoard/shared/Heater.cc **** const uint16_t HEATER_CUTOFF_TEMPERATURE = 300;
+  43:src/MightyBoard/shared/Heater.cc **** 
+  44:src/MightyBoard/shared/Heater.cc **** 
+  45:src/MightyBoard/shared/Heater.cc **** /// temperatures below setting by this amount will flag as "not heating up"
+  46:src/MightyBoard/shared/Heater.cc **** const uint16_t HEAT_FAIL_THRESHOLD = 30;
+  47:src/MightyBoard/shared/Heater.cc **** 
+  48:src/MightyBoard/shared/Heater.cc **** /// if the starting temperature is less than this amount, we will check heating progress
+  49:src/MightyBoard/shared/Heater.cc **** /// to get to this temperature, the heater has already been checked.
+  50:src/MightyBoard/shared/Heater.cc **** const uint16_t HEAT_CHECKED_THRESHOLD = 50;
+  51:src/MightyBoard/shared/Heater.cc **** 
+  52:src/MightyBoard/shared/Heater.cc **** /// timeout for heating all the way up
+  53:src/MightyBoard/shared/Heater.cc **** const uint32_t HEAT_UP_TIME = 300000000;  //five minutes
+  54:src/MightyBoard/shared/Heater.cc **** 
+  55:src/MightyBoard/shared/Heater.cc **** /// timeout for showing heating progress
+  56:src/MightyBoard/shared/Heater.cc **** const uint32_t HEAT_PROGRESS_TIME = 90000000; // 90 seconds
+  57:src/MightyBoard/shared/Heater.cc **** 
+  58:src/MightyBoard/shared/Heater.cc **** 
+  59:src/MightyBoard/shared/Heater.cc **** /// threshold above starting temperature we check for heating progres
+  60:src/MightyBoard/shared/Heater.cc **** const uint16_t HEAT_PROGRESS_THRESHOLD = 10;
+  61:src/MightyBoard/shared/Heater.cc **** 
+  62:src/MightyBoard/shared/Heater.cc **** Heater::Heater(TemperatureSensor& sensor_in,
+  63:src/MightyBoard/shared/Heater.cc ****                HeatingElement& element_in,
+  64:src/MightyBoard/shared/Heater.cc ****                micros_t sample_interval_micros_in,
+  65:src/MightyBoard/shared/Heater.cc ****                uint16_t eeprom_base_in, bool timingCheckOn) :
+  66:src/MightyBoard/shared/Heater.cc **** 		sensor(sensor_in),
+  67:src/MightyBoard/shared/Heater.cc **** 		element(element_in),
+  68:src/MightyBoard/shared/Heater.cc **** 		sample_interval_micros(sample_interval_micros_in),
+  69:src/MightyBoard/shared/Heater.cc **** 		eeprom_base(eeprom_base_in),
+  70:src/MightyBoard/shared/Heater.cc **** 		heat_timing_check(timingCheckOn)
+  71:src/MightyBoard/shared/Heater.cc **** {
+  72:src/MightyBoard/shared/Heater.cc **** 	reset();
+  73:src/MightyBoard/shared/Heater.cc **** }
+  74:src/MightyBoard/shared/Heater.cc **** 
+  75:src/MightyBoard/shared/Heater.cc **** void Heater::reset() {
+  28              	 .loc 1 75 0
+  29              	 .cfi_startproc
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+  34              	.LCFI0:
+  35              	 .cfi_def_cfa_offset 24
+  36              	 .cfi_offset 14,-4
+  37              	 .cfi_offset 8,-8
+  38              	 .cfi_offset 7,-12
+  39              	 .cfi_offset 6,-16
+  40              	 .cfi_offset 5,-20
+  41              	 .cfi_offset 4,-24
+  42 0004 88B0     	 sub sp,sp,#32
+  43              	.LCFI1:
+  44              	 .cfi_def_cfa_offset 56
+  45 0006 0446     	 mov r4,r0
+  46              	.LBB47:
+  76:src/MightyBoard/shared/Heater.cc **** 	// TODO: Reset sensor, element here?
+  77:src/MightyBoard/shared/Heater.cc **** 
+  78:src/MightyBoard/shared/Heater.cc **** 	current_temperature = 0;
+  47              	 .loc 1 78 0
+  48 0008 4FF00003 	 mov r3,#0
+  49 000c 1E46     	 mov r6,r3
+  50 000e 8385     	 strh r3,[r0,#44]
+  79:src/MightyBoard/shared/Heater.cc **** 	startTemp = 0;
+  51              	 .loc 1 79 0
+  52 0010 C385     	 strh r3,[r0,#46]
+  80:src/MightyBoard/shared/Heater.cc **** 
+  81:src/MightyBoard/shared/Heater.cc **** 	fail_state = false;
+  53              	 .loc 1 81 0
+  54 0012 80F86130 	 strb r3,[r0,#97]
+  82:src/MightyBoard/shared/Heater.cc **** 	fail_count = 0;
+  55              	 .loc 1 82 0
+  56 0016 80F86230 	 strb r3,[r0,#98]
+  83:src/MightyBoard/shared/Heater.cc **** 	fail_mode = HEATER_FAIL_NONE;
+  57              	 .loc 1 83 0
+  58 001a 80F86430 	 strb r3,[r0,#100]
+  84:src/MightyBoard/shared/Heater.cc **** 	value_fail_count = 0;
+  59              	 .loc 1 84 0
+  60 001e 80F86330 	 strb r3,[r0,#99]
+  85:src/MightyBoard/shared/Heater.cc **** 
+  86:src/MightyBoard/shared/Heater.cc **** 	heatingUpTimer = Timeout();
+  61              	 .loc 1 86 0
+  62 0022 6846     	 mov r0,sp
+  63              	.LVL1:
+  64 0024 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+  65 0028 04F16807 	 add r7,r4,#104
+  66 002c 9DE80F00 	 ldmia sp,{r0,r1,r2,r3}
+  67 0030 87E80F00 	 stmia r7,{r0,r1,r2,r3}
+  87:src/MightyBoard/shared/Heater.cc **** 	heatProgressTimer = Timeout();
+  68              	 .loc 1 87 0
+  69 0034 04AD     	 add r5,sp,#16
+  70 0036 2846     	 mov r0,r5
+  71 0038 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+  72 003c 04F17807 	 add r7,r4,#120
+  73 0040 95E80F00 	 ldmia r5,{r0,r1,r2,r3}
+  74 0044 87E80F00 	 stmia r7,{r0,r1,r2,r3}
+  88:src/MightyBoard/shared/Heater.cc **** 	progressChecked = false;
+  75              	 .loc 1 88 0
+  76 0048 84F88860 	 strb r6,[r4,#136]
+  89:src/MightyBoard/shared/Heater.cc **** 	newTargetReached = false;
+  77              	 .loc 1 89 0
+  78 004c 84F83060 	 strb r6,[r4,#48]
+  90:src/MightyBoard/shared/Heater.cc **** //	reached_count = 0;
+  91:src/MightyBoard/shared/Heater.cc **** 	is_paused = false;
+  79              	 .loc 1 91 0
+  80 0050 84F88A60 	 strb r6,[r4,#138]
+  92:src/MightyBoard/shared/Heater.cc **** 
+  93:src/MightyBoard/shared/Heater.cc **** 	float p = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::P_TERM_OFFSET,DEFAULT_P);
+  81              	 .loc 1 93 0
+  82 0054 608E     	 ldrh r0,[r4,#50]
+  83 0056 4FF00001 	 mov r1,#0
+  84 005a C4F2E001 	 movt r1,16608
+  85 005e FFF7FEFF 	 bl _ZN6eeprom16getEepromFixed16Etf
+  86 0062 0546     	 mov r5,r0
+  87              	.LVL2:
+  94:src/MightyBoard/shared/Heater.cc **** 	float i = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::I_TERM_OFFSET,DEFAULT_I);
+  88              	 .loc 1 94 0
+  89 0064 608E     	 ldrh r0,[r4,#50]
+  90              	.LVL3:
+  91 0066 00F10200 	 add r0,r0,#2
+  92 006a 80B2     	 uxth r0,r0
+  93 006c 46F26661 	 movw r1,#26214
+  94 0070 C3F6A661 	 movt r1,16038
+  95 0074 FFF7FEFF 	 bl _ZN6eeprom16getEepromFixed16Etf
+  96 0078 0746     	 mov r7,r0
+  97              	.LVL4:
+  95:src/MightyBoard/shared/Heater.cc **** 	float d = eeprom::getEepromFixed16(eeprom_base+pid_eeprom_offsets::D_TERM_OFFSET,DEFAULT_D);
+  98              	 .loc 1 95 0
+  99 007a 608E     	 ldrh r0,[r4,#50]
+ 100              	.LVL5:
+ 101 007c 00F10400 	 add r0,r0,#4
+ 102 0080 80B2     	 uxth r0,r0
+ 103 0082 4FF00001 	 mov r1,#0
+ 104 0086 C4F21021 	 movt r1,16912
+ 105 008a FFF7FEFF 	 bl _ZN6eeprom16getEepromFixed16Etf
+ 106 008e 8046     	 mov r8,r0
+ 107              	.LVL6:
+  96:src/MightyBoard/shared/Heater.cc **** 
+  97:src/MightyBoard/shared/Heater.cc **** 	pid.reset();
+ 108              	 .loc 1 97 0
+ 109 0090 04F13406 	 add r6,r4,#52
+ 110 0094 3046     	 mov r0,r6
+ 111              	.LVL7:
+ 112 0096 FFF7FEFF 	 bl _ZN3PID5resetEv
+  98:src/MightyBoard/shared/Heater.cc **** 	if (p == 0 && i == 0 && d == 0) {
+ 113              	 .loc 1 98 0
+ 114 009a 2846     	 mov r0,r5
+ 115 009c 4FF00001 	 mov r1,#0
+ 116 00a0 FFF7FEFF 	 bl __aeabi_fcmpeq
+ 117 00a4 B8B1     	 cbz r0,.L2
+ 118              	 .loc 1 98 0 is_stmt 0 discriminator 1
+ 119 00a6 3846     	 mov r0,r7
+ 120 00a8 4FF00001 	 mov r1,#0
+ 121 00ac FFF7FEFF 	 bl __aeabi_fcmpeq
+ 122 00b0 88B1     	 cbz r0,.L2
+ 123              	 .loc 1 98 0 discriminator 2
+ 124 00b2 4046     	 mov r0,r8
+ 125 00b4 4FF00001 	 mov r1,#0
+ 126 00b8 FFF7FEFF 	 bl __aeabi_fcmpeq
+ 127 00bc 58B1     	 cbz r0,.L2
+  99:src/MightyBoard/shared/Heater.cc **** 		p = DEFAULT_P; i = DEFAULT_I; d = DEFAULT_D;
+ 128              	 .loc 1 99 0 is_stmt 1
+ 129 00be 4FF00008 	 mov r8,#0
+ 130              	.LVL8:
+ 131 00c2 C4F21028 	 movt r8,16912
+ 132 00c6 46F26667 	 movw r7,#26214
+ 133              	.LVL9:
+ 134 00ca C3F6A667 	 movt r7,16038
+ 135 00ce 4FF00005 	 mov r5,#0
+ 136              	.LVL10:
+ 137 00d2 C4F2E005 	 movt r5,16608
+ 138              	.L2:
+ 139              	.LVL11:
+ 140              	.LBB48:
+ 141              	.LBB49:
+ 142              	 .file 2 "src/MightyBoard/shared/PID.hh"
+   1:src/MightyBoard/shared/PID.hh **** /*
+   2:src/MightyBoard/shared/PID.hh ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/PID.hh ****  *
+   4:src/MightyBoard/shared/PID.hh ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/PID.hh ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/PID.hh ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/PID.hh ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/PID.hh ****  *
+   9:src/MightyBoard/shared/PID.hh ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/PID.hh ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/PID.hh ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/PID.hh ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/PID.hh ****  *
+  14:src/MightyBoard/shared/PID.hh ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/PID.hh ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/PID.hh ****  *
+  17:src/MightyBoard/shared/PID.hh ****  * This simplified PID controller was written with reference to:
+  18:src/MightyBoard/shared/PID.hh ****  * * The Heater.h implementation (lookup credits)
+  19:src/MightyBoard/shared/PID.hh ****  * * Brett Beauregard's Arduino PID implementation
+  20:src/MightyBoard/shared/PID.hh ****  *  Created on: Feb 19, 2010
+  21:src/MightyBoard/shared/PID.hh ****  *      Author: phooky
+  22:src/MightyBoard/shared/PID.hh ****  */
+  23:src/MightyBoard/shared/PID.hh **** 
+  24:src/MightyBoard/shared/PID.hh **** #ifndef PID_HH_
+  25:src/MightyBoard/shared/PID.hh **** #define PID_HH_
+  26:src/MightyBoard/shared/PID.hh **** 
+  27:src/MightyBoard/shared/PID.hh **** #include <stdint.h>
+  28:src/MightyBoard/shared/PID.hh **** 
+  29:src/MightyBoard/shared/PID.hh **** /// Number of delta samples to
+  30:src/MightyBoard/shared/PID.hh **** #define DELTA_SAMPLES 4
+  31:src/MightyBoard/shared/PID.hh **** 
+  32:src/MightyBoard/shared/PID.hh **** /// The PID controller module implements a simple PID controller.
+  33:src/MightyBoard/shared/PID.hh **** /// \ingroup SoftwareLibraries
+  34:src/MightyBoard/shared/PID.hh **** class PID {
+  35:src/MightyBoard/shared/PID.hh **** private:
+  36:src/MightyBoard/shared/PID.hh ****     float p_gain; ///< proportional gain
+  37:src/MightyBoard/shared/PID.hh ****     float i_gain; ///< integral gain
+  38:src/MightyBoard/shared/PID.hh ****     float d_gain; ///< derivative gain
+  39:src/MightyBoard/shared/PID.hh **** 
+  40:src/MightyBoard/shared/PID.hh ****     /// Data for approximating d (smoothing to handle discrete nature of sampling).
+  41:src/MightyBoard/shared/PID.hh ****     /// See PID.cc for a description of why we do this.
+  42:src/MightyBoard/shared/PID.hh ****     int16_t delta_history[DELTA_SAMPLES];
+  43:src/MightyBoard/shared/PID.hh ****     float delta_summation;      ///< ?
+  44:src/MightyBoard/shared/PID.hh ****     uint8_t delta_idx;          ///< Current index in the delta history buffer
+  45:src/MightyBoard/shared/PID.hh ****     int prev_error;             ///< Previous input for calculating next delta
+  46:src/MightyBoard/shared/PID.hh ****     int error_acc;              ///< Accumulated error, for calculating integral
+  47:src/MightyBoard/shared/PID.hh **** 
+  48:src/MightyBoard/shared/PID.hh ****     int sp;                     ///< Process set point
+  49:src/MightyBoard/shared/PID.hh ****     int last_output;            ///< Last output of the PID controller
+  50:src/MightyBoard/shared/PID.hh **** 
+  51:src/MightyBoard/shared/PID.hh **** public:
+  52:src/MightyBoard/shared/PID.hh ****     /// Initialize the PID module
+  53:src/MightyBoard/shared/PID.hh ****     PID();
+  54:src/MightyBoard/shared/PID.hh **** 
+  55:src/MightyBoard/shared/PID.hh ****     /// Set the P term of the PID controller
+  56:src/MightyBoard/shared/PID.hh ****     /// \param[in] p_gain_in New proportional gain term
+  57:src/MightyBoard/shared/PID.hh ****     void setPGain(const float p_gain_in) { p_gain = p_gain_in; }
+ 143              	 .loc 2 57 0
+ 144 00d6 6563     	 str r5,[r4,#52]
+ 145              	.LVL12:
+ 146              	.LBE49:
+ 147              	.LBE48:
+ 148              	.LBB50:
+ 149              	.LBB51:
+  58:src/MightyBoard/shared/PID.hh **** 
+  59:src/MightyBoard/shared/PID.hh ****     /// Set the I term of the PID controller
+  60:src/MightyBoard/shared/PID.hh ****     /// \param[in] i_gain_in New integration gain term
+  61:src/MightyBoard/shared/PID.hh ****     void setIGain(const float i_gain_in) { i_gain = i_gain_in; }
+ 150              	 .loc 2 61 0
+ 151 00d8 A763     	 str r7,[r4,#56]
+ 152              	.LVL13:
+ 153              	.LBE51:
+ 154              	.LBE50:
+ 155              	.LBB52:
+ 156              	.LBB53:
+  62:src/MightyBoard/shared/PID.hh **** 
+  63:src/MightyBoard/shared/PID.hh ****     /// Set the D term of the PID controller
+  64:src/MightyBoard/shared/PID.hh ****     /// \param[in] d_gain_in New derivative gain term
+  65:src/MightyBoard/shared/PID.hh ****     void setDGain(const float d_gain_in) { d_gain = d_gain_in; }
+ 157              	 .loc 2 65 0
+ 158 00da C4F83C80 	 str r8,[r4,#60]
+ 159              	.LBE53:
+ 160              	.LBE52:
+ 100:src/MightyBoard/shared/Heater.cc **** 	}
+ 101:src/MightyBoard/shared/Heater.cc **** 	pid.setPGain(p);
+ 102:src/MightyBoard/shared/Heater.cc **** 	pid.setIGain(i);
+ 103:src/MightyBoard/shared/Heater.cc **** 	pid.setDGain(d);
+ 104:src/MightyBoard/shared/Heater.cc **** 	pid.setTarget(0);
+ 161              	 .loc 1 104 0
+ 162 00de 3046     	 mov r0,r6
+ 163 00e0 4FF00001 	 mov r1,#0
+ 164 00e4 FFF7FEFF 	 bl _ZN3PID9setTargetEi
+ 105:src/MightyBoard/shared/Heater.cc **** 	next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
+ 165              	 .loc 1 105 0
+ 166 00e8 04F10800 	 add r0,r4,#8
+ 167 00ec 4AF22011 	 movw r1,#41248
+ 168 00f0 C0F20701 	 movt r1,7
+ 169 00f4 FFF7FEFF 	 bl _ZN7Timeout5startEm
+ 106:src/MightyBoard/shared/Heater.cc **** 	next_sense_timeout.start(sample_interval_micros);
+ 170              	 .loc 1 106 0
+ 171 00f8 04F11800 	 add r0,r4,#24
+ 172 00fc A16A     	 ldr r1,[r4,#40]
+ 173 00fe FFF7FEFF 	 bl _ZN7Timeout5startEm
+ 174              	.LBE47:
+ 107:src/MightyBoard/shared/Heater.cc **** 
+ 108:src/MightyBoard/shared/Heater.cc **** }
+ 175              	 .loc 1 108 0
+ 176 0102 08B0     	 add sp,sp,#32
+ 177 0104 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 178              	 .cfi_endproc
+ 179              	.LFE104:
+ 181              	 .section .text._ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb,"ax",%progbits
+ 182              	 .align 2
+ 183              	 .global _ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb
+ 184              	 .thumb
+ 185              	 .thumb_func
+ 187              	_ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb:
+ 188              	.LFB102:
+  62:src/MightyBoard/shared/Heater.cc **** Heater::Heater(TemperatureSensor& sensor_in,
+ 189              	 .loc 1 62 0
+ 190              	 .cfi_startproc
+ 191              	 
+ 192              	 
+ 193              	.LVL14:
+ 194 0000 38B5     	 push {r3,r4,r5,lr}
+ 195              	.LCFI2:
+ 196              	 .cfi_def_cfa_offset 16
+ 197              	 .cfi_offset 14,-4
+ 198              	 .cfi_offset 5,-8
+ 199              	 .cfi_offset 4,-12
+ 200              	 .cfi_offset 3,-16
+ 201 0002 0446     	 mov r4,r0
+ 202 0004 1D46     	 mov r5,r3
+ 203              	.LBB54:
+  70:src/MightyBoard/shared/Heater.cc **** 		heat_timing_check(timingCheckOn)
+ 204              	 .loc 1 70 0
+ 205 0006 0160     	 str r1,[r0,#0]
+ 206 0008 4260     	 str r2,[r0,#4]
+ 207 000a 00F10800 	 add r0,r0,#8
+ 208              	.LVL15:
+ 209 000e FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 210              	.LVL16:
+ 211 0012 04F11800 	 add r0,r4,#24
+ 212 0016 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 213 001a A562     	 str r5,[r4,#40]
+ 214 001c BDF81030 	 ldrh r3,[sp,#16]
+ 215 0020 6386     	 strh r3,[r4,#50]
+ 216 0022 04F13400 	 add r0,r4,#52
+ 217 0026 FFF7FEFF 	 bl _ZN3PIDC1Ev
+ 218 002a 04F16800 	 add r0,r4,#104
+ 219 002e FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 220 0032 04F17800 	 add r0,r4,#120
+ 221 0036 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 222 003a 9DF81430 	 ldrb r3,[sp,#20]
+ 223 003e 84F88930 	 strb r3,[r4,#137]
+  72:src/MightyBoard/shared/Heater.cc **** 	reset();
+ 224              	 .loc 1 72 0
+ 225 0042 2046     	 mov r0,r4
+ 226 0044 FFF7FEFF 	 bl _ZN6Heater5resetEv
+ 227              	.LBE54:
+  73:src/MightyBoard/shared/Heater.cc **** }
+ 228              	 .loc 1 73 0
+ 229 0048 2046     	 mov r0,r4
+ 230 004a 38BD     	 pop {r3,r4,r5,pc}
+ 231              	 .cfi_endproc
+ 232              	.LFE102:
+ 234              	 .section .text._ZN6Heater22set_target_temperatureEi,"ax",%progbits
+ 235              	 .align 2
+ 236              	 .global _ZN6Heater22set_target_temperatureEi
+ 237              	 .thumb
+ 238              	 .thumb_func
+ 240              	_ZN6Heater22set_target_temperatureEi:
+ 241              	.LFB105:
+ 109:src/MightyBoard/shared/Heater.cc **** 
+ 110:src/MightyBoard/shared/Heater.cc **** /*  Function logs the inital temp to the startTemp value,
+ 111:src/MightyBoard/shared/Heater.cc ****   starts progress timers to avoid heatup failure, and sets the
+ 112:src/MightyBoard/shared/Heater.cc ****   new target temperature for this heater.
+ 113:src/MightyBoard/shared/Heater.cc ****   @param temp: temperature in degrees C. Zero degrees indicates
+ 114:src/MightyBoard/shared/Heater.cc ****   'disable heaters'
+ 115:src/MightyBoard/shared/Heater.cc ****  */
+ 116:src/MightyBoard/shared/Heater.cc **** #define MAX_VALID_TEMP 280
+ 117:src/MightyBoard/shared/Heater.cc **** 
+ 118:src/MightyBoard/shared/Heater.cc **** void Heater::set_target_temperature(int temp)
+ 119:src/MightyBoard/shared/Heater.cc **** {
+ 242              	 .loc 1 119 0
+ 243              	 .cfi_startproc
+ 244              	 
+ 245              	 
+ 246              	.LVL17:
+ 247 0000 F0B5     	 push {r4,r5,r6,r7,lr}
+ 248              	.LCFI3:
+ 249              	 .cfi_def_cfa_offset 20
+ 250              	 .cfi_offset 14,-4
+ 251              	 .cfi_offset 7,-8
+ 252              	 .cfi_offset 6,-12
+ 253              	 .cfi_offset 5,-16
+ 254              	 .cfi_offset 4,-20
+ 255 0002 8DB0     	 sub sp,sp,#52
+ 256              	.LCFI4:
+ 257              	 .cfi_def_cfa_offset 72
+ 258 0004 0446     	 mov r4,r0
+ 259              	 .loc 1 119 0
+ 260 0006 B1F58C7F 	 cmp r1,#280
+ 261 000a A8BF     	 it ge
+ 262 000c 4FF48C71 	 movge r1,#280
+ 263              	.LVL18:
+ 264 0010 21EAE176 	 bic r6,r1,r1,asr#31
+ 265              	.LVL19:
+ 120:src/MightyBoard/shared/Heater.cc **** 	// clip our set temperature if we are over temp.
+ 121:src/MightyBoard/shared/Heater.cc **** 	if(temp > MAX_VALID_TEMP) {
+ 122:src/MightyBoard/shared/Heater.cc **** 		temp = MAX_VALID_TEMP;
+ 123:src/MightyBoard/shared/Heater.cc **** 	}
+ 124:src/MightyBoard/shared/Heater.cc **** 	if(temp < 0){
+ 125:src/MightyBoard/shared/Heater.cc **** 		temp = 0;
+ 126:src/MightyBoard/shared/Heater.cc **** 	}
+ 127:src/MightyBoard/shared/Heater.cc **** 	
+ 128:src/MightyBoard/shared/Heater.cc **** 	newTargetReached = false;
+ 266              	 .loc 1 128 0
+ 267 0014 4FF00003 	 mov r3,#0
+ 268 0018 80F83030 	 strb r3,[r0,#48]
+ 129:src/MightyBoard/shared/Heater.cc **** 	//reached_count = 0;
+ 130:src/MightyBoard/shared/Heater.cc **** 	
+ 131:src/MightyBoard/shared/Heater.cc **** 	if(heat_timing_check){
+ 269              	 .loc 1 131 0
+ 270 001c 90F88930 	 ldrb r3,[r0,#137]
+ 271 0020 002B     	 cmp r3,#0
+ 272 0022 39D0     	 beq .L11
+ 132:src/MightyBoard/shared/Heater.cc **** 		startTemp = current_temperature;	
+ 273              	 .loc 1 132 0
+ 274 0024 838D     	 ldrh r3,[r0,#44]
+ 275 0026 9BB2     	 uxth r3,r3
+ 276 0028 C385     	 strh r3,[r0,#46]
+ 133:src/MightyBoard/shared/Heater.cc **** 		progressChecked = false;
+ 277              	 .loc 1 133 0
+ 278 002a 4FF00003 	 mov r3,#0
+ 279 002e 80F88830 	 strb r3,[r0,#136]
+ 134:src/MightyBoard/shared/Heater.cc **** 		value_fail_count = 0;
+ 280              	 .loc 1 134 0
+ 281 0032 80F86330 	 strb r3,[r0,#99]
+ 135:src/MightyBoard/shared/Heater.cc **** 	
+ 136:src/MightyBoard/shared/Heater.cc **** 		// start a progress timer to verify we are getting temp change over time.
+ 137:src/MightyBoard/shared/Heater.cc **** 		if(temp > HEAT_FAIL_THRESHOLD){
+ 282              	 .loc 1 137 0
+ 283 0036 1E2E     	 cmp r6,#30
+ 284 0038 1ADD     	 ble .L12
+ 138:src/MightyBoard/shared/Heater.cc **** 			// if the current temp is greater than a (low) threshold, don't check the heating up time, becau
+ 139:src/MightyBoard/shared/Heater.cc **** 			// we've already done that to get to this temperature
+ 140:src/MightyBoard/shared/Heater.cc **** 			if((temp > startTemp + HEAT_PROGRESS_THRESHOLD) && (startTemp < HEAT_CHECKED_THRESHOLD))
+ 285              	 .loc 1 140 0
+ 286 003a C38D     	 ldrh r3,[r0,#46]
+ 287 003c 9BB2     	 uxth r3,r3
+ 288 003e 03F10A03 	 add r3,r3,#10
+ 289 0042 B342     	 cmp r3,r6
+ 290 0044 2FDA     	 bge .L13
+ 291              	 .loc 1 140 0 is_stmt 0 discriminator 1
+ 292 0046 C38D     	 ldrh r3,[r0,#46]
+ 293 0048 9BB2     	 uxth r3,r3
+ 294 004a 312B     	 cmp r3,#49
+ 295 004c 2BD8     	 bhi .L13
+ 141:src/MightyBoard/shared/Heater.cc **** 			{	heatProgressTimer.start(HEAT_PROGRESS_TIME);}
+ 296              	 .loc 1 141 0 is_stmt 1 discriminator 4
+ 297 004e 00F17800 	 add r0,r0,#120
+ 298              	.LVL20:
+ 299 0052 4FF49541 	 mov r1,#19072
+ 300 0056 C0F25D51 	 movt r1,1373
+ 301 005a FFF7FEFF 	 bl _ZN7Timeout5startEm
+ 302              	.L14:
+ 142:src/MightyBoard/shared/Heater.cc **** 			else
+ 143:src/MightyBoard/shared/Heater.cc **** 			{	heatProgressTimer = Timeout(); }
+ 144:src/MightyBoard/shared/Heater.cc **** 				
+ 145:src/MightyBoard/shared/Heater.cc **** 			heatingUpTimer.start(HEAT_UP_TIME);
+ 303              	 .loc 1 145 0
+ 304 005e 04F16800 	 add r0,r4,#104
+ 305 0062 4FF42341 	 mov r1,#41728
+ 306 0066 C1F2E111 	 movt r1,4577
+ 307 006a FFF7FEFF 	 bl _ZN7Timeout5startEm
+ 308 006e 13E0     	 b .L11
+ 309              	.L12:
+ 146:src/MightyBoard/shared/Heater.cc **** 		}
+ 147:src/MightyBoard/shared/Heater.cc **** 		else{
+ 148:src/MightyBoard/shared/Heater.cc **** 			heatingUpTimer = Timeout();
+ 310              	 .loc 1 148 0
+ 311 0070 04AD     	 add r5,sp,#16
+ 312 0072 2846     	 mov r0,r5
+ 313 0074 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 314 0078 04F16807 	 add r7,r4,#104
+ 315 007c 95E80F00 	 ldmia r5,{r0,r1,r2,r3}
+ 316 0080 87E80F00 	 stmia r7,{r0,r1,r2,r3}
+ 149:src/MightyBoard/shared/Heater.cc **** 			heatProgressTimer = Timeout();
+ 317              	 .loc 1 149 0
+ 318 0084 08AD     	 add r5,sp,#32
+ 319 0086 2846     	 mov r0,r5
+ 320 0088 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 321 008c 04F17807 	 add r7,r4,#120
+ 322 0090 95E80F00 	 ldmia r5,{r0,r1,r2,r3}
+ 323 0094 87E80F00 	 stmia r7,{r0,r1,r2,r3}
+ 324              	.L11:
+ 150:src/MightyBoard/shared/Heater.cc **** 		}
+ 151:src/MightyBoard/shared/Heater.cc **** 	}
+ 152:src/MightyBoard/shared/Heater.cc **** 	pid.setTarget(temp);
+ 325              	 .loc 1 152 0
+ 326 0098 04F13400 	 add r0,r4,#52
+ 327 009c 3146     	 mov r1,r6
+ 328 009e FFF7FEFF 	 bl _ZN3PID9setTargetEi
+ 153:src/MightyBoard/shared/Heater.cc **** }
+ 329              	 .loc 1 153 0
+ 330 00a2 0DB0     	 add sp,sp,#52
+ 331 00a4 F0BD     	 pop {r4,r5,r6,r7,pc}
+ 332              	.L13:
+ 143:src/MightyBoard/shared/Heater.cc **** 			{	heatProgressTimer = Timeout(); }
+ 333              	 .loc 1 143 0
+ 334 00a6 6846     	 mov r0,sp
+ 335 00a8 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 336 00ac 04F17807 	 add r7,r4,#120
+ 337 00b0 9DE80F00 	 ldmia sp,{r0,r1,r2,r3}
+ 338 00b4 87E80F00 	 stmia r7,{r0,r1,r2,r3}
+ 339 00b8 D1E7     	 b .L14
+ 340              	 .cfi_endproc
+ 341              	.LFE105:
+ 343 00ba 00BF     	 .section .text._ZN6Heater30has_reached_target_temperatureEv,"ax",%progbits
+ 344              	 .align 2
+ 345              	 .global _ZN6Heater30has_reached_target_temperatureEv
+ 346              	 .thumb
+ 347              	 .thumb_func
+ 349              	_ZN6Heater30has_reached_target_temperatureEv:
+ 350              	.LFB106:
+ 154:src/MightyBoard/shared/Heater.cc **** 
+ 155:src/MightyBoard/shared/Heater.cc **** // We now define target hysteresis, used as PID over/under range.
+ 156:src/MightyBoard/shared/Heater.cc **** #define TARGET_HYSTERESIS 2
+ 157:src/MightyBoard/shared/Heater.cc **** 
+ 158:src/MightyBoard/shared/Heater.cc **** /// Returns true if the current PID temperature is within tolerance
+ 159:src/MightyBoard/shared/Heater.cc **** /// of the expected current temperature.
+ 160:src/MightyBoard/shared/Heater.cc **** bool Heater::has_reached_target_temperature()
+ 161:src/MightyBoard/shared/Heater.cc **** {
+ 351              	 .loc 1 161 0
+ 352              	 .cfi_startproc
+ 353              	 
+ 354              	 
+ 355              	 
+ 356              	.LVL21:
+ 162:src/MightyBoard/shared/Heater.cc **** 	if(is_paused){
+ 357              	 .loc 1 162 0
+ 358 0000 90F88A30 	 ldrb r3,[r0,#138]
+ 359 0004 ABB9     	 cbnz r3,.L18
+ 163:src/MightyBoard/shared/Heater.cc **** 		return false;
+ 164:src/MightyBoard/shared/Heater.cc **** 	}
+ 165:src/MightyBoard/shared/Heater.cc ****     // flag temperature reached so that PID variations don't trigger this
+ 166:src/MightyBoard/shared/Heater.cc ****     // a second time
+ 167:src/MightyBoard/shared/Heater.cc **** 	if(!newTargetReached){
+ 360              	 .loc 1 167 0
+ 361 0006 90F83030 	 ldrb r3,[r0,#48]
+ 362 000a 7BB9     	 cbnz r3,.L17
+ 168:src/MightyBoard/shared/Heater.cc **** 		if((current_temperature >= (pid.getTarget() - TARGET_HYSTERESIS)) &&
+ 363              	 .loc 1 168 0
+ 364 000c 818D     	 ldrh r1,[r0,#44]
+ 365 000e 89B2     	 uxth r1,r1
+ 366              	.LVL22:
+ 367              	.LBB55:
+ 368              	.LBB56:
+  66:src/MightyBoard/shared/PID.hh **** 
+  67:src/MightyBoard/shared/PID.hh ****     /// Set the setpoint of the PID controller
+  68:src/MightyBoard/shared/PID.hh ****     /// \param[in] target New PID controller target
+  69:src/MightyBoard/shared/PID.hh ****     void setTarget(const int target);
+  70:src/MightyBoard/shared/PID.hh **** 
+  71:src/MightyBoard/shared/PID.hh ****     /// Get the current PID target
+  72:src/MightyBoard/shared/PID.hh ****     /// \return Current setpoint
+  73:src/MightyBoard/shared/PID.hh ****     const int getTarget() const { return sp; }
+ 369              	 .loc 2 73 0
+ 370 0010 836D     	 ldr r3,[r0,#88]
+ 371              	.LBE56:
+ 372              	.LBE55:
+ 373              	 .loc 1 168 0
+ 374 0012 A3F10202 	 sub r2,r3,#2
+ 375 0016 9142     	 cmp r1,r2
+ 376 0018 08DB     	 blt .L17
+ 377              	 .loc 1 168 0 is_stmt 0 discriminator 1
+ 378 001a 828D     	 ldrh r2,[r0,#44]
+ 379 001c 92B2     	 uxth r2,r2
+ 380              	.LVL23:
+ 381 001e 03F10203 	 add r3,r3,#2
+ 382 0022 9A42     	 cmp r2,r3
+ 169:src/MightyBoard/shared/Heater.cc **** 			(current_temperature <= (pid.getTarget() + TARGET_HYSTERESIS)))
+ 170:src/MightyBoard/shared/Heater.cc **** 		{	
+ 171:src/MightyBoard/shared/Heater.cc **** 		//	reached_count++;
+ 172:src/MightyBoard/shared/Heater.cc **** 		//	if(reached_count >= TARGET_CHECK_COUNT){
+ 173:src/MightyBoard/shared/Heater.cc **** 				newTargetReached = true;
+ 383              	 .loc 1 173 0 is_stmt 1 discriminator 1
+ 384 0024 DCBF     	 itt le
+ 385 0026 0123     	 movle r3,#1
+ 386 0028 80F83030 	 strble r3,[r0,#48]
+ 387              	.LVL24:
+ 388              	.L17:
+ 174:src/MightyBoard/shared/Heater.cc **** 		//		}
+ 175:src/MightyBoard/shared/Heater.cc **** 		}
+ 176:src/MightyBoard/shared/Heater.cc **** 	}
+ 177:src/MightyBoard/shared/Heater.cc **** 	return newTargetReached; 
+ 389              	 .loc 1 177 0
+ 390 002c 90F83000 	 ldrb r0,[r0,#48]
+ 391              	.LVL25:
+ 392 0030 7047     	 bx lr
+ 393              	.LVL26:
+ 394              	.L18:
+ 163:src/MightyBoard/shared/Heater.cc **** 		return false;
+ 395              	 .loc 1 163 0
+ 396 0032 4FF00000 	 mov r0,#0
+ 397              	.LVL27:
+ 178:src/MightyBoard/shared/Heater.cc **** }
+ 398              	 .loc 1 178 0
+ 399 0036 7047     	 bx lr
+ 400              	 .cfi_endproc
+ 401              	.LFE106:
+ 403              	 .section .text._ZN6Heater19get_set_temperatureEv,"ax",%progbits
+ 404              	 .align 2
+ 405              	 .global _ZN6Heater19get_set_temperatureEv
+ 406              	 .thumb
+ 407              	 .thumb_func
+ 409              	_ZN6Heater19get_set_temperatureEv:
+ 410              	.LFB107:
+ 179:src/MightyBoard/shared/Heater.cc **** 
+ 180:src/MightyBoard/shared/Heater.cc **** int Heater::get_set_temperature() {
+ 411              	 .loc 1 180 0
+ 412              	 .cfi_startproc
+ 413              	 
+ 414              	 
+ 415              	 
+ 416              	.LVL28:
+ 181:src/MightyBoard/shared/Heater.cc **** 	return pid.getTarget();
+ 182:src/MightyBoard/shared/Heater.cc **** }
+ 417              	 .loc 1 182 0
+ 418 0000 806D     	 ldr r0,[r0,#88]
+ 419              	.LVL29:
+ 420 0002 7047     	 bx lr
+ 421              	 .cfi_endproc
+ 422              	.LFE107:
+ 424              	 .section .text._ZN6Heater23get_current_temperatureEv,"ax",%progbits
+ 425              	 .align 2
+ 426              	 .global _ZN6Heater23get_current_temperatureEv
+ 427              	 .thumb
+ 428              	 .thumb_func
+ 430              	_ZN6Heater23get_current_temperatureEv:
+ 431              	.LFB108:
+ 183:src/MightyBoard/shared/Heater.cc **** 
+ 184:src/MightyBoard/shared/Heater.cc **** int Heater::get_current_temperature()
+ 185:src/MightyBoard/shared/Heater.cc **** {
+ 432              	 .loc 1 185 0
+ 433              	 .cfi_startproc
+ 434              	 
+ 435              	 
+ 436              	 
+ 437              	.LVL30:
+ 186:src/MightyBoard/shared/Heater.cc **** 	return current_temperature;
+ 438              	 .loc 1 186 0
+ 439 0000 808D     	 ldrh r0,[r0,#44]
+ 440              	.LVL31:
+ 187:src/MightyBoard/shared/Heater.cc **** }
+ 441              	 .loc 1 187 0
+ 442 0002 80B2     	 uxth r0,r0
+ 443 0004 7047     	 bx lr
+ 444              	 .cfi_endproc
+ 445              	.LFE108:
+ 447 0006 00BF     	 .section .text._ZN6Heater15getPIDErrorTermEv,"ax",%progbits
+ 448              	 .align 2
+ 449              	 .global _ZN6Heater15getPIDErrorTermEv
+ 450              	 .thumb
+ 451              	 .thumb_func
+ 453              	_ZN6Heater15getPIDErrorTermEv:
+ 454              	.LFB109:
+ 188:src/MightyBoard/shared/Heater.cc **** 
+ 189:src/MightyBoard/shared/Heater.cc **** int Heater::getPIDErrorTerm() {
+ 455              	 .loc 1 189 0
+ 456              	 .cfi_startproc
+ 457              	 
+ 458              	 
+ 459              	.LVL32:
+ 460 0000 08B5     	 push {r3,lr}
+ 461              	.LCFI5:
+ 462              	 .cfi_def_cfa_offset 8
+ 463              	 .cfi_offset 14,-4
+ 464              	 .cfi_offset 3,-8
+ 190:src/MightyBoard/shared/Heater.cc **** 	return pid.getErrorTerm();
+ 465              	 .loc 1 190 0
+ 466 0002 00F13400 	 add r0,r0,#52
+ 467              	.LVL33:
+ 468 0006 FFF7FEFF 	 bl _ZN3PID12getErrorTermEv
+ 469              	.LVL34:
+ 191:src/MightyBoard/shared/Heater.cc **** }
+ 470              	 .loc 1 191 0
+ 471 000a 08BD     	 pop {r3,pc}
+ 472              	 .cfi_endproc
+ 473              	.LFE109:
+ 475              	 .section .text._ZN6Heater15getPIDDeltaTermEv,"ax",%progbits
+ 476              	 .align 2
+ 477              	 .global _ZN6Heater15getPIDDeltaTermEv
+ 478              	 .thumb
+ 479              	 .thumb_func
+ 481              	_ZN6Heater15getPIDDeltaTermEv:
+ 482              	.LFB110:
+ 192:src/MightyBoard/shared/Heater.cc **** 
+ 193:src/MightyBoard/shared/Heater.cc **** int Heater::getPIDDeltaTerm() {
+ 483              	 .loc 1 193 0
+ 484              	 .cfi_startproc
+ 485              	 
+ 486              	 
+ 487              	.LVL35:
+ 488 0000 08B5     	 push {r3,lr}
+ 489              	.LCFI6:
+ 490              	 .cfi_def_cfa_offset 8
+ 491              	 .cfi_offset 14,-4
+ 492              	 .cfi_offset 3,-8
+ 194:src/MightyBoard/shared/Heater.cc **** 	return pid.getDeltaTerm();
+ 493              	 .loc 1 194 0
+ 494 0002 00F13400 	 add r0,r0,#52
+ 495              	.LVL36:
+ 496 0006 FFF7FEFF 	 bl _ZN3PID12getDeltaTermEv
+ 497              	.LVL37:
+ 195:src/MightyBoard/shared/Heater.cc **** }
+ 498              	 .loc 1 195 0
+ 499 000a 08BD     	 pop {r3,pc}
+ 500              	 .cfi_endproc
+ 501              	.LFE110:
+ 503              	 .section .text._ZN6Heater16getPIDLastOutputEv,"ax",%progbits
+ 504              	 .align 2
+ 505              	 .global _ZN6Heater16getPIDLastOutputEv
+ 506              	 .thumb
+ 507              	 .thumb_func
+ 509              	_ZN6Heater16getPIDLastOutputEv:
+ 510              	.LFB111:
+ 196:src/MightyBoard/shared/Heater.cc **** 
+ 197:src/MightyBoard/shared/Heater.cc **** int Heater::getPIDLastOutput() {
+ 511              	 .loc 1 197 0
+ 512              	 .cfi_startproc
+ 513              	 
+ 514              	 
+ 515              	.LVL38:
+ 516 0000 08B5     	 push {r3,lr}
+ 517              	.LCFI7:
+ 518              	 .cfi_def_cfa_offset 8
+ 519              	 .cfi_offset 14,-4
+ 520              	 .cfi_offset 3,-8
+ 198:src/MightyBoard/shared/Heater.cc **** 	return pid.getLastOutput();
+ 521              	 .loc 1 198 0
+ 522 0002 00F13400 	 add r0,r0,#52
+ 523              	.LVL39:
+ 524 0006 FFF7FEFF 	 bl _ZN3PID13getLastOutputEv
+ 525              	.LVL40:
+ 199:src/MightyBoard/shared/Heater.cc **** }
+ 526              	 .loc 1 199 0
+ 527 000a 08BD     	 pop {r3,pc}
+ 528              	 .cfi_endproc
+ 529              	.LFE111:
+ 531              	 .section .text._ZN6Heater9isHeatingEv,"ax",%progbits
+ 532              	 .align 2
+ 533              	 .global _ZN6Heater9isHeatingEv
+ 534              	 .thumb
+ 535              	 .thumb_func
+ 537              	_ZN6Heater9isHeatingEv:
+ 538              	.LFB112:
+ 200:src/MightyBoard/shared/Heater.cc **** 
+ 201:src/MightyBoard/shared/Heater.cc **** bool Heater::isHeating(){
+ 539              	 .loc 1 201 0
+ 540              	 .cfi_startproc
+ 541              	 
+ 542              	 
+ 543              	.LVL41:
+ 544 0000 10B5     	 push {r4,lr}
+ 545              	.LCFI8:
+ 546              	 .cfi_def_cfa_offset 8
+ 547              	 .cfi_offset 14,-4
+ 548              	 .cfi_offset 4,-8
+ 549 0002 0446     	 mov r4,r0
+ 550              	.LVL42:
+ 202:src/MightyBoard/shared/Heater.cc ****        return (pid.getTarget() > 0) && !has_reached_target_temperature() && !fail_state;
+ 551              	 .loc 1 202 0
+ 552 0004 836D     	 ldr r3,[r0,#88]
+ 553 0006 002B     	 cmp r3,#0
+ 554 0008 07DD     	 ble .L26
+ 555              	.LVL43:
+ 556              	 .loc 1 202 0 is_stmt 0 discriminator 1
+ 557 000a FFF7FEFF 	 bl _ZN6Heater30has_reached_target_temperatureEv
+ 558              	.LVL44:
+ 559 000e 38B9     	 cbnz r0,.L27
+ 201:src/MightyBoard/shared/Heater.cc **** bool Heater::isHeating(){
+ 560              	 .loc 1 201 0 is_stmt 1 discriminator 3
+ 561 0010 94F86100 	 ldrb r0,[r4,#97]
+ 562 0014 80F00100 	 eor r0,r0,#1
+ 563 0018 10BD     	 pop {r4,pc}
+ 564              	.L26:
+ 565              	 .loc 1 202 0
+ 566 001a 4FF00000 	 mov r0,#0
+ 567 001e 10BD     	 pop {r4,pc}
+ 568              	.L27:
+ 569 0020 4FF00000 	 mov r0,#0
+ 203:src/MightyBoard/shared/Heater.cc **** }
+ 570              	 .loc 1 203 0
+ 571 0024 10BD     	 pop {r4,pc}
+ 572              	 .cfi_endproc
+ 573              	.LFE112:
+ 575 0026 00BF     	 .section .text._ZN6Heater9isCoolingEv,"ax",%progbits
+ 576              	 .align 2
+ 577              	 .global _ZN6Heater9isCoolingEv
+ 578              	 .thumb
+ 579              	 .thumb_func
+ 581              	_ZN6Heater9isCoolingEv:
+ 582              	.LFB113:
+ 204:src/MightyBoard/shared/Heater.cc **** 
+ 205:src/MightyBoard/shared/Heater.cc **** bool Heater::isCooling(){
+ 583              	 .loc 1 205 0
+ 584              	 .cfi_startproc
+ 585              	 
+ 586              	 
+ 587              	.LVL45:
+ 588 0000 38B5     	 push {r3,r4,r5,lr}
+ 589              	.LCFI9:
+ 590              	 .cfi_def_cfa_offset 16
+ 591              	 .cfi_offset 14,-4
+ 592              	 .cfi_offset 5,-8
+ 593              	 .cfi_offset 4,-12
+ 594              	 .cfi_offset 3,-16
+ 595 0002 0446     	 mov r4,r0
+ 206:src/MightyBoard/shared/Heater.cc **** 	return (current_temperature > get_set_temperature()) && !has_reached_target_temperature() && !fail
+ 596              	 .loc 1 206 0
+ 597 0004 858D     	 ldrh r5,[r0,#44]
+ 598 0006 ADB2     	 uxth r5,r5
+ 599 0008 FFF7FEFF 	 bl _ZN6Heater19get_set_temperatureEv
+ 600              	.LVL46:
+ 601 000c 8542     	 cmp r5,r0
+ 602 000e 08DD     	 ble .L30
+ 603              	 .loc 1 206 0 is_stmt 0 discriminator 1
+ 604 0010 2046     	 mov r0,r4
+ 605 0012 FFF7FEFF 	 bl _ZN6Heater30has_reached_target_temperatureEv
+ 606 0016 38B9     	 cbnz r0,.L31
+ 205:src/MightyBoard/shared/Heater.cc **** bool Heater::isCooling(){
+ 607              	 .loc 1 205 0 is_stmt 1 discriminator 3
+ 608 0018 94F86100 	 ldrb r0,[r4,#97]
+ 609 001c 80F00100 	 eor r0,r0,#1
+ 610 0020 38BD     	 pop {r3,r4,r5,pc}
+ 611              	.L30:
+ 612              	 .loc 1 206 0
+ 613 0022 4FF00000 	 mov r0,#0
+ 614 0026 38BD     	 pop {r3,r4,r5,pc}
+ 615              	.L31:
+ 616 0028 4FF00000 	 mov r0,#0
+ 207:src/MightyBoard/shared/Heater.cc **** }
+ 617              	 .loc 1 207 0
+ 618 002c 38BD     	 pop {r3,r4,r5,pc}
+ 619              	 .cfi_endproc
+ 620              	.LFE113:
+ 622 002e 00BF     	 .section .text._ZN6Heater8getDeltaEv,"ax",%progbits
+ 623              	 .align 2
+ 624              	 .global _ZN6Heater8getDeltaEv
+ 625              	 .thumb
+ 626              	 .thumb_func
+ 628              	_ZN6Heater8getDeltaEv:
+ 629              	.LFB114:
+ 208:src/MightyBoard/shared/Heater.cc **** 
+ 209:src/MightyBoard/shared/Heater.cc **** int16_t Heater::getDelta(){
+ 630              	 .loc 1 209 0
+ 631              	 .cfi_startproc
+ 632              	 
+ 633              	 
+ 634              	 
+ 635              	.LVL47:
+ 636              	.LBB57:
+ 210:src/MightyBoard/shared/Heater.cc **** 	
+ 211:src/MightyBoard/shared/Heater.cc **** 		uint16_t target = pid.getTarget();
+ 637              	 .loc 1 211 0
+ 638 0000 B0F85830 	 ldrh r3,[r0,#88]
+ 639              	.LVL48:
+ 212:src/MightyBoard/shared/Heater.cc **** 		uint16_t temp = sensor.getTemperature();
+ 640              	 .loc 1 212 0
+ 641 0004 0268     	 ldr r2,[r0,#0]
+ 642              	.LVL49:
+ 643              	.LBB58:
+ 644              	.LBB59:
+ 645              	 .file 3 "src/MightyBoard/shared/TemperatureSensor.hh"
+   1:src/MightyBoard/shared/TemperatureSensor.hh **** /*
+   2:src/MightyBoard/shared/TemperatureSensor.hh ****  * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/TemperatureSensor.hh ****  *
+   4:src/MightyBoard/shared/TemperatureSensor.hh ****  * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/TemperatureSensor.hh ****  * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/TemperatureSensor.hh ****  * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/TemperatureSensor.hh ****  * (at your option) any later version.
+   8:src/MightyBoard/shared/TemperatureSensor.hh ****  *
+   9:src/MightyBoard/shared/TemperatureSensor.hh ****  * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/TemperatureSensor.hh ****  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/TemperatureSensor.hh ****  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/TemperatureSensor.hh ****  * GNU General Public License for more details.
+  13:src/MightyBoard/shared/TemperatureSensor.hh ****  *
+  14:src/MightyBoard/shared/TemperatureSensor.hh ****  * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/TemperatureSensor.hh ****  * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/TemperatureSensor.hh ****  */
+  17:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  18:src/MightyBoard/shared/TemperatureSensor.hh **** #ifndef TEMPERATURE_HH_
+  19:src/MightyBoard/shared/TemperatureSensor.hh **** #define TEMPERATURE_HH_
+  20:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  21:src/MightyBoard/shared/TemperatureSensor.hh **** #include <stdint.h>
+  22:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  23:src/MightyBoard/shared/TemperatureSensor.hh **** /// Flag specifying that the temperature reading is invalid.
+  24:src/MightyBoard/shared/TemperatureSensor.hh **** #define BAD_TEMPERATURE 1024
+  25:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  26:src/MightyBoard/shared/TemperatureSensor.hh **** /// The temperature sensor interface is a standard interface used to communicate with
+  27:src/MightyBoard/shared/TemperatureSensor.hh **** /// things that can sense temperatures.
+  28:src/MightyBoard/shared/TemperatureSensor.hh **** /// \ingroup SoftwareLibraries
+  29:src/MightyBoard/shared/TemperatureSensor.hh **** class TemperatureSensor {
+  30:src/MightyBoard/shared/TemperatureSensor.hh **** protected:
+  31:src/MightyBoard/shared/TemperatureSensor.hh ****         /// The last temperature reading from the sensor, in degrees Celcius, or
+  32:src/MightyBoard/shared/TemperatureSensor.hh ****         /// #BAD_TEMPERATURE if the last reading is invalid.
+  33:src/MightyBoard/shared/TemperatureSensor.hh **** 	volatile uint16_t current_temp;
+  34:src/MightyBoard/shared/TemperatureSensor.hh **** public:
+  35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
+  36:src/MightyBoard/shared/TemperatureSensor.hh **** 	enum SensorState {
+  37:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_OK,              ///< Temperature measured correctly
+  38:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_ADC_BUSY,        ///< Temperature failed to update because ADC is busy
+  39:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_ADC_WAITING,     ///< Temperature failed to update, still waiting for ADC
+  40:src/MightyBoard/shared/TemperatureSensor.hh **** 		SS_ERROR_UNPLUGGED  ///< Temperature failed to update, the sensor is unplugged.
+  41:src/MightyBoard/shared/TemperatureSensor.hh **** 	};
+  42:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  43:src/MightyBoard/shared/TemperatureSensor.hh **** 
+  44:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// Get the last read temperature from the sensor. Note that you need to call
+  45:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// update() at least once for this to return good data.
+  46:src/MightyBoard/shared/TemperatureSensor.hh **** 	/// \return The current temperature, in degrees Celcius, or #BAD_TEMPERATURE if the
+  47:src/MightyBoard/shared/TemperatureSensor.hh **** 	///         last read failed.
+  48:src/MightyBoard/shared/TemperatureSensor.hh **** 	int16_t getTemperature() const { return current_temp; }
+ 646              	 .loc 3 48 0
+ 647 0006 9288     	 ldrh r2,[r2,#4]
+ 648 0008 92B2     	 uxth r2,r2
+ 649              	.LVL50:
+ 650              	.LBE59:
+ 651              	.LBE58:
+ 213:src/MightyBoard/shared/Heater.cc **** 		int16_t delta = (target > temp) ? target - temp : temp - target;
+ 652              	 .loc 1 213 0
+ 653 000a 9342     	 cmp r3,r2
+ 654 000c 8CBF     	 ite hi
+ 655 000e C2EB0303 	 rsbhi r3,r2,r3
+ 656              	.LVL51:
+ 657 0012 C3EB0203 	 rsbls r3,r3,r2
+ 658 0016 98B2     	 uxth r0,r3
+ 659              	.LVL52:
+ 660              	.LBE57:
+ 214:src/MightyBoard/shared/Heater.cc ****         return delta;
+ 215:src/MightyBoard/shared/Heater.cc **** }
+ 661              	 .loc 1 215 0
+ 662 0018 00B2     	 sxth r0,r0
+ 663              	.LVL53:
+ 664 001a 7047     	 bx lr
+ 665              	 .cfi_endproc
+ 666              	.LFE114:
+ 668              	 .section .text._ZN6Heater10set_outputEh,"ax",%progbits
+ 669              	 .align 2
+ 670              	 .global _ZN6Heater10set_outputEh
+ 671              	 .thumb
+ 672              	 .thumb_func
+ 674              	_ZN6Heater10set_outputEh:
+ 675              	.LFB117:
+ 216:src/MightyBoard/shared/Heater.cc **** 
+ 217:src/MightyBoard/shared/Heater.cc **** 
+ 218:src/MightyBoard/shared/Heater.cc **** void Heater::manage_temperature() {
+ 219:src/MightyBoard/shared/Heater.cc **** 	
+ 220:src/MightyBoard/shared/Heater.cc **** 
+ 221:src/MightyBoard/shared/Heater.cc **** 	if (next_sense_timeout.hasElapsed()) {
+ 222:src/MightyBoard/shared/Heater.cc **** 		
+ 223:src/MightyBoard/shared/Heater.cc **** 		next_sense_timeout.start(sample_interval_micros);
+ 224:src/MightyBoard/shared/Heater.cc **** 		switch (sensor.update()) {
+ 225:src/MightyBoard/shared/Heater.cc **** 		case TemperatureSensor::SS_ADC_BUSY:
+ 226:src/MightyBoard/shared/Heater.cc **** 		case TemperatureSensor::SS_ADC_WAITING:
+ 227:src/MightyBoard/shared/Heater.cc **** 			// We're waiting for the ADC, so don't update the temperature yet.
+ 228:src/MightyBoard/shared/Heater.cc **** 			current_temperature = 2;
+ 229:src/MightyBoard/shared/Heater.cc **** 			return;
+ 230:src/MightyBoard/shared/Heater.cc **** 			break;
+ 231:src/MightyBoard/shared/Heater.cc **** 		case TemperatureSensor::SS_OK:
+ 232:src/MightyBoard/shared/Heater.cc **** 			// Result was ok, so reset the fail counter, and continue.
+ 233:src/MightyBoard/shared/Heater.cc **** 			fail_count = 0;
+ 234:src/MightyBoard/shared/Heater.cc **** 			break;
+ 235:src/MightyBoard/shared/Heater.cc **** 		case TemperatureSensor::SS_ERROR_UNPLUGGED:
+ 236:src/MightyBoard/shared/Heater.cc **** 		default:
+ 237:src/MightyBoard/shared/Heater.cc **** 			// If we get too many bad readings in a row, shut down the heater.
+ 238:src/MightyBoard/shared/Heater.cc **** 			fail_count++;
+ 239:src/MightyBoard/shared/Heater.cc **** 
+ 240:src/MightyBoard/shared/Heater.cc **** 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+ 241:src/MightyBoard/shared/Heater.cc **** 				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
+ 242:src/MightyBoard/shared/Heater.cc **** 				fail();
+ 243:src/MightyBoard/shared/Heater.cc **** 			}
+ 244:src/MightyBoard/shared/Heater.cc **** 			current_temperature = 3;
+ 245:src/MightyBoard/shared/Heater.cc **** 			return;
+ 246:src/MightyBoard/shared/Heater.cc **** 			break;
+ 247:src/MightyBoard/shared/Heater.cc **** 		}
+ 248:src/MightyBoard/shared/Heater.cc **** 
+ 249:src/MightyBoard/shared/Heater.cc **** 		current_temperature = sensor.getTemperature();
+ 250:src/MightyBoard/shared/Heater.cc **** 		
+ 251:src/MightyBoard/shared/Heater.cc **** 		if (!is_paused){
+ 252:src/MightyBoard/shared/Heater.cc **** 			uint8_t old_value_count = value_fail_count;
+ 253:src/MightyBoard/shared/Heater.cc **** 			// check that the the heater isn't reading above the maximum allowable temp
+ 254:src/MightyBoard/shared/Heater.cc **** 			if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
+ 255:src/MightyBoard/shared/Heater.cc **** 				value_fail_count++;
+ 256:src/MightyBoard/shared/Heater.cc **** 
+ 257:src/MightyBoard/shared/Heater.cc **** 				if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+ 258:src/MightyBoard/shared/Heater.cc **** 					fail_mode = HEATER_FAIL_SOFTWARE_CUTOFF;
+ 259:src/MightyBoard/shared/Heater.cc **** 					fail();
+ 260:src/MightyBoard/shared/Heater.cc **** 					return;
+ 261:src/MightyBoard/shared/Heater.cc **** 				}
+ 262:src/MightyBoard/shared/Heater.cc **** 			}
+ 263:src/MightyBoard/shared/Heater.cc **** 			// check that the heater is heating up after target is set
+ 264:src/MightyBoard/shared/Heater.cc **** 			if(!progressChecked){
+ 265:src/MightyBoard/shared/Heater.cc **** 				if(heatProgressTimer.hasElapsed()){ 
+ 266:src/MightyBoard/shared/Heater.cc **** 					if(current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD )){
+ 267:src/MightyBoard/shared/Heater.cc **** 						value_fail_count++;
+ 268:src/MightyBoard/shared/Heater.cc **** 
+ 269:src/MightyBoard/shared/Heater.cc **** 						if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+ 270:src/MightyBoard/shared/Heater.cc **** 							fail_mode = HEATER_FAIL_NOT_HEATING;
+ 271:src/MightyBoard/shared/Heater.cc **** 							fail();
+ 272:src/MightyBoard/shared/Heater.cc **** 							return;
+ 273:src/MightyBoard/shared/Heater.cc **** 						}
+ 274:src/MightyBoard/shared/Heater.cc **** 					}
+ 275:src/MightyBoard/shared/Heater.cc **** 					else
+ 276:src/MightyBoard/shared/Heater.cc **** 						progressChecked = true;
+ 277:src/MightyBoard/shared/Heater.cc **** 				}
+ 278:src/MightyBoard/shared/Heater.cc **** 			}
+ 279:src/MightyBoard/shared/Heater.cc **** 			// check that the heater temperature does not drop when still set to high temp
+ 280:src/MightyBoard/shared/Heater.cc **** 			if(heatingUpTimer.hasElapsed() && has_reached_target_temperature() && (current_temperature < (pi
+ 281:src/MightyBoard/shared/Heater.cc **** 					value_fail_count++;
+ 282:src/MightyBoard/shared/Heater.cc **** 
+ 283:src/MightyBoard/shared/Heater.cc **** 					if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+ 284:src/MightyBoard/shared/Heater.cc **** 						fail_mode = HEATER_FAIL_DROPPING_TEMP;
+ 285:src/MightyBoard/shared/Heater.cc **** 						fail();
+ 286:src/MightyBoard/shared/Heater.cc **** 						return;
+ 287:src/MightyBoard/shared/Heater.cc **** 					}
+ 288:src/MightyBoard/shared/Heater.cc **** 			}
+ 289:src/MightyBoard/shared/Heater.cc **** 			// if no bad heat reads have occured, clear the fail count
+ 290:src/MightyBoard/shared/Heater.cc **** 			// we don't want this to add up continually forever
+ 291:src/MightyBoard/shared/Heater.cc **** 			if(value_fail_count == old_value_count)
+ 292:src/MightyBoard/shared/Heater.cc **** 				value_fail_count = 0;
+ 293:src/MightyBoard/shared/Heater.cc **** 		}
+ 294:src/MightyBoard/shared/Heater.cc **** 	}
+ 295:src/MightyBoard/shared/Heater.cc **** 	if (fail_state) {
+ 296:src/MightyBoard/shared/Heater.cc **** 		return;
+ 297:src/MightyBoard/shared/Heater.cc **** 	}
+ 298:src/MightyBoard/shared/Heater.cc **** 	if (next_pid_timeout.hasElapsed() && !is_paused) {
+ 299:src/MightyBoard/shared/Heater.cc **** 		
+ 300:src/MightyBoard/shared/Heater.cc **** 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
+ 301:src/MightyBoard/shared/Heater.cc **** 
+ 302:src/MightyBoard/shared/Heater.cc **** 		int delta = pid.getTarget() - current_temperature;
+ 303:src/MightyBoard/shared/Heater.cc **** 
+ 304:src/MightyBoard/shared/Heater.cc **** 		if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
+ 305:src/MightyBoard/shared/Heater.cc **** 			bypassing_PID = false;
+ 306:src/MightyBoard/shared/Heater.cc **** 
+ 307:src/MightyBoard/shared/Heater.cc **** 			pid.reset_state();
+ 308:src/MightyBoard/shared/Heater.cc **** 		}
+ 309:src/MightyBoard/shared/Heater.cc **** 		else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+ 310:src/MightyBoard/shared/Heater.cc **** 			bypassing_PID = true;
+ 311:src/MightyBoard/shared/Heater.cc **** 		}
+ 312:src/MightyBoard/shared/Heater.cc **** 
+ 313:src/MightyBoard/shared/Heater.cc **** 		if( bypassing_PID ) {
+ 314:src/MightyBoard/shared/Heater.cc **** 			set_output(255);
+ 315:src/MightyBoard/shared/Heater.cc **** 		}
+ 316:src/MightyBoard/shared/Heater.cc **** 		else {
+ 317:src/MightyBoard/shared/Heater.cc **** 			int mv = pid.calculate(current_temperature);
+ 318:src/MightyBoard/shared/Heater.cc **** 			// offset value to compensate for heat bleed-off.
+ 319:src/MightyBoard/shared/Heater.cc **** 			// There are probably more elegant ways to do this,
+ 320:src/MightyBoard/shared/Heater.cc **** 			// but this works pretty well.
+ 321:src/MightyBoard/shared/Heater.cc **** 			mv += HEATER_OFFSET_ADJUSTMENT;
+ 322:src/MightyBoard/shared/Heater.cc **** 			// clamp value
+ 323:src/MightyBoard/shared/Heater.cc **** 			if (mv < 0) { mv = 0; }
+ 324:src/MightyBoard/shared/Heater.cc **** 			if (mv >255) { mv = 255; }
+ 325:src/MightyBoard/shared/Heater.cc **** 			if (pid.getTarget() == 0) { mv = 0; }
+ 326:src/MightyBoard/shared/Heater.cc **** 			set_output(mv);
+ 327:src/MightyBoard/shared/Heater.cc **** 				
+ 328:src/MightyBoard/shared/Heater.cc **** 		}
+ 329:src/MightyBoard/shared/Heater.cc **** 	}
+ 330:src/MightyBoard/shared/Heater.cc **** }
+ 331:src/MightyBoard/shared/Heater.cc **** 
+ 332:src/MightyBoard/shared/Heater.cc **** 
+ 333:src/MightyBoard/shared/Heater.cc **** // wait on heating the heater until told to continue
+ 334:src/MightyBoard/shared/Heater.cc **** // @param on set pause to on or off
+ 335:src/MightyBoard/shared/Heater.cc **** void Heater::Pause(bool on){	
+ 336:src/MightyBoard/shared/Heater.cc **** 	
+ 337:src/MightyBoard/shared/Heater.cc **** 	// don't pause / un-pause again
+ 338:src/MightyBoard/shared/Heater.cc **** 	if(is_paused == on)
+ 339:src/MightyBoard/shared/Heater.cc **** 		return;
+ 340:src/MightyBoard/shared/Heater.cc **** 		
+ 341:src/MightyBoard/shared/Heater.cc **** 	// don't pause if heater is not on
+ 342:src/MightyBoard/shared/Heater.cc **** 	if (on && !isHeating())
+ 343:src/MightyBoard/shared/Heater.cc **** 		return;
+ 344:src/MightyBoard/shared/Heater.cc **** 	
+ 345:src/MightyBoard/shared/Heater.cc **** 	//set paused flag
+ 346:src/MightyBoard/shared/Heater.cc **** 	is_paused = on;
+ 347:src/MightyBoard/shared/Heater.cc **** 	
+ 348:src/MightyBoard/shared/Heater.cc **** 	if(is_paused){
+ 349:src/MightyBoard/shared/Heater.cc **** 		//set output to zero
+ 350:src/MightyBoard/shared/Heater.cc **** 		set_output(0);
+ 351:src/MightyBoard/shared/Heater.cc **** 		// clear heatup timers
+ 352:src/MightyBoard/shared/Heater.cc **** 		heatingUpTimer = Timeout();
+ 353:src/MightyBoard/shared/Heater.cc **** 		heatProgressTimer = Timeout();
+ 354:src/MightyBoard/shared/Heater.cc **** 		// clear reached target temperature
+ 355:src/MightyBoard/shared/Heater.cc **** 		newTargetReached = false;
+ 356:src/MightyBoard/shared/Heater.cc **** 		
+ 357:src/MightyBoard/shared/Heater.cc **** 	}else{
+ 358:src/MightyBoard/shared/Heater.cc **** 		// restart heatup
+ 359:src/MightyBoard/shared/Heater.cc **** 		set_target_temperature(get_set_temperature());
+ 360:src/MightyBoard/shared/Heater.cc **** 		
+ 361:src/MightyBoard/shared/Heater.cc **** 	}
+ 362:src/MightyBoard/shared/Heater.cc **** }
+ 363:src/MightyBoard/shared/Heater.cc **** 
+ 364:src/MightyBoard/shared/Heater.cc **** void Heater::set_output(uint8_t value)
+ 365:src/MightyBoard/shared/Heater.cc **** {
+ 676              	 .loc 1 365 0
+ 677              	 .cfi_startproc
+ 678              	 
+ 679              	 
+ 680              	.LVL54:
+ 681 0000 08B5     	 push {r3,lr}
+ 682              	.LCFI10:
+ 683              	 .cfi_def_cfa_offset 8
+ 684              	 .cfi_offset 14,-4
+ 685              	 .cfi_offset 3,-8
+ 366:src/MightyBoard/shared/Heater.cc **** 	element.setHeatingElement(value);
+ 686              	 .loc 1 366 0
+ 687 0002 4068     	 ldr r0,[r0,#4]
+ 688              	.LVL55:
+ 689 0004 0368     	 ldr r3,[r0,#0]
+ 690 0006 9B68     	 ldr r3,[r3,#8]
+ 691 0008 9847     	 blx r3
+ 692              	.LVL56:
+ 367:src/MightyBoard/shared/Heater.cc **** }
+ 693              	 .loc 1 367 0
+ 694 000a 08BD     	 pop {r3,pc}
+ 695              	 .cfi_endproc
+ 696              	.LFE117:
+ 698              	 .section .text._ZN6Heater5PauseEb,"ax",%progbits
+ 699              	 .align 2
+ 700              	 .global _ZN6Heater5PauseEb
+ 701              	 .thumb
+ 702              	 .thumb_func
+ 704              	_ZN6Heater5PauseEb:
+ 705              	.LFB116:
+ 335:src/MightyBoard/shared/Heater.cc **** void Heater::Pause(bool on){	
+ 706              	 .loc 1 335 0
+ 707              	 .cfi_startproc
+ 708              	 
+ 709              	 
+ 710              	.LVL57:
+ 711 0000 70B5     	 push {r4,r5,r6,lr}
+ 712              	.LCFI11:
+ 713              	 .cfi_def_cfa_offset 16
+ 714              	 .cfi_offset 14,-4
+ 715              	 .cfi_offset 6,-8
+ 716              	 .cfi_offset 5,-12
+ 717              	 .cfi_offset 4,-16
+ 718 0002 88B0     	 sub sp,sp,#32
+ 719              	.LCFI12:
+ 720              	 .cfi_def_cfa_offset 48
+ 721 0004 0446     	 mov r4,r0
+ 722 0006 0D46     	 mov r5,r1
+ 338:src/MightyBoard/shared/Heater.cc **** 	if(is_paused == on)
+ 723              	 .loc 1 338 0
+ 724 0008 90F88A30 	 ldrb r3,[r0,#138]
+ 725 000c 8B42     	 cmp r3,r1
+ 726 000e 2BD0     	 beq .L36
+ 342:src/MightyBoard/shared/Heater.cc **** 	if (on && !isHeating())
+ 727              	 .loc 1 342 0
+ 728 0010 19B1     	 cbz r1,.L38
+ 342:src/MightyBoard/shared/Heater.cc **** 	if (on && !isHeating())
+ 729              	 .loc 1 342 0 is_stmt 0 discriminator 1
+ 730 0012 FFF7FEFF 	 bl _ZN6Heater9isHeatingEv
+ 731              	.LVL58:
+ 732 0016 48B9     	 cbnz r0,.L39
+ 733 0018 26E0     	 b .L36
+ 734              	.LVL59:
+ 735              	.L38:
+ 346:src/MightyBoard/shared/Heater.cc **** 	is_paused = on;
+ 736              	 .loc 1 346 0 is_stmt 1
+ 737 001a 80F88A10 	 strb r1,[r0,#138]
+ 359:src/MightyBoard/shared/Heater.cc **** 		set_target_temperature(get_set_temperature());
+ 738              	 .loc 1 359 0
+ 739 001e FFF7FEFF 	 bl _ZN6Heater19get_set_temperatureEv
+ 740              	.LVL60:
+ 741 0022 0146     	 mov r1,r0
+ 742 0024 2046     	 mov r0,r4
+ 743 0026 FFF7FEFF 	 bl _ZN6Heater22set_target_temperatureEi
+ 744 002a 1DE0     	 b .L36
+ 745              	.L39:
+ 346:src/MightyBoard/shared/Heater.cc **** 	is_paused = on;
+ 746              	 .loc 1 346 0
+ 747 002c 84F88A50 	 strb r5,[r4,#138]
+ 350:src/MightyBoard/shared/Heater.cc **** 		set_output(0);
+ 748              	 .loc 1 350 0
+ 749 0030 2046     	 mov r0,r4
+ 750 0032 4FF00001 	 mov r1,#0
+ 751 0036 FFF7FEFF 	 bl _ZN6Heater10set_outputEh
+ 352:src/MightyBoard/shared/Heater.cc **** 		heatingUpTimer = Timeout();
+ 752              	 .loc 1 352 0
+ 753 003a 6846     	 mov r0,sp
+ 754 003c FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 755 0040 04F16806 	 add r6,r4,#104
+ 756 0044 9DE80F00 	 ldmia sp,{r0,r1,r2,r3}
+ 757 0048 86E80F00 	 stmia r6,{r0,r1,r2,r3}
+ 353:src/MightyBoard/shared/Heater.cc **** 		heatProgressTimer = Timeout();
+ 758              	 .loc 1 353 0
+ 759 004c 04AD     	 add r5,sp,#16
+ 760 004e 2846     	 mov r0,r5
+ 761 0050 FFF7FEFF 	 bl _ZN7TimeoutC1Ev
+ 762 0054 04F17806 	 add r6,r4,#120
+ 763 0058 95E80F00 	 ldmia r5,{r0,r1,r2,r3}
+ 764 005c 86E80F00 	 stmia r6,{r0,r1,r2,r3}
+ 355:src/MightyBoard/shared/Heater.cc **** 		newTargetReached = false;
+ 765              	 .loc 1 355 0
+ 766 0060 4FF00003 	 mov r3,#0
+ 767 0064 84F83030 	 strb r3,[r4,#48]
+ 768              	.L36:
+ 362:src/MightyBoard/shared/Heater.cc **** }
+ 769              	 .loc 1 362 0
+ 770 0068 08B0     	 add sp,sp,#32
+ 771 006a 70BD     	 pop {r4,r5,r6,pc}
+ 772              	 .cfi_endproc
+ 773              	.LFE116:
+ 775              	 .section .text._ZN6Heater4failEv,"ax",%progbits
+ 776              	 .align 2
+ 777              	 .global _ZN6Heater4failEv
+ 778              	 .thumb
+ 779              	 .thumb_func
+ 781              	_ZN6Heater4failEv:
+ 782              	.LFB118:
+ 368:src/MightyBoard/shared/Heater.cc **** 
+ 369:src/MightyBoard/shared/Heater.cc **** // mark as failed and report to motherboard for user messaging
+ 370:src/MightyBoard/shared/Heater.cc **** void Heater::fail()
+ 371:src/MightyBoard/shared/Heater.cc **** {
+ 783              	 .loc 1 371 0
+ 784              	 .cfi_startproc
+ 785              	 
+ 786              	 
+ 787              	.LVL61:
+ 788 0000 10B5     	 push {r4,lr}
+ 789              	.LCFI13:
+ 790              	 .cfi_def_cfa_offset 8
+ 791              	 .cfi_offset 14,-4
+ 792              	 .cfi_offset 4,-8
+ 793 0002 0446     	 mov r4,r0
+ 372:src/MightyBoard/shared/Heater.cc **** 	fail_state = true;
+ 794              	 .loc 1 372 0
+ 795 0004 4FF00103 	 mov r3,#1
+ 796 0008 80F86130 	 strb r3,[r0,#97]
+ 373:src/MightyBoard/shared/Heater.cc **** 	set_output(0);
+ 797              	 .loc 1 373 0
+ 798 000c 4FF00001 	 mov r1,#0
+ 799 0010 FFF7FEFF 	 bl _ZN6Heater10set_outputEh
+ 800              	.LVL62:
+ 374:src/MightyBoard/shared/Heater.cc **** 	Motherboard::getBoard().heaterFail(fail_mode);
+ 801              	 .loc 1 374 0
+ 802 0014 40F20000 	 movw r0,#:lower16:_ZN11Motherboard11motherboardE
+ 803 0018 C0F20000 	 movt r0,#:upper16:_ZN11Motherboard11motherboardE
+ 804 001c 94F86410 	 ldrb r1,[r4,#100]
+ 805 0020 FFF7FEFF 	 bl _ZN11Motherboard10heaterFailE14HeaterFailMode
+ 375:src/MightyBoard/shared/Heater.cc **** }
+ 806              	 .loc 1 375 0
+ 807 0024 10BD     	 pop {r4,pc}
+ 808              	 .cfi_endproc
+ 809              	.LFE118:
+ 811 0026 00BF     	 .section .text._ZN6Heater18manage_temperatureEv,"ax",%progbits
+ 812              	 .align 2
+ 813              	 .global _ZN6Heater18manage_temperatureEv
+ 814              	 .thumb
+ 815              	 .thumb_func
+ 817              	_ZN6Heater18manage_temperatureEv:
+ 818              	.LFB115:
+ 218:src/MightyBoard/shared/Heater.cc **** void Heater::manage_temperature() {
+ 819              	 .loc 1 218 0
+ 820              	 .cfi_startproc
+ 821              	 
+ 822              	 
+ 823              	.LVL63:
+ 824 0000 38B5     	 push {r3,r4,r5,lr}
+ 825              	.LCFI14:
+ 826              	 .cfi_def_cfa_offset 16
+ 827              	 .cfi_offset 14,-4
+ 828              	 .cfi_offset 5,-8
+ 829              	 .cfi_offset 4,-12
+ 830              	 .cfi_offset 3,-16
+ 831 0002 0446     	 mov r4,r0
+ 832              	.LBB60:
+ 833              	.LBB61:
+ 221:src/MightyBoard/shared/Heater.cc **** 	if (next_sense_timeout.hasElapsed()) {
+ 834              	 .loc 1 221 0
+ 835 0004 00F11805 	 add r5,r0,#24
+ 836 0008 2846     	 mov r0,r5
+ 837              	.LVL64:
+ 838 000a FFF7FEFF 	 bl _ZN7Timeout10hasElapsedEv
+ 839 000e 0028     	 cmp r0,#0
+ 840 0010 00F09280 	 beq .L42
+ 841              	.LBB62:
+ 223:src/MightyBoard/shared/Heater.cc **** 		next_sense_timeout.start(sample_interval_micros);
+ 842              	 .loc 1 223 0
+ 843 0014 2846     	 mov r0,r5
+ 844 0016 A16A     	 ldr r1,[r4,#40]
+ 845 0018 FFF7FEFF 	 bl _ZN7Timeout5startEm
+ 224:src/MightyBoard/shared/Heater.cc **** 		switch (sensor.update()) {
+ 846              	 .loc 1 224 0
+ 847 001c 2068     	 ldr r0,[r4,#0]
+ 848 001e 0368     	 ldr r3,[r0,#0]
+ 849 0020 DB68     	 ldr r3,[r3,#12]
+ 850 0022 9847     	 blx r3
+ 851 0024 28B1     	 cbz r0,.L44
+ 852 0026 0228     	 cmp r0,#2
+ 853 0028 0FD8     	 bhi .L43
+ 228:src/MightyBoard/shared/Heater.cc **** 			current_temperature = 2;
+ 854              	 .loc 1 228 0
+ 855 002a 4FF00203 	 mov r3,#2
+ 856 002e A385     	 strh r3,[r4,#44]
+ 229:src/MightyBoard/shared/Heater.cc **** 			return;
+ 857              	 .loc 1 229 0
+ 858 0030 38BD     	 pop {r3,r4,r5,pc}
+ 859              	.L44:
+ 233:src/MightyBoard/shared/Heater.cc **** 			fail_count = 0;
+ 860              	 .loc 1 233 0
+ 861 0032 4FF00003 	 mov r3,#0
+ 862 0036 84F86230 	 strb r3,[r4,#98]
+ 249:src/MightyBoard/shared/Heater.cc **** 		current_temperature = sensor.getTemperature();
+ 863              	 .loc 1 249 0
+ 864 003a 2368     	 ldr r3,[r4,#0]
+ 865              	.LVL65:
+ 866              	.LBB63:
+ 867              	.LBB64:
+ 868              	 .loc 3 48 0
+ 869 003c 9B88     	 ldrh r3,[r3,#4]
+ 870 003e 9BB2     	 uxth r3,r3
+ 871              	.LBE64:
+ 872              	.LBE63:
+ 249:src/MightyBoard/shared/Heater.cc **** 		current_temperature = sensor.getTemperature();
+ 873              	 .loc 1 249 0
+ 874 0040 A385     	 strh r3,[r4,#44]
+ 875              	.LBB65:
+ 251:src/MightyBoard/shared/Heater.cc **** 		if (!is_paused){
+ 876              	 .loc 1 251 0
+ 877 0042 94F88A30 	 ldrb r3,[r4,#138]
+ 878 0046 A3B1     	 cbz r3,.L47
+ 879 0048 76E0     	 b .L42
+ 880              	.LVL66:
+ 881              	.L43:
+ 882              	.LBE65:
+ 238:src/MightyBoard/shared/Heater.cc **** 			fail_count++;
+ 883              	 .loc 1 238 0
+ 884 004a 94F86230 	 ldrb r3,[r4,#98]
+ 885 004e 03F10103 	 add r3,r3,#1
+ 886 0052 DBB2     	 uxtb r3,r3
+ 887 0054 84F86230 	 strb r3,[r4,#98]
+ 240:src/MightyBoard/shared/Heater.cc **** 			if (fail_count > SENSOR_MAX_BAD_READINGS) {
+ 888              	 .loc 1 240 0
+ 889 0058 052B     	 cmp r3,#5
+ 890 005a 06D9     	 bls .L48
+ 241:src/MightyBoard/shared/Heater.cc **** 				fail_mode = HEATER_FAIL_NOT_PLUGGED_IN;
+ 891              	 .loc 1 241 0
+ 892 005c 4FF00203 	 mov r3,#2
+ 893 0060 84F86430 	 strb r3,[r4,#100]
+ 242:src/MightyBoard/shared/Heater.cc **** 				fail();
+ 894              	 .loc 1 242 0
+ 895 0064 2046     	 mov r0,r4
+ 896 0066 FFF7FEFF 	 bl _ZN6Heater4failEv
+ 897              	.L48:
+ 244:src/MightyBoard/shared/Heater.cc **** 			current_temperature = 3;
+ 898              	 .loc 1 244 0
+ 899 006a 4FF00303 	 mov r3,#3
+ 900 006e A385     	 strh r3,[r4,#44]
+ 245:src/MightyBoard/shared/Heater.cc **** 			return;
+ 901              	 .loc 1 245 0
+ 902 0070 38BD     	 pop {r3,r4,r5,pc}
+ 903              	.LVL67:
+ 904              	.L47:
+ 905              	.LBB67:
+ 906              	.LBB66:
+ 252:src/MightyBoard/shared/Heater.cc **** 			uint8_t old_value_count = value_fail_count;
+ 907              	 .loc 1 252 0
+ 908 0072 94F86350 	 ldrb r5,[r4,#99]
+ 909              	.LVL68:
+ 254:src/MightyBoard/shared/Heater.cc **** 			if (current_temperature > HEATER_CUTOFF_TEMPERATURE) {
+ 910              	 .loc 1 254 0
+ 911 0076 A38D     	 ldrh r3,[r4,#44]
+ 912 0078 9BB2     	 uxth r3,r3
+ 913 007a B3F5967F 	 cmp r3,#300
+ 914 007e 0ED9     	 bls .L49
+ 255:src/MightyBoard/shared/Heater.cc **** 				value_fail_count++;
+ 915              	 .loc 1 255 0
+ 916 0080 05F10103 	 add r3,r5,#1
+ 917 0084 DBB2     	 uxtb r3,r3
+ 918 0086 84F86330 	 strb r3,[r4,#99]
+ 257:src/MightyBoard/shared/Heater.cc **** 				if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+ 919              	 .loc 1 257 0
+ 920 008a 052B     	 cmp r3,#5
+ 921 008c 07D9     	 bls .L49
+ 258:src/MightyBoard/shared/Heater.cc **** 					fail_mode = HEATER_FAIL_SOFTWARE_CUTOFF;
+ 922              	 .loc 1 258 0
+ 923 008e 4FF00403 	 mov r3,#4
+ 924 0092 84F86430 	 strb r3,[r4,#100]
+ 259:src/MightyBoard/shared/Heater.cc **** 					fail();
+ 925              	 .loc 1 259 0
+ 926 0096 2046     	 mov r0,r4
+ 927 0098 FFF7FEFF 	 bl _ZN6Heater4failEv
+ 928              	.LVL69:
+ 260:src/MightyBoard/shared/Heater.cc **** 					return;
+ 929              	 .loc 1 260 0
+ 930 009c 38BD     	 pop {r3,r4,r5,pc}
+ 931              	.LVL70:
+ 932              	.L49:
+ 264:src/MightyBoard/shared/Heater.cc **** 			if(!progressChecked){
+ 933              	 .loc 1 264 0
+ 934 009e 94F88830 	 ldrb r3,[r4,#136]
+ 935 00a2 0BBB     	 cbnz r3,.L50
+ 265:src/MightyBoard/shared/Heater.cc **** 				if(heatProgressTimer.hasElapsed()){ 
+ 936              	 .loc 1 265 0
+ 937 00a4 04F17800 	 add r0,r4,#120
+ 938 00a8 FFF7FEFF 	 bl _ZN7Timeout10hasElapsedEv
+ 939              	.LVL71:
+ 940 00ac E0B1     	 cbz r0,.L50
+ 266:src/MightyBoard/shared/Heater.cc **** 					if(current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD )){
+ 941              	 .loc 1 266 0
+ 942 00ae A28D     	 ldrh r2,[r4,#44]
+ 943 00b0 92B2     	 uxth r2,r2
+ 944 00b2 E38D     	 ldrh r3,[r4,#46]
+ 945 00b4 9BB2     	 uxth r3,r3
+ 946 00b6 03F10A03 	 add r3,r3,#10
+ 947 00ba 9A42     	 cmp r2,r3
+ 276:src/MightyBoard/shared/Heater.cc **** 						progressChecked = true;
+ 948              	 .loc 1 276 0
+ 949 00bc A4BF     	 itt ge
+ 950 00be 0123     	 movge r3,#1
+ 951 00c0 84F88830 	 strbge r3,[r4,#136]
+ 266:src/MightyBoard/shared/Heater.cc **** 					if(current_temperature < (startTemp + HEAT_PROGRESS_THRESHOLD )){
+ 952              	 .loc 1 266 0
+ 953 00c4 10DA     	 bge .L50
+ 267:src/MightyBoard/shared/Heater.cc **** 						value_fail_count++;
+ 954              	 .loc 1 267 0
+ 955 00c6 94F86330 	 ldrb r3,[r4,#99]
+ 956 00ca 03F10103 	 add r3,r3,#1
+ 957 00ce DBB2     	 uxtb r3,r3
+ 958 00d0 84F86330 	 strb r3,[r4,#99]
+ 269:src/MightyBoard/shared/Heater.cc **** 						if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+ 959              	 .loc 1 269 0
+ 960 00d4 052B     	 cmp r3,#5
+ 961 00d6 07D9     	 bls .L50
+ 270:src/MightyBoard/shared/Heater.cc **** 							fail_mode = HEATER_FAIL_NOT_HEATING;
+ 962              	 .loc 1 270 0
+ 963 00d8 4FF00803 	 mov r3,#8
+ 964 00dc 84F86430 	 strb r3,[r4,#100]
+ 271:src/MightyBoard/shared/Heater.cc **** 							fail();
+ 965              	 .loc 1 271 0
+ 966 00e0 2046     	 mov r0,r4
+ 967 00e2 FFF7FEFF 	 bl _ZN6Heater4failEv
+ 272:src/MightyBoard/shared/Heater.cc **** 							return;
+ 968              	 .loc 1 272 0
+ 969 00e6 38BD     	 pop {r3,r4,r5,pc}
+ 970              	.L50:
+ 280:src/MightyBoard/shared/Heater.cc **** 			if(heatingUpTimer.hasElapsed() && has_reached_target_temperature() && (current_temperature < (pi
+ 971              	 .loc 1 280 0
+ 972 00e8 04F16800 	 add r0,r4,#104
+ 973 00ec FFF7FEFF 	 bl _ZN7Timeout10hasElapsedEv
+ 974 00f0 D8B1     	 cbz r0,.L53
+ 280:src/MightyBoard/shared/Heater.cc **** 			if(heatingUpTimer.hasElapsed() && has_reached_target_temperature() && (current_temperature < (pi
+ 975              	 .loc 1 280 0 is_stmt 0 discriminator 1
+ 976 00f2 2046     	 mov r0,r4
+ 977 00f4 FFF7FEFF 	 bl _ZN6Heater30has_reached_target_temperatureEv
+ 978 00f8 B8B1     	 cbz r0,.L53
+ 280:src/MightyBoard/shared/Heater.cc **** 			if(heatingUpTimer.hasElapsed() && has_reached_target_temperature() && (current_temperature < (pi
+ 979              	 .loc 1 280 0 discriminator 3
+ 980 00fa A28D     	 ldrh r2,[r4,#44]
+ 981 00fc 92B2     	 uxth r2,r2
+ 982              	.LVL72:
+ 983 00fe A36D     	 ldr r3,[r4,#88]
+ 984 0100 A3F11E03 	 sub r3,r3,#30
+ 985 0104 9A42     	 cmp r2,r3
+ 986 0106 10DA     	 bge .L53
+ 281:src/MightyBoard/shared/Heater.cc **** 					value_fail_count++;
+ 987              	 .loc 1 281 0 is_stmt 1 discriminator 5
+ 988 0108 94F86330 	 ldrb r3,[r4,#99]
+ 989 010c 03F10103 	 add r3,r3,#1
+ 990 0110 DBB2     	 uxtb r3,r3
+ 991 0112 84F86330 	 strb r3,[r4,#99]
+ 283:src/MightyBoard/shared/Heater.cc **** 					if (value_fail_count > SENSOR_MAX_BAD_READINGS) {
+ 992              	 .loc 1 283 0 discriminator 5
+ 993 0116 052B     	 cmp r3,#5
+ 994 0118 07D9     	 bls .L53
+ 284:src/MightyBoard/shared/Heater.cc **** 						fail_mode = HEATER_FAIL_DROPPING_TEMP;
+ 995              	 .loc 1 284 0
+ 996 011a 4FF01003 	 mov r3,#16
+ 997 011e 84F86430 	 strb r3,[r4,#100]
+ 285:src/MightyBoard/shared/Heater.cc **** 						fail();
+ 998              	 .loc 1 285 0
+ 999 0122 2046     	 mov r0,r4
+ 1000 0124 FFF7FEFF 	 bl _ZN6Heater4failEv
+ 286:src/MightyBoard/shared/Heater.cc **** 						return;
+ 1001              	 .loc 1 286 0
+ 1002 0128 38BD     	 pop {r3,r4,r5,pc}
+ 1003              	.LVL73:
+ 1004              	.L53:
+ 291:src/MightyBoard/shared/Heater.cc **** 			if(value_fail_count == old_value_count)
+ 1005              	 .loc 1 291 0
+ 1006 012a 94F86330 	 ldrb r3,[r4,#99]
+ 1007 012e AB42     	 cmp r3,r5
+ 292:src/MightyBoard/shared/Heater.cc **** 				value_fail_count = 0;
+ 1008              	 .loc 1 292 0
+ 1009 0130 04BF     	 itt eq
+ 1010 0132 0023     	 moveq r3,#0
+ 1011 0134 84F86330 	 strbeq r3,[r4,#99]
+ 1012              	.LVL74:
+ 1013              	.L42:
+ 1014              	.LBE66:
+ 1015              	.LBE67:
+ 1016              	.LBE62:
+ 1017              	.LBE61:
+ 295:src/MightyBoard/shared/Heater.cc **** 	if (fail_state) {
+ 1018              	 .loc 1 295 0
+ 1019 0138 94F86130 	 ldrb r3,[r4,#97]
+ 1020 013c 002B     	 cmp r3,#0
+ 1021 013e 46D1     	 bne .L41
+ 1022              	.LBB68:
+ 298:src/MightyBoard/shared/Heater.cc **** 	if (next_pid_timeout.hasElapsed() && !is_paused) {
+ 1023              	 .loc 1 298 0
+ 1024 0140 04F10805 	 add r5,r4,#8
+ 1025 0144 2846     	 mov r0,r5
+ 1026 0146 FFF7FEFF 	 bl _ZN7Timeout10hasElapsedEv
+ 1027 014a 0028     	 cmp r0,#0
+ 1028 014c 3FD0     	 beq .L41
+ 298:src/MightyBoard/shared/Heater.cc **** 	if (next_pid_timeout.hasElapsed() && !is_paused) {
+ 1029              	 .loc 1 298 0 is_stmt 0 discriminator 1
+ 1030 014e 94F88A30 	 ldrb r3,[r4,#138]
+ 1031 0152 002B     	 cmp r3,#0
+ 1032 0154 3BD1     	 bne .L41
+ 1033              	.LBB69:
+ 300:src/MightyBoard/shared/Heater.cc **** 		next_pid_timeout.start(UPDATE_INTERVAL_MICROS);
+ 1034              	 .loc 1 300 0 is_stmt 1 discriminator 4
+ 1035 0156 2846     	 mov r0,r5
+ 1036 0158 4AF22011 	 movw r1,#41248
+ 1037 015c C0F20701 	 movt r1,7
+ 1038 0160 FFF7FEFF 	 bl _ZN7Timeout5startEm
+ 1039              	.LVL75:
+ 302:src/MightyBoard/shared/Heater.cc **** 		int delta = pid.getTarget() - current_temperature;
+ 1040              	 .loc 1 302 0 discriminator 4
+ 1041 0164 A28D     	 ldrh r2,[r4,#44]
+ 1042 0166 92B2     	 uxth r2,r2
+ 1043 0168 A36D     	 ldr r3,[r4,#88]
+ 1044 016a 9A1A     	 subs r2,r3,r2
+ 1045              	.LVL76:
+ 304:src/MightyBoard/shared/Heater.cc **** 		if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
+ 1046              	 .loc 1 304 0 discriminator 4
+ 1047 016c 94F86030 	 ldrb r3,[r4,#96]
+ 1048 0170 5BB1     	 cbz r3,.L54
+ 304:src/MightyBoard/shared/Heater.cc **** 		if( bypassing_PID && (delta < PID_BYPASS_DELTA) ) {
+ 1049              	 .loc 1 304 0 is_stmt 0 discriminator 1
+ 1050 0172 0E2A     	 cmp r2,#14
+ 1051 0174 08DC     	 bgt .L55
+ 305:src/MightyBoard/shared/Heater.cc **** 			bypassing_PID = false;
+ 1052              	 .loc 1 305 0 is_stmt 1
+ 1053 0176 4FF00003 	 mov r3,#0
+ 1054 017a 84F86030 	 strb r3,[r4,#96]
+ 307:src/MightyBoard/shared/Heater.cc **** 			pid.reset_state();
+ 1055              	 .loc 1 307 0
+ 1056 017e 04F13400 	 add r0,r4,#52
+ 1057 0182 FFF7FEFF 	 bl _ZN3PID11reset_stateEv
+ 1058              	.LVL77:
+ 1059 0186 06E0     	 b .L56
+ 1060              	.LVL78:
+ 1061              	.L55:
+ 309:src/MightyBoard/shared/Heater.cc **** 		else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+ 1062              	 .loc 1 309 0
+ 1063 0188 43B9     	 cbnz r3,.L60
+ 1064              	.L54:
+ 309:src/MightyBoard/shared/Heater.cc **** 		else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+ 1065              	 .loc 1 309 0 is_stmt 0 discriminator 1
+ 1066 018a 192A     	 cmp r2,#25
+ 310:src/MightyBoard/shared/Heater.cc **** 			bypassing_PID = true;
+ 1067              	 .loc 1 310 0 is_stmt 1 discriminator 1
+ 1068 018c C4BF     	 itt gt
+ 1069 018e 0123     	 movgt r3,#1
+ 1070 0190 84F86030 	 strbgt r3,[r4,#96]
+ 309:src/MightyBoard/shared/Heater.cc **** 		else if ( !bypassing_PID && (delta > PID_BYPASS_DELTA + 10) ) {
+ 1071              	 .loc 1 309 0 discriminator 1
+ 1072 0194 02DC     	 bgt .L60
+ 1073              	.LVL79:
+ 1074              	.L56:
+ 1075              	.LBB70:
+ 313:src/MightyBoard/shared/Heater.cc **** 		if( bypassing_PID ) {
+ 1076              	 .loc 1 313 0
+ 1077 0196 94F86030 	 ldrb r3,[r4,#96]
+ 1078 019a 2BB1     	 cbz r3,.L58
+ 1079              	.L60:
+ 314:src/MightyBoard/shared/Heater.cc **** 			set_output(255);
+ 1080              	 .loc 1 314 0
+ 1081 019c 2046     	 mov r0,r4
+ 1082 019e 4FF0FF01 	 mov r1,#255
+ 1083 01a2 FFF7FEFF 	 bl _ZN6Heater10set_outputEh
+ 1084 01a6 38BD     	 pop {r3,r4,r5,pc}
+ 1085              	.L58:
+ 1086              	.LBB71:
+ 317:src/MightyBoard/shared/Heater.cc **** 			int mv = pid.calculate(current_temperature);
+ 1087              	 .loc 1 317 0
+ 1088 01a8 A18D     	 ldrh r1,[r4,#44]
+ 1089 01aa 04F13400 	 add r0,r4,#52
+ 1090 01ae 89B2     	 uxth r1,r1
+ 1091 01b0 FFF7FEFF 	 bl _ZN3PID9calculateEi
+ 1092              	.LVL80:
+ 325:src/MightyBoard/shared/Heater.cc **** 			if (pid.getTarget() == 0) { mv = 0; }
+ 1093              	 .loc 1 325 0
+ 1094 01b4 A36D     	 ldr r3,[r4,#88]
+ 1095 01b6 4FF00001 	 mov r1,#0
+ 1096 01ba 23B1     	 cbz r3,.L59
+ 1097 01bc 20EAE071 	 bic r1,r0,r0,asr#31
+ 1098 01c0 FF29     	 cmp r1,#255
+ 1099 01c2 A8BF     	 it ge
+ 1100 01c4 FF21     	 movge r1,#255
+ 1101              	.L59:
+ 1102              	.LVL81:
+ 326:src/MightyBoard/shared/Heater.cc **** 			set_output(mv);
+ 1103              	 .loc 1 326 0
+ 1104 01c6 2046     	 mov r0,r4
+ 1105 01c8 C9B2     	 uxtb r1,r1
+ 1106              	.LVL82:
+ 1107 01ca FFF7FEFF 	 bl _ZN6Heater10set_outputEh
+ 1108              	.LVL83:
+ 1109              	.L41:
+ 1110 01ce 38BD     	 pop {r3,r4,r5,pc}
+ 1111              	.LBE71:
+ 1112              	.LBE70:
+ 1113              	.LBE69:
+ 1114              	.LBE68:
+ 1115              	.LBE60:
+ 1116              	 .cfi_endproc
+ 1117              	.LFE115:
+ 1119              	 .section .text._ZN6Heater10has_failedEv,"ax",%progbits
+ 1120              	 .align 2
+ 1121              	 .global _ZN6Heater10has_failedEv
+ 1122              	 .thumb
+ 1123              	 .thumb_func
+ 1125              	_ZN6Heater10has_failedEv:
+ 1126              	.LFB119:
+ 376:src/MightyBoard/shared/Heater.cc **** 
+ 377:src/MightyBoard/shared/Heater.cc **** bool Heater::has_failed()
+ 378:src/MightyBoard/shared/Heater.cc **** {
+ 1127              	 .loc 1 378 0
+ 1128              	 .cfi_startproc
+ 1129              	 
+ 1130              	 
+ 1131              	 
+ 1132              	.LVL84:
+ 379:src/MightyBoard/shared/Heater.cc **** 	return fail_state;
+ 380:src/MightyBoard/shared/Heater.cc **** }
+ 1133              	 .loc 1 380 0
+ 1134 0000 90F86100 	 ldrb r0,[r0,#97]
+ 1135              	.LVL85:
+ 1136 0004 7047     	 bx lr
+ 1137              	 .cfi_endproc
+ 1138              	.LFE119:
+ 1140 0006 00BF     	 .section .text._ZN6Heater11GetFailModeEv,"ax",%progbits
+ 1141              	 .align 2
+ 1142              	 .global _ZN6Heater11GetFailModeEv
+ 1143              	 .thumb
+ 1144              	 .thumb_func
+ 1146              	_ZN6Heater11GetFailModeEv:
+ 1147              	.LFB120:
+ 381:src/MightyBoard/shared/Heater.cc **** 
+ 382:src/MightyBoard/shared/Heater.cc **** uint8_t Heater::GetFailMode(){
+ 1148              	 .loc 1 382 0
+ 1149              	 .cfi_startproc
+ 1150              	 
+ 1151              	 
+ 1152              	 
+ 1153              	.LVL86:
+ 383:src/MightyBoard/shared/Heater.cc **** 	
+ 384:src/MightyBoard/shared/Heater.cc **** 	return fail_mode;
+ 385:src/MightyBoard/shared/Heater.cc **** }
+ 1154              	 .loc 1 385 0
+ 1155 0000 90F86400 	 ldrb r0,[r0,#100]
+ 1156              	.LVL87:
+ 1157 0004 7047     	 bx lr
+ 1158              	 .cfi_endproc
+ 1159              	.LFE120:
+ 1161 0006 00BF     	 .section .text._GLOBAL__sub_I__ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb,"ax",%progbits
+ 1162              	 .align 2
+ 1163              	 .thumb
+ 1164              	 .thumb_func
+ 1166              	_GLOBAL__sub_I__ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb:
+ 1167              	.LFB122:
+ 1168              	 .loc 1 385 0
+ 1169              	 .cfi_startproc
+ 1170              	 
+ 1171              	 
+ 1172 0000 10B5     	 push {r4,lr}
+ 1173              	.LCFI15:
+ 1174              	 .cfi_def_cfa_offset 8
+ 1175              	 .cfi_offset 14,-4
+ 1176              	 .cfi_offset 4,-8
+ 1177              	.LVL88:
+ 1178              	.LBB74:
+ 1179              	.LBB75:
+ 1180              	 .file 4 "src/MightyBoard/shared/LPCPort.hh"
+   1:src/MightyBoard/shared/LPCPort.hh **** /*
+   2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
+   3:src/MightyBoard/shared/LPCPort.hh **** *
+   4:src/MightyBoard/shared/LPCPort.hh **** * This program is free software: you can redistribute it and/or modify
+   5:src/MightyBoard/shared/LPCPort.hh **** * it under the terms of the GNU General Public License as published by
+   6:src/MightyBoard/shared/LPCPort.hh **** * the Free Software Foundation, either version 3 of the License, or
+   7:src/MightyBoard/shared/LPCPort.hh **** * (at your option) any later version.
+   8:src/MightyBoard/shared/LPCPort.hh **** *
+   9:src/MightyBoard/shared/LPCPort.hh **** * This program is distributed in the hope that it will be useful,
+  10:src/MightyBoard/shared/LPCPort.hh **** * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  11:src/MightyBoard/shared/LPCPort.hh **** * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  12:src/MightyBoard/shared/LPCPort.hh **** * GNU General Public License for more details.
+  13:src/MightyBoard/shared/LPCPort.hh **** *
+  14:src/MightyBoard/shared/LPCPort.hh **** * You should have received a copy of the GNU General Public License
+  15:src/MightyBoard/shared/LPCPort.hh **** * along with this program.  If not, see <http://www.gnu.org/licenses/>
+  16:src/MightyBoard/shared/LPCPort.hh **** */
+  17:src/MightyBoard/shared/LPCPort.hh **** 
+  18:src/MightyBoard/shared/LPCPort.hh **** #ifndef SHARED_AVR_PORT_HH_
+  19:src/MightyBoard/shared/LPCPort.hh **** #define SHARED_AVR_PORT_HH_
+  20:src/MightyBoard/shared/LPCPort.hh **** 
+  21:src/MightyBoard/shared/LPCPort.hh **** #define __STDC_LIMIT_MACROS
+  22:src/MightyBoard/shared/LPCPort.hh **** //#include <stdint.h>
+  23:src/MightyBoard/shared/LPCPort.hh **** //#include <util/atomic.h>
+  24:src/MightyBoard/shared/LPCPort.hh **** 
+  25:src/MightyBoard/shared/LPCPort.hh **** extern "C" {
+  26:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc_types.h"
+  27:src/MightyBoard/shared/LPCPort.hh **** 	#include "lpc17xx_gpio.h"
+  28:src/MightyBoard/shared/LPCPort.hh **** }
+  29:src/MightyBoard/shared/LPCPort.hh **** 
+  30:src/MightyBoard/shared/LPCPort.hh **** 
+  31:src/MightyBoard/shared/LPCPort.hh **** #define NULL_PORT 0xff
+  32:src/MightyBoard/shared/LPCPort.hh **** 
+  33:src/MightyBoard/shared/LPCPort.hh **** class LPCPort {
+  34:src/MightyBoard/shared/LPCPort.hh **** private:
+  35:src/MightyBoard/shared/LPCPort.hh **** 	const uint8_t port_base;
+  36:src/MightyBoard/shared/LPCPort.hh **** 	friend class Pin;
+  37:src/MightyBoard/shared/LPCPort.hh **** public:
+  38:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort();
+  39:src/MightyBoard/shared/LPCPort.hh **** 	LPCPort(uint8_t port_base_in);
+  40:src/MightyBoard/shared/LPCPort.hh **** 	bool isNull() const;
+  41:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionOut(uint8_t pin_index) const;
+  42:src/MightyBoard/shared/LPCPort.hh **** 	void setPinDirectionIn(uint8_t pin_index) const;
+  43:src/MightyBoard/shared/LPCPort.hh **** 	bool getPin(uint8_t pin_index) const;
+  44:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOn(uint8_t pin_index) const;
+  45:src/MightyBoard/shared/LPCPort.hh **** 	void setPinOff(uint8_t pin_index) const;
+  46:src/MightyBoard/shared/LPCPort.hh **** };
+  47:src/MightyBoard/shared/LPCPort.hh **** 
+  48:src/MightyBoard/shared/LPCPort.hh **** 
+  49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
+ 1181              	 .loc 4 49 0
+ 1182 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 1183 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 1184 000a 4FF00001 	 mov r1,#0
+ 1185 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
+ 1186              	 .loc 4 50 0
+ 1187 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 1188 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 1189 001a 4FF00101 	 mov r1,#1
+ 1190 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
+ 1191              	 .loc 4 51 0
+ 1192 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 1193 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 1194 002a 4FF00201 	 mov r1,#2
+ 1195 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
+ 1196              	 .loc 4 52 0
+ 1197 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 1198 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 1199 003a 4FF00301 	 mov r1,#3
+ 1200 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
+ 1201              	 .loc 4 53 0
+ 1202 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 1203 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 1204 004a 4FF00401 	 mov r1,#4
+ 1205 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  54:src/MightyBoard/shared/LPCPort.hh **** 
+  55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
+ 1206              	 .loc 4 55 0
+ 1207 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 1208 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 1209 005a 2046     	 mov r0,r4
+ 1210 005c 4FF0FF01 	 mov r1,#255
+ 1211 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1212              	 .file 5 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+  49:src/MightyBoard/shared/Pin.hh **** 		}
+  50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  51:src/MightyBoard/shared/Pin.hh **** 	};
+  52:src/MightyBoard/shared/Pin.hh **** 
+  53:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOn() const {
+  54:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  55:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  56:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  57:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  58:src/MightyBoard/shared/Pin.hh **** //		PORTx |= pin_mask;
+  59:src/MightyBoard/shared/Pin.hh **** 		GPIO_SetValue(port_base, _BV(pin_index));
+  60:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  61:src/MightyBoard/shared/Pin.hh **** 	};
+  62:src/MightyBoard/shared/Pin.hh **** 
+  63:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValueOff() const {
+  64:src/MightyBoard/shared/Pin.hh **** 		// if (is_null)
+  65:src/MightyBoard/shared/Pin.hh **** 		// 	return;
+  66:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  67:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  68:src/MightyBoard/shared/Pin.hh **** //		PORTx &= pin_mask_inverted;
+  69:src/MightyBoard/shared/Pin.hh **** 		GPIO_ClearValue(port_base, _BV(pin_index));
+  70:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
+  71:src/MightyBoard/shared/Pin.hh **** 	};
+  72:src/MightyBoard/shared/Pin.hh **** 	// currently not used:
+  73:src/MightyBoard/shared/Pin.hh **** 	//const uint8_t getPinIndex() const { return pin_index; }
+  74:src/MightyBoard/shared/Pin.hh **** };
+  75:src/MightyBoard/shared/Pin.hh **** 
+  76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
+ 1213              	 .loc 5 76 0
+ 1214 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 1215 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 1216 006c 2146     	 mov r1,r4
+ 1217 006e 4FF00002 	 mov r2,#0
+ 1218 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 1219              	.LBE75:
+ 1220              	.LBE74:
+ 1221              	 .loc 1 385 0
+ 1222 0076 10BD     	 pop {r4,pc}
+ 1223              	 .cfi_endproc
+ 1224              	.LFE122:
+ 1226              	 .section .init_array,"aw",%init_array
+ 1227              	 .align 2
+ 1228 0000 00000000 	 .word _GLOBAL__sub_I__ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb(target1)
+ 1229              	 .global _ZN6HeaterC1ER17TemperatureSensorR14HeatingElementmtb
+ 1230              	 .thumb_set _ZN6HeaterC1ER17TemperatureSensorR14HeatingElementmtb,_ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb
+ 1231              	 .section .bss._ZL5Port0,"aw",%nobits
+ 1232              	 .align 2
+ 1233              	 .set .LANCHOR0,.+0
+ 1236              	_ZL5Port0:
+ 1237 0000 00       	 .space 1
+ 1238 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 1239              	 .align 2
+ 1240              	 .set .LANCHOR1,.+0
+ 1243              	_ZL5Port1:
+ 1244 0000 00       	 .space 1
+ 1245 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 1246              	 .align 2
+ 1247              	 .set .LANCHOR2,.+0
+ 1250              	_ZL5Port2:
+ 1251 0000 00       	 .space 1
+ 1252 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 1253              	 .align 2
+ 1254              	 .set .LANCHOR3,.+0
+ 1257              	_ZL5Port3:
+ 1258 0000 00       	 .space 1
+ 1259 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 1260              	 .align 2
+ 1261              	 .set .LANCHOR4,.+0
+ 1264              	_ZL5Port4:
+ 1265 0000 00       	 .space 1
+ 1266 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 1267              	 .align 2
+ 1268              	 .set .LANCHOR5,.+0
+ 1271              	_ZL8NullPort:
+ 1272 0000 00       	 .space 1
+ 1273 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 1274              	 .align 2
+ 1275              	 .set .LANCHOR6,.+0
+ 1278              	_ZL7NullPin:
+ 1279 0000 00000000 	 .space 5
+ 1279      00
+ 1280 0005 000000   	 .text
+ 1281              	.Letext0:
+ 1282              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1283              	 .file 7 "src/MightyBoard/shared/Types.hh"
+ 1284              	 .file 8 "src/MightyBoard/shared/Timeout.hh"
+ 1285              	 .file 9 "src/MightyBoard/shared/Heater.hh"
+ 1286              	 .file 10 "src/MightyBoard/shared/HeatingElement.hh"
+ 1287              	 .file 11 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 1288              	 .file 12 "src/MightyBoard/shared/CoolingFan.hh"
+ 1289              	 .file 13 "src/MightyBoard/Motherboard/ExtruderBoard.hh"
+ 1290              	 .file 14 "src/MightyBoard/Motherboard/Cutoff.hh"
+ 1291              	 .file 15 "src/MightyBoard/Motherboard/Motherboard.hh"
+ 1292              	 .file 16 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 1293              	 .file 17 "src/MightyBoard/shared/Packet.hh"
+DEFINED SYMBOLS
+                            *ABS*:00000000 Heater.cc
+    {standard input}:20     .text._ZN6Heater5resetEv:00000000 $t
+    {standard input}:25     .text._ZN6Heater5resetEv:00000000 _ZN6Heater5resetEv
+    {standard input}:182    .text._ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb:00000000 $t
+    {standard input}:187    .text._ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb:00000000 _ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb
+    {standard input}:235    .text._ZN6Heater22set_target_temperatureEi:00000000 $t
+    {standard input}:240    .text._ZN6Heater22set_target_temperatureEi:00000000 _ZN6Heater22set_target_temperatureEi
+    {standard input}:344    .text._ZN6Heater30has_reached_target_temperatureEv:00000000 $t
+    {standard input}:349    .text._ZN6Heater30has_reached_target_temperatureEv:00000000 _ZN6Heater30has_reached_target_temperatureEv
+    {standard input}:404    .text._ZN6Heater19get_set_temperatureEv:00000000 $t
+    {standard input}:409    .text._ZN6Heater19get_set_temperatureEv:00000000 _ZN6Heater19get_set_temperatureEv
+    {standard input}:425    .text._ZN6Heater23get_current_temperatureEv:00000000 $t
+    {standard input}:430    .text._ZN6Heater23get_current_temperatureEv:00000000 _ZN6Heater23get_current_temperatureEv
+    {standard input}:448    .text._ZN6Heater15getPIDErrorTermEv:00000000 $t
+    {standard input}:453    .text._ZN6Heater15getPIDErrorTermEv:00000000 _ZN6Heater15getPIDErrorTermEv
+    {standard input}:476    .text._ZN6Heater15getPIDDeltaTermEv:00000000 $t
+    {standard input}:481    .text._ZN6Heater15getPIDDeltaTermEv:00000000 _ZN6Heater15getPIDDeltaTermEv
+    {standard input}:504    .text._ZN6Heater16getPIDLastOutputEv:00000000 $t
+    {standard input}:509    .text._ZN6Heater16getPIDLastOutputEv:00000000 _ZN6Heater16getPIDLastOutputEv
+    {standard input}:532    .text._ZN6Heater9isHeatingEv:00000000 $t
+    {standard input}:537    .text._ZN6Heater9isHeatingEv:00000000 _ZN6Heater9isHeatingEv
+    {standard input}:576    .text._ZN6Heater9isCoolingEv:00000000 $t
+    {standard input}:581    .text._ZN6Heater9isCoolingEv:00000000 _ZN6Heater9isCoolingEv
+    {standard input}:623    .text._ZN6Heater8getDeltaEv:00000000 $t
+    {standard input}:628    .text._ZN6Heater8getDeltaEv:00000000 _ZN6Heater8getDeltaEv
+    {standard input}:669    .text._ZN6Heater10set_outputEh:00000000 $t
+    {standard input}:674    .text._ZN6Heater10set_outputEh:00000000 _ZN6Heater10set_outputEh
+    {standard input}:699    .text._ZN6Heater5PauseEb:00000000 $t
+    {standard input}:704    .text._ZN6Heater5PauseEb:00000000 _ZN6Heater5PauseEb
+    {standard input}:776    .text._ZN6Heater4failEv:00000000 $t
+    {standard input}:781    .text._ZN6Heater4failEv:00000000 _ZN6Heater4failEv
+    {standard input}:812    .text._ZN6Heater18manage_temperatureEv:00000000 $t
+    {standard input}:817    .text._ZN6Heater18manage_temperatureEv:00000000 _ZN6Heater18manage_temperatureEv
+    {standard input}:1120   .text._ZN6Heater10has_failedEv:00000000 $t
+    {standard input}:1125   .text._ZN6Heater10has_failedEv:00000000 _ZN6Heater10has_failedEv
+    {standard input}:1141   .text._ZN6Heater11GetFailModeEv:00000000 $t
+    {standard input}:1146   .text._ZN6Heater11GetFailModeEv:00000000 _ZN6Heater11GetFailModeEv
+    {standard input}:1162   .text._GLOBAL__sub_I__ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb:00000000 $t
+    {standard input}:1166   .text._GLOBAL__sub_I__ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb:00000000 _GLOBAL__sub_I__ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb
+    {standard input}:1233   .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:1240   .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:1247   .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:1254   .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:1261   .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:1268   .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:1275   .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:1227   .init_array:00000000 $d
+    {standard input}:187    .text._ZN6HeaterC2ER17TemperatureSensorR14HeatingElementmtb:00000000 _ZN6HeaterC1ER17TemperatureSensorR14HeatingElementmtb
+    {standard input}:1232   .bss._ZL5Port0:00000000 $d
+    {standard input}:1236   .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:1239   .bss._ZL5Port1:00000000 $d
+    {standard input}:1243   .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:1246   .bss._ZL5Port2:00000000 $d
+    {standard input}:1250   .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:1253   .bss._ZL5Port3:00000000 $d
+    {standard input}:1257   .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:1260   .bss._ZL5Port4:00000000 $d
+    {standard input}:1264   .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:1267   .bss._ZL8NullPort:00000000 $d
+    {standard input}:1271   .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:1274   .bss._ZL7NullPin:00000000 $d
+    {standard input}:1278   .bss._ZL7NullPin:00000000 _ZL7NullPin
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+__aeabi_fcmpeq
+_ZN7TimeoutC1Ev
+_ZN6eeprom16getEepromFixed16Etf
+_ZN3PID5resetEv
+_ZN3PID9setTargetEi
+_ZN7Timeout5startEm
+_ZN3PIDC1Ev
+_ZN3PID12getErrorTermEv
+_ZN3PID12getDeltaTermEv
+_ZN3PID13getLastOutputEv
+_ZN11Motherboard11motherboardE
+_ZN11Motherboard10heaterFailE14HeaterFailMode
+_ZN7Timeout10hasElapsedEv
+_ZN3PID11reset_stateEv
+_ZN3PID9calculateEi
+_ZN7LPCPortC1Eh
+_ZN3PinC1ERK7LPCPorth

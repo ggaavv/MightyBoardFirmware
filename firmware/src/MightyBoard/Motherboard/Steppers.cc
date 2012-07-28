@@ -729,7 +729,15 @@ uint8_t getEndstopStatus(){
 	status |= (_READ(Y_MIN_PORT,Y_MIN_BIT)) ? 0x04 : 0;
 	status |= (_READ(X_MAX_PORT,X_MAX_BIT)) ? 0x02 : 0;
 	status |= (_READ(X_MIN_PORT,X_MIN_BIT)) ? 0x01 : 0;
-	
+/*
+	uint8_t status = 0;
+	status |= (_READ(Z_MAX)) ? 0x20 : 0;
+	status |= (_READ(Z_MIN)) ? 0x10 : 0;
+	status |= (_READ(Y_MAX)) ? 0x08 : 0;
+	status |= (_READ(Y_MIN)) ? 0x04 : 0;
+	status |= (_READ(X_MAX)) ? 0x02 : 0;
+	status |= (_READ(X_MIN)) ? 0x01 : 0; 
+	*/
 	return status;
 }
 

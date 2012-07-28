@@ -1,0 +1,96 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_libcfg_default.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.check_failed,"ax",%progbits
+  19              	 .align 2
+  20              	 .global check_failed
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	check_failed:
+  25              	.LFB0:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * $Id$		lpc17xx_libcfg_default.c				2010-05-21
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @file		lpc17xx_libcfg_default.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @brief	Library configuration source file (default), used to build
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * 			library without examples
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @version	2.0
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @date		21. May. 2010
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @author	NXP MCU SW Application Team
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** *
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * Copyright(C) 2010, NXP Semiconductor
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * All rights reserved.
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** *
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** ***********************************************************************
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * Software that is described herein is for illustrative purposes only
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * which provides customers with programming information regarding the
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * products. This software is supplied "AS IS" without any warranties.
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * use of the software, conveys no license or title under any patent,
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * reserves the right to make changes in the software without
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * notification. NXP Semiconductors also make no representation or
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * warranty that such application will be suitable for the specified
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * use without further testing or modification.
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** **********************************************************************/
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** 
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** /* Library group ----------------------------------------------------------- */
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** /** @addtogroup LIBCFG_DEFAULT
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c ****  * @{
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c ****  */
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** 
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** /* Includes ------------------------------------------------------------------- */
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** #include "lpc17xx_libcfg_default.h"
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** 
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** /* Public Functions ----------------------------------------------------------- */
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** /** @addtogroup LIBCFG_DEFAULT_Public_Functions
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c ****  * @{
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c ****  */
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** 
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** #ifndef __BUILD_WITH_EXAMPLE__
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** 
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** #ifdef  DEBUG
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** /*******************************************************************************
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @brief		Reports the name of the source file and the source line number
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * 				where the CHECK_PARAM error has occurred.
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @param[in]	file Pointer to the source file name
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @param[in]    line assert_param error line source number
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** * @return		None
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** *******************************************************************************/
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** void check_failed(uint8_t *file, uint32_t line)
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_libcfg_default.c **** {
+  27              	 .loc 1 51 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  32              	.LVL0:
+  33              	.L2:
+  34 0000 FEE7     	 b .L2
+  35              	 .cfi_endproc
+  36              	.LFE0:
+  38 0002 00BF     	 .text
+  39              	.Letext0:
+  40              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_libcfg_default.c
+    {standard input}:19     .text.check_failed:00000000 $t
+    {standard input}:24     .text.check_failed:00000000 check_failed
+                     .debug_frame:00000010 $d
+
+NO UNDEFINED SYMBOLS

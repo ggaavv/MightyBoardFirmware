@@ -1,0 +1,1080 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "lpc17xx_adc.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.ADC_Init,"ax",%progbits
+  19              	 .align 2
+  20              	 .global ADC_Init
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	ADC_Init:
+  25              	.LFB55:
+  26              	 .file 1 "src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c"
+   1:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /**********************************************************************
+   2:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * $Id$		lpc17xx_adc.c				2010-06-18
+   3:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *//**
+   4:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @file		lpc17xx_adc.c
+   5:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief	Contains all functions support for ADC firmware library on LPC17xx
+   6:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @version	3.0
+   7:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @date		18. June. 2010
+   8:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @author	NXP MCU SW Application Team
+   9:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *
+  10:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * Copyright(C) 2010, NXP Semiconductor
+  11:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * All rights reserved.
+  12:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *
+  13:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** ***********************************************************************
+  14:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * Software that is described herein is for illustrative purposes only
+  15:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * which provides customers with programming information regarding the
+  16:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * products. This software is supplied "AS IS" without any warranties.
+  17:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * NXP Semiconductors assumes no responsibility or liability for the
+  18:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * use of the software, conveys no license or title under any patent,
+  19:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * copyright, or mask work right to the product. NXP Semiconductors
+  20:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * reserves the right to make changes in the software without
+  21:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * notification. NXP Semiconductors also make no representation or
+  22:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * warranty that such application will be suitable for the specified
+  23:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * use without further testing or modification.
+  24:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+  25:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  26:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /* Peripheral group ----------------------------------------------------------- */
+  27:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /** @addtogroup ADC
+  28:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * @{
+  29:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  */
+  30:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  31:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /* Includes ------------------------------------------------------------------- */
+  32:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #include "lpc17xx_adc.h"
+  33:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #include "lpc17xx_clkpwr.h"
+  34:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  35:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /* If this source file built with example, the LPC17xx FW library configuration
+  36:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * file in each example directory ("lpc17xx_libcfg.h") must be included,
+  37:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * otherwise the default FW library configuration file must be included instead
+  38:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  */
+  39:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #ifdef __BUILD_WITH_EXAMPLE__
+  40:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #include "lpc17xx_libcfg.h"
+  41:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #else
+  42:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #include "lpc17xx_libcfg_default.h"
+  43:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #endif /* __BUILD_WITH_EXAMPLE__ */
+  44:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  45:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  46:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** #ifdef _ADC
+  47:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  48:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /* Public Functions ----------------------------------------------------------- */
+  49:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /** @addtogroup ADC_Public_Functions
+  50:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * @{
+  51:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  */
+  52:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  53:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+  54:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * @brief 		Initial for ADC
+  55:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * 					+ Set bit PCADC
+  56:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * 					+ Set clock for ADC
+  57:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * 					+ Set Clock Frequency
+  58:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+  59:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * @param[in]	rate ADC conversion rate, should be <=200KHz
+  60:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  * @return 		None
+  61:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c ****  **********************************************************************/
+  62:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_Init(LPC_ADC_TypeDef *ADCx, uint32_t rate)
+  63:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+  27              	 .loc 1 63 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	.LVL0:
+  32 0000 38B5     	 push {r3,r4,r5,lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 16
+  35              	 .cfi_offset 14,-4
+  36              	 .cfi_offset 5,-8
+  37              	 .cfi_offset 4,-12
+  38              	 .cfi_offset 3,-16
+  39 0002 0446     	 mov r4,r0
+  40 0004 0D46     	 mov r5,r1
+  64:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	uint32_t temp, tmp;
+  65:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  66:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+  41              	 .loc 1 66 0
+  42 0006 4FF48043 	 mov r3,#16384
+  43 000a C4F20303 	 movt r3,16387
+  44 000e 9842     	 cmp r0,r3
+  45 0010 07D0     	 beq .L2
+  46              	 .loc 1 66 0 is_stmt 0 discriminator 1
+  47 0012 40F20000 	 movw r0,#:lower16:.LC0
+  48              	.LVL1:
+  49 0016 C0F20000 	 movt r0,#:upper16:.LC0
+  50 001a 4FF04201 	 mov r1,#66
+  51              	.LVL2:
+  52 001e FFF7FEFF 	 bl check_failed
+  53              	.L2:
+  67:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_RATE(rate));
+  54              	 .loc 1 67 0 is_stmt 1
+  55 0022 05F1FF32 	 add r2,r5,#-1
+  56 0026 40F63F53 	 movw r3,#3391
+  57 002a C0F20303 	 movt r3,3
+  58 002e 9A42     	 cmp r2,r3
+  59 0030 07D9     	 bls .L3
+  60              	 .loc 1 67 0 is_stmt 0 discriminator 1
+  61 0032 40F20000 	 movw r0,#:lower16:.LC0
+  62 0036 C0F20000 	 movt r0,#:upper16:.LC0
+  63 003a 4FF04301 	 mov r1,#67
+  64 003e FFF7FEFF 	 bl check_failed
+  65              	.L3:
+  68:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  69:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	// Turn on power and clock
+  70:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCAD, ENABLE);
+  66              	 .loc 1 70 0 is_stmt 1
+  67 0042 4FF48050 	 mov r0,#4096
+  68 0046 4FF00101 	 mov r1,#1
+  69 004a FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+  71:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  72:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR = 0;
+  70              	 .loc 1 72 0
+  71 004e 4FF00003 	 mov r3,#0
+  72 0052 2360     	 str r3,[r4,#0]
+  73              	.LVL3:
+  73:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  74:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	//Enable PDN bit
+  75:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	tmp = ADC_CR_PDN;
+  76:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	// Set clock frequency
+  77:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	temp = CLKPWR_GetPCLK(CLKPWR_PCLKSEL_ADC);
+  74              	 .loc 1 77 0
+  75 0054 4FF01800 	 mov r0,#24
+  76 0058 FFF7FEFF 	 bl CLKPWR_GetPCLK
+  77              	.LVL4:
+  78:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	/* The APB clock (PCLK_ADC0) is divided by (CLKDIV+1) to produce the clock for
+  79:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	 * A/D converter, which should be less than or equal to 13MHz.
+  80:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	 * A fully conversion requires 65 of these clocks.
+  81:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	 * ADC clock = PCLK_ADC0 / (CLKDIV + 1);
+  82:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	 * ADC rate = ADC clock / 65;
+  83:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	 */
+  84:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	temp = (temp /(rate * 65)) - 1;
+  78              	 .loc 1 84 0
+  79 005c 4FEA8513 	 lsl r3,r5,#6
+  80 0060 5D19     	 adds r5,r3,r5
+  81              	.LVL5:
+  82 0062 B0FBF5F5 	 udiv r5,r0,r5
+  83              	.LVL6:
+  84 0066 05F1FF35 	 add r5,r5,#-1
+  85              	.LVL7:
+  85:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	tmp |=  ADC_CR_CLKDIV(temp);
+  86              	 .loc 1 85 0
+  87 006a 4FEA0525 	 lsl r5,r5,#8
+  88              	.LVL8:
+  89 006e 45F40015 	 orr r5,r5,#2097152
+  90              	.LVL9:
+  86:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  87:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR = tmp;
+  91              	 .loc 1 87 0
+  92 0072 2560     	 str r5,[r4,#0]
+  88:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+  93              	 .loc 1 88 0
+  94 0074 38BD     	 pop {r3,r4,r5,pc}
+  95              	 .cfi_endproc
+  96              	.LFE55:
+  98 0076 00BF     	 .section .text.ADC_DeInit,"ax",%progbits
+  99              	 .align 2
+ 100              	 .global ADC_DeInit
+ 101              	 .thumb
+ 102              	 .thumb_func
+ 104              	ADC_DeInit:
+ 105              	.LFB56:
+  89:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  90:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+  91:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+  92:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Close ADC
+  93:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+  94:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		None
+  95:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+  96:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_DeInit(LPC_ADC_TypeDef *ADCx)
+  97:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 106              	 .loc 1 97 0
+ 107              	 .cfi_startproc
+ 108              	 
+ 109              	 
+ 110              	.LVL10:
+ 111 0000 10B5     	 push {r4,lr}
+ 112              	.LCFI1:
+ 113              	 .cfi_def_cfa_offset 8
+ 114              	 .cfi_offset 14,-4
+ 115              	 .cfi_offset 4,-8
+ 116 0002 0446     	 mov r4,r0
+  98:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 117              	 .loc 1 98 0
+ 118 0004 4FF48043 	 mov r3,#16384
+ 119 0008 C4F20303 	 movt r3,16387
+ 120 000c 9842     	 cmp r0,r3
+ 121 000e 07D0     	 beq .L5
+ 122              	 .loc 1 98 0 is_stmt 0 discriminator 1
+ 123 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 124              	.LVL11:
+ 125 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 126 0018 4FF06201 	 mov r1,#98
+ 127 001c FFF7FEFF 	 bl check_failed
+ 128              	.L5:
+  99:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 100:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	// Clear PDN bit
+ 101:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR &= ~ADC_CR_PDN;
+ 129              	 .loc 1 101 0 is_stmt 1
+ 130 0020 2368     	 ldr r3,[r4,#0]
+ 131 0022 23F40013 	 bic r3,r3,#2097152
+ 132 0026 2360     	 str r3,[r4,#0]
+ 102:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	// Turn on power and clock
+ 103:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CLKPWR_ConfigPPWR (CLKPWR_PCONP_PCAD, DISABLE);
+ 133              	 .loc 1 103 0
+ 134 0028 4FF48050 	 mov r0,#4096
+ 135 002c 4FF00001 	 mov r1,#0
+ 136 0030 FFF7FEFF 	 bl CLKPWR_ConfigPPWR
+ 104:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 137              	 .loc 1 104 0
+ 138 0034 10BD     	 pop {r4,pc}
+ 139              	 .cfi_endproc
+ 140              	.LFE56:
+ 142 0036 00BF     	 .section .text.ADC_GetData,"ax",%progbits
+ 143              	 .align 2
+ 144              	 .global ADC_GetData
+ 145              	 .thumb
+ 146              	 .thumb_func
+ 148              	ADC_GetData:
+ 149              	.LFB57:
+ 105:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 106:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 107:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 108:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Get Result conversion from A/D data register
+ 109:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	channel number which want to read back the result
+ 110:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		Result of conversion
+ 111:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *********************************************************************/
+ 112:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** uint32_t ADC_GetData(uint32_t channel)
+ 113:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 150              	 .loc 1 113 0
+ 151              	 .cfi_startproc
+ 152              	 
+ 153              	 
+ 154              	 
+ 155              	.LVL12:
+ 114:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	uint32_t adc_value;
+ 115:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 116:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_CHANNEL_SELECTION(channel));
+ 117:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 118:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	adc_value = *(uint32_t *)((&LPC_ADC->ADDR0) + channel);
+ 156              	 .loc 1 118 0
+ 157 0000 44F21003 	 movw r3,#16400
+ 158 0004 C4F20303 	 movt r3,16387
+ 119:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	return ADC_GDR_RESULT(adc_value);
+ 159              	 .loc 1 119 0
+ 160 0008 53F82000 	 ldr r0,[r3,r0,lsl#2]
+ 161              	.LVL13:
+ 120:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 162              	 .loc 1 120 0
+ 163 000c C0F30B10 	 ubfx r0,r0,#4,#12
+ 164 0010 7047     	 bx lr
+ 165              	 .cfi_endproc
+ 166              	.LFE57:
+ 168 0012 00BF     	 .section .text.ADC_StartCmd,"ax",%progbits
+ 169              	 .align 2
+ 170              	 .global ADC_StartCmd
+ 171              	 .thumb
+ 172              	 .thumb_func
+ 174              	ADC_StartCmd:
+ 175              	.LFB58:
+ 121:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 122:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 123:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Set start mode for ADC
+ 124:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 125:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	start_mode Start mode choose one of modes in
+ 126:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				'ADC_START_OPT' enumeration type definition, should be:
+ 127:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_START_CONTINUOUS
+ 128:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_START_NOW
+ 129:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_START_ON_EINT0
+ 130:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_START_ON_CAP01
+ 131:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *				- ADC_START_ON_MAT01
+ 132:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *				- ADC_START_ON_MAT03
+ 133:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *				- ADC_START_ON_MAT10
+ 134:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *				- ADC_START_ON_MAT11
+ 135:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		None
+ 136:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *********************************************************************/
+ 137:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_StartCmd(LPC_ADC_TypeDef *ADCx, uint8_t start_mode)
+ 138:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 176              	 .loc 1 138 0
+ 177              	 .cfi_startproc
+ 178              	 
+ 179              	 
+ 180              	.LVL14:
+ 181 0000 38B5     	 push {r3,r4,r5,lr}
+ 182              	.LCFI2:
+ 183              	 .cfi_def_cfa_offset 16
+ 184              	 .cfi_offset 14,-4
+ 185              	 .cfi_offset 5,-8
+ 186              	 .cfi_offset 4,-12
+ 187              	 .cfi_offset 3,-16
+ 188 0002 0446     	 mov r4,r0
+ 189 0004 0D46     	 mov r5,r1
+ 139:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 190              	 .loc 1 139 0
+ 191 0006 4FF48043 	 mov r3,#16384
+ 192 000a C4F20303 	 movt r3,16387
+ 193 000e 9842     	 cmp r0,r3
+ 194 0010 07D0     	 beq .L8
+ 195              	 .loc 1 139 0 is_stmt 0 discriminator 1
+ 196 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 197              	.LVL15:
+ 198 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 199 001a 4FF08B01 	 mov r1,#139
+ 200              	.LVL16:
+ 201 001e FFF7FEFF 	 bl check_failed
+ 202              	.L8:
+ 140:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_START_OPT(start_mode));
+ 203              	 .loc 1 140 0 is_stmt 1
+ 204 0022 072D     	 cmp r5,#7
+ 205 0024 07D9     	 bls .L9
+ 206              	 .loc 1 140 0 is_stmt 0 discriminator 1
+ 207 0026 40F20000 	 movw r0,#:lower16:.LC0
+ 208 002a C0F20000 	 movt r0,#:upper16:.LC0
+ 209 002e 4FF08C01 	 mov r1,#140
+ 210 0032 FFF7FEFF 	 bl check_failed
+ 211              	.L9:
+ 141:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 142:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR &= ~ADC_CR_START_MASK;
+ 212              	 .loc 1 142 0 is_stmt 1
+ 213 0036 2368     	 ldr r3,[r4,#0]
+ 214 0038 23F0E063 	 bic r3,r3,#117440512
+ 215 003c 2360     	 str r3,[r4,#0]
+ 143:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR |=ADC_CR_START_MODE_SEL((uint32_t)start_mode);
+ 216              	 .loc 1 143 0
+ 217 003e 2368     	 ldr r3,[r4,#0]
+ 218 0040 43EA0565 	 orr r5,r3,r5,lsl#24
+ 219 0044 2560     	 str r5,[r4,#0]
+ 144:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 220              	 .loc 1 144 0
+ 221 0046 38BD     	 pop {r3,r4,r5,pc}
+ 222              	 .cfi_endproc
+ 223              	.LFE58:
+ 225              	 .section .text.ADC_BurstCmd,"ax",%progbits
+ 226              	 .align 2
+ 227              	 .global ADC_BurstCmd
+ 228              	 .thumb
+ 229              	 .thumb_func
+ 231              	ADC_BurstCmd:
+ 232              	.LFB59:
+ 145:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 146:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 147:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 148:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		ADC Burst mode setting
+ 149:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 150:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	NewState
+ 151:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				-	1: Set Burst mode
+ 152:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				-	0: reset Burst mode
+ 153:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		None
+ 154:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 155:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_BurstCmd(LPC_ADC_TypeDef *ADCx, FunctionalState NewState)
+ 156:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 233              	 .loc 1 156 0
+ 234              	 .cfi_startproc
+ 235              	 
+ 236              	 
+ 237              	.LVL17:
+ 238 0000 38B5     	 push {r3,r4,r5,lr}
+ 239              	.LCFI3:
+ 240              	 .cfi_def_cfa_offset 16
+ 241              	 .cfi_offset 14,-4
+ 242              	 .cfi_offset 5,-8
+ 243              	 .cfi_offset 4,-12
+ 244              	 .cfi_offset 3,-16
+ 245 0002 0446     	 mov r4,r0
+ 246 0004 0D46     	 mov r5,r1
+ 157:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 247              	 .loc 1 157 0
+ 248 0006 4FF48043 	 mov r3,#16384
+ 249 000a C4F20303 	 movt r3,16387
+ 250 000e 9842     	 cmp r0,r3
+ 251 0010 07D0     	 beq .L11
+ 252              	 .loc 1 157 0 is_stmt 0 discriminator 1
+ 253 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 254              	.LVL18:
+ 255 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 256 001a 4FF09D01 	 mov r1,#157
+ 257              	.LVL19:
+ 258 001e FFF7FEFF 	 bl check_failed
+ 259              	.L11:
+ 158:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 159:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR &= ~ADC_CR_BURST;
+ 260              	 .loc 1 159 0 is_stmt 1
+ 261 0022 2368     	 ldr r3,[r4,#0]
+ 262 0024 23F48033 	 bic r3,r3,#65536
+ 263 0028 2360     	 str r3,[r4,#0]
+ 160:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (NewState){
+ 264              	 .loc 1 160 0
+ 265 002a 1DB1     	 cbz r5,.L10
+ 161:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		ADCx->ADCR |= ADC_CR_BURST;
+ 266              	 .loc 1 161 0
+ 267 002c 2368     	 ldr r3,[r4,#0]
+ 268 002e 43F48033 	 orr r3,r3,#65536
+ 269 0032 2360     	 str r3,[r4,#0]
+ 270              	.L10:
+ 271 0034 38BD     	 pop {r3,r4,r5,pc}
+ 272              	 .cfi_endproc
+ 273              	.LFE59:
+ 275 0036 00BF     	 .section .text.ADC_PowerdownCmd,"ax",%progbits
+ 276              	 .align 2
+ 277              	 .global ADC_PowerdownCmd
+ 278              	 .thumb
+ 279              	 .thumb_func
+ 281              	ADC_PowerdownCmd:
+ 282              	.LFB60:
+ 162:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 163:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 164:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 165:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 166:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Set AD conversion in power mode
+ 167:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 168:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	NewState
+ 169:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				-	1: AD converter is optional
+ 170:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				-	0: AD Converter is in power down mode
+ 171:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		None
+ 172:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 173:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_PowerdownCmd(LPC_ADC_TypeDef *ADCx, FunctionalState NewState)
+ 174:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 283              	 .loc 1 174 0
+ 284              	 .cfi_startproc
+ 285              	 
+ 286              	 
+ 287              	.LVL20:
+ 288 0000 38B5     	 push {r3,r4,r5,lr}
+ 289              	.LCFI4:
+ 290              	 .cfi_def_cfa_offset 16
+ 291              	 .cfi_offset 14,-4
+ 292              	 .cfi_offset 5,-8
+ 293              	 .cfi_offset 4,-12
+ 294              	 .cfi_offset 3,-16
+ 295 0002 0446     	 mov r4,r0
+ 296 0004 0D46     	 mov r5,r1
+ 175:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 297              	 .loc 1 175 0
+ 298 0006 4FF48043 	 mov r3,#16384
+ 299 000a C4F20303 	 movt r3,16387
+ 300 000e 9842     	 cmp r0,r3
+ 301 0010 07D0     	 beq .L14
+ 302              	 .loc 1 175 0 is_stmt 0 discriminator 1
+ 303 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 304              	.LVL21:
+ 305 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 306 001a 4FF0AF01 	 mov r1,#175
+ 307              	.LVL22:
+ 308 001e FFF7FEFF 	 bl check_failed
+ 309              	.L14:
+ 176:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 177:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR &= ~ADC_CR_PDN;
+ 310              	 .loc 1 177 0 is_stmt 1
+ 311 0022 2368     	 ldr r3,[r4,#0]
+ 312 0024 23F40013 	 bic r3,r3,#2097152
+ 313 0028 2360     	 str r3,[r4,#0]
+ 178:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (NewState){
+ 314              	 .loc 1 178 0
+ 315 002a 1DB1     	 cbz r5,.L13
+ 179:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		ADCx->ADCR |= ADC_CR_PDN;
+ 316              	 .loc 1 179 0
+ 317 002c 2368     	 ldr r3,[r4,#0]
+ 318 002e 43F40013 	 orr r3,r3,#2097152
+ 319 0032 2360     	 str r3,[r4,#0]
+ 320              	.L13:
+ 321 0034 38BD     	 pop {r3,r4,r5,pc}
+ 322              	 .cfi_endproc
+ 323              	.LFE60:
+ 325 0036 00BF     	 .section .text.ADC_EdgeStartConfig,"ax",%progbits
+ 326              	 .align 2
+ 327              	 .global ADC_EdgeStartConfig
+ 328              	 .thumb
+ 329              	 .thumb_func
+ 331              	ADC_EdgeStartConfig:
+ 332              	.LFB61:
+ 180:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 181:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 182:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 183:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 184:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Set Edge start configuration
+ 185:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 186:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	EdgeOption is ADC_START_ON_RISING and ADC_START_ON_FALLING
+ 187:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 					0:ADC_START_ON_RISING
+ 188:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 					1:ADC_START_ON_FALLING
+ 189:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		None
+ 190:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 191:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_EdgeStartConfig(LPC_ADC_TypeDef *ADCx, uint8_t EdgeOption)
+ 192:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 333              	 .loc 1 192 0
+ 334              	 .cfi_startproc
+ 335              	 
+ 336              	 
+ 337              	.LVL23:
+ 338 0000 38B5     	 push {r3,r4,r5,lr}
+ 339              	.LCFI5:
+ 340              	 .cfi_def_cfa_offset 16
+ 341              	 .cfi_offset 14,-4
+ 342              	 .cfi_offset 5,-8
+ 343              	 .cfi_offset 4,-12
+ 344              	 .cfi_offset 3,-16
+ 345 0002 0446     	 mov r4,r0
+ 346 0004 0D46     	 mov r5,r1
+ 193:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 347              	 .loc 1 193 0
+ 348 0006 4FF48043 	 mov r3,#16384
+ 349 000a C4F20303 	 movt r3,16387
+ 350 000e 9842     	 cmp r0,r3
+ 351 0010 07D0     	 beq .L17
+ 352              	 .loc 1 193 0 is_stmt 0 discriminator 1
+ 353 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 354              	.LVL24:
+ 355 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 356 001a 4FF0C101 	 mov r1,#193
+ 357              	.LVL25:
+ 358 001e FFF7FEFF 	 bl check_failed
+ 359              	.L17:
+ 194:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_START_ON_EDGE_OPT(EdgeOption));
+ 360              	 .loc 1 194 0 is_stmt 1
+ 361 0022 012D     	 cmp r5,#1
+ 362 0024 07D9     	 bls .L18
+ 363              	 .loc 1 194 0 is_stmt 0 discriminator 1
+ 364 0026 40F20000 	 movw r0,#:lower16:.LC0
+ 365 002a C0F20000 	 movt r0,#:upper16:.LC0
+ 366 002e 4FF0C201 	 mov r1,#194
+ 367 0032 FFF7FEFF 	 bl check_failed
+ 368              	.L18:
+ 195:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 196:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADCR &= ~ADC_CR_EDGE;
+ 369              	 .loc 1 196 0 is_stmt 1
+ 370 0036 2368     	 ldr r3,[r4,#0]
+ 371 0038 23F00063 	 bic r3,r3,#134217728
+ 372 003c 2360     	 str r3,[r4,#0]
+ 197:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (EdgeOption){
+ 373              	 .loc 1 197 0
+ 374 003e 1DB1     	 cbz r5,.L16
+ 198:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		ADCx->ADCR |= ADC_CR_EDGE;
+ 375              	 .loc 1 198 0
+ 376 0040 2368     	 ldr r3,[r4,#0]
+ 377 0042 43F00063 	 orr r3,r3,#134217728
+ 378 0046 2360     	 str r3,[r4,#0]
+ 379              	.L16:
+ 380 0048 38BD     	 pop {r3,r4,r5,pc}
+ 381              	 .cfi_endproc
+ 382              	.LFE61:
+ 384 004a 00BF     	 .section .text.ADC_IntConfig,"ax",%progbits
+ 385              	 .align 2
+ 386              	 .global ADC_IntConfig
+ 387              	 .thumb
+ 388              	 .thumb_func
+ 390              	ADC_IntConfig:
+ 391              	.LFB62:
+ 199:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 200:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 201:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 202:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 203:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		ADC interrupt configuration
+ 204:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 205:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	IntType: type of interrupt, should be:
+ 206:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_ADINTEN0: Interrupt channel 0
+ 207:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_ADINTEN1: Interrupt channel 1
+ 208:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				...
+ 209:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_ADINTEN7: Interrupt channel 7
+ 210:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 				- ADC_ADGINTEN: Individual channel/global flag done generate an interrupt
+ 211:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	NewState:
+ 212:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 					- SET : enable ADC interrupt
+ 213:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * 					- RESET: disable ADC interrupt
+ 214:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		None
+ 215:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 216:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_IntConfig (LPC_ADC_TypeDef *ADCx, ADC_TYPE_INT_OPT IntType, FunctionalState NewState)
+ 217:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 392              	 .loc 1 217 0
+ 393              	 .cfi_startproc
+ 394              	 
+ 395              	 
+ 396              	.LVL26:
+ 397 0000 70B5     	 push {r4,r5,r6,lr}
+ 398              	.LCFI6:
+ 399              	 .cfi_def_cfa_offset 16
+ 400              	 .cfi_offset 14,-4
+ 401              	 .cfi_offset 6,-8
+ 402              	 .cfi_offset 5,-12
+ 403              	 .cfi_offset 4,-16
+ 404 0002 0446     	 mov r4,r0
+ 405 0004 0D46     	 mov r5,r1
+ 406 0006 1646     	 mov r6,r2
+ 218:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 407              	 .loc 1 218 0
+ 408 0008 4FF48043 	 mov r3,#16384
+ 409 000c C4F20303 	 movt r3,16387
+ 410 0010 9842     	 cmp r0,r3
+ 411 0012 07D0     	 beq .L21
+ 412              	 .loc 1 218 0 is_stmt 0 discriminator 1
+ 413 0014 40F20000 	 movw r0,#:lower16:.LC0
+ 414              	.LVL27:
+ 415 0018 C0F20000 	 movt r0,#:upper16:.LC0
+ 416 001c 4FF0DA01 	 mov r1,#218
+ 417              	.LVL28:
+ 418 0020 FFF7FEFF 	 bl check_failed
+ 419              	.LVL29:
+ 420              	.L21:
+ 219:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_TYPE_INT_OPT(IntType));
+ 421              	 .loc 1 219 0 is_stmt 1
+ 422 0024 082D     	 cmp r5,#8
+ 423 0026 07D9     	 bls .L22
+ 424              	 .loc 1 219 0 is_stmt 0 discriminator 1
+ 425 0028 40F20000 	 movw r0,#:lower16:.LC0
+ 426 002c C0F20000 	 movt r0,#:upper16:.LC0
+ 427 0030 4FF0DB01 	 mov r1,#219
+ 428 0034 FFF7FEFF 	 bl check_failed
+ 429              	.L22:
+ 220:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 221:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	ADCx->ADINTEN &= ~ADC_INTEN_CH(IntType);
+ 430              	 .loc 1 221 0 is_stmt 1
+ 431 0038 E368     	 ldr r3,[r4,#12]
+ 432 003a 4FF00102 	 mov r2,#1
+ 433 003e 02FA05F5 	 lsl r5,r2,r5
+ 434 0042 23EA0503 	 bic r3,r3,r5
+ 435 0046 E360     	 str r3,[r4,#12]
+ 222:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (NewState){
+ 436              	 .loc 1 222 0
+ 437 0048 16B1     	 cbz r6,.L20
+ 223:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		ADCx->ADINTEN |= ADC_INTEN_CH(IntType);
+ 438              	 .loc 1 223 0
+ 439 004a E368     	 ldr r3,[r4,#12]
+ 440 004c 1D43     	 orrs r5,r5,r3
+ 441 004e E560     	 str r5,[r4,#12]
+ 442              	.L20:
+ 443 0050 70BD     	 pop {r4,r5,r6,pc}
+ 444              	 .cfi_endproc
+ 445              	.LFE62:
+ 447 0052 00BF     	 .section .text.ADC_ChannelCmd,"ax",%progbits
+ 448              	 .align 2
+ 449              	 .global ADC_ChannelCmd
+ 450              	 .thumb
+ 451              	 .thumb_func
+ 453              	ADC_ChannelCmd:
+ 454              	.LFB63:
+ 224:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 225:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 226:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 227:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 228:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Enable/Disable ADC channel number
+ 229:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 230:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	Channel channel number
+ 231:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	NewState Enable or Disable
+ 232:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *
+ 233:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		None
+ 234:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 235:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** void ADC_ChannelCmd (LPC_ADC_TypeDef *ADCx, uint8_t Channel, FunctionalState NewState)
+ 236:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 455              	 .loc 1 236 0
+ 456              	 .cfi_startproc
+ 457              	 
+ 458              	 
+ 459              	.LVL30:
+ 460 0000 70B5     	 push {r4,r5,r6,lr}
+ 461              	.LCFI7:
+ 462              	 .cfi_def_cfa_offset 16
+ 463              	 .cfi_offset 14,-4
+ 464              	 .cfi_offset 6,-8
+ 465              	 .cfi_offset 5,-12
+ 466              	 .cfi_offset 4,-16
+ 467 0002 0446     	 mov r4,r0
+ 468 0004 0E46     	 mov r6,r1
+ 469 0006 1546     	 mov r5,r2
+ 237:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 470              	 .loc 1 237 0
+ 471 0008 4FF48043 	 mov r3,#16384
+ 472 000c C4F20303 	 movt r3,16387
+ 473 0010 9842     	 cmp r0,r3
+ 474 0012 07D0     	 beq .L25
+ 475              	 .loc 1 237 0 is_stmt 0 discriminator 1
+ 476 0014 40F20000 	 movw r0,#:lower16:.LC0
+ 477              	.LVL31:
+ 478 0018 C0F20000 	 movt r0,#:upper16:.LC0
+ 479 001c 4FF0ED01 	 mov r1,#237
+ 480              	.LVL32:
+ 481 0020 FFF7FEFF 	 bl check_failed
+ 482              	.LVL33:
+ 483              	.L25:
+ 238:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_CHANNEL_SELECTION(Channel));
+ 239:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 240:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (NewState == ENABLE) {
+ 484              	 .loc 1 240 0 is_stmt 1
+ 485 0024 012D     	 cmp r5,#1
+ 241:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		ADCx->ADCR |= ADC_CR_CH_SEL(Channel);
+ 486              	 .loc 1 241 0
+ 487 0026 2368     	 ldr r3,[r4,#0]
+ 488 0028 4FF00102 	 mov r2,#1
+ 489 002c 02FA06F6 	 lsl r6,r2,r6
+ 490 0030 0CBF     	 ite eq
+ 491 0032 1E43     	 orreq r6,r6,r3
+ 242:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	} else {
+ 243:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		ADCx->ADCR &= ~ADC_CR_CH_SEL(Channel);
+ 492              	 .loc 1 243 0
+ 493 0034 23EA0606 	 bicne r6,r3,r6
+ 494 0038 2660     	 str r6,[r4,#0]
+ 495 003a 70BD     	 pop {r4,r5,r6,pc}
+ 496              	 .cfi_endproc
+ 497              	.LFE63:
+ 499              	 .section .text.ADC_ChannelGetData,"ax",%progbits
+ 500              	 .align 2
+ 501              	 .global ADC_ChannelGetData
+ 502              	 .thumb
+ 503              	 .thumb_func
+ 505              	ADC_ChannelGetData:
+ 506              	.LFB64:
+ 244:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 245:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 246:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 247:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 248:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Get ADC result
+ 249:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 250:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	channel: channel number, should be 0...7
+ 251:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		Data conversion
+ 252:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 253:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** uint16_t ADC_ChannelGetData(LPC_ADC_TypeDef *ADCx, uint8_t channel)
+ 254:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 507              	 .loc 1 254 0
+ 508              	 .cfi_startproc
+ 509              	 
+ 510              	 
+ 511              	.LVL34:
+ 512 0000 38B5     	 push {r3,r4,r5,lr}
+ 513              	.LCFI8:
+ 514              	 .cfi_def_cfa_offset 16
+ 515              	 .cfi_offset 14,-4
+ 516              	 .cfi_offset 5,-8
+ 517              	 .cfi_offset 4,-12
+ 518              	 .cfi_offset 3,-16
+ 519 0002 0446     	 mov r4,r0
+ 520 0004 0D46     	 mov r5,r1
+ 255:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	uint32_t adc_value;
+ 256:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 257:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 521              	 .loc 1 257 0
+ 522 0006 4FF48043 	 mov r3,#16384
+ 523 000a C4F20303 	 movt r3,16387
+ 524 000e 9842     	 cmp r0,r3
+ 525 0010 07D0     	 beq .L29
+ 526              	 .loc 1 257 0 is_stmt 0 discriminator 1
+ 527 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 528              	.LVL35:
+ 529 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 530 001a 40F20111 	 movw r1,#257
+ 531              	.LVL36:
+ 532 001e FFF7FEFF 	 bl check_failed
+ 533              	.L29:
+ 258:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_CHANNEL_SELECTION(channel));
+ 259:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 260:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	adc_value = *(uint32_t *) ((&ADCx->ADDR0) + channel);
+ 534              	 .loc 1 260 0 is_stmt 1
+ 535 0022 04F11004 	 add r4,r4,#16
+ 536              	.LVL37:
+ 261:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	return ADC_DR_RESULT(adc_value);
+ 537              	 .loc 1 261 0
+ 538 0026 54F82500 	 ldr r0,[r4,r5,lsl#2]
+ 262:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 539              	 .loc 1 262 0
+ 540 002a C0F30B10 	 ubfx r0,r0,#4,#12
+ 541 002e 38BD     	 pop {r3,r4,r5,pc}
+ 542              	 .cfi_endproc
+ 543              	.LFE64:
+ 545              	 .section .text.ADC_ChannelGetStatus,"ax",%progbits
+ 546              	 .align 2
+ 547              	 .global ADC_ChannelGetStatus
+ 548              	 .thumb
+ 549              	 .thumb_func
+ 551              	ADC_ChannelGetStatus:
+ 552              	.LFB65:
+ 263:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 264:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 265:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Get ADC Chanel status from ADC data register
+ 266:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 267:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	channel: channel number, should be 0..7
+ 268:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]  	StatusType
+ 269:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *              		 	0:Burst status
+ 270:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *               		1:Done 	status
+ 271:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		SET / RESET
+ 272:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 273:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** FlagStatus ADC_ChannelGetStatus(LPC_ADC_TypeDef *ADCx, uint8_t channel, uint32_t StatusType)
+ 274:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 553              	 .loc 1 274 0
+ 554              	 .cfi_startproc
+ 555              	 
+ 556              	 
+ 557              	.LVL38:
+ 558 0000 70B5     	 push {r4,r5,r6,lr}
+ 559              	.LCFI9:
+ 560              	 .cfi_def_cfa_offset 16
+ 561              	 .cfi_offset 14,-4
+ 562              	 .cfi_offset 6,-8
+ 563              	 .cfi_offset 5,-12
+ 564              	 .cfi_offset 4,-16
+ 565 0002 0546     	 mov r5,r0
+ 566 0004 0E46     	 mov r6,r1
+ 567 0006 1446     	 mov r4,r2
+ 275:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	uint32_t temp;
+ 276:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 277:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 568              	 .loc 1 277 0
+ 569 0008 4FF48043 	 mov r3,#16384
+ 570 000c C4F20303 	 movt r3,16387
+ 571 0010 9842     	 cmp r0,r3
+ 572 0012 07D0     	 beq .L31
+ 573              	 .loc 1 277 0 is_stmt 0 discriminator 1
+ 574 0014 40F20000 	 movw r0,#:lower16:.LC0
+ 575              	.LVL39:
+ 576 0018 C0F20000 	 movt r0,#:upper16:.LC0
+ 577 001c 40F21511 	 movw r1,#277
+ 578              	.LVL40:
+ 579 0020 FFF7FEFF 	 bl check_failed
+ 580              	.LVL41:
+ 581              	.L31:
+ 278:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_CHANNEL_SELECTION(channel));
+ 279:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_DATA_STATUS(StatusType));
+ 582              	 .loc 1 279 0 is_stmt 1
+ 583 0024 012C     	 cmp r4,#1
+ 584 0026 07D9     	 bls .L32
+ 585              	 .loc 1 279 0 is_stmt 0 discriminator 1
+ 586 0028 40F20000 	 movw r0,#:lower16:.LC0
+ 587 002c C0F20000 	 movt r0,#:upper16:.LC0
+ 588 0030 40F21711 	 movw r1,#279
+ 589 0034 FFF7FEFF 	 bl check_failed
+ 590              	.L32:
+ 280:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 281:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	temp =  *(uint32_t *) ((&ADCx->ADDR0) + channel);
+ 591              	 .loc 1 281 0 is_stmt 1
+ 592 0038 05F11005 	 add r5,r5,#16
+ 593              	.LVL42:
+ 594 003c 55F82600 	 ldr r0,[r5,r6,lsl#2]
+ 595              	.LVL43:
+ 282:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (StatusType) {
+ 596              	 .loc 1 282 0
+ 597 0040 14B1     	 cbz r4,.L33
+ 283:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		temp &= ADC_DR_DONE_FLAG;
+ 598              	 .loc 1 283 0
+ 599 0042 00F00040 	 and r0,r0,#-2147483648
+ 600              	.LVL44:
+ 601 0046 01E0     	 b .L34
+ 602              	.LVL45:
+ 603              	.L33:
+ 284:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}else{
+ 285:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		temp &= ADC_DR_OVERRUN_FLAG;
+ 604              	 .loc 1 285 0
+ 605 0048 00F08040 	 and r0,r0,#1073741824
+ 606              	.LVL46:
+ 607              	.L34:
+ 286:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 287:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (temp) {
+ 288:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		return SET;
+ 289:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	} else {
+ 290:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		return RESET;
+ 291:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 292:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 293:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 608              	 .loc 1 293 0
+ 609 004c 0030     	 adds r0,r0,#0
+ 610 004e 18BF     	 it ne
+ 611 0050 0120     	 movne r0,#1
+ 612              	.LVL47:
+ 613 0052 70BD     	 pop {r4,r5,r6,pc}
+ 614              	 .cfi_endproc
+ 615              	.LFE65:
+ 617              	 .section .text.ADC_GlobalGetData,"ax",%progbits
+ 618              	 .align 2
+ 619              	 .global ADC_GlobalGetData
+ 620              	 .thumb
+ 621              	 .thumb_func
+ 623              	ADC_GlobalGetData:
+ 624              	.LFB66:
+ 294:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 295:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 296:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Get ADC Data from AD Global register
+ 297:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 298:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		Result of conversion
+ 299:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 300:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** uint32_t ADC_GlobalGetData(LPC_ADC_TypeDef *ADCx)
+ 301:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 625              	 .loc 1 301 0
+ 626              	 .cfi_startproc
+ 627              	 
+ 628              	 
+ 629              	.LVL48:
+ 630 0000 10B5     	 push {r4,lr}
+ 631              	.LCFI10:
+ 632              	 .cfi_def_cfa_offset 8
+ 633              	 .cfi_offset 14,-4
+ 634              	 .cfi_offset 4,-8
+ 635 0002 0446     	 mov r4,r0
+ 302:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 636              	 .loc 1 302 0
+ 637 0004 4FF48043 	 mov r3,#16384
+ 638 0008 C4F20303 	 movt r3,16387
+ 639 000c 9842     	 cmp r0,r3
+ 640 000e 07D0     	 beq .L36
+ 641              	 .loc 1 302 0 is_stmt 0 discriminator 1
+ 642 0010 40F20000 	 movw r0,#:lower16:.LC0
+ 643              	.LVL49:
+ 644 0014 C0F20000 	 movt r0,#:upper16:.LC0
+ 645 0018 4FF49771 	 mov r1,#302
+ 646 001c FFF7FEFF 	 bl check_failed
+ 647              	.L36:
+ 303:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 304:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	return ((uint32_t)(ADCx->ADGDR));
+ 648              	 .loc 1 304 0 is_stmt 1
+ 649 0020 6068     	 ldr r0,[r4,#4]
+ 305:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 650              	 .loc 1 305 0
+ 651 0022 10BD     	 pop {r4,pc}
+ 652              	 .cfi_endproc
+ 653              	.LFE66:
+ 655              	 .section .text.ADC_GlobalGetStatus,"ax",%progbits
+ 656              	 .align 2
+ 657              	 .global ADC_GlobalGetStatus
+ 658              	 .thumb
+ 659              	 .thumb_func
+ 661              	ADC_GlobalGetStatus:
+ 662              	.LFB67:
+ 306:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 307:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** /*********************************************************************//**
+ 308:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @brief 		Get ADC Chanel status from AD global data register
+ 309:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]	ADCx pointer to LPC_ADC_TypeDef, should be: LPC_ADC
+ 310:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @param[in]  	StatusType
+ 311:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *              		 	0:Burst status
+ 312:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** *               		1:Done 	status
+ 313:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** * @return 		SET / RESET
+ 314:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** **********************************************************************/
+ 315:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** FlagStatus	ADC_GlobalGetStatus(LPC_ADC_TypeDef *ADCx, uint32_t StatusType)
+ 316:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** {
+ 663              	 .loc 1 316 0
+ 664              	 .cfi_startproc
+ 665              	 
+ 666              	 
+ 667              	.LVL50:
+ 668 0000 38B5     	 push {r3,r4,r5,lr}
+ 669              	.LCFI11:
+ 670              	 .cfi_def_cfa_offset 16
+ 671              	 .cfi_offset 14,-4
+ 672              	 .cfi_offset 5,-8
+ 673              	 .cfi_offset 4,-12
+ 674              	 .cfi_offset 3,-16
+ 675 0002 0546     	 mov r5,r0
+ 676 0004 0C46     	 mov r4,r1
+ 317:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	uint32_t temp;
+ 318:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 319:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADCx(ADCx));
+ 677              	 .loc 1 319 0
+ 678 0006 4FF48043 	 mov r3,#16384
+ 679 000a C4F20303 	 movt r3,16387
+ 680 000e 9842     	 cmp r0,r3
+ 681 0010 07D0     	 beq .L38
+ 682              	 .loc 1 319 0 is_stmt 0 discriminator 1
+ 683 0012 40F20000 	 movw r0,#:lower16:.LC0
+ 684              	.LVL51:
+ 685 0016 C0F20000 	 movt r0,#:upper16:.LC0
+ 686 001a 40F23F11 	 movw r1,#319
+ 687              	.LVL52:
+ 688 001e FFF7FEFF 	 bl check_failed
+ 689              	.L38:
+ 320:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	CHECK_PARAM(PARAM_ADC_DATA_STATUS(StatusType));
+ 690              	 .loc 1 320 0 is_stmt 1
+ 691 0022 012C     	 cmp r4,#1
+ 692 0024 07D9     	 bls .L39
+ 693              	 .loc 1 320 0 is_stmt 0 discriminator 1
+ 694 0026 40F20000 	 movw r0,#:lower16:.LC0
+ 695 002a C0F20000 	 movt r0,#:upper16:.LC0
+ 696 002e 4FF4A071 	 mov r1,#320
+ 697 0032 FFF7FEFF 	 bl check_failed
+ 698              	.L39:
+ 321:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 
+ 322:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	temp =  ADCx->ADGDR;
+ 699              	 .loc 1 322 0 is_stmt 1
+ 700 0036 6868     	 ldr r0,[r5,#4]
+ 701              	.LVL53:
+ 323:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (StatusType){
+ 702              	 .loc 1 323 0
+ 703 0038 14B1     	 cbz r4,.L40
+ 324:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		temp &= ADC_DR_DONE_FLAG;
+ 704              	 .loc 1 324 0
+ 705 003a 00F00040 	 and r0,r0,#-2147483648
+ 706              	.LVL54:
+ 707 003e 01E0     	 b .L41
+ 708              	.L40:
+ 325:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}else{
+ 326:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		temp &= ADC_DR_OVERRUN_FLAG;
+ 709              	 .loc 1 326 0
+ 710 0040 00F08040 	 and r0,r0,#1073741824
+ 711              	.LVL55:
+ 712              	.L41:
+ 327:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 328:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	if (temp){
+ 329:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		return SET;
+ 330:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}else{
+ 331:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 		return RESET;
+ 332:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** 	}
+ 333:src/MightyBoard/Motherboard/lib/source/lpc17xx_adc.c **** }
+ 713              	 .loc 1 333 0
+ 714 0044 0030     	 adds r0,r0,#0
+ 715 0046 18BF     	 it ne
+ 716 0048 0120     	 movne r0,#1
+ 717              	.LVL56:
+ 718 004a 38BD     	 pop {r3,r4,r5,pc}
+ 719              	 .cfi_endproc
+ 720              	.LFE67:
+ 722              	 .section .rodata.str1.4,"aMS",%progbits,1
+ 723              	 .align 2
+ 724              	.LC0:
+ 725 0000 7372632F 	 .ascii "src/MightyBoard/Motherboard/lib/source/lpc17xx_adc."
+ 725      4D696768 
+ 725      7479426F 
+ 725      6172642F 
+ 725      4D6F7468 
+ 726 0033 6300     	 .ascii "c\000"
+ 727 0035 000000   	 .text
+ 728              	.Letext0:
+ 729              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 730              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 731              	 .file 4 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 732              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc17xx_adc.h"
+ 733              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 lpc17xx_adc.c
+    {standard input}:19     .text.ADC_Init:00000000 $t
+    {standard input}:24     .text.ADC_Init:00000000 ADC_Init
+    {standard input}:724    .rodata.str1.4:00000000 .LC0
+    {standard input}:99     .text.ADC_DeInit:00000000 $t
+    {standard input}:104    .text.ADC_DeInit:00000000 ADC_DeInit
+    {standard input}:143    .text.ADC_GetData:00000000 $t
+    {standard input}:148    .text.ADC_GetData:00000000 ADC_GetData
+    {standard input}:169    .text.ADC_StartCmd:00000000 $t
+    {standard input}:174    .text.ADC_StartCmd:00000000 ADC_StartCmd
+    {standard input}:226    .text.ADC_BurstCmd:00000000 $t
+    {standard input}:231    .text.ADC_BurstCmd:00000000 ADC_BurstCmd
+    {standard input}:276    .text.ADC_PowerdownCmd:00000000 $t
+    {standard input}:281    .text.ADC_PowerdownCmd:00000000 ADC_PowerdownCmd
+    {standard input}:326    .text.ADC_EdgeStartConfig:00000000 $t
+    {standard input}:331    .text.ADC_EdgeStartConfig:00000000 ADC_EdgeStartConfig
+    {standard input}:385    .text.ADC_IntConfig:00000000 $t
+    {standard input}:390    .text.ADC_IntConfig:00000000 ADC_IntConfig
+    {standard input}:448    .text.ADC_ChannelCmd:00000000 $t
+    {standard input}:453    .text.ADC_ChannelCmd:00000000 ADC_ChannelCmd
+    {standard input}:500    .text.ADC_ChannelGetData:00000000 $t
+    {standard input}:505    .text.ADC_ChannelGetData:00000000 ADC_ChannelGetData
+    {standard input}:546    .text.ADC_ChannelGetStatus:00000000 $t
+    {standard input}:551    .text.ADC_ChannelGetStatus:00000000 ADC_ChannelGetStatus
+    {standard input}:618    .text.ADC_GlobalGetData:00000000 $t
+    {standard input}:623    .text.ADC_GlobalGetData:00000000 ADC_GlobalGetData
+    {standard input}:656    .text.ADC_GlobalGetStatus:00000000 $t
+    {standard input}:661    .text.ADC_GlobalGetStatus:00000000 ADC_GlobalGetStatus
+    {standard input}:723    .rodata.str1.4:00000000 $d
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+check_failed
+CLKPWR_ConfigPPWR
+CLKPWR_GetPCLK

@@ -1,0 +1,2938 @@
+   1              	 .syntax unified
+   2              	 .cpu cortex-m3
+   3              	 .fpu softvfp
+   4              	 .eabi_attribute 20,1
+   5              	 .eabi_attribute 21,1
+   6              	 .eabi_attribute 23,3
+   7              	 .eabi_attribute 24,1
+   8              	 .eabi_attribute 25,1
+   9              	 .eabi_attribute 26,1
+  10              	 .eabi_attribute 30,1
+  11              	 .eabi_attribute 34,1
+  12              	 .eabi_attribute 18,4
+  13              	 .thumb
+  14              	 .file "usbcore.c"
+  15              	 .text
+  16              	.Ltext0:
+  17              	 .cfi_sections .debug_frame
+  18              	 .section .text.USB_ResetCore,"ax",%progbits
+  19              	 .align 2
+  20              	 .global USB_ResetCore
+  21              	 .thumb
+  22              	 .thumb_func
+  24              	USB_ResetCore:
+  25              	.LFB0:
+  26              	 .file 1 "src/MightyBoard/Motherboard/USBCDC/usbcore.c"
+   1:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*----------------------------------------------------------------------------
+   2:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      U S B  -  K e r n e l
+   3:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *----------------------------------------------------------------------------
+   4:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  * Name:    usbcore.c
+   5:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  * Purpose: USB Core Module
+   6:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  * Version: V1.20
+   7:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *----------------------------------------------------------------------------
+   8:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      This software is supplied "AS IS" without any warranties, express,
+   9:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      implied or statutory, including but not limited to the implied
+  10:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      warranties of fitness for purpose, satisfactory quality and
+  11:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      noninfringement. Keil extends you a royalty-free right to reproduce
+  12:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      and distribute executable files created using this software for use
+  13:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      on NXP Semiconductors LPC family microcontroller devices only. Nothing
+  14:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *      else gives you the right to use this software.
+  15:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *
+  16:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  * Copyright (c) 2009 Keil - An ARM Company. All rights reserved.
+  17:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *----------------------------------------------------------------------------
+  18:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  * History:
+  19:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *          V1.20 Added vendor specific requests
+  20:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *                Changed string descriptor handling
+  21:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *                Reworked Endpoint0
+  22:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *          V1.00 Initial Version
+  23:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *----------------------------------------------------------------------------*/
+  24:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "lpc_types.h"
+  25:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  26:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "usb.h"
+  27:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "usbcfg.h"
+  28:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "usbhw.h"
+  29:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "usbcore.h"
+  30:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "usbdesc.h"
+  31:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "usbuser.h"
+  32:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  33:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_CLASS)
+  34:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  35:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_AUDIO)
+  36:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "audio.h"
+  37:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "adcuser.h"
+  38:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  39:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  40:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_HID)
+  41:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "hid.h"
+  42:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "hiduser.h"
+  43:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  44:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  45:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_MSC)
+  46:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "msc.h"
+  47:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "mscuser.h"
+  48:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** extern MSC_CSW CSW;
+  49:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  50:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  51:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_CDC)
+  52:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "cdc.h"
+  53:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "cdcuser.h"
+  54:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  55:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  56:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  57:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  58:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_VENDOR)
+  59:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #include "vendor.h"
+  60:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  61:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  62:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined   (  __CC_ARM  )
+  63:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #pragma diag_suppress 111,1441
+  64:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  65:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  66:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined   (  __GNUC__  )
+  67:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #define __packed __attribute__((__packed__))
+  68:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+  69:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  70:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint16_t  USB_DeviceStatus;
+  71:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint8_t  USB_DeviceAddress;
+  72:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint8_t  USB_Configuration;
+  73:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint32_t USB_EndPointMask;
+  74:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint32_t USB_EndPointHalt;
+  75:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint32_t USB_EndPointStall;                         /* EP must stay stalled */
+  76:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint8_t  USB_NumInterfaces;
+  77:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint8_t  USB_AltSetting[USB_IF_NUM];
+  78:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  79:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** uint8_t  EP0Buf[USB_MAX_PACKET0];
+  80:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  81:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  82:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** USB_EP_DATA EP0Data;
+  83:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  84:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** USB_SETUP_PACKET SetupPacket;
+  85:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  86:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  87:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+  88:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Reset USB Core
+  89:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None
+  90:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    None
+  91:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+  92:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  93:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** void USB_ResetCore (void) {
+  27              	 .loc 1 93 0
+  28              	 .cfi_startproc
+  29              	 
+  30              	 
+  31              	 
+  94:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+  95:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_DeviceStatus  = USB_POWER;
+  32              	 .loc 1 95 0
+  33 0000 40F20002 	 movw r2,#:lower16:USB_DeviceStatus
+  34 0004 C0F20002 	 movt r2,#:upper16:USB_DeviceStatus
+  35 0008 4FF00003 	 mov r3,#0
+  36 000c 1380     	 strh r3,[r2,#0]
+  96:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_DeviceAddress = 0;
+  37              	 .loc 1 96 0
+  38 000e 40F20002 	 movw r2,#:lower16:USB_DeviceAddress
+  39 0012 C0F20002 	 movt r2,#:upper16:USB_DeviceAddress
+  40 0016 1370     	 strb r3,[r2,#0]
+  97:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_Configuration = 0;
+  41              	 .loc 1 97 0
+  42 0018 40F20002 	 movw r2,#:lower16:USB_Configuration
+  43 001c C0F20002 	 movt r2,#:upper16:USB_Configuration
+  44 0020 1370     	 strb r3,[r2,#0]
+  98:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_EndPointMask  = 0x00010001;
+  45              	 .loc 1 98 0
+  46 0022 40F20002 	 movw r2,#:lower16:USB_EndPointMask
+  47 0026 C0F20002 	 movt r2,#:upper16:USB_EndPointMask
+  48 002a 4FF00111 	 mov r1,#65537
+  49 002e 1160     	 str r1,[r2,#0]
+  99:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_EndPointHalt  = 0x00000000;
+  50              	 .loc 1 99 0
+  51 0030 40F20002 	 movw r2,#:lower16:USB_EndPointHalt
+  52 0034 C0F20002 	 movt r2,#:upper16:USB_EndPointHalt
+  53 0038 1360     	 str r3,[r2,#0]
+ 100:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_EndPointStall = 0x00000000;
+  54              	 .loc 1 100 0
+  55 003a 40F20002 	 movw r2,#:lower16:USB_EndPointStall
+  56 003e C0F20002 	 movt r2,#:upper16:USB_EndPointStall
+  57 0042 1360     	 str r3,[r2,#0]
+ 101:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+  58              	 .loc 1 101 0
+  59 0044 7047     	 bx lr
+  60              	 .cfi_endproc
+  61              	.LFE0:
+  63 0046 00BF     	 .section .text.USB_SetupStage,"ax",%progbits
+  64              	 .align 2
+  65              	 .global USB_SetupStage
+  66              	 .thumb
+  67              	 .thumb_func
+  69              	USB_SetupStage:
+  70              	.LFB1:
+ 102:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 103:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 104:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 105:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  USB Request - Setup Stage
+ 106:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 107:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    None
+ 108:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 109:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 110:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** void USB_SetupStage (void) {
+  71              	 .loc 1 110 0
+  72              	 .cfi_startproc
+  73              	 
+  74              	 
+  75 0000 08B5     	 push {r3,lr}
+  76              	.LCFI0:
+  77              	 .cfi_def_cfa_offset 8
+  78              	 .cfi_offset 14,-4
+  79              	 .cfi_offset 3,-8
+ 111:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_ReadEP(0x00, (uint8_t *)&SetupPacket);
+  80              	 .loc 1 111 0
+  81 0002 4FF00000 	 mov r0,#0
+  82 0006 40F20001 	 movw r1,#:lower16:SetupPacket
+  83 000a C0F20001 	 movt r1,#:upper16:SetupPacket
+  84 000e FFF7FEFF 	 bl USB_ReadEP
+ 112:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+  85              	 .loc 1 112 0
+  86 0012 08BD     	 pop {r3,pc}
+  87              	 .cfi_endproc
+  88              	.LFE1:
+  90              	 .section .text.USB_DataInStage,"ax",%progbits
+  91              	 .align 2
+  92              	 .global USB_DataInStage
+  93              	 .thumb
+  94              	 .thumb_func
+  96              	USB_DataInStage:
+  97              	.LFB2:
+ 113:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 114:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 115:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 116:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  USB Request - Data In Stage
+ 117:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global EP0Data)
+ 118:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    None
+ 119:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 120:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 121:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** void USB_DataInStage (void) {
+  98              	 .loc 1 121 0
+  99              	 .cfi_startproc
+ 100              	 
+ 101              	 
+ 102 0000 10B5     	 push {r4,lr}
+ 103              	.LCFI1:
+ 104              	 .cfi_def_cfa_offset 8
+ 105              	 .cfi_offset 14,-4
+ 106              	 .cfi_offset 4,-8
+ 122:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t cnt;
+ 123:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 124:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   if (EP0Data.Count > USB_MAX_PACKET0) {
+ 107              	 .loc 1 124 0
+ 108 0002 40F20003 	 movw r3,#:lower16:EP0Data
+ 109 0006 C0F20003 	 movt r3,#:upper16:EP0Data
+ 110 000a 9A88     	 ldrh r2,[r3,#4]
+ 111              	.LVL0:
+ 125:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     cnt = USB_MAX_PACKET0;
+ 126:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   } else {
+ 127:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     cnt = EP0Data.Count;
+ 128:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 129:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   cnt = USB_WriteEP(0x80, EP0Data.pData, cnt);
+ 112              	 .loc 1 129 0
+ 113 000c 1C46     	 mov r4,r3
+ 114 000e 4FF08000 	 mov r0,#128
+ 115 0012 1968     	 ldr r1,[r3,#0]
+ 116 0014 082A     	 cmp r2,#8
+ 117 0016 28BF     	 it cs
+ 118 0018 0822     	 movcs r2,#8
+ 119              	.LVL1:
+ 120 001a FFF7FEFF 	 bl USB_WriteEP
+ 121              	.LVL2:
+ 130:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   EP0Data.pData += cnt;
+ 122              	 .loc 1 130 0
+ 123 001e 2368     	 ldr r3,[r4,#0]
+ 124 0020 1B18     	 adds r3,r3,r0
+ 125 0022 2360     	 str r3,[r4,#0]
+ 131:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   EP0Data.Count -= cnt;
+ 126              	 .loc 1 131 0
+ 127 0024 A388     	 ldrh r3,[r4,#4]
+ 128 0026 181A     	 subs r0,r3,r0
+ 129              	.LVL3:
+ 130 0028 A080     	 strh r0,[r4,#4]
+ 132:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 131              	 .loc 1 132 0
+ 132 002a 10BD     	 pop {r4,pc}
+ 133              	 .cfi_endproc
+ 134              	.LFE2:
+ 136              	 .section .text.USB_DataOutStage,"ax",%progbits
+ 137              	 .align 2
+ 138              	 .global USB_DataOutStage
+ 139              	 .thumb
+ 140              	 .thumb_func
+ 142              	USB_DataOutStage:
+ 143              	.LFB3:
+ 133:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 134:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 135:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 136:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  USB Request - Data Out Stage
+ 137:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global EP0Data)
+ 138:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    None
+ 139:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 140:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 141:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** void USB_DataOutStage (void) {
+ 144              	 .loc 1 141 0
+ 145              	 .cfi_startproc
+ 146              	 
+ 147              	 
+ 148 0000 10B5     	 push {r4,lr}
+ 149              	.LCFI2:
+ 150              	 .cfi_def_cfa_offset 8
+ 151              	 .cfi_offset 14,-4
+ 152              	 .cfi_offset 4,-8
+ 142:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t cnt;
+ 143:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 144:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   cnt = USB_ReadEP(0x00, EP0Data.pData);
+ 153              	 .loc 1 144 0
+ 154 0002 40F20004 	 movw r4,#:lower16:EP0Data
+ 155 0006 C0F20004 	 movt r4,#:upper16:EP0Data
+ 156 000a 4FF00000 	 mov r0,#0
+ 157 000e 2168     	 ldr r1,[r4,#0]
+ 158 0010 FFF7FEFF 	 bl USB_ReadEP
+ 159              	.LVL4:
+ 145:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   EP0Data.pData += cnt;
+ 160              	 .loc 1 145 0
+ 161 0014 2368     	 ldr r3,[r4,#0]
+ 162 0016 1B18     	 adds r3,r3,r0
+ 163 0018 2360     	 str r3,[r4,#0]
+ 146:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   EP0Data.Count -= cnt;
+ 164              	 .loc 1 146 0
+ 165 001a A388     	 ldrh r3,[r4,#4]
+ 166 001c 181A     	 subs r0,r3,r0
+ 167              	.LVL5:
+ 168 001e A080     	 strh r0,[r4,#4]
+ 147:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 169              	 .loc 1 147 0
+ 170 0020 10BD     	 pop {r4,pc}
+ 171              	 .cfi_endproc
+ 172              	.LFE3:
+ 174 0022 00BF     	 .section .text.USB_StatusInStage,"ax",%progbits
+ 175              	 .align 2
+ 176              	 .global USB_StatusInStage
+ 177              	 .thumb
+ 178              	 .thumb_func
+ 180              	USB_StatusInStage:
+ 181              	.LFB4:
+ 148:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 149:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 150:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 151:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  USB Request - Status In Stage
+ 152:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None
+ 153:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    None
+ 154:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 155:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 156:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** void USB_StatusInStage (void) {
+ 182              	 .loc 1 156 0
+ 183              	 .cfi_startproc
+ 184              	 
+ 185              	 
+ 186 0000 08B5     	 push {r3,lr}
+ 187              	.LCFI3:
+ 188              	 .cfi_def_cfa_offset 8
+ 189              	 .cfi_offset 14,-4
+ 190              	 .cfi_offset 3,-8
+ 157:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_WriteEP(0x80, NULL, 0);
+ 191              	 .loc 1 157 0
+ 192 0002 4FF08000 	 mov r0,#128
+ 193 0006 4FF00001 	 mov r1,#0
+ 194 000a 0A46     	 mov r2,r1
+ 195 000c FFF7FEFF 	 bl USB_WriteEP
+ 158:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 196              	 .loc 1 158 0
+ 197 0010 08BD     	 pop {r3,pc}
+ 198              	 .cfi_endproc
+ 199              	.LFE4:
+ 201 0012 00BF     	 .section .text.USB_StatusOutStage,"ax",%progbits
+ 202              	 .align 2
+ 203              	 .global USB_StatusOutStage
+ 204              	 .thumb
+ 205              	 .thumb_func
+ 207              	USB_StatusOutStage:
+ 208              	.LFB5:
+ 159:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 160:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 161:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 162:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  USB Request - Status Out Stage
+ 163:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None
+ 164:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    None
+ 165:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 166:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 167:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** void USB_StatusOutStage (void) {
+ 209              	 .loc 1 167 0
+ 210              	 .cfi_startproc
+ 211              	 
+ 212              	 
+ 213 0000 08B5     	 push {r3,lr}
+ 214              	.LCFI4:
+ 215              	 .cfi_def_cfa_offset 8
+ 216              	 .cfi_offset 14,-4
+ 217              	 .cfi_offset 3,-8
+ 168:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_ReadEP(0x00, EP0Buf);
+ 218              	 .loc 1 168 0
+ 219 0002 4FF00000 	 mov r0,#0
+ 220 0006 40F20001 	 movw r1,#:lower16:EP0Buf
+ 221 000a C0F20001 	 movt r1,#:upper16:EP0Buf
+ 222 000e FFF7FEFF 	 bl USB_ReadEP
+ 169:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 223              	 .loc 1 169 0
+ 224 0012 08BD     	 pop {r3,pc}
+ 225              	 .cfi_endproc
+ 226              	.LFE5:
+ 228              	 .section .text.USB_EndPoint0,"ax",%progbits
+ 229              	 .align 2
+ 230              	 .global USB_EndPoint0
+ 231              	 .thumb
+ 232              	 .thumb_func
+ 234              	USB_EndPoint0:
+ 235              	.LFB14:
+ 170:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 171:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 172:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 173:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Get Status USB Request
+ 174:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 175:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 176:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 177:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 178:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 179:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqGetStatus (void) {
+ 180:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else  
+ 181:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqGetStatus (void) {
+ 182:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 183:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t n, m;
+ 184:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 185:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 186:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_DEVICE:
+ 187:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       EP0Data.pData = (uint8_t *)&USB_DeviceStatus;
+ 188:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 189:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_INTERFACE:
+ 190:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if ((USB_Configuration != 0) && (SetupPacket.wIndex.WB.L < USB_NumInterfaces)) {
+ 191:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         *((__packed uint16_t *)EP0Buf) = 0;
+ 192:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     	  *((uint16_t *)EP0Buf) = 0;
+ 193:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         EP0Data.pData = EP0Buf;
+ 194:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       } else {
+ 195:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         return (FALSE);
+ 196:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 197:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 198:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_ENDPOINT:
+ 199:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       n = SetupPacket.wIndex.WB.L & 0x8F;
+ 200:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 201:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (((USB_Configuration != 0) || ((n & 0x0F) == 0)) && (USB_EndPointMask & m)) {
+ 202:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         *((__packed uint16_t *)EP0Buf) = (USB_EndPointHalt & m) ? 1 : 0;
+ 203:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     	  *((uint16_t *)EP0Buf) = (USB_EndPointHalt & m) ? 1 : 0;
+ 204:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         EP0Data.pData = EP0Buf;
+ 205:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       } else {
+ 206:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         return (FALSE);
+ 207:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 208:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 209:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 210:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 211:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 212:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (TRUE);
+ 213:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 214:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 215:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 216:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 217:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Set/Clear Feature USB Request
+ 218:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      sc:    0 - Clear, 1 - Set
+ 219:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *                            (global SetupPacket)
+ 220:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 221:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 222:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 223:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 224:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqSetClrFeature (uint32_t sc) {
+ 225:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else
+ 226:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqSetClrFeature (uint32_t sc) {
+ 227:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 228:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t n, m;
+ 229:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 230:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 231:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_DEVICE:
+ 232:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.wValue.W == USB_FEATURE_REMOTE_WAKEUP) {
+ 233:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         if (sc) {
+ 234:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_WakeUpCfg(TRUE);
+ 235:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_DeviceStatus |=  USB_GETSTATUS_REMOTE_WAKEUP;
+ 236:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         } else {
+ 237:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_WakeUpCfg(FALSE);
+ 238:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_DeviceStatus &= ~USB_GETSTATUS_REMOTE_WAKEUP;
+ 239:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         }
+ 240:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       } else {
+ 241:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         return (FALSE);
+ 242:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 243:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 244:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_INTERFACE:
+ 245:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 246:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_ENDPOINT:
+ 247:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       n = SetupPacket.wIndex.WB.L & 0x8F;
+ 248:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 249:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if ((USB_Configuration != 0) && ((n & 0x0F) != 0) && (USB_EndPointMask & m)) {
+ 250:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         if (SetupPacket.wValue.W == USB_FEATURE_ENDPOINT_STALL) {
+ 251:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (sc) {
+ 252:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_SetStallEP(n);
+ 253:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_EndPointHalt |=  m;
+ 254:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           } else {
+ 255:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if ((USB_EndPointStall & m) != 0) {
+ 256:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               return (TRUE);
+ 257:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 258:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_ClrStallEP(n);
+ 259:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_MSC)
+ 260:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if ((n == MSC_EP_IN) && ((USB_EndPointHalt & m) != 0)) {
+ 261:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               /* Compliance Test: rewrite CSW after unstall */
+ 262:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (CSW.dSignature == MSC_CSW_Signature) {
+ 263:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_WriteEP(MSC_EP_IN, (uint8_t *)&CSW, sizeof(CSW));
+ 264:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 265:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 266:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 267:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_EndPointHalt &= ~m;
+ 268:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 269:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         } else {
+ 270:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           return (FALSE);
+ 271:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         }
+ 272:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       } else {
+ 273:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         return (FALSE);
+ 274:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 275:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 276:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 277:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 278:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 279:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (TRUE);
+ 280:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 281:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 282:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 283:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 284:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Set Address USB Request
+ 285:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 286:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 287:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 288:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 289:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 290:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqSetAddress (void) {
+ 291:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else
+ 292:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqSetAddress (void) {
+ 293:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 294:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 295:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_DEVICE:
+ 296:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       USB_DeviceAddress = 0x80 | SetupPacket.wValue.WB.L;
+ 297:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 298:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 299:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 300:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 301:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (TRUE);
+ 302:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 303:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 304:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 305:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 306:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Get Descriptor USB Request
+ 307:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 308:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 309:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 310:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 311:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 312:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqGetDescriptor (void) {
+ 313:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else
+ 314:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqGetDescriptor (void) {
+ 315:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 316:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint8_t  *pD;
+ 317:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t len, n;
+ 318:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 319:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 320:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_DEVICE:
+ 321:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       switch (SetupPacket.wValue.WB.H) {
+ 322:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case USB_DEVICE_DESCRIPTOR_TYPE:
+ 323:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = (uint8_t *)USB_DeviceDescriptor;
+ 324:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = USB_DEVICE_DESC_SIZE;
+ 325:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;
+ 326:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case USB_CONFIGURATION_DESCRIPTOR_TYPE:
+ 327:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           pD = (uint8_t *)USB_ConfigDescriptor;
+ 328:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 329:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bLength != 0) {
+ 330:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               pD += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 331:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 332:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 333:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bLength == 0) {
+ 334:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             return (FALSE);
+ 335:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 336:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = pD;
+ 337:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 338:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;
+ 339:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case USB_STRING_DESCRIPTOR_TYPE:
+ 340:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           pD = (uint8_t *)USB_StringDescriptor;
+ 341:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 342:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (((USB_STRING_DESCRIPTOR *)pD)->bLength != 0) {
+ 343:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               pD += ((USB_STRING_DESCRIPTOR *)pD)->bLength;
+ 344:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 345:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 346:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (((USB_STRING_DESCRIPTOR *)pD)->bLength == 0) {
+ 347:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             return (FALSE);
+ 348:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 349:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = pD;
+ 350:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = ((USB_STRING_DESCRIPTOR *)EP0Data.pData)->bLength;
+ 351:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;
+ 352:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         default:
+ 353:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           return (FALSE);
+ 354:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 355:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 356:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_INTERFACE:
+ 357:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       switch (SetupPacket.wValue.WB.H) {
+ 358:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_HID
+ 359:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case HID_HID_DESCRIPTOR_TYPE:
+ 360:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (SetupPacket.wIndex.WB.L != USB_HID_IF_NUM) {
+ 361:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             return (FALSE);    /* Only Single HID Interface is supported */
+ 362:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 363:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = (uint8_t *)USB_ConfigDescriptor + HID_DESC_OFFSET;
+ 364:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = HID_DESC_SIZE;
+ 365:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;
+ 366:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case HID_REPORT_DESCRIPTOR_TYPE:
+ 367:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (SetupPacket.wIndex.WB.L != USB_HID_IF_NUM) {
+ 368:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             return (FALSE);    /* Only Single HID Interface is supported */
+ 369:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 370:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = (uint8_t *)HID_ReportDescriptor;
+ 371:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = HID_ReportDescSize;
+ 372:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;
+ 373:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case HID_PHYSICAL_DESCRIPTOR_TYPE:
+ 374:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           return (FALSE);      /* HID Physical Descriptor is not supported */
+ 375:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 376:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         default:
+ 377:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           return (FALSE);
+ 378:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 379:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //      break;
+ 380:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 381:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 382:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 383:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 384:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   if (EP0Data.Count > len) {
+ 385:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     EP0Data.Count = len;
+ 386:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 387:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 388:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (TRUE);
+ 389:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 390:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 391:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 392:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 393:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Get Configuration USB Request
+ 394:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 395:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 396:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 397:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 398:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 399:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqGetConfiguration (void) {
+ 400:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else
+ 401:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqGetConfiguration (void) {
+ 402:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 403:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 404:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_DEVICE:
+ 405:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       EP0Data.pData = &USB_Configuration;
+ 406:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 407:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 408:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 409:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 410:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (TRUE);
+ 411:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 412:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 413:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 414:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 415:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Set Configuration USB Request
+ 416:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 417:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 418:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 419:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 420:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 421:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqSetConfiguration (void) {
+ 422:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else
+ 423:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqSetConfiguration (void) {
+ 424:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 425:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_COMMON_DESCRIPTOR *pD;
+ 426:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t alt = 0;
+ 427:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t n, m;
+ 428:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t tmp;
+ 429:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 430:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 431:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_DEVICE:
+ 432:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 433:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.wValue.WB.L) {
+ 434:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         pD = (USB_COMMON_DESCRIPTOR *)USB_ConfigDescriptor;
+ 435:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         while (pD->bLength) {
+ 436:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           switch (pD->bDescriptorType) {
+ 437:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_CONFIGURATION_DESCRIPTOR_TYPE:
+ 438:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bConfigurationValue == SetupPacket.wValue.W
+ 439:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_Configuration = SetupPacket.wValue.WB.L;
+ 440:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_NumInterfaces = ((USB_CONFIGURATION_DESCRIPTOR *)pD)->bNumInterfaces;
+ 441:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 for (n = 0; n < USB_IF_NUM; n++) {
+ 442:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   USB_AltSetting[n] = 0;
+ 443:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+ 444:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 for (n = 1; n < 16; n++) {
+ 445:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   if (USB_EndPointMask & (1 << n)) {
+ 446:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     USB_DisableEP(n);
+ 447:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   }
+ 448:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   if (USB_EndPointMask & ((1 << 16) << n)) {
+ 449:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     USB_DisableEP(n | 0x80);
+ 450:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   }
+ 451:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+ 452:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask = 0x00010001;
+ 453:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointHalt = 0x00000000;
+ 454:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointStall= 0x00000000;
+ 455:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_Configure(TRUE);
+ 456:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bmAttributes & USB_CONFIG_POWERED_MASK) {
+ 457:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   USB_DeviceStatus |=  USB_GETSTATUS_SELF_POWERED;
+ 458:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 } else {
+ 459:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   USB_DeviceStatus &= ~USB_GETSTATUS_SELF_POWERED;
+ 460:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+ 461:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               } else {
+ 462:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                (uint8_t *)pD += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 463:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	  tmp = (uint32_t)pD;
+ 464:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	  tmp += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 465:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	  pD = (USB_COMMON_DESCRIPTOR *)tmp;
+ 466:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	  continue;
+ 467:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 468:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 469:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_INTERFACE_DESCRIPTOR_TYPE:
+ 470:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               alt = ((USB_INTERFACE_DESCRIPTOR *)pD)->bAlternateSetting;
+ 471:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 472:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_ENDPOINT_DESCRIPTOR_TYPE:
+ 473:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (alt == 0) {
+ 474:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 n = ((USB_ENDPOINT_DESCRIPTOR *)pD)->bEndpointAddress & 0x8F;
+ 475:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 476:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask |= m;
+ 477:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ConfigEP((USB_ENDPOINT_DESCRIPTOR *)pD);
+ 478:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EnableEP(n);
+ 479:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ResetEP(n);
+ 480:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 481:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 482:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 483:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //          (uint8_t *)pD += pD->bLength;
+ 484:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			tmp = (uint32_t)pD;
+ 485:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			tmp += pD->bLength;
+ 486:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			pD = (USB_COMMON_DESCRIPTOR *)tmp;
+ 487:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         }
+ 488:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 489:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       else {
+ 490:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_Configuration = 0;
+ 491:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         for (n = 1; n < 16; n++) {
+ 492:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (USB_EndPointMask & (1 << n)) {
+ 493:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_DisableEP(n);
+ 494:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 495:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (USB_EndPointMask & ((1 << 16) << n)) {
+ 496:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_DisableEP(n | 0x80);
+ 497:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 498:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         }
+ 499:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_EndPointMask  = 0x00010001;
+ 500:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_EndPointHalt  = 0x00000000;
+ 501:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_EndPointStall = 0x00000000;
+ 502:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_Configure(FALSE);
+ 503:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 504:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 505:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (USB_Configuration != SetupPacket.wValue.WB.L) {
+ 506:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         return (FALSE);
+ 507:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 508:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 509:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 510:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 511:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 512:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (TRUE);
+ 513:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 514:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 515:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 516:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 517:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Get Interface USB Request
+ 518:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 519:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 520:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 521:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 522:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 523:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqGetInterface (void) {
+ 524:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else
+ 525:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqGetInterface (void) {
+ 526:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 527:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 528:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_INTERFACE:
+ 529:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if ((USB_Configuration != 0) && (SetupPacket.wIndex.WB.L < USB_NumInterfaces)) {
+ 530:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         EP0Data.pData = USB_AltSetting + SetupPacket.wIndex.WB.L;
+ 531:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       } else {
+ 532:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         return (FALSE);
+ 533:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 534:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 535:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 536:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 537:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 538:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (TRUE);
+ 539:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 540:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 541:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 542:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 543:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  Set Interface USB Request
+ 544:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      None (global SetupPacket)
+ 545:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    TRUE - Success, FALSE - Error
+ 546:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 547:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if defined (  __IAR_SYSTEMS_ICC__  )
+ 548:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** inline uint32_t USB_ReqSetInterface (void) {
+ 549:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #else
+ 550:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** __inline uint32_t USB_ReqSetInterface (void) {
+ 551:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 552:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   USB_COMMON_DESCRIPTOR *pD;
+ 553:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t ifn = 0, alt = 0, old = 0, msk = 0;
+ 554:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t n, m;
+ 555:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t set;
+ 556:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   uint32_t tmp;
+ 557:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 558:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 559:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case REQUEST_TO_INTERFACE:
+ 560:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (USB_Configuration == 0) return (FALSE);
+ 561:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       set = FALSE;
+ 562:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       pD  = (USB_COMMON_DESCRIPTOR *)USB_ConfigDescriptor;
+ 563:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       while (pD->bLength) {
+ 564:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         switch (pD->bDescriptorType) {
+ 565:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           case USB_CONFIGURATION_DESCRIPTOR_TYPE:
+ 566:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bConfigurationValue != USB_Configuration) {
+ 567:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //              (uint8_t *)pD += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 568:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	tmp = (uint32_t)pD;
+ 569:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	tmp += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 570:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	pD = (USB_COMMON_DESCRIPTOR *)tmp;
+ 571:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 572:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               continue;
+ 573:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 574:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             break;
+ 575:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           case USB_INTERFACE_DESCRIPTOR_TYPE:
+ 576:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             ifn = ((USB_INTERFACE_DESCRIPTOR *)pD)->bInterfaceNumber;
+ 577:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             alt = ((USB_INTERFACE_DESCRIPTOR *)pD)->bAlternateSetting;
+ 578:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             msk = 0;
+ 579:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if ((ifn == SetupPacket.wIndex.WB.L) && (alt == SetupPacket.wValue.WB.L)) {
+ 580:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               set = TRUE;
+ 581:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               old = USB_AltSetting[ifn];
+ 582:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_AltSetting[ifn] = (uint8_t)alt;
+ 583:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 584:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             break;
+ 585:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           case USB_ENDPOINT_DESCRIPTOR_TYPE:
+ 586:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (ifn == SetupPacket.wIndex.WB.L) {
+ 587:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               n = ((USB_ENDPOINT_DESCRIPTOR *)pD)->bEndpointAddress & 0x8F;
+ 588:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 589:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (alt == SetupPacket.wValue.WB.L) {
+ 590:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask |=  m;
+ 591:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointHalt &= ~m;
+ 592:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ConfigEP((USB_ENDPOINT_DESCRIPTOR *)pD);
+ 593:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EnableEP(n);
+ 594:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ResetEP(n);
+ 595:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 msk |= m;
+ 596:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 597:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               else if ((alt == old) && ((msk & m) == 0)) {
+ 598:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask &= ~m;
+ 599:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointHalt &= ~m;
+ 600:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_DisableEP(n);
+ 601:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 602:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 603:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****            break;
+ 604:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         }
+ 605:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //        (uint8_t *)pD += pD->bLength;
+ 606:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			tmp = (uint32_t)pD;
+ 607:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			tmp += pD->bLength;
+ 608:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			pD = (USB_COMMON_DESCRIPTOR *)tmp;
+ 609:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 610:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 611:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     default:
+ 612:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 613:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+ 614:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 615:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   return (set);
+ 616:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 617:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 618:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 619:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*
+ 620:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *  USB Endpoint 0 Event Callback
+ 621:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Parameters:      event
+ 622:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  *    Return Value:    none
+ 623:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****  */
+ 624:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 625:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** void USB_EndPoint0 (uint32_t event) {
+ 236              	 .loc 1 625 0
+ 237              	 .cfi_startproc
+ 238              	 
+ 239              	 
+ 240              	.LVL6:
+ 241 0000 2DE9F04F 	 push {r4,r5,r6,r7,r8,r9,sl,fp,lr}
+ 242              	.LCFI5:
+ 243              	 .cfi_def_cfa_offset 36
+ 244              	 .cfi_offset 14,-4
+ 245              	 .cfi_offset 11,-8
+ 246              	 .cfi_offset 10,-12
+ 247              	 .cfi_offset 9,-16
+ 248              	 .cfi_offset 8,-20
+ 249              	 .cfi_offset 7,-24
+ 250              	 .cfi_offset 6,-28
+ 251              	 .cfi_offset 5,-32
+ 252              	 .cfi_offset 4,-36
+ 253 0004 85B0     	 sub sp,sp,#20
+ 254              	.LCFI6:
+ 255              	 .cfi_def_cfa_offset 56
+ 626:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 627:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (event) {
+ 256              	 .loc 1 627 0
+ 257 0006 00F1FF30 	 add r0,r0,#-1
+ 258              	.LVL7:
+ 259 000a 0628     	 cmp r0,#6
+ 260 000c 00F23085 	 bhi .L9
+ 261 0010 DFE810F0 	 tbh [pc,r0,lsl#1]
+ 262              	.L16:
+ 263 0014 0700     	 .2byte (.L11-.L16)/2
+ 264 0016 A304     	 .2byte (.L12-.L16)/2
+ 265 0018 FC04     	 .2byte (.L13-.L16)/2
+ 266 001a 2E05     	 .2byte (.L9-.L16)/2
+ 267 001c 2E05     	 .2byte (.L9-.L16)/2
+ 268 001e 1905     	 .2byte (.L14-.L16)/2
+ 269 0020 1E05     	 .2byte (.L15-.L16)/2
+ 270              	.L11:
+ 628:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case USB_EVT_SETUP:
+ 629:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       USB_SetupStage();
+ 271              	 .loc 1 629 0
+ 272 0022 FFF7FEFF 	 bl USB_SetupStage
+ 273              	.LVL8:
+ 630:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       USB_DirCtrlEP(SetupPacket.bmRequestType.BM.Dir);
+ 274              	 .loc 1 630 0
+ 275 0026 40F20004 	 movw r4,#:lower16:SetupPacket
+ 276 002a C0F20004 	 movt r4,#:upper16:SetupPacket
+ 277 002e 2078     	 ldrb r0,[r4,#0]
+ 278 0030 4FEAD010 	 lsr r0,r0,#7
+ 279 0034 FFF7FEFF 	 bl USB_DirCtrlEP
+ 631:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       EP0Data.Count = SetupPacket.wLength;     /* Number of bytes to transfer */
+ 280              	 .loc 1 631 0
+ 281 0038 40F20003 	 movw r3,#:lower16:EP0Data
+ 282 003c C0F20003 	 movt r3,#:upper16:EP0Data
+ 283 0040 E288     	 ldrh r2,[r4,#6]
+ 284 0042 9A80     	 strh r2,[r3,#4]
+ 632:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       switch (SetupPacket.bmRequestType.BM.Type) {
+ 285              	 .loc 1 632 0
+ 286 0044 2378     	 ldrb r3,[r4,#0]
+ 287 0046 C3F34113 	 ubfx r3,r3,#5,#2
+ 288 004a 1BB1     	 cbz r3,.L18
+ 289 004c 012B     	 cmp r3,#1
+ 290 004e 40F07884 	 bne .L17
+ 291 0052 D5E3     	 b .L129
+ 292              	.L18:
+ 633:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 634:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case REQUEST_STANDARD:
+ 635:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           switch (SetupPacket.bRequest) {
+ 293              	 .loc 1 635 0
+ 294 0054 40F20003 	 movw r3,#:lower16:SetupPacket
+ 295 0058 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 296 005c 5B78     	 ldrb r3,[r3,#1]
+ 297 005e 0B2B     	 cmp r3,#11
+ 298 0060 00F26F84 	 bhi .L17
+ 299 0064 DFE813F0 	 tbh [pc,r3,lsl#1]
+ 300              	.L30:
+ 301 0068 0C00     	 .2byte (.L20-.L30)/2
+ 302 006a 8200     	 .2byte (.L21-.L30)/2
+ 303 006c 6D04     	 .2byte (.L17-.L30)/2
+ 304 006e E600     	 .2byte (.L22-.L30)/2
+ 305 0070 6D04     	 .2byte (.L17-.L30)/2
+ 306 0072 3F01     	 .2byte (.L23-.L30)/2
+ 307 0074 5701     	 .2byte (.L24-.L30)/2
+ 308 0076 CE01     	 .2byte (.L25-.L30)/2
+ 309 0078 DA01     	 .2byte (.L26-.L30)/2
+ 310 007a EF01     	 .2byte (.L27-.L30)/2
+ 311 007c E202     	 .2byte (.L28-.L30)/2
+ 312 007e 0E03     	 .2byte (.L29-.L30)/2
+ 313              	.L20:
+ 314              	.LBB20:
+ 315              	.LBB21:
+ 185:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 316              	 .loc 1 185 0
+ 317 0080 40F20003 	 movw r3,#:lower16:SetupPacket
+ 318 0084 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 319 0088 1B78     	 ldrb r3,[r3,#0]
+ 320 008a 03F01F03 	 and r3,r3,#31
+ 321 008e 012B     	 cmp r3,#1
+ 322 0090 0FD0     	 beq .L32
+ 323 0092 022B     	 cmp r3,#2
+ 324 0094 30D0     	 beq .L33
+ 325 0096 002B     	 cmp r3,#0
+ 326 0098 40F05384 	 bne .L17
+ 187:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       EP0Data.pData = (uint8_t *)&USB_DeviceStatus;
+ 327              	 .loc 1 187 0
+ 328 009c 40F20003 	 movw r3,#:lower16:EP0Data
+ 329 00a0 C0F20003 	 movt r3,#:upper16:EP0Data
+ 330 00a4 40F20002 	 movw r2,#:lower16:USB_DeviceStatus
+ 331 00a8 C0F20002 	 movt r2,#:upper16:USB_DeviceStatus
+ 332 00ac 1A60     	 str r2,[r3,#0]
+ 333 00ae 00F0D4BC 	 b .L34
+ 334              	.L32:
+ 190:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if ((USB_Configuration != 0) && (SetupPacket.wIndex.WB.L < USB_NumInterfaces)) {
+ 335              	 .loc 1 190 0
+ 336 00b2 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 337 00b6 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 338 00ba 1B78     	 ldrb r3,[r3,#0]
+ 339 00bc 002B     	 cmp r3,#0
+ 340 00be 00F04084 	 beq .L17
+ 341 00c2 40F20002 	 movw r2,#:lower16:SetupPacket
+ 342 00c6 C0F20002 	 movt r2,#:upper16:SetupPacket
+ 343 00ca 40F20003 	 movw r3,#:lower16:USB_NumInterfaces
+ 344 00ce C0F20003 	 movt r3,#:upper16:USB_NumInterfaces
+ 345 00d2 1279     	 ldrb r2,[r2,#4]
+ 346 00d4 1B78     	 ldrb r3,[r3,#0]
+ 347 00d6 9A42     	 cmp r2,r3
+ 348 00d8 80F03384 	 bcs .L17
+ 191:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         *((__packed uint16_t *)EP0Buf) = 0;
+ 349              	 .loc 1 191 0
+ 350 00dc 40F20003 	 movw r3,#:lower16:EP0Buf
+ 351 00e0 C0F20003 	 movt r3,#:upper16:EP0Buf
+ 352 00e4 4FF00002 	 mov r2,#0
+ 353 00e8 1A80     	 strh r2,[r3,#0]
+ 193:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         EP0Data.pData = EP0Buf;
+ 354              	 .loc 1 193 0
+ 355 00ea 40F20002 	 movw r2,#:lower16:EP0Data
+ 356 00ee C0F20002 	 movt r2,#:upper16:EP0Data
+ 357 00f2 1360     	 str r3,[r2,#0]
+ 358 00f4 00F0B1BC 	 b .L34
+ 359              	.L33:
+ 199:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       n = SetupPacket.wIndex.WB.L & 0x8F;
+ 360              	 .loc 1 199 0
+ 361 00f8 40F20003 	 movw r3,#:lower16:SetupPacket
+ 362 00fc C0F20003 	 movt r3,#:upper16:SetupPacket
+ 363 0100 1A79     	 ldrb r2,[r3,#4]
+ 364 0102 02F08F03 	 and r3,r2,#143
+ 365              	.LVL9:
+ 200:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 366              	 .loc 1 200 0
+ 367 0106 12F0800F 	 tst r2,#128
+ 368 010a 1DBF     	 ittte ne
+ 369 010c 03F00F02 	 andne r2,r3,#15
+ 370 0110 4FF48031 	 movne r1,#65536
+ 371 0114 01FA02F2 	 lslne r2,r1,r2
+ 372 0118 0122     	 moveq r2,#1
+ 373 011a 08BF     	 it eq
+ 374 011c 9A40     	 lsleq r2,r2,r3
+ 375              	.LVL10:
+ 201:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (((USB_Configuration != 0) || ((n & 0x0F) == 0)) && (USB_EndPointMask & m)) {
+ 376              	 .loc 1 201 0
+ 377 011e 40F20001 	 movw r1,#:lower16:USB_Configuration
+ 378 0122 C0F20001 	 movt r1,#:upper16:USB_Configuration
+ 379 0126 0978     	 ldrb r1,[r1,#0]
+ 380 0128 19B9     	 cbnz r1,.L37
+ 381 012a 13F00F0F 	 tst r3,#15
+ 382 012e 40F00884 	 bne .L17
+ 383              	.L37:
+ 384 0132 40F20003 	 movw r3,#:lower16:USB_EndPointMask
+ 385              	.LVL11:
+ 386 0136 C0F20003 	 movt r3,#:upper16:USB_EndPointMask
+ 387 013a 1B68     	 ldr r3,[r3,#0]
+ 388 013c 1A42     	 tst r2,r3
+ 389 013e 00F00084 	 beq .L17
+ 202:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         *((__packed uint16_t *)EP0Buf) = (USB_EndPointHalt & m) ? 1 : 0;
+ 390              	 .loc 1 202 0
+ 391 0142 40F20003 	 movw r3,#:lower16:EP0Buf
+ 392 0146 C0F20003 	 movt r3,#:upper16:EP0Buf
+ 393 014a 40F20001 	 movw r1,#:lower16:USB_EndPointHalt
+ 394 014e C0F20001 	 movt r1,#:upper16:USB_EndPointHalt
+ 395 0152 0968     	 ldr r1,[r1,#0]
+ 396 0154 0A42     	 tst r2,r1
+ 397 0156 0CBF     	 ite eq
+ 398 0158 0022     	 moveq r2,#0
+ 399 015a 0122     	 movne r2,#1
+ 400              	.LVL12:
+ 401 015c 1A80     	 strh r2,[r3,#0]
+ 204:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         EP0Data.pData = EP0Buf;
+ 402              	 .loc 1 204 0
+ 403 015e 40F20002 	 movw r2,#:lower16:EP0Data
+ 404 0162 C0F20002 	 movt r2,#:upper16:EP0Data
+ 405 0166 1360     	 str r3,[r2,#0]
+ 406 0168 00F077BC 	 b .L34
+ 407              	.L21:
+ 408              	.LVL13:
+ 409              	.LBE21:
+ 410              	.LBE20:
+ 411              	.LBB22:
+ 412              	.LBB23:
+ 230:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 413              	 .loc 1 230 0
+ 414 016c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 415 0170 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 416 0174 1B78     	 ldrb r3,[r3,#0]
+ 417 0176 13F01F03 	 ands r3,r3,#31
+ 418 017a 03D0     	 beq .L38
+ 419 017c 022B     	 cmp r3,#2
+ 420 017e 40F0E083 	 bne .L17
+ 421 0182 15E0     	 b .L130
+ 422              	.L38:
+ 232:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.wValue.W == USB_FEATURE_REMOTE_WAKEUP) {
+ 423              	 .loc 1 232 0
+ 424 0184 40F20003 	 movw r3,#:lower16:SetupPacket
+ 425 0188 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 426 018c 5B88     	 ldrh r3,[r3,#2]
+ 427 018e 012B     	 cmp r3,#1
+ 428 0190 40F0D783 	 bne .L17
+ 237:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_WakeUpCfg(FALSE);
+ 429              	 .loc 1 237 0
+ 430 0194 4FF00000 	 mov r0,#0
+ 431 0198 FFF7FEFF 	 bl USB_WakeUpCfg
+ 238:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_DeviceStatus &= ~USB_GETSTATUS_REMOTE_WAKEUP;
+ 432              	 .loc 1 238 0
+ 433 019c 40F20003 	 movw r3,#:lower16:USB_DeviceStatus
+ 434 01a0 C0F20003 	 movt r3,#:upper16:USB_DeviceStatus
+ 435 01a4 1A88     	 ldrh r2,[r3,#0]
+ 436 01a6 22F00202 	 bic r2,r2,#2
+ 437 01aa 1A80     	 strh r2,[r3,#0]
+ 438 01ac 00F058BC 	 b .L40
+ 439              	.L130:
+ 247:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       n = SetupPacket.wIndex.WB.L & 0x8F;
+ 440              	 .loc 1 247 0
+ 441 01b0 40F20003 	 movw r3,#:lower16:SetupPacket
+ 442 01b4 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 443 01b8 1B79     	 ldrb r3,[r3,#4]
+ 444 01ba 03F08F00 	 and r0,r3,#143
+ 445              	.LVL14:
+ 248:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 446              	 .loc 1 248 0
+ 447 01be 13F0800F 	 tst r3,#128
+ 448 01c2 1DBF     	 ittte ne
+ 449 01c4 00F00F03 	 andne r3,r0,#15
+ 450 01c8 4FF48034 	 movne r4,#65536
+ 451 01cc 9C40     	 lslne r4,r4,r3
+ 452 01ce 0124     	 moveq r4,#1
+ 453 01d0 08BF     	 it eq
+ 454 01d2 8440     	 lsleq r4,r4,r0
+ 455              	.LVL15:
+ 249:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if ((USB_Configuration != 0) && ((n & 0x0F) != 0) && (USB_EndPointMask & m)) {
+ 456              	 .loc 1 249 0
+ 457 01d4 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 458 01d8 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 459 01dc 1B78     	 ldrb r3,[r3,#0]
+ 460 01de 002B     	 cmp r3,#0
+ 461 01e0 00F0AF83 	 beq .L17
+ 462 01e4 10F00F0F 	 tst r0,#15
+ 463 01e8 00F0AB83 	 beq .L17
+ 464 01ec 40F20003 	 movw r3,#:lower16:USB_EndPointMask
+ 465 01f0 C0F20003 	 movt r3,#:upper16:USB_EndPointMask
+ 466 01f4 1B68     	 ldr r3,[r3,#0]
+ 467 01f6 1C42     	 tst r4,r3
+ 468 01f8 00F0A383 	 beq .L17
+ 250:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         if (SetupPacket.wValue.W == USB_FEATURE_ENDPOINT_STALL) {
+ 469              	 .loc 1 250 0
+ 470 01fc 40F20003 	 movw r3,#:lower16:SetupPacket
+ 471 0200 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 472 0204 5B88     	 ldrh r3,[r3,#2]
+ 473 0206 002B     	 cmp r3,#0
+ 474 0208 40F09B83 	 bne .L17
+ 255:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if ((USB_EndPointStall & m) != 0) {
+ 475              	 .loc 1 255 0
+ 476 020c 40F20003 	 movw r3,#:lower16:USB_EndPointStall
+ 477 0210 C0F20003 	 movt r3,#:upper16:USB_EndPointStall
+ 478 0214 1B68     	 ldr r3,[r3,#0]
+ 479 0216 1C42     	 tst r4,r3
+ 480 0218 40F02284 	 bne .L40
+ 258:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_ClrStallEP(n);
+ 481              	 .loc 1 258 0
+ 482 021c FFF7FEFF 	 bl USB_ClrStallEP
+ 483              	.LVL16:
+ 267:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_EndPointHalt &= ~m;
+ 484              	 .loc 1 267 0
+ 485 0220 40F20003 	 movw r3,#:lower16:USB_EndPointHalt
+ 486 0224 C0F20003 	 movt r3,#:upper16:USB_EndPointHalt
+ 487 0228 1A68     	 ldr r2,[r3,#0]
+ 488 022a 22EA0404 	 bic r4,r2,r4
+ 489              	.LVL17:
+ 490 022e 1C60     	 str r4,[r3,#0]
+ 491 0230 00F016BC 	 b .L40
+ 492              	.LVL18:
+ 493              	.L22:
+ 494              	.LBE23:
+ 495              	.LBE22:
+ 496              	.LBB24:
+ 497              	.LBB25:
+ 230:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 498              	 .loc 1 230 0
+ 499 0234 40F20003 	 movw r3,#:lower16:SetupPacket
+ 500 0238 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 501 023c 1B78     	 ldrb r3,[r3,#0]
+ 502 023e 13F01F03 	 ands r3,r3,#31
+ 503 0242 03D0     	 beq .L43
+ 504 0244 022B     	 cmp r3,#2
+ 505 0246 40F07C83 	 bne .L17
+ 506 024a 14E0     	 b .L131
+ 507              	.L43:
+ 232:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.wValue.W == USB_FEATURE_REMOTE_WAKEUP) {
+ 508              	 .loc 1 232 0
+ 509 024c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 510 0250 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 511 0254 5B88     	 ldrh r3,[r3,#2]
+ 512 0256 012B     	 cmp r3,#1
+ 513 0258 40F07383 	 bne .L17
+ 234:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_WakeUpCfg(TRUE);
+ 514              	 .loc 1 234 0
+ 515 025c 4FF00100 	 mov r0,#1
+ 516 0260 FFF7FEFF 	 bl USB_WakeUpCfg
+ 235:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_DeviceStatus |=  USB_GETSTATUS_REMOTE_WAKEUP;
+ 517              	 .loc 1 235 0
+ 518 0264 40F20003 	 movw r3,#:lower16:USB_DeviceStatus
+ 519 0268 C0F20003 	 movt r3,#:upper16:USB_DeviceStatus
+ 520 026c 1A88     	 ldrh r2,[r3,#0]
+ 521 026e 42F00202 	 orr r2,r2,#2
+ 522 0272 1A80     	 strh r2,[r3,#0]
+ 523 0274 F7E3     	 b .L45
+ 524              	.L131:
+ 247:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       n = SetupPacket.wIndex.WB.L & 0x8F;
+ 525              	 .loc 1 247 0
+ 526 0276 40F20003 	 movw r3,#:lower16:SetupPacket
+ 527 027a C0F20003 	 movt r3,#:upper16:SetupPacket
+ 528 027e 1B79     	 ldrb r3,[r3,#4]
+ 529 0280 03F08F00 	 and r0,r3,#143
+ 530              	.LVL19:
+ 248:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 531              	 .loc 1 248 0
+ 532 0284 13F0800F 	 tst r3,#128
+ 533 0288 1DBF     	 ittte ne
+ 534 028a 00F00F03 	 andne r3,r0,#15
+ 535 028e 4FF48034 	 movne r4,#65536
+ 536 0292 9C40     	 lslne r4,r4,r3
+ 537 0294 0124     	 moveq r4,#1
+ 538 0296 08BF     	 it eq
+ 539 0298 8440     	 lsleq r4,r4,r0
+ 540              	.LVL20:
+ 249:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if ((USB_Configuration != 0) && ((n & 0x0F) != 0) && (USB_EndPointMask & m)) {
+ 541              	 .loc 1 249 0
+ 542 029a 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 543 029e C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 544 02a2 1B78     	 ldrb r3,[r3,#0]
+ 545 02a4 002B     	 cmp r3,#0
+ 546 02a6 00F04C83 	 beq .L17
+ 547 02aa 10F00F0F 	 tst r0,#15
+ 548 02ae 00F04883 	 beq .L17
+ 549 02b2 40F20003 	 movw r3,#:lower16:USB_EndPointMask
+ 550 02b6 C0F20003 	 movt r3,#:upper16:USB_EndPointMask
+ 551 02ba 1B68     	 ldr r3,[r3,#0]
+ 552 02bc 1C42     	 tst r4,r3
+ 553 02be 00F04083 	 beq .L17
+ 250:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         if (SetupPacket.wValue.W == USB_FEATURE_ENDPOINT_STALL) {
+ 554              	 .loc 1 250 0
+ 555 02c2 40F20003 	 movw r3,#:lower16:SetupPacket
+ 556 02c6 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 557 02ca 5B88     	 ldrh r3,[r3,#2]
+ 558 02cc 002B     	 cmp r3,#0
+ 559 02ce 40F03883 	 bne .L17
+ 252:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_SetStallEP(n);
+ 560              	 .loc 1 252 0
+ 561 02d2 FFF7FEFF 	 bl USB_SetStallEP
+ 562              	.LVL21:
+ 253:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_EndPointHalt |=  m;
+ 563              	 .loc 1 253 0
+ 564 02d6 40F20003 	 movw r3,#:lower16:USB_EndPointHalt
+ 565 02da C0F20003 	 movt r3,#:upper16:USB_EndPointHalt
+ 566 02de 1A68     	 ldr r2,[r3,#0]
+ 567 02e0 1443     	 orrs r4,r4,r2
+ 568              	.LVL22:
+ 569 02e2 1C60     	 str r4,[r3,#0]
+ 570 02e4 BFE3     	 b .L45
+ 571              	.LVL23:
+ 572              	.L23:
+ 573              	.LBE25:
+ 574              	.LBE24:
+ 575              	.LBB26:
+ 576              	.LBB27:
+ 294:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 577              	 .loc 1 294 0
+ 578 02e6 40F20003 	 movw r3,#:lower16:SetupPacket
+ 579 02ea C0F20003 	 movt r3,#:upper16:SetupPacket
+ 580 02ee 1B78     	 ldrb r3,[r3,#0]
+ 581 02f0 13F01F0F 	 tst r3,#31
+ 582 02f4 40F02583 	 bne .L17
+ 296:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       USB_DeviceAddress = 0x80 | SetupPacket.wValue.WB.L;
+ 583              	 .loc 1 296 0
+ 584 02f8 40F20003 	 movw r3,#:lower16:USB_DeviceAddress
+ 585 02fc C0F20003 	 movt r3,#:upper16:USB_DeviceAddress
+ 586 0300 40F20002 	 movw r2,#:lower16:SetupPacket
+ 587 0304 C0F20002 	 movt r2,#:upper16:SetupPacket
+ 588 0308 9278     	 ldrb r2,[r2,#2]
+ 589 030a 62F07F02 	 orn r2,r2,#127
+ 590 030e 1A70     	 strb r2,[r3,#0]
+ 591              	.LBE27:
+ 592              	.LBE26:
+ 636:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_GET_STATUS:
+ 637:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqGetStatus()) {
+ 638:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 639:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 640:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_DataInStage();
+ 641:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 642:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 643:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_CLEAR_FEATURE:
+ 644:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqSetClrFeature(0)) {
+ 645:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 646:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 647:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_StatusInStage();
+ 648:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_FEATURE_EVENT
+ 649:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_Feature_Event();
+ 650:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 651:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 652:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 653:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_SET_FEATURE:
+ 654:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqSetClrFeature(1)) {
+ 655:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 656:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 657:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_StatusInStage();
+ 658:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_FEATURE_EVENT
+ 659:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_Feature_Event();
+ 660:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 661:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 662:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 663:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_SET_ADDRESS:
+ 664:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqSetAddress()) {
+ 665:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 666:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 667:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_StatusInStage();
+ 593              	 .loc 1 667 0
+ 594 0310 FFF7FEFF 	 bl USB_StatusInStage
+ 668:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 595              	 .loc 1 668 0
+ 596 0314 ACE3     	 b .L9
+ 597              	.L24:
+ 598              	.LBB28:
+ 599              	.LBB29:
+ 319:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 600              	 .loc 1 319 0
+ 601 0316 40F20003 	 movw r3,#:lower16:SetupPacket
+ 602 031a C0F20003 	 movt r3,#:upper16:SetupPacket
+ 603 031e 1B78     	 ldrb r3,[r3,#0]
+ 604 0320 13F01F0F 	 tst r3,#31
+ 605 0324 40F00D83 	 bne .L17
+ 321:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       switch (SetupPacket.wValue.WB.H) {
+ 606              	 .loc 1 321 0
+ 607 0328 40F20003 	 movw r3,#:lower16:SetupPacket
+ 608 032c C0F20003 	 movt r3,#:upper16:SetupPacket
+ 609 0330 DB78     	 ldrb r3,[r3,#3]
+ 610 0332 022B     	 cmp r3,#2
+ 611 0334 11D0     	 beq .L51
+ 612 0336 032B     	 cmp r3,#3
+ 613 0338 03D0     	 beq .L52
+ 614 033a 012B     	 cmp r3,#1
+ 615 033c 40F00183 	 bne .L17
+ 616 0340 16E0     	 b .L132
+ 617              	.L52:
+ 618              	.LVL24:
+ 341:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 619              	 .loc 1 341 0
+ 620 0342 40F20003 	 movw r3,#:lower16:SetupPacket
+ 621 0346 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 622 034a 9878     	 ldrb r0,[r3,#2]
+ 623 034c 0028     	 cmp r0,#0
+ 624 034e 34D1     	 bne .L114
+ 625 0350 40F20003 	 movw r3,#:lower16:USB_StringDescriptor
+ 626 0354 C0F20003 	 movt r3,#:upper16:USB_StringDescriptor
+ 627 0358 3CE0     	 b .L54
+ 628              	.LVL25:
+ 629              	.L51:
+ 328:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 630              	 .loc 1 328 0
+ 631 035a 40F20003 	 movw r3,#:lower16:SetupPacket
+ 632 035e C0F20003 	 movt r3,#:upper16:SetupPacket
+ 633 0362 9878     	 ldrb r0,[r3,#2]
+ 634 0364 80B9     	 cbnz r0,.L115
+ 635 0366 40F20003 	 movw r3,#:lower16:USB_ConfigDescriptor
+ 636 036a C0F20003 	 movt r3,#:upper16:USB_ConfigDescriptor
+ 637 036e 19E0     	 b .L56
+ 638              	.LVL26:
+ 639              	.L132:
+ 323:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = (uint8_t *)USB_DeviceDescriptor;
+ 640              	 .loc 1 323 0
+ 641 0370 40F20003 	 movw r3,#:lower16:EP0Data
+ 642 0374 C0F20003 	 movt r3,#:upper16:EP0Data
+ 643 0378 40F20002 	 movw r2,#:lower16:USB_DeviceDescriptor
+ 644 037c C0F20002 	 movt r2,#:upper16:USB_DeviceDescriptor
+ 645 0380 1A60     	 str r2,[r3,#0]
+ 646              	.LVL27:
+ 324:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = USB_DEVICE_DESC_SIZE;
+ 647              	 .loc 1 324 0
+ 648 0382 4FF01203 	 mov r3,#18
+ 649 0386 2FE0     	 b .L57
+ 650              	.LVL28:
+ 651              	.L115:
+ 328:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 652              	 .loc 1 328 0
+ 653 0388 4FF00002 	 mov r2,#0
+ 654 038c 40F20003 	 movw r3,#:lower16:USB_ConfigDescriptor
+ 655 0390 C0F20003 	 movt r3,#:upper16:USB_ConfigDescriptor
+ 656              	.LVL29:
+ 657              	.L55:
+ 329:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bLength != 0) {
+ 658              	 .loc 1 329 0
+ 659 0394 1978     	 ldrb r1,[r3,#0]
+ 660 0396 09B1     	 cbz r1,.L58
+ 330:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               pD += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 661              	 .loc 1 330 0
+ 662 0398 5988     	 ldrh r1,[r3,#2]
+ 663 039a 5B18     	 adds r3,r3,r1
+ 664              	.LVL30:
+ 665              	.L58:
+ 328:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 666              	 .loc 1 328 0
+ 667 039c 02F10102 	 add r2,r2,#1
+ 668              	.LVL31:
+ 669 03a0 9042     	 cmp r0,r2
+ 670 03a2 F7D1     	 bne .L55
+ 671              	.LVL32:
+ 672              	.L56:
+ 333:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bLength == 0) {
+ 673              	 .loc 1 333 0
+ 674 03a4 1A78     	 ldrb r2,[r3,#0]
+ 675 03a6 002A     	 cmp r2,#0
+ 676 03a8 00F0CB82 	 beq .L17
+ 336:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = pD;
+ 677              	 .loc 1 336 0
+ 678 03ac 40F20002 	 movw r2,#:lower16:EP0Data
+ 679 03b0 C0F20002 	 movt r2,#:upper16:EP0Data
+ 680 03b4 1360     	 str r3,[r2,#0]
+ 337:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 681              	 .loc 1 337 0
+ 682 03b6 5B88     	 ldrh r3,[r3,#2]
+ 683              	.LVL33:
+ 684 03b8 16E0     	 b .L57
+ 685              	.LVL34:
+ 686              	.L114:
+ 341:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 687              	 .loc 1 341 0
+ 688 03ba 4FF00002 	 mov r2,#0
+ 689 03be 40F20003 	 movw r3,#:lower16:USB_StringDescriptor
+ 690 03c2 C0F20003 	 movt r3,#:upper16:USB_StringDescriptor
+ 691              	.LVL35:
+ 692              	.L53:
+ 342:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (((USB_STRING_DESCRIPTOR *)pD)->bLength != 0) {
+ 693              	 .loc 1 342 0
+ 694 03c6 1978     	 ldrb r1,[r3,#0]
+ 695 03c8 01B1     	 cbz r1,.L59
+ 343:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               pD += ((USB_STRING_DESCRIPTOR *)pD)->bLength;
+ 696              	 .loc 1 343 0
+ 697 03ca 5B18     	 adds r3,r3,r1
+ 698              	.LVL36:
+ 699              	.L59:
+ 341:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           for (n = 0; n != SetupPacket.wValue.WB.L; n++) {
+ 700              	 .loc 1 341 0
+ 701 03cc 02F10102 	 add r2,r2,#1
+ 702              	.LVL37:
+ 703 03d0 8242     	 cmp r2,r0
+ 704 03d2 F8D1     	 bne .L53
+ 705              	.LVL38:
+ 706              	.L54:
+ 346:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (((USB_STRING_DESCRIPTOR *)pD)->bLength == 0) {
+ 707              	 .loc 1 346 0
+ 708 03d4 1A78     	 ldrb r2,[r3,#0]
+ 709 03d6 002A     	 cmp r2,#0
+ 710 03d8 00F0B382 	 beq .L17
+ 349:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.pData = pD;
+ 711              	 .loc 1 349 0
+ 712 03dc 40F20002 	 movw r2,#:lower16:EP0Data
+ 713 03e0 C0F20002 	 movt r2,#:upper16:EP0Data
+ 714 03e4 1360     	 str r3,[r2,#0]
+ 350:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           len = ((USB_STRING_DESCRIPTOR *)EP0Data.pData)->bLength;
+ 715              	 .loc 1 350 0
+ 716 03e6 1B78     	 ldrb r3,[r3,#0]
+ 717              	.LVL39:
+ 718              	.L57:
+ 384:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   if (EP0Data.Count > len) {
+ 719              	 .loc 1 384 0
+ 720 03e8 40F20002 	 movw r2,#:lower16:EP0Data
+ 721 03ec C0F20002 	 movt r2,#:upper16:EP0Data
+ 722 03f0 9288     	 ldrh r2,[r2,#4]
+ 723 03f2 9A42     	 cmp r2,r3
+ 724 03f4 40F23A83 	 bls .L60
+ 385:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     EP0Data.Count = len;
+ 725              	 .loc 1 385 0
+ 726 03f8 40F20002 	 movw r2,#:lower16:EP0Data
+ 727 03fc C0F20002 	 movt r2,#:upper16:EP0Data
+ 728 0400 9380     	 strh r3,[r2,#4]
+ 729 0402 33E3     	 b .L60
+ 730              	.LVL40:
+ 731              	.L25:
+ 732              	.LBE29:
+ 733              	.LBE28:
+ 669:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 670:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_GET_DESCRIPTOR:
+ 671:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqGetDescriptor()) {
+ 672:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 673:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 674:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_DataInStage();
+ 675:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 676:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 677:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_SET_DESCRIPTOR:
+ 678:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** /*stall_o:*/  USB_SetStallEP(0x00);            /* not supported */
+ 734              	 .loc 1 678 0
+ 735 0404 4FF00000 	 mov r0,#0
+ 736 0408 FFF7FEFF 	 bl USB_SetStallEP
+ 679:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               EP0Data.Count = 0;
+ 737              	 .loc 1 679 0
+ 738 040c 40F20003 	 movw r3,#:lower16:EP0Data
+ 739 0410 C0F20003 	 movt r3,#:upper16:EP0Data
+ 740 0414 4FF00002 	 mov r2,#0
+ 741 0418 9A80     	 strh r2,[r3,#4]
+ 680:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 742              	 .loc 1 680 0
+ 743 041a 29E3     	 b .L9
+ 744              	.L26:
+ 745              	.LBB30:
+ 746              	.LBB31:
+ 403:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 747              	 .loc 1 403 0
+ 748 041c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 749 0420 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 750 0424 1B78     	 ldrb r3,[r3,#0]
+ 751 0426 13F01F0F 	 tst r3,#31
+ 752 042a 40F08A82 	 bne .L17
+ 405:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       EP0Data.pData = &USB_Configuration;
+ 753              	 .loc 1 405 0
+ 754 042e 40F20003 	 movw r3,#:lower16:EP0Data
+ 755 0432 C0F20003 	 movt r3,#:upper16:EP0Data
+ 756 0436 40F20002 	 movw r2,#:lower16:USB_Configuration
+ 757 043a C0F20002 	 movt r2,#:upper16:USB_Configuration
+ 758 043e 1A60     	 str r2,[r3,#0]
+ 759              	.LBE31:
+ 760              	.LBE30:
+ 681:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 682:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_GET_CONFIGURATION:
+ 683:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqGetConfiguration()) {
+ 684:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 685:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 686:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_DataInStage();
+ 761              	 .loc 1 686 0
+ 762 0440 FFF7FEFF 	 bl USB_DataInStage
+ 687:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 763              	 .loc 1 687 0
+ 764 0444 14E3     	 b .L9
+ 765              	.L27:
+ 766              	.LVL41:
+ 767              	.LBB32:
+ 768              	.LBB33:
+ 430:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 769              	 .loc 1 430 0
+ 770 0446 40F20003 	 movw r3,#:lower16:SetupPacket
+ 771 044a C0F20003 	 movt r3,#:upper16:SetupPacket
+ 772 044e 1B78     	 ldrb r3,[r3,#0]
+ 773 0450 13F01F0F 	 tst r3,#31
+ 774 0454 40F07582 	 bne .L17
+ 433:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.wValue.WB.L) {
+ 775              	 .loc 1 433 0
+ 776 0458 40F20003 	 movw r3,#:lower16:SetupPacket
+ 777 045c C0F20003 	 movt r3,#:upper16:SetupPacket
+ 778 0460 9B78     	 ldrb r3,[r3,#2]
+ 779 0462 002B     	 cmp r3,#0
+ 780 0464 7ED1     	 bne .L116
+ 781 0466 94E0     	 b .L133
+ 782              	.LVL42:
+ 783              	.L77:
+ 436:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           switch (pD->bDescriptorType) {
+ 784              	 .loc 1 436 0
+ 785 0468 6378     	 ldrb r3,[r4,#1]
+ 786 046a 042B     	 cmp r3,#4
+ 787 046c 59D0     	 beq .L67
+ 788 046e 052B     	 cmp r3,#5
+ 789 0470 5AD0     	 beq .L68
+ 790 0472 022B     	 cmp r3,#2
+ 791 0474 73D1     	 bne .L65
+ 438:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bConfigurationValue == SetupPacket.wValue.W
+ 792              	 .loc 1 438 0
+ 793 0476 6279     	 ldrb r2,[r4,#5]
+ 794 0478 40F20003 	 movw r3,#:lower16:SetupPacket
+ 795 047c C0F20003 	 movt r3,#:upper16:SetupPacket
+ 796 0480 9B78     	 ldrb r3,[r3,#2]
+ 797 0482 9342     	 cmp r3,r2
+ 464:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	  tmp += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 798              	 .loc 1 464 0
+ 799 0484 1CBF     	 itt ne
+ 800 0486 6388     	 ldrhne r3,[r4,#2]
+ 801 0488 E418     	 addne r4,r4,r3
+ 802              	.LVL43:
+ 438:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bConfigurationValue == SetupPacket.wValue.W
+ 803              	 .loc 1 438 0
+ 804 048a 7DD1     	 bne .L126
+ 439:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_Configuration = SetupPacket.wValue.WB.L;
+ 805              	 .loc 1 439 0
+ 806 048c 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 807 0490 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 808 0494 1A70     	 strb r2,[r3,#0]
+ 440:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_NumInterfaces = ((USB_CONFIGURATION_DESCRIPTOR *)pD)->bNumInterfaces;
+ 809              	 .loc 1 440 0
+ 810 0496 40F20003 	 movw r3,#:lower16:USB_NumInterfaces
+ 811 049a C0F20003 	 movt r3,#:upper16:USB_NumInterfaces
+ 812 049e 2279     	 ldrb r2,[r4,#4]
+ 813 04a0 1A70     	 strb r2,[r3,#0]
+ 814              	.LVL44:
+ 442:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   USB_AltSetting[n] = 0;
+ 815              	 .loc 1 442 0
+ 816 04a2 40F20003 	 movw r3,#:lower16:USB_AltSetting
+ 817 04a6 C0F20003 	 movt r3,#:upper16:USB_AltSetting
+ 818 04aa 4FF00002 	 mov r2,#0
+ 819 04ae 1A70     	 strb r2,[r3,#0]
+ 820              	.LVL45:
+ 821 04b0 5A70     	 strb r2,[r3,#1]
+ 822              	.LVL46:
+ 823 04b2 9A70     	 strb r2,[r3,#2]
+ 824              	.LVL47:
+ 825 04b4 DA70     	 strb r2,[r3,#3]
+ 826              	.LVL48:
+ 827 04b6 4546     	 mov r5,r8
+ 828              	.LVL49:
+ 829              	.L72:
+ 445:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   if (USB_EndPointMask & (1 << n)) {
+ 830              	 .loc 1 445 0
+ 831 04b8 2F46     	 mov r7,r5
+ 832 04ba 08FA05F2 	 lsl r2,r8,r5
+ 833 04be 3368     	 ldr r3,[r6,#0]
+ 834 04c0 1A42     	 tst r2,r3
+ 835 04c2 02D0     	 beq .L70
+ 446:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     USB_DisableEP(n);
+ 836              	 .loc 1 446 0
+ 837 04c4 2846     	 mov r0,r5
+ 838 04c6 FFF7FEFF 	 bl USB_DisableEP
+ 839              	.L70:
+ 448:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   if (USB_EndPointMask & ((1 << 16) << n)) {
+ 840              	 .loc 1 448 0
+ 841 04ca 09FA07F7 	 lsl r7,r9,r7
+ 842 04ce 3368     	 ldr r3,[r6,#0]
+ 843 04d0 1F42     	 tst r7,r3
+ 844 04d2 03D0     	 beq .L71
+ 449:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     USB_DisableEP(n | 0x80);
+ 845              	 .loc 1 449 0
+ 846 04d4 45F08000 	 orr r0,r5,#128
+ 847 04d8 FFF7FEFF 	 bl USB_DisableEP
+ 848              	.L71:
+ 444:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 for (n = 1; n < 16; n++) {
+ 849              	 .loc 1 444 0
+ 850 04dc 05F10105 	 add r5,r5,#1
+ 851              	.LVL50:
+ 852 04e0 102D     	 cmp r5,#16
+ 853 04e2 E9D1     	 bne .L72
+ 452:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask = 0x00010001;
+ 854              	 .loc 1 452 0
+ 855 04e4 4FF00113 	 mov r3,#65537
+ 856 04e8 3360     	 str r3,[r6,#0]
+ 453:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointHalt = 0x00000000;
+ 857              	 .loc 1 453 0
+ 858 04ea 40F20003 	 movw r3,#:lower16:USB_EndPointHalt
+ 859 04ee C0F20003 	 movt r3,#:upper16:USB_EndPointHalt
+ 860 04f2 4FF00002 	 mov r2,#0
+ 861 04f6 1A60     	 str r2,[r3,#0]
+ 454:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointStall= 0x00000000;
+ 862              	 .loc 1 454 0
+ 863 04f8 40F20003 	 movw r3,#:lower16:USB_EndPointStall
+ 864 04fc C0F20003 	 movt r3,#:upper16:USB_EndPointStall
+ 865 0500 1A60     	 str r2,[r3,#0]
+ 455:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_Configure(TRUE);
+ 866              	 .loc 1 455 0
+ 867 0502 4046     	 mov r0,r8
+ 868 0504 FFF7FEFF 	 bl USB_Configure
+ 456:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bmAttributes & USB_CONFIG_POWERED_MASK) {
+ 869              	 .loc 1 456 0
+ 870 0508 E379     	 ldrb r3,[r4,#7]
+ 871 050a 13F0400F 	 tst r3,#64
+ 457:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   USB_DeviceStatus |=  USB_GETSTATUS_SELF_POWERED;
+ 872              	 .loc 1 457 0
+ 873 050e BAF80030 	 ldrh r3,[sl,#0]
+ 874 0512 14BF     	 ite ne
+ 875 0514 43F00103 	 orrne r3,r3,#1
+ 459:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   USB_DeviceStatus &= ~USB_GETSTATUS_SELF_POWERED;
+ 876              	 .loc 1 459 0
+ 877 0518 23F00103 	 biceq r3,r3,#1
+ 878 051c AAF80030 	 strh r3,[sl,#0]
+ 879 0520 1DE0     	 b .L65
+ 880              	.LVL51:
+ 881              	.L67:
+ 470:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               alt = ((USB_INTERFACE_DESCRIPTOR *)pD)->bAlternateSetting;
+ 882              	 .loc 1 470 0
+ 883 0522 94F803B0 	 ldrb fp,[r4,#3]
+ 884              	.LVL52:
+ 885 0526 1AE0     	 b .L65
+ 886              	.L68:
+ 473:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (alt == 0) {
+ 887              	 .loc 1 473 0
+ 888 0528 BBF1000F 	 cmp fp,#0
+ 889 052c 17D1     	 bne .L65
+ 474:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 n = ((USB_ENDPOINT_DESCRIPTOR *)pD)->bEndpointAddress & 0x8F;
+ 890              	 .loc 1 474 0
+ 891 052e A378     	 ldrb r3,[r4,#2]
+ 892 0530 03F08F05 	 and r5,r3,#143
+ 893              	.LVL53:
+ 475:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 894              	 .loc 1 475 0
+ 895 0534 13F0800F 	 tst r3,#128
+ 896 0538 1ABF     	 itte ne
+ 897 053a 05F00F03 	 andne r3,r5,#15
+ 898 053e 09FA03F3 	 lslne r3,r9,r3
+ 899 0542 08FA05F3 	 lsleq r3,r8,r5
+ 900              	.LVL54:
+ 476:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask |= m;
+ 901              	 .loc 1 476 0
+ 902 0546 3268     	 ldr r2,[r6,#0]
+ 903 0548 1343     	 orrs r3,r3,r2
+ 904              	.LVL55:
+ 905 054a 3360     	 str r3,[r6,#0]
+ 477:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ConfigEP((USB_ENDPOINT_DESCRIPTOR *)pD);
+ 906              	 .loc 1 477 0
+ 907 054c 2046     	 mov r0,r4
+ 908 054e FFF7FEFF 	 bl USB_ConfigEP
+ 478:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EnableEP(n);
+ 909              	 .loc 1 478 0
+ 910 0552 2846     	 mov r0,r5
+ 911 0554 FFF7FEFF 	 bl USB_EnableEP
+ 479:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ResetEP(n);
+ 912              	 .loc 1 479 0
+ 913 0558 2846     	 mov r0,r5
+ 914 055a FFF7FEFF 	 bl USB_ResetEP
+ 915              	.LVL56:
+ 916              	.L65:
+ 485:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			tmp += pD->bLength;
+ 917              	 .loc 1 485 0
+ 918 055e 2378     	 ldrb r3,[r4,#0]
+ 919 0560 E418     	 adds r4,r4,r3
+ 920              	.LVL57:
+ 921 0562 11E0     	 b .L126
+ 922              	.LVL58:
+ 923              	.L116:
+ 433:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.wValue.WB.L) {
+ 924              	 .loc 1 433 0
+ 925 0564 4FF0000B 	 mov fp,#0
+ 926 0568 40F20004 	 movw r4,#:lower16:USB_ConfigDescriptor
+ 927 056c C0F20004 	 movt r4,#:upper16:USB_ConfigDescriptor
+ 476:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask |= m;
+ 928              	 .loc 1 476 0
+ 929 0570 40F20006 	 movw r6,#:lower16:USB_EndPointMask
+ 930 0574 C0F20006 	 movt r6,#:upper16:USB_EndPointMask
+ 475:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 931              	 .loc 1 475 0
+ 932 0578 4FF00108 	 mov r8,#1
+ 933 057c 4FF48039 	 mov r9,#65536
+ 459:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   USB_DeviceStatus &= ~USB_GETSTATUS_SELF_POWERED;
+ 934              	 .loc 1 459 0
+ 935 0580 40F2000A 	 movw sl,#:lower16:USB_DeviceStatus
+ 936 0584 C0F2000A 	 movt sl,#:upper16:USB_DeviceStatus
+ 937              	.LVL59:
+ 938              	.L126:
+ 435:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         while (pD->bLength) {
+ 939              	 .loc 1 435 0
+ 940 0588 2378     	 ldrb r3,[r4,#0]
+ 941 058a 002B     	 cmp r3,#0
+ 942 058c 7FF46CAF 	 bne .L77
+ 943 0590 3AE0     	 b .L78
+ 944              	.LVL60:
+ 945              	.L133:
+ 490:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_Configuration = 0;
+ 946              	 .loc 1 490 0
+ 947 0592 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 948 0596 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 949 059a 4FF00002 	 mov r2,#0
+ 950 059e 1A70     	 strb r2,[r3,#0]
+ 951              	.LVL61:
+ 491:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         for (n = 1; n < 16; n++) {
+ 952              	 .loc 1 491 0
+ 953 05a0 4FF00104 	 mov r4,#1
+ 492:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (USB_EndPointMask & (1 << n)) {
+ 954              	 .loc 1 492 0
+ 955 05a4 2746     	 mov r7,r4
+ 956 05a6 40F20005 	 movw r5,#:lower16:USB_EndPointMask
+ 957 05aa C0F20005 	 movt r5,#:upper16:USB_EndPointMask
+ 495:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (USB_EndPointMask & ((1 << 16) << n)) {
+ 958              	 .loc 1 495 0
+ 959 05ae 4FF48038 	 mov r8,#65536
+ 960              	.LVL62:
+ 961              	.L81:
+ 492:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (USB_EndPointMask & (1 << n)) {
+ 962              	 .loc 1 492 0
+ 963 05b2 2646     	 mov r6,r4
+ 964 05b4 07FA04F2 	 lsl r2,r7,r4
+ 965 05b8 2B68     	 ldr r3,[r5,#0]
+ 966 05ba 1A42     	 tst r2,r3
+ 967 05bc 02D0     	 beq .L79
+ 493:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_DisableEP(n);
+ 968              	 .loc 1 493 0
+ 969 05be 2046     	 mov r0,r4
+ 970 05c0 FFF7FEFF 	 bl USB_DisableEP
+ 971              	.L79:
+ 495:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (USB_EndPointMask & ((1 << 16) << n)) {
+ 972              	 .loc 1 495 0
+ 973 05c4 08FA06F6 	 lsl r6,r8,r6
+ 974 05c8 2B68     	 ldr r3,[r5,#0]
+ 975 05ca 1E42     	 tst r6,r3
+ 976 05cc 03D0     	 beq .L80
+ 496:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_DisableEP(n | 0x80);
+ 977              	 .loc 1 496 0
+ 978 05ce 44F08000 	 orr r0,r4,#128
+ 979 05d2 FFF7FEFF 	 bl USB_DisableEP
+ 980              	.L80:
+ 491:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         for (n = 1; n < 16; n++) {
+ 981              	 .loc 1 491 0
+ 982 05d6 04F10104 	 add r4,r4,#1
+ 983              	.LVL63:
+ 984 05da 102C     	 cmp r4,#16
+ 985 05dc E9D1     	 bne .L81
+ 499:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_EndPointMask  = 0x00010001;
+ 986              	 .loc 1 499 0
+ 987 05de 40F20003 	 movw r3,#:lower16:USB_EndPointMask
+ 988 05e2 C0F20003 	 movt r3,#:upper16:USB_EndPointMask
+ 989 05e6 4FF00112 	 mov r2,#65537
+ 990 05ea 1A60     	 str r2,[r3,#0]
+ 500:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_EndPointHalt  = 0x00000000;
+ 991              	 .loc 1 500 0
+ 992 05ec 40F20003 	 movw r3,#:lower16:USB_EndPointHalt
+ 993 05f0 C0F20003 	 movt r3,#:upper16:USB_EndPointHalt
+ 994 05f4 4FF00000 	 mov r0,#0
+ 995 05f8 1860     	 str r0,[r3,#0]
+ 501:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_EndPointStall = 0x00000000;
+ 996              	 .loc 1 501 0
+ 997 05fa 40F20003 	 movw r3,#:lower16:USB_EndPointStall
+ 998 05fe C0F20003 	 movt r3,#:upper16:USB_EndPointStall
+ 999 0602 1860     	 str r0,[r3,#0]
+ 502:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_Configure(FALSE);
+ 1000              	 .loc 1 502 0
+ 1001 0604 FFF7FEFF 	 bl USB_Configure
+ 1002              	.LVL64:
+ 1003              	.L78:
+ 505:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (USB_Configuration != SetupPacket.wValue.WB.L) {
+ 1004              	 .loc 1 505 0
+ 1005 0608 40F20002 	 movw r2,#:lower16:SetupPacket
+ 1006 060c C0F20002 	 movt r2,#:upper16:SetupPacket
+ 1007 0610 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 1008 0614 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 1009 0618 9278     	 ldrb r2,[r2,#2]
+ 1010 061a 1B78     	 ldrb r3,[r3,#0]
+ 1011 061c 9A42     	 cmp r2,r3
+ 1012 061e 40F09081 	 bne .L17
+ 1013              	.LBE33:
+ 1014              	.LBE32:
+ 688:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 689:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_SET_CONFIGURATION:
+ 690:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqSetConfiguration()) {
+ 691:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 692:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 693:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_StatusInStage();
+ 1015              	 .loc 1 693 0
+ 1016 0622 FFF7FEFF 	 bl USB_StatusInStage
+ 694:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_CONFIGURE_EVENT
+ 695:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_Configure_Event();
+ 1017              	 .loc 1 695 0
+ 1018 0626 FFF7FEFF 	 bl USB_Configure_Event
+ 696:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 697:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 1019              	 .loc 1 697 0
+ 1020 062a 21E2     	 b .L9
+ 1021              	.L28:
+ 1022              	.LBB34:
+ 1023              	.LBB35:
+ 527:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 1024              	 .loc 1 527 0
+ 1025 062c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1026 0630 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1027 0634 1B78     	 ldrb r3,[r3,#0]
+ 1028 0636 03F01F03 	 and r3,r3,#31
+ 1029 063a 012B     	 cmp r3,#1
+ 1030 063c 40F08181 	 bne .L17
+ 529:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if ((USB_Configuration != 0) && (SetupPacket.wIndex.WB.L < USB_NumInterfaces)) {
+ 1031              	 .loc 1 529 0
+ 1032 0640 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 1033 0644 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 1034 0648 1B78     	 ldrb r3,[r3,#0]
+ 1035 064a 002B     	 cmp r3,#0
+ 1036 064c 00F07981 	 beq .L17
+ 1037 0650 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1038 0654 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1039 0658 1979     	 ldrb r1,[r3,#4]
+ 1040 065a 40F20003 	 movw r3,#:lower16:USB_NumInterfaces
+ 1041 065e C0F20003 	 movt r3,#:upper16:USB_NumInterfaces
+ 1042 0662 1B78     	 ldrb r3,[r3,#0]
+ 1043 0664 8B42     	 cmp r3,r1
+ 1044 0666 40F26C81 	 bls .L17
+ 530:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         EP0Data.pData = USB_AltSetting + SetupPacket.wIndex.WB.L;
+ 1045              	 .loc 1 530 0
+ 1046 066a 40F20003 	 movw r3,#:lower16:EP0Data
+ 1047 066e C0F20003 	 movt r3,#:upper16:EP0Data
+ 1048 0672 40F20002 	 movw r2,#:lower16:USB_AltSetting
+ 1049 0676 C0F20002 	 movt r2,#:upper16:USB_AltSetting
+ 1050 067a 8A18     	 adds r2,r1,r2
+ 1051 067c 1A60     	 str r2,[r3,#0]
+ 1052              	.LBE35:
+ 1053              	.LBE34:
+ 698:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 699:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_GET_INTERFACE:
+ 700:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqGetInterface()) {
+ 701:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 702:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 703:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_DataInStage();
+ 1054              	 .loc 1 703 0
+ 1055 067e FFF7FEFF 	 bl USB_DataInStage
+ 704:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 1056              	 .loc 1 704 0
+ 1057 0682 F5E1     	 b .L9
+ 1058              	.L29:
+ 1059              	.LVL65:
+ 1060              	.LBB36:
+ 1061              	.LBB37:
+ 558:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 1062              	 .loc 1 558 0
+ 1063 0684 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1064 0688 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1065 068c 1B78     	 ldrb r3,[r3,#0]
+ 1066 068e 03F01F03 	 and r3,r3,#31
+ 1067 0692 012B     	 cmp r3,#1
+ 612:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       return (FALSE);
+ 1068              	 .loc 1 612 0
+ 1069 0694 18BF     	 it ne
+ 1070 0696 0026     	 movne r6,#0
+ 558:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 1071              	 .loc 1 558 0
+ 1072 0698 40F0AC80 	 bne .L83
+ 560:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (USB_Configuration == 0) return (FALSE);
+ 1073              	 .loc 1 560 0
+ 1074 069c 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 1075 06a0 C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 1076 06a4 1B78     	 ldrb r3,[r3,#0]
+ 1077 06a6 002B     	 cmp r3,#0
+ 1078 06a8 00F04B81 	 beq .L17
+ 1079 06ac 4FF00006 	 mov r6,#0
+ 1080 06b0 B246     	 mov sl,r6
+ 1081 06b2 0196     	 str r6,[sp,#4]
+ 1082 06b4 3746     	 mov r7,r6
+ 1083 06b6 3546     	 mov r5,r6
+ 1084 06b8 40F20004 	 movw r4,#:lower16:USB_ConfigDescriptor
+ 1085 06bc C0F20004 	 movt r4,#:upper16:USB_ConfigDescriptor
+ 581:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               old = USB_AltSetting[ifn];
+ 1086              	 .loc 1 581 0
+ 1087 06c0 40F20003 	 movw r3,#:lower16:USB_AltSetting
+ 1088 06c4 C0F20003 	 movt r3,#:upper16:USB_AltSetting
+ 1089 06c8 0293     	 str r3,[sp,#8]
+ 598:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask &= ~m;
+ 1090              	 .loc 1 598 0
+ 1091 06ca 40F20008 	 movw r8,#:lower16:USB_EndPointMask
+ 1092 06ce C0F20008 	 movt r8,#:upper16:USB_EndPointMask
+ 599:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointHalt &= ~m;
+ 1093              	 .loc 1 599 0
+ 1094 06d2 40F20009 	 movw r9,#:lower16:USB_EndPointHalt
+ 1095 06d6 C0F20009 	 movt r9,#:upper16:USB_EndPointHalt
+ 1096 06da 87E0     	 b .L128
+ 1097              	.LVL66:
+ 1098              	.L94:
+ 564:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         switch (pD->bDescriptorType) {
+ 1099              	 .loc 1 564 0
+ 1100 06dc 6378     	 ldrb r3,[r4,#1]
+ 1101 06de 042B     	 cmp r3,#4
+ 1102 06e0 0FD0     	 beq .L88
+ 1103 06e2 052B     	 cmp r3,#5
+ 1104 06e4 2ED0     	 beq .L89
+ 1105 06e6 022B     	 cmp r3,#2
+ 1106 06e8 7ED1     	 bne .L86
+ 566:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bConfigurationValue != USB_Configuration) {
+ 1107              	 .loc 1 566 0
+ 1108 06ea 40F20003 	 movw r3,#:lower16:USB_Configuration
+ 1109 06ee C0F20003 	 movt r3,#:upper16:USB_Configuration
+ 1110 06f2 6279     	 ldrb r2,[r4,#5]
+ 1111 06f4 1B78     	 ldrb r3,[r3,#0]
+ 1112 06f6 9A42     	 cmp r2,r3
+ 569:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             	tmp += ((USB_CONFIGURATION_DESCRIPTOR *)pD)->wTotalLength;
+ 1113              	 .loc 1 569 0
+ 1114 06f8 1CBF     	 itt ne
+ 1115 06fa 6388     	 ldrhne r3,[r4,#2]
+ 1116 06fc E418     	 addne r4,r4,r3
+ 1117              	.LVL67:
+ 566:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (((USB_CONFIGURATION_DESCRIPTOR *)pD)->bConfigurationValue != USB_Configuration) {
+ 1118              	 .loc 1 566 0
+ 1119 06fe 75D1     	 bne .L128
+ 1120 0700 72E0     	 b .L86
+ 1121              	.LVL68:
+ 1122              	.L88:
+ 576:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             ifn = ((USB_INTERFACE_DESCRIPTOR *)pD)->bInterfaceNumber;
+ 1123              	 .loc 1 576 0
+ 1124 0702 A578     	 ldrb r5,[r4,#2]
+ 1125              	.LVL69:
+ 577:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             alt = ((USB_INTERFACE_DESCRIPTOR *)pD)->bAlternateSetting;
+ 1126              	 .loc 1 577 0
+ 1127 0704 E278     	 ldrb r2,[r4,#3]
+ 1128 0706 1746     	 mov r7,r2
+ 1129              	.LVL70:
+ 579:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if ((ifn == SetupPacket.wIndex.WB.L) && (alt == SetupPacket.wValue.WB.L)) {
+ 1130              	 .loc 1 579 0
+ 1131 0708 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1132 070c C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1133 0710 1B79     	 ldrb r3,[r3,#4]
+ 1134 0712 9D42     	 cmp r5,r3
+ 578:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             msk = 0;
+ 1135              	 .loc 1 578 0
+ 1136 0714 18BF     	 it ne
+ 1137 0716 4FF0000A 	 movne sl,#0
+ 579:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if ((ifn == SetupPacket.wIndex.WB.L) && (alt == SetupPacket.wValue.WB.L)) {
+ 1138              	 .loc 1 579 0
+ 1139 071a 65D1     	 bne .L86
+ 1140 071c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1141 0720 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1142 0724 9B78     	 ldrb r3,[r3,#2]
+ 1143 0726 9A42     	 cmp r2,r3
+ 578:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             msk = 0;
+ 1144              	 .loc 1 578 0
+ 1145 0728 18BF     	 it ne
+ 1146 072a 4FF0000A 	 movne sl,#0
+ 579:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if ((ifn == SetupPacket.wIndex.WB.L) && (alt == SetupPacket.wValue.WB.L)) {
+ 1147              	 .loc 1 579 0
+ 1148 072e 5BD1     	 bne .L86
+ 1149              	.LVL71:
+ 581:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               old = USB_AltSetting[ifn];
+ 1150              	 .loc 1 581 0
+ 1151 0730 029B     	 ldr r3,[sp,#8]
+ 1152 0732 5B5D     	 ldrb r3,[r3,r5]
+ 1153 0734 0193     	 str r3,[sp,#4]
+ 1154              	.LVL72:
+ 582:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_AltSetting[ifn] = (uint8_t)alt;
+ 1155              	 .loc 1 582 0
+ 1156 0736 029B     	 ldr r3,[sp,#8]
+ 1157              	.LVL73:
+ 1158 0738 5A55     	 strb r2,[r3,r5]
+ 580:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               set = TRUE;
+ 1159              	 .loc 1 580 0
+ 1160 073a 4FF00106 	 mov r6,#1
+ 578:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             msk = 0;
+ 1161              	 .loc 1 578 0
+ 1162 073e 4FF0000A 	 mov sl,#0
+ 1163 0742 51E0     	 b .L86
+ 1164              	.LVL74:
+ 1165              	.L89:
+ 586:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (ifn == SetupPacket.wIndex.WB.L) {
+ 1166              	 .loc 1 586 0
+ 1167 0744 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1168 0748 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1169 074c 1B79     	 ldrb r3,[r3,#4]
+ 1170 074e AB42     	 cmp r3,r5
+ 1171 0750 4AD1     	 bne .L86
+ 587:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               n = ((USB_ENDPOINT_DESCRIPTOR *)pD)->bEndpointAddress & 0x8F;
+ 1172              	 .loc 1 587 0
+ 1173 0752 A378     	 ldrb r3,[r4,#2]
+ 1174 0754 03F08F02 	 and r2,r3,#143
+ 1175 0758 0092     	 str r2,[sp,#0]
+ 1176              	.LVL75:
+ 588:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               m = (n & 0x80) ? ((1 << 16) << (n & 0x0F)) : (1 << n);
+ 1177              	 .loc 1 588 0
+ 1178 075a 13F0800F 	 tst r3,#128
+ 1179 075e 19BF     	 ittee ne
+ 1180 0760 02F00F03 	 andne r3,r2,#15
+ 1181 0764 4FF4803B 	 movne fp,#65536
+ 1182 0768 4FF0010B 	 moveq fp,#1
+ 1183 076c 009B     	 ldreq r3,[sp,#0]
+ 1184 076e 0BFA03FB 	 lsl fp,fp,r3
+ 1185              	.LVL76:
+ 589:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (alt == SetupPacket.wValue.WB.L) {
+ 1186              	 .loc 1 589 0
+ 1187 0772 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1188 0776 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1189 077a 9B78     	 ldrb r3,[r3,#2]
+ 1190 077c 0393     	 str r3,[sp,#12]
+ 1191 077e BB42     	 cmp r3,r7
+ 1192 0780 18D1     	 bne .L93
+ 590:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask |=  m;
+ 1193              	 .loc 1 590 0
+ 1194 0782 D8F80030 	 ldr r3,[r8,#0]
+ 1195 0786 4BEA0303 	 orr r3,fp,r3
+ 1196 078a C8F80030 	 str r3,[r8,#0]
+ 591:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointHalt &= ~m;
+ 1197              	 .loc 1 591 0
+ 1198 078e D9F80030 	 ldr r3,[r9,#0]
+ 1199 0792 23EA0B03 	 bic r3,r3,fp
+ 1200 0796 C9F80030 	 str r3,[r9,#0]
+ 592:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ConfigEP((USB_ENDPOINT_DESCRIPTOR *)pD);
+ 1201              	 .loc 1 592 0
+ 1202 079a 2046     	 mov r0,r4
+ 1203 079c FFF7FEFF 	 bl USB_ConfigEP
+ 1204              	.LVL77:
+ 593:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EnableEP(n);
+ 1205              	 .loc 1 593 0
+ 1206 07a0 0098     	 ldr r0,[sp,#0]
+ 1207 07a2 FFF7FEFF 	 bl USB_EnableEP
+ 594:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_ResetEP(n);
+ 1208              	 .loc 1 594 0
+ 1209 07a6 0098     	 ldr r0,[sp,#0]
+ 1210 07a8 FFF7FEFF 	 bl USB_ResetEP
+ 595:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 msk |= m;
+ 1211              	 .loc 1 595 0
+ 1212 07ac 4AEA0B0A 	 orr sl,sl,fp
+ 1213              	.LVL78:
+ 1214 07b0 039F     	 ldr r7,[sp,#12]
+ 1215              	.LVL79:
+ 1216 07b2 19E0     	 b .L86
+ 1217              	.LVL80:
+ 1218              	.L93:
+ 597:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               else if ((alt == old) && ((msk & m) == 0)) {
+ 1219              	 .loc 1 597 0
+ 1220 07b4 019A     	 ldr r2,[sp,#4]
+ 1221 07b6 9742     	 cmp r7,r2
+ 1222 07b8 16D1     	 bne .L86
+ 1223 07ba 1BEA0A0F 	 tst fp,sl
+ 1224 07be 12D1     	 bne .L120
+ 598:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointMask &= ~m;
+ 1225              	 .loc 1 598 0
+ 1226 07c0 6FEA0B0B 	 mvn fp,fp
+ 1227              	.LVL81:
+ 1228 07c4 D8F80030 	 ldr r3,[r8,#0]
+ 1229 07c8 0BEA0303 	 and r3,fp,r3
+ 1230 07cc C8F80030 	 str r3,[r8,#0]
+ 599:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_EndPointHalt &= ~m;
+ 1231              	 .loc 1 599 0
+ 1232 07d0 D9F80030 	 ldr r3,[r9,#0]
+ 1233 07d4 0BEA0303 	 and r3,fp,r3
+ 1234 07d8 C9F80030 	 str r3,[r9,#0]
+ 600:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_DisableEP(n);
+ 1235              	 .loc 1 600 0
+ 1236 07dc 0098     	 ldr r0,[sp,#0]
+ 1237 07de FFF7FEFF 	 bl USB_DisableEP
+ 1238 07e2 0197     	 str r7,[sp,#4]
+ 1239 07e4 00E0     	 b .L86
+ 1240              	.LVL82:
+ 1241              	.L120:
+ 597:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               else if ((alt == old) && ((msk & m) == 0)) {
+ 1242              	 .loc 1 597 0
+ 1243 07e6 0197     	 str r7,[sp,#4]
+ 1244              	.LVL83:
+ 1245              	.L86:
+ 607:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 			tmp += pD->bLength;
+ 1246              	 .loc 1 607 0
+ 1247 07e8 2378     	 ldrb r3,[r4,#0]
+ 1248 07ea E418     	 adds r4,r4,r3
+ 1249              	.LVL84:
+ 1250              	.L128:
+ 563:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       while (pD->bLength) {
+ 1251              	 .loc 1 563 0
+ 1252 07ec 2378     	 ldrb r3,[r4,#0]
+ 1253 07ee 002B     	 cmp r3,#0
+ 1254 07f0 7FF474AF 	 bne .L94
+ 1255              	.LVL85:
+ 1256              	.L83:
+ 1257              	.LBE37:
+ 1258              	.LBE36:
+ 705:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 706:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case USB_REQUEST_SET_INTERFACE:
+ 707:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqSetInterface()) {
+ 1259              	 .loc 1 707 0
+ 1260 07f4 002E     	 cmp r6,#0
+ 1261 07f6 00F0A480 	 beq .L17
+ 708:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+ 709:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 710:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_StatusInStage();
+ 1262              	 .loc 1 710 0
+ 1263 07fa FFF7FEFF 	 bl USB_StatusInStage
+ 711:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_INTERFACE_EVENT
+ 712:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_Interface_Event();
+ 713:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif
+ 714:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 1264              	 .loc 1 714 0
+ 1265 07fe 37E1     	 b .L9
+ 1266              	.L129:
+ 715:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 716:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             default:
+ 717:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               goto stall_i;
+ 718:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 719:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;  /* end case REQUEST_STANDARD */
+ 720:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 721:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_CLASS
+ 722:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case REQUEST_CLASS:
+ 723:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 1267              	 .loc 1 723 0
+ 1268 0800 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1269 0804 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1270 0808 1B78     	 ldrb r3,[r3,#0]
+ 1271 080a 03F01F03 	 and r3,r3,#31
+ 1272 080e 012B     	 cmp r3,#1
+ 1273 0810 40F09780 	 bne .L17
+ 724:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 725:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case REQUEST_TO_DEVICE:
+ 726:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               goto stall_i;                                              /* not supported */
+ 727:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 728:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case REQUEST_TO_INTERFACE:
+ 729:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_HID
+ 730:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (SetupPacket.wIndex.WB.L == USB_HID_IF_NUM) {           /* IF number correct? */
+ 731:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 switch (SetupPacket.bRequest) {
+ 732:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case HID_REQUEST_GET_REPORT:
+ 733:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (HID_GetReport()) {
+ 734:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       EP0Data.pData = EP0Buf;                            /* point to data to be sen
+ 735:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_DataInStage();                                 /* send requested data */
+ 736:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 737:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 738:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 739:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case HID_REQUEST_SET_REPORT:
+ 740:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     EP0Data.pData = EP0Buf;                              /* data to be received */
+ 741:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto setup_class_ok;
+ 742:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case HID_REQUEST_GET_IDLE:
+ 743:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (HID_GetIdle()) {
+ 744:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       EP0Data.pData = EP0Buf;                            /* point to data to be sen
+ 745:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_DataInStage();                                 /* send requested data */
+ 746:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 747:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 748:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 749:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case HID_REQUEST_SET_IDLE:
+ 750:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (HID_SetIdle()) {
+ 751:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_StatusInStage();                               /* send Acknowledge */
+ 752:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 753:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 754:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 755:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case HID_REQUEST_GET_PROTOCOL:
+ 756:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (HID_GetProtocol()) {
+ 757:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       EP0Data.pData = EP0Buf;                            /* point to data to be sen
+ 758:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_DataInStage();                                 /* send requested data */
+ 759:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 760:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 761:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 762:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case HID_REQUEST_SET_PROTOCOL:
+ 763:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (HID_SetProtocol()) {
+ 764:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_StatusInStage();                               /* send Acknowledge */
+ 765:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 766:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 767:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 768:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+ 769:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 770:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_HID */
+ 771:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_MSC
+ 772:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (SetupPacket.wIndex.WB.L == USB_MSC_IF_NUM) {           /* IF number correct? */
+ 773:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 switch (SetupPacket.bRequest) {
+ 774:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case MSC_REQUEST_RESET:
+ 775:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if ((SetupPacket.wValue.W == 0) &&	                 /* RESET with invalid param
+ 776:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         (SetupPacket.wLength  == 0)) {
+ 777:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       if (MSC_Reset()) {
+ 778:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         USB_StatusInStage();
+ 779:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         goto setup_class_ok;
+ 780:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       }
+ 781:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 782:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 783:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case MSC_REQUEST_GET_MAX_LUN:
+ 784:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if ((SetupPacket.wValue.W == 0) &&	                 /* GET_MAX_LUN with invalid
+ 785:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         (SetupPacket.wLength  == 1)) {
+ 786:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       if (MSC_GetMaxLUN()) {
+ 787:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         EP0Data.pData = EP0Buf;
+ 788:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         USB_DataInStage();
+ 789:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         goto setup_class_ok;
+ 790:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       }
+ 791:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 792:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 793:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+ 794:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 795:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_MSC */
+ 796:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_AUDIO
+ 797:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if ((SetupPacket.wIndex.WB.L == USB_ADC_CIF_NUM)  ||       /* IF number correct? */
+ 798:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   (SetupPacket.wIndex.WB.L == USB_ADC_SIF1_NUM) ||
+ 799:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   (SetupPacket.wIndex.WB.L == USB_ADC_SIF2_NUM)) {
+ 800:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 switch (SetupPacket.bRequest) {
+ 801:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case AUDIO_REQUEST_GET_CUR:
+ 802:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case AUDIO_REQUEST_GET_MIN:
+ 803:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case AUDIO_REQUEST_GET_MAX:
+ 804:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case AUDIO_REQUEST_GET_RES:
+ 805:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (ADC_IF_GetRequest()) {
+ 806:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       EP0Data.pData = EP0Buf;                            /* point to data to be sen
+ 807:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_DataInStage();                                 /* send requested data */
+ 808:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 809:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 810:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 811:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case AUDIO_REQUEST_SET_CUR:
+ 812:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                case AUDIO_REQUEST_SET_MIN:
+ 813:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                case AUDIO_REQUEST_SET_MAX:
+ 814:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                case AUDIO_REQUEST_SET_RES:
+ 815:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     EP0Data.pData = EP0Buf;                              /* data to be received */
+ 816:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto setup_class_ok;
+ 817:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+ 818:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 819:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_AUDIO */
+ 820:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_CDC
+ 821:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if ((SetupPacket.wIndex.WB.L == USB_CDC_CIF_NUM)  ||       /* IF number correct? */
+ 1274              	 .loc 1 821 0
+ 1275 0814 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1276 0818 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1277 081c 1B79     	 ldrb r3,[r3,#4]
+ 1278 081e 012B     	 cmp r3,#1
+ 1279 0820 00F28F80 	 bhi .L17
+ 822:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   (SetupPacket.wIndex.WB.L == USB_CDC_DIF_NUM)) {
+ 823:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 switch (SetupPacket.bRequest) {
+ 1280              	 .loc 1 823 0
+ 1281 0824 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1282 0828 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1283 082c 5B78     	 ldrb r3,[r3,#1]
+ 1284 082e 232B     	 cmp r3,#35
+ 1285 0830 00F28780 	 bhi .L17
+ 1286 0834 DFE803F0 	 tbb [pc,r3]
+ 1287              	.L105:
+ 1288 0838 12       	 .byte (.L96-.L105)/2
+ 1289 0839 1C       	 .byte (.L97-.L105)/2
+ 1290 083a 2C       	 .byte (.L98-.L105)/2
+ 1291 083b 36       	 .byte (.L99-.L105)/2
+ 1292 083c 4B       	 .byte (.L100-.L105)/2
+ 1293 083d 85       	 .byte (.L17-.L105)/2
+ 1294 083e 85       	 .byte (.L17-.L105)/2
+ 1295 083f 85       	 .byte (.L17-.L105)/2
+ 1296 0840 85       	 .byte (.L17-.L105)/2
+ 1297 0841 85       	 .byte (.L17-.L105)/2
+ 1298 0842 85       	 .byte (.L17-.L105)/2
+ 1299 0843 85       	 .byte (.L17-.L105)/2
+ 1300 0844 85       	 .byte (.L17-.L105)/2
+ 1301 0845 85       	 .byte (.L17-.L105)/2
+ 1302 0846 85       	 .byte (.L17-.L105)/2
+ 1303 0847 85       	 .byte (.L17-.L105)/2
+ 1304 0848 85       	 .byte (.L17-.L105)/2
+ 1305 0849 85       	 .byte (.L17-.L105)/2
+ 1306 084a 85       	 .byte (.L17-.L105)/2
+ 1307 084b 85       	 .byte (.L17-.L105)/2
+ 1308 084c 85       	 .byte (.L17-.L105)/2
+ 1309 084d 85       	 .byte (.L17-.L105)/2
+ 1310 084e 85       	 .byte (.L17-.L105)/2
+ 1311 084f 85       	 .byte (.L17-.L105)/2
+ 1312 0850 85       	 .byte (.L17-.L105)/2
+ 1313 0851 85       	 .byte (.L17-.L105)/2
+ 1314 0852 85       	 .byte (.L17-.L105)/2
+ 1315 0853 85       	 .byte (.L17-.L105)/2
+ 1316 0854 85       	 .byte (.L17-.L105)/2
+ 1317 0855 85       	 .byte (.L17-.L105)/2
+ 1318 0856 85       	 .byte (.L17-.L105)/2
+ 1319 0857 85       	 .byte (.L17-.L105)/2
+ 1320 0858 56       	 .byte (.L101-.L105)/2
+ 1321 0859 60       	 .byte (.L102-.L105)/2
+ 1322 085a 6F       	 .byte (.L103-.L105)/2
+ 1323 085b 7A       	 .byte (.L104-.L105)/2
+ 1324              	 .align 1
+ 1325              	.L96:
+ 824:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_SEND_ENCAPSULATED_COMMAND:
+ 825:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     EP0Data.pData = EP0Buf;                              /* data to be received, se
+ 1326              	 .loc 1 825 0
+ 1327 085c 40F20003 	 movw r3,#:lower16:EP0Data
+ 1328 0860 C0F20003 	 movt r3,#:upper16:EP0Data
+ 1329 0864 40F20002 	 movw r2,#:lower16:EP0Buf
+ 1330 0868 C0F20002 	 movt r2,#:upper16:EP0Buf
+ 1331 086c 1A60     	 str r2,[r3,#0]
+ 826:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto setup_class_ok;
+ 1332              	 .loc 1 826 0
+ 1333 086e FFE0     	 b .L9
+ 1334              	.L97:
+ 827:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_GET_ENCAPSULATED_RESPONSE:
+ 828:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (CDC_GetEncapsulatedResponse()) {
+ 1335              	 .loc 1 828 0
+ 1336 0870 FFF7FEFF 	 bl CDC_GetEncapsulatedResponse
+ 1337 0874 0028     	 cmp r0,#0
+ 1338 0876 64D0     	 beq .L17
+ 829:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       EP0Data.pData = EP0Buf;                            /* point to data to be sen
+ 1339              	 .loc 1 829 0
+ 1340 0878 40F20003 	 movw r3,#:lower16:EP0Data
+ 1341 087c C0F20003 	 movt r3,#:upper16:EP0Data
+ 1342 0880 40F20002 	 movw r2,#:lower16:EP0Buf
+ 1343 0884 C0F20002 	 movt r2,#:upper16:EP0Buf
+ 1344 0888 1A60     	 str r2,[r3,#0]
+ 830:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_DataInStage();                                 /* send requested data */
+ 1345              	 .loc 1 830 0
+ 1346 088a FFF7FEFF 	 bl USB_DataInStage
+ 831:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 1347              	 .loc 1 831 0
+ 1348 088e EFE0     	 b .L9
+ 1349              	.L98:
+ 832:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 833:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 834:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_SET_COMM_FEATURE:
+ 835:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     EP0Data.pData = EP0Buf;                              /* data to be received, se
+ 1350              	 .loc 1 835 0
+ 1351 0890 40F20003 	 movw r3,#:lower16:EP0Data
+ 1352 0894 C0F20003 	 movt r3,#:upper16:EP0Data
+ 1353 0898 40F20002 	 movw r2,#:lower16:EP0Buf
+ 1354 089c C0F20002 	 movt r2,#:upper16:EP0Buf
+ 1355 08a0 1A60     	 str r2,[r3,#0]
+ 836:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto setup_class_ok;
+ 1356              	 .loc 1 836 0
+ 1357 08a2 E5E0     	 b .L9
+ 1358              	.L99:
+ 837:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_GET_COMM_FEATURE:
+ 838:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (CDC_GetCommFeature(SetupPacket.wValue.W)) {
+ 1359              	 .loc 1 838 0
+ 1360 08a4 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1361 08a8 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1362 08ac 5888     	 ldrh r0,[r3,#2]
+ 1363 08ae FFF7FEFF 	 bl CDC_GetCommFeature
+ 1364 08b2 0028     	 cmp r0,#0
+ 1365 08b4 45D0     	 beq .L17
+ 839:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       EP0Data.pData = EP0Buf;                            /* point to data to be sen
+ 1366              	 .loc 1 839 0
+ 1367 08b6 40F20003 	 movw r3,#:lower16:EP0Data
+ 1368 08ba C0F20003 	 movt r3,#:upper16:EP0Data
+ 1369 08be 40F20002 	 movw r2,#:lower16:EP0Buf
+ 1370 08c2 C0F20002 	 movt r2,#:upper16:EP0Buf
+ 1371 08c6 1A60     	 str r2,[r3,#0]
+ 840:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_DataInStage();                                 /* send requested data */
+ 1372              	 .loc 1 840 0
+ 1373 08c8 FFF7FEFF 	 bl USB_DataInStage
+ 841:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 1374              	 .loc 1 841 0
+ 1375 08cc D0E0     	 b .L9
+ 1376              	.L100:
+ 842:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 843:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 844:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_CLEAR_COMM_FEATURE:
+ 845:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (CDC_ClearCommFeature(SetupPacket.wValue.W)) {
+ 1377              	 .loc 1 845 0
+ 1378 08ce 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1379 08d2 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1380 08d6 5888     	 ldrh r0,[r3,#2]
+ 1381 08d8 FFF7FEFF 	 bl CDC_ClearCommFeature
+ 1382 08dc 88B3     	 cbz r0,.L17
+ 846:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_StatusInStage();                               /* send Acknowledge */
+ 1383              	 .loc 1 846 0
+ 1384 08de FFF7FEFF 	 bl USB_StatusInStage
+ 847:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 1385              	 .loc 1 847 0
+ 1386 08e2 C5E0     	 b .L9
+ 1387              	.L101:
+ 848:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 849:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 850:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_SET_LINE_CODING:
+ 851:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     EP0Data.pData = EP0Buf;                              /* data to be received, se
+ 1388              	 .loc 1 851 0
+ 1389 08e4 40F20003 	 movw r3,#:lower16:EP0Data
+ 1390 08e8 C0F20003 	 movt r3,#:upper16:EP0Data
+ 1391 08ec 40F20002 	 movw r2,#:lower16:EP0Buf
+ 1392 08f0 C0F20002 	 movt r2,#:upper16:EP0Buf
+ 1393 08f4 1A60     	 str r2,[r3,#0]
+ 852:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto setup_class_ok;
+ 1394              	 .loc 1 852 0
+ 1395 08f6 BBE0     	 b .L9
+ 1396              	.L102:
+ 853:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_GET_LINE_CODING:
+ 854:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (CDC_GetLineCoding()) {
+ 1397              	 .loc 1 854 0
+ 1398 08f8 FFF7FEFF 	 bl CDC_GetLineCoding
+ 1399 08fc 08B3     	 cbz r0,.L17
+ 855:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       EP0Data.pData = EP0Buf;                            /* point to data to be sen
+ 1400              	 .loc 1 855 0
+ 1401 08fe 40F20003 	 movw r3,#:lower16:EP0Data
+ 1402 0902 C0F20003 	 movt r3,#:upper16:EP0Data
+ 1403 0906 40F20002 	 movw r2,#:lower16:EP0Buf
+ 1404 090a C0F20002 	 movt r2,#:upper16:EP0Buf
+ 1405 090e 1A60     	 str r2,[r3,#0]
+ 856:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_DataInStage();                                 /* send requested data */
+ 1406              	 .loc 1 856 0
+ 1407 0910 FFF7FEFF 	 bl USB_DataInStage
+ 857:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 1408              	 .loc 1 857 0
+ 1409 0914 ACE0     	 b .L9
+ 1410              	.L103:
+ 858:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 859:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 860:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_SET_CONTROL_LINE_STATE:
+ 861:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (CDC_SetControlLineState(SetupPacket.wValue.W)) {
+ 1411              	 .loc 1 861 0
+ 1412 0916 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1413 091a C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1414 091e 5888     	 ldrh r0,[r3,#2]
+ 1415 0920 FFF7FEFF 	 bl CDC_SetControlLineState
+ 1416 0924 68B1     	 cbz r0,.L17
+ 862:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_StatusInStage();                               /* send Acknowledge */
+ 1417              	 .loc 1 862 0
+ 1418 0926 FFF7FEFF 	 bl USB_StatusInStage
+ 863:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 1419              	 .loc 1 863 0
+ 1420 092a A1E0     	 b .L9
+ 1421              	.L104:
+ 864:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 865:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 866:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case CDC_SEND_BREAK:
+ 867:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (CDC_SendBreak(SetupPacket.wValue.W)) {
+ 1422              	 .loc 1 867 0
+ 1423 092c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1424 0930 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1425 0934 5888     	 ldrh r0,[r3,#2]
+ 1426 0936 FFF7FEFF 	 bl CDC_SendBreak
+ 1427 093a 10B1     	 cbz r0,.L17
+ 868:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       USB_StatusInStage();                               /* send Acknowledge */
+ 1428              	 .loc 1 868 0
+ 1429 093c FFF7FEFF 	 bl USB_StatusInStage
+ 869:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto setup_class_ok;
+ 1430              	 .loc 1 869 0
+ 1431 0940 96E0     	 b .L9
+ 1432              	.L17:
+ 870:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 871:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+ 872:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+ 873:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 874:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_CDC */
+ 875:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               goto stall_i;                                              /* not supported */
+ 876:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               /* end case REQUEST_TO_INTERFACE */
+ 877:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 878:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case REQUEST_TO_ENDPOINT:
+ 879:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_AUDIO
+ 880:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               switch (SetupPacket.bRequest) {
+ 881:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 case AUDIO_REQUEST_GET_CUR:
+ 882:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 case AUDIO_REQUEST_GET_MIN:
+ 883:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 case AUDIO_REQUEST_GET_MAX:
+ 884:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 case AUDIO_REQUEST_GET_RES:
+ 885:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   if (ADC_EP_GetRequest()) {
+ 886:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     EP0Data.pData = EP0Buf;                              /* point to data to be sen
+ 887:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     USB_DataInStage();                                   /* send requested data */
+ 888:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto setup_class_ok;
+ 889:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   }
+ 890:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   break;
+ 891:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 case AUDIO_REQUEST_SET_CUR:
+ 892:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //              case AUDIO_REQUEST_SET_MIN:
+ 893:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //              case AUDIO_REQUEST_SET_MAX:
+ 894:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //              case AUDIO_REQUEST_SET_RES:
+ 895:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   EP0Data.pData = EP0Buf;                                /* data to be received */
+ 896:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   goto setup_class_ok;
+ 897:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 898:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_AUDIO */
+ 899:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               goto stall_i;
+ 900:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               /* end case REQUEST_TO_ENDPOINT */
+ 901:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 902:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             default:
+ 903:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               goto stall_i;
+ 904:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 905:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** setup_class_ok:                                                          /* request finished succes
+ 906:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;  /* end case REQUEST_CLASS */
+ 907:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_CLASS */
+ 908:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 909:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_VENDOR
+ 910:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         case REQUEST_VENDOR:
+ 911:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 912:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 913:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case REQUEST_TO_DEVICE:
+ 914:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqVendorDev(TRUE)) {
+ 915:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;                                            /* not supported */
+ 916:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 917:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 918:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 919:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case REQUEST_TO_INTERFACE:
+ 920:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqVendorIF(TRUE)) {
+ 921:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;                                            /* not supported */
+ 922:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 923:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 924:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 925:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             case REQUEST_TO_ENDPOINT:
+ 926:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               if (!USB_ReqVendorEP(TRUE)) {
+ 927:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;                                            /* not supported */
+ 928:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               }
+ 929:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 930:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 931:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             default:
+ 932:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               goto stall_i;
+ 933:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 934:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 935:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (SetupPacket.wLength) {
+ 936:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             if (SetupPacket.bmRequestType.BM.Dir == REQUEST_DEVICE_TO_HOST) {
+ 937:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_DataInStage();
+ 938:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+ 939:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           } else {
+ 940:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             USB_StatusInStage();
+ 941:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+ 942:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 943:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;  /* end case REQUEST_VENDOR */
+ 944:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_VENDOR */
+ 945:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 946:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         default:
+ 947:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** stall_i:  USB_SetStallEP(0x80);
+ 1433              	 .loc 1 947 0
+ 1434 0942 4FF08000 	 mov r0,#128
+ 1435 0946 FFF7FEFF 	 bl USB_SetStallEP
+ 948:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           EP0Data.Count = 0;
+ 1436              	 .loc 1 948 0
+ 1437 094a 40F20003 	 movw r3,#:lower16:EP0Data
+ 1438 094e C0F20003 	 movt r3,#:upper16:EP0Data
+ 1439 0952 4FF00002 	 mov r2,#0
+ 1440 0956 9A80     	 strh r2,[r3,#4]
+ 949:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           break;
+ 1441              	 .loc 1 949 0
+ 1442 0958 8AE0     	 b .L9
+ 1443              	.LVL86:
+ 1444              	.L12:
+ 950:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+ 951:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;  /* end case USB_EVT_SETUP */
+ 952:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 953:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case USB_EVT_OUT:
+ 954:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.bmRequestType.BM.Dir == REQUEST_HOST_TO_DEVICE) {
+ 1445              	 .loc 1 954 0
+ 1446 095a 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1447 095e C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1448 0962 1B78     	 ldrb r3,[r3,#0]
+ 1449 0964 13F0800F 	 tst r3,#128
+ 1450 0968 4DD1     	 bne .L106
+ 955:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         if (EP0Data.Count) {                                             /* still data to receive ?
+ 1451              	 .loc 1 955 0
+ 1452 096a 40F20003 	 movw r3,#:lower16:EP0Data
+ 1453 096e C0F20003 	 movt r3,#:upper16:EP0Data
+ 1454 0972 9B88     	 ldrh r3,[r3,#4]
+ 1455 0974 002B     	 cmp r3,#0
+ 1456 0976 7BD0     	 beq .L9
+ 956:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_DataOutStage();                                            /* receive data */
+ 1457              	 .loc 1 956 0
+ 1458 0978 FFF7FEFF 	 bl USB_DataOutStage
+ 1459              	.LVL87:
+ 957:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           if (EP0Data.Count == 0) {                                      /* data complete ? */
+ 1460              	 .loc 1 957 0
+ 1461 097c 40F20003 	 movw r3,#:lower16:EP0Data
+ 1462 0980 C0F20003 	 movt r3,#:upper16:EP0Data
+ 1463 0984 9B88     	 ldrh r3,[r3,#4]
+ 1464 0986 002B     	 cmp r3,#0
+ 1465 0988 72D1     	 bne .L9
+ 958:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             switch (SetupPacket.bmRequestType.BM.Type) {
+ 1466              	 .loc 1 958 0
+ 1467 098a 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1468 098e C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1469 0992 1B78     	 ldrb r3,[r3,#0]
+ 1470 0994 C3F34113 	 ubfx r3,r3,#5,#2
+ 1471 0998 012B     	 cmp r3,#1
+ 1472 099a D2D1     	 bne .L17
+ 959:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 960:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               case REQUEST_STANDARD:
+ 961:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;                                            /* not supported */
+ 962:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 963:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if (USB_CLASS)
+ 964:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               case REQUEST_CLASS:
+ 965:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 switch (SetupPacket.bmRequestType.BM.Recipient) {
+ 1473              	 .loc 1 965 0
+ 1474 099c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1475 09a0 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1476 09a4 1B78     	 ldrb r3,[r3,#0]
+ 1477 09a6 03F01F03 	 and r3,r3,#31
+ 1478 09aa 012B     	 cmp r3,#1
+ 1479 09ac C9D1     	 bne .L17
+ 966:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case REQUEST_TO_DEVICE:
+ 967:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto stall_i;                                        /* not supported */
+ 968:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+ 969:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case REQUEST_TO_INTERFACE:
+ 970:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_HID
+ 971:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (SetupPacket.wIndex.WB.L == USB_HID_IF_NUM) {     /* IF number correct? */
+ 972:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       switch (SetupPacket.bRequest) {
+ 973:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         case HID_REQUEST_SET_REPORT:
+ 974:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           if (HID_SetReport()) {
+ 975:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             USB_StatusInStage();                         /* send Acknowledge */
+ 976:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             goto out_class_ok;
+ 977:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           }
+ 978:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           break;
+ 979:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       }
+ 980:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 981:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_HID */
+ 982:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_AUDIO
+ 983:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if ((SetupPacket.wIndex.WB.L == USB_ADC_CIF_NUM)  || /* IF number correct? */
+ 984:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         (SetupPacket.wIndex.WB.L == USB_ADC_SIF1_NUM) ||
+ 985:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         (SetupPacket.wIndex.WB.L == USB_ADC_SIF2_NUM)) {
+ 986:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       switch (SetupPacket.bRequest) {
+ 987:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         case AUDIO_REQUEST_SET_CUR:
+ 988:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                      case AUDIO_REQUEST_SET_MIN:
+ 989:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                      case AUDIO_REQUEST_SET_MAX:
+ 990:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                      case AUDIO_REQUEST_SET_RES:
+ 991:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           if (ADC_IF_SetRequest()) {
+ 992:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             USB_StatusInStage();                         /* send Acknowledge */
+ 993:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             goto out_class_ok;
+ 994:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           }
+ 995:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           break;
+ 996:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       }
+ 997:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+ 998:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_AUDIO */
+ 999:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_CDC
+1000:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if ((SetupPacket.wIndex.WB.L == USB_CDC_CIF_NUM)  || /* IF number correct? */
+ 1480              	 .loc 1 1000 0
+ 1481 09ae 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1482 09b2 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1483 09b6 1B79     	 ldrb r3,[r3,#4]
+ 1484 09b8 012B     	 cmp r3,#1
+ 1485 09ba C2D8     	 bhi .L17
+1001:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         (SetupPacket.wIndex.WB.L == USB_CDC_DIF_NUM)) {
+1002:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       switch (SetupPacket.bRequest) {
+ 1486              	 .loc 1 1002 0
+ 1487 09bc 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1488 09c0 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1489 09c4 5B78     	 ldrb r3,[r3,#1]
+ 1490 09c6 022B     	 cmp r3,#2
+ 1491 09c8 0AD0     	 beq .L110
+ 1492 09ca 202B     	 cmp r3,#32
+ 1493 09cc 14D0     	 beq .L111
+ 1494 09ce 002B     	 cmp r3,#0
+ 1495 09d0 B7D1     	 bne .L17
+1003:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         case CDC_SEND_ENCAPSULATED_COMMAND:
+1004:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           if (CDC_SendEncapsulatedCommand()) {
+ 1496              	 .loc 1 1004 0
+ 1497 09d2 FFF7FEFF 	 bl CDC_SendEncapsulatedCommand
+ 1498 09d6 0028     	 cmp r0,#0
+ 1499 09d8 B3D0     	 beq .L17
+1005:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             USB_StatusInStage();                         /* send Acknowledge */
+ 1500              	 .loc 1 1005 0
+ 1501 09da FFF7FEFF 	 bl USB_StatusInStage
+1006:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             goto out_class_ok;
+ 1502              	 .loc 1 1006 0
+ 1503 09de 47E0     	 b .L9
+ 1504              	.L110:
+1007:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           }
+1008:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           break;
+1009:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         case CDC_SET_COMM_FEATURE:
+1010:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           if (CDC_SetCommFeature(SetupPacket.wValue.W)) {
+ 1505              	 .loc 1 1010 0
+ 1506 09e0 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1507 09e4 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1508 09e8 5888     	 ldrh r0,[r3,#2]
+ 1509 09ea FFF7FEFF 	 bl CDC_SetCommFeature
+ 1510 09ee 0028     	 cmp r0,#0
+ 1511 09f0 A7D0     	 beq .L17
+1011:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             USB_StatusInStage();                         /* send Acknowledge */
+ 1512              	 .loc 1 1011 0
+ 1513 09f2 FFF7FEFF 	 bl USB_StatusInStage
+1012:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             goto out_class_ok;
+ 1514              	 .loc 1 1012 0
+ 1515 09f6 3BE0     	 b .L9
+ 1516              	.L111:
+1013:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           }
+1014:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           break;
+1015:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         case CDC_SET_LINE_CODING:
+1016:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           if (CDC_SetLineCoding()) {
+ 1517              	 .loc 1 1016 0
+ 1518 09f8 FFF7FEFF 	 bl CDC_SetLineCoding
+ 1519 09fc 0028     	 cmp r0,#0
+ 1520 09fe A0D0     	 beq .L17
+1017:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             USB_StatusInStage();                         /* send Acknowledge */
+ 1521              	 .loc 1 1017 0
+ 1522 0a00 FFF7FEFF 	 bl USB_StatusInStage
+1018:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                             goto out_class_ok;
+ 1523              	 .loc 1 1018 0
+ 1524 0a04 34E0     	 b .L9
+ 1525              	.LVL88:
+ 1526              	.L106:
+1019:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           }
+1020:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           break;
+1021:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       }
+1022:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+1023:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_CDC */
+1024:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto stall_i;
+1025:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     /* end case REQUEST_TO_INTERFACE */
+1026:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1027:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case REQUEST_TO_ENDPOINT:
+1028:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_AUDIO
+1029:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     switch (SetupPacket.bRequest) {
+1030:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       case AUDIO_REQUEST_SET_CUR:
+1031:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                    case AUDIO_REQUEST_SET_MIN:
+1032:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                    case AUDIO_REQUEST_SET_MAX:
+1033:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** //                    case AUDIO_REQUEST_SET_RES:
+1034:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         if (ADC_EP_SetRequest()) {
+1035:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           USB_StatusInStage();                           /* send Acknowledge */
+1036:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                           goto out_class_ok;
+1037:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         }
+1038:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                         break;
+1039:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+1040:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_AUDIO */
+1041:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto stall_i;
+1042:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     /* end case REQUEST_TO_ENDPOINT */
+1043:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1044:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   default:
+1045:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto stall_i;
+1046:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+1047:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** out_class_ok:                                                            /* request finished succes
+1048:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 break; /* end case REQUEST_CLASS */
+1049:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_CLASS */
+1050:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1051:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #if USB_VENDOR
+1052:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               case REQUEST_VENDOR:
+1053:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 switch (SetupPacket.bmRequestType.BM.Recipient) {
+1054:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1055:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case REQUEST_TO_DEVICE:
+1056:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (!USB_ReqVendorDev(FALSE)) {
+1057:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto stall_i;                                      /* not supported */
+1058:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+1059:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+1060:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1061:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case REQUEST_TO_INTERFACE:
+1062:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (!USB_ReqVendorIF(FALSE)) {
+1063:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto stall_i;                                      /* not supported */
+1064:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+1065:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+1066:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1067:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   case REQUEST_TO_ENDPOINT:
+1068:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     if (!USB_ReqVendorEP(FALSE)) {
+1069:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                       goto stall_i;                                      /* not supported */
+1070:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     }
+1071:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     break;
+1072:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1073:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                   default:
+1074:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                     goto stall_i;
+1075:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 }
+1076:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1077:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 USB_StatusInStage();
+1078:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1079:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 break;  /* end case REQUEST_VENDOR */
+1080:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** #endif  /* USB_VENDOR */
+1081:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1082:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               default:
+1083:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****                 goto stall_i;
+1084:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****             }
+1085:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           }
+1086:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         }
+1087:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       } else {
+1088:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_StatusOutStage();                                            /* receive Acknowledge */
+ 1527              	 .loc 1 1088 0
+ 1528 0a06 FFF7FEFF 	 bl USB_StatusOutStage
+ 1529              	.LVL89:
+ 1530 0a0a 31E0     	 b .L9
+ 1531              	.LVL90:
+ 1532              	.L13:
+1089:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+1090:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;  /* end case USB_EVT_OUT */
+1091:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1092:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case USB_EVT_IN :
+1093:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       if (SetupPacket.bmRequestType.BM.Dir == REQUEST_DEVICE_TO_HOST) {
+ 1533              	 .loc 1 1093 0
+ 1534 0a0c 40F20003 	 movw r3,#:lower16:SetupPacket
+ 1535 0a10 C0F20003 	 movt r3,#:upper16:SetupPacket
+ 1536 0a14 1B78     	 ldrb r3,[r3,#0]
+ 1537 0a16 13F0800F 	 tst r3,#128
+ 1538 0a1a 02D0     	 beq .L112
+1094:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         USB_DataInStage();                                               /* send data */
+ 1539              	 .loc 1 1094 0
+ 1540 0a1c FFF7FEFF 	 bl USB_DataInStage
+ 1541              	.LVL91:
+ 1542 0a20 26E0     	 b .L9
+ 1543              	.LVL92:
+ 1544              	.L112:
+1095:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       } else {
+1096:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         if (USB_DeviceAddress & 0x80) {
+ 1545              	 .loc 1 1096 0
+ 1546 0a22 40F20003 	 movw r3,#:lower16:USB_DeviceAddress
+ 1547 0a26 C0F20003 	 movt r3,#:upper16:USB_DeviceAddress
+ 1548 0a2a 1B78     	 ldrb r3,[r3,#0]
+ 1549 0a2c 13F0800F 	 tst r3,#128
+ 1550 0a30 1ED0     	 beq .L9
+1097:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_DeviceAddress &= 0x7F;
+ 1551              	 .loc 1 1097 0
+ 1552 0a32 03F07F00 	 and r0,r3,#127
+ 1553              	.LVL93:
+ 1554 0a36 40F20002 	 movw r2,#:lower16:USB_DeviceAddress
+ 1555 0a3a C0F20002 	 movt r2,#:upper16:USB_DeviceAddress
+ 1556 0a3e 1070     	 strb r0,[r2,#0]
+1098:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****           USB_SetAddress(USB_DeviceAddress);
+ 1557              	 .loc 1 1098 0
+ 1558 0a40 FFF7FEFF 	 bl USB_SetAddress
+ 1559 0a44 14E0     	 b .L9
+ 1560              	.LVL94:
+ 1561              	.L14:
+1099:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****         }
+1100:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       }
+1101:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;  /* end case USB_EVT_IN */
+1102:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1103:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case USB_EVT_OUT_STALL:
+1104:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       USB_ClrStallEP(0x00);
+ 1562              	 .loc 1 1104 0
+ 1563 0a46 4FF00000 	 mov r0,#0
+ 1564              	.LVL95:
+ 1565 0a4a FFF7FEFF 	 bl USB_ClrStallEP
+1105:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 1566              	 .loc 1 1105 0
+ 1567 0a4e 0FE0     	 b .L9
+ 1568              	.LVL96:
+ 1569              	.L15:
+1106:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1107:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****     case USB_EVT_IN_STALL:
+1108:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       USB_ClrStallEP(0x80);
+ 1570              	 .loc 1 1108 0
+ 1571 0a50 4FF08000 	 mov r0,#128
+ 1572              	.LVL97:
+ 1573 0a54 FFF7FEFF 	 bl USB_ClrStallEP
+1109:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****       break;
+ 1574              	 .loc 1 1109 0
+ 1575 0a58 0AE0     	 b .L9
+ 1576              	.L34:
+ 640:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_DataInStage();
+ 1577              	 .loc 1 640 0
+ 1578 0a5a FFF7FEFF 	 bl USB_DataInStage
+ 641:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 1579              	 .loc 1 641 0
+ 1580 0a5e 07E0     	 b .L9
+ 1581              	.LVL98:
+ 1582              	.L40:
+ 647:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_StatusInStage();
+ 1583              	 .loc 1 647 0
+ 1584 0a60 FFF7FEFF 	 bl USB_StatusInStage
+ 651:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 1585              	 .loc 1 651 0
+ 1586 0a64 04E0     	 b .L9
+ 1587              	.LVL99:
+ 1588              	.L45:
+ 657:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_StatusInStage();
+ 1589              	 .loc 1 657 0
+ 1590 0a66 FFF7FEFF 	 bl USB_StatusInStage
+ 661:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               break;
+ 1591              	 .loc 1 661 0
+ 1592 0a6a 01E0     	 b .L9
+ 1593              	.LVL100:
+ 1594              	.L60:
+ 674:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****               USB_DataInStage();
+ 1595              	 .loc 1 674 0
+ 1596 0a6c FFF7FEFF 	 bl USB_DataInStage
+ 1597              	.LVL101:
+ 1598              	.L10:
+ 1599              	.L113:
+ 1600              	.L9:
+1110:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** 
+1111:src/MightyBoard/Motherboard/USBCDC/usbcore.c ****   }
+1112:src/MightyBoard/Motherboard/USBCDC/usbcore.c **** }
+ 1601              	 .loc 1 1112 0
+ 1602 0a70 05B0     	 add sp,sp,#20
+ 1603 0a72 BDE8F08F 	 pop {r4,r5,r6,r7,r8,r9,sl,fp,pc}
+ 1604              	 .cfi_endproc
+ 1605              	.LFE14:
+ 1607              	 .comm SetupPacket,8,4
+ 1608              	 .comm EP0Data,8,4
+ 1609              	 .comm EP0Buf,8,4
+ 1610              	 .comm USB_AltSetting,4,4
+ 1611              	 .comm USB_NumInterfaces,1,1
+ 1612              	 .comm USB_EndPointStall,4,4
+ 1613              	 .comm USB_EndPointHalt,4,4
+ 1614              	 .comm USB_EndPointMask,4,4
+ 1615              	 .comm USB_Configuration,1,1
+ 1616              	 .comm USB_DeviceAddress,1,1
+ 1617              	 .comm USB_DeviceStatus,2,2
+ 1618 0a76 00BF     	 .text
+ 1619              	.Letext0:
+ 1620              	 .file 2 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1621              	 .file 3 "src/MightyBoard/Motherboard/USBCDC/usb.h"
+ 1622              	 .file 4 "src/MightyBoard/Motherboard/USBCDC/usbcore.h"
+ 1623              	 .file 5 "src/MightyBoard/Motherboard/USBCDC/usbdesc.h"
+ 1624              	 .file 6 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 usbcore.c
+    {standard input}:19     .text.USB_ResetCore:00000000 $t
+    {standard input}:24     .text.USB_ResetCore:00000000 USB_ResetCore
+                            *COM*:00000002 USB_DeviceStatus
+                            *COM*:00000001 USB_DeviceAddress
+                            *COM*:00000001 USB_Configuration
+                            *COM*:00000004 USB_EndPointMask
+                            *COM*:00000004 USB_EndPointHalt
+                            *COM*:00000004 USB_EndPointStall
+    {standard input}:64     .text.USB_SetupStage:00000000 $t
+    {standard input}:69     .text.USB_SetupStage:00000000 USB_SetupStage
+                            *COM*:00000008 SetupPacket
+    {standard input}:91     .text.USB_DataInStage:00000000 $t
+    {standard input}:96     .text.USB_DataInStage:00000000 USB_DataInStage
+                            *COM*:00000008 EP0Data
+    {standard input}:137    .text.USB_DataOutStage:00000000 $t
+    {standard input}:142    .text.USB_DataOutStage:00000000 USB_DataOutStage
+    {standard input}:175    .text.USB_StatusInStage:00000000 $t
+    {standard input}:180    .text.USB_StatusInStage:00000000 USB_StatusInStage
+    {standard input}:202    .text.USB_StatusOutStage:00000000 $t
+    {standard input}:207    .text.USB_StatusOutStage:00000000 USB_StatusOutStage
+                            *COM*:00000008 EP0Buf
+    {standard input}:229    .text.USB_EndPoint0:00000000 $t
+    {standard input}:234    .text.USB_EndPoint0:00000000 USB_EndPoint0
+    {standard input}:263    .text.USB_EndPoint0:00000014 $d
+    {standard input}:272    .text.USB_EndPoint0:00000022 $t
+    {standard input}:301    .text.USB_EndPoint0:00000068 $d
+    {standard input}:317    .text.USB_EndPoint0:00000080 $t
+                            *COM*:00000001 USB_NumInterfaces
+                            *COM*:00000004 USB_AltSetting
+    {standard input}:1288   .text.USB_EndPoint0:00000838 $d
+    {standard input}:1324   .text.USB_EndPoint0:0000085c $t
+                     .debug_frame:00000010 $d
+
+UNDEFINED SYMBOLS
+USB_ReadEP
+USB_WriteEP
+USB_DirCtrlEP
+USB_WakeUpCfg
+USB_ClrStallEP
+USB_SetStallEP
+USB_StringDescriptor
+USB_ConfigDescriptor
+USB_DeviceDescriptor
+USB_DisableEP
+USB_Configure
+USB_ConfigEP
+USB_EnableEP
+USB_ResetEP
+USB_Configure_Event
+CDC_GetEncapsulatedResponse
+CDC_GetCommFeature
+CDC_ClearCommFeature
+CDC_GetLineCoding
+CDC_SetControlLineState
+CDC_SendBreak
+CDC_SendEncapsulatedCommand
+CDC_SetCommFeature
+CDC_SetLineCoding
+USB_SetAddress
