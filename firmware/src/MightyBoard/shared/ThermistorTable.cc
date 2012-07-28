@@ -103,7 +103,7 @@ TempTable const default_therm_table = {
 bool has_table[2];//TODO: using just a single bool for MightyBoard
 
 inline Entry getEntry(int8_t entryIdx, int8_t which) {
-	xprintf("%d" " (%s:%d)\n",entryIdx,_F_,_L_);
+//	xprintf("%d" " (%s:%d)\n",entryIdx,_F_,_L_);
 	Entry rv;
 	if (0){//has_table[which]) {
 		// get from eeprom
@@ -121,8 +121,8 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 		// get from progmem
 		rv.adc = default_therm_table[entryIdx].adc;
 		rv.value = default_therm_table[entryIdx].value;
-		xprintf("%d" " (%s:%d)\n",rv.adc,_F_,_L_);
-		xprintf("%d" " (%s:%d)\n",rv.value,_F_,_L_);
+//		xprintf("%d" " (%s:%d)\n",rv.adc,_F_,_L_);
+//		xprintf("%d" " (%s:%d)\n",rv.value,_F_,_L_);
 //		memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
 	}
 	return rv;

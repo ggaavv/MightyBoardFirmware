@@ -515,7 +515,7 @@ bool getNextMove() {
 		feedrate_being_setup++;
 	}
 
-	DEBUG_LED2.setValue(true);
+//	DEBUG_LED2.setValue(true);
 //	_delay_us(10000);
 
 	// setup deceleration
@@ -566,10 +566,10 @@ bool getNextMove() {
 	_delay_us(10000);
 	
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
-		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS);
+		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS * 16);
 //		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;	//TODO find value for this
 	} else {
-		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS);
+		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS * 16);
 //		OCR3A = INTERVAL_IN_MICROSECONDS * 16;	//TODO find value for this
 	}
 	
@@ -584,7 +584,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	feedrate_inverted = us_per_step;
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
-	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS);
+	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS * 16);
 //	OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;	//TODO find value for this
 	
 	

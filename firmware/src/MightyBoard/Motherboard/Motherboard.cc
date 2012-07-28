@@ -156,15 +156,10 @@ void Motherboard::reset(bool hard_reset) {
 	// Initialize timer 1, prescale count time of 100uS
 	TMR3_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
 	TMR3_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
-	// Use channel 1, MR1
 	TMR3_Match.MatchChannel = TIM_MR0_INT;
-	// Enable interrupt when MR0 matches the value in TC register
 	TMR3_Match.IntOnMatch = ENABLE;
-	// Enable reset on MR0: TIMER will reset if MR0 matches it
 	TMR3_Match.ResetOnMatch = ENABLE;
-	// Don't stop on MR0 if MR0 matches it
 	TMR3_Match.StopOnMatch = DISABLE;
-	// Do nothing for external output pin if match (see cmsis help, there are another options)
 	TMR3_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
 	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
 	TMR3_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
@@ -204,7 +199,6 @@ void Motherboard::reset(bool hard_reset) {
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM2, TIM_TIMER_MODE, &TMR2_Cfg);
 	TIM_ConfigMatch(LPC_TIM2, &TMR2_Match);
-	// 0 top priority 32 lowest
 	NVIC_SetPriority(TIMER2_IRQn, 4);
 	TIM_Cmd(LPC_TIM2,ENABLE);
 	NVIC_EnableIRQ(TIMER2_IRQn);
@@ -285,10 +279,10 @@ void Motherboard::reset(bool hard_reset) {
 	buttonWait = false;
 	
 
-	DEBUG_LED1.setDirection(true);
-	DEBUG_LED2.setDirection(false);
-	DEBUG_LED3.setDirection(true);
-	DEBUG_LED4.setDirection(false);
+//	DEBUG_LED1.setDirection(true);
+//	DEBUG_LED2.setDirection(false);
+//	DEBUG_LED3.setDirection(true);
+//	DEBUG_LED4.setDirection(false);
 
 }
 
@@ -509,6 +503,7 @@ volatile uint32_t loop3;
 /// Timer three comparator match interrupt
 //ISR(TIMER3_COMPA_vect) {
 extern "C" void TIMER0_IRQHandler (void){
+	DEBUG_LED1.setValue(true);
 //	xprintf("0" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER0_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
@@ -518,10 +513,11 @@ extern "C" void TIMER0_IRQHandler (void){
 		loop0++;
 		if (loop0 > 500){
 			loop0=0;
-			led_toggle0 = led_toggle0^1;
-			DEBUG_LED1.setValue(led_toggle0);
+//			led_toggle0 = led_toggle0^1;
+//			DEBUG_LED1.setValue(led_toggle0);
 		}
 	}
+	DEBUG_LED1.setValue(false);
 }
 
 
@@ -599,6 +595,7 @@ uint16_t blink_overflow_counter = 0;
 
 //ISR(TIMER2_COMPA_vect) {
 extern "C" void TIMER2_IRQHandler (void){
+	DEBUG_LED2.setValue(true);
 //	xprintf("2" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER2_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM2,TIM_MR0_INT);
@@ -653,16 +650,18 @@ extern "C" void TIMER2_IRQHandler (void){
 		loop2++;
 		if (loop2 > 20){
 			loop2=0;
-			led_toggle2 = led_toggle2^1;
-			DEBUG_LED2.setValue(led_toggle2);
+//			led_toggle2 = led_toggle2^1;
+//			DEBUG_LED2.setValue(led_toggle2);
 		}
 	}
+	DEBUG_LED2.setValue(false);
 }
 
 // piezo buzzer update
 // this interrupt gets garbled with the much more rapid stepper interrupt
 //ISR(TIMER0_COMPA_vect)
 extern "C" void TIMER3_IRQHandler (void){
+	DEBUG_LED3.setValue(true);
 //	xprintf("3" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER3_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM3,TIM_MR0_INT);
@@ -672,10 +671,11 @@ extern "C" void TIMER3_IRQHandler (void){
 		loop3++;
 		if (loop3 > 500){
 			loop3=0;
-			led_toggle3 = led_toggle3^1;
-			DEBUG_LED3.setValue(led_toggle3);
+//			led_toggle3 = led_toggle3^1;
+//			DEBUG_LED3.setValue(led_toggle3);
 		}
 	}
+	DEBUG_LED3.setValue(false);
 }
 
 // HBP PWM

@@ -134,7 +134,7 @@
 // Z stepper potentiometer pin
 #define Z_POT_PIN		Pin(NULL_PORT,NULL_PORT)
 // The Z minimum endstop pin (active high)
-#define Z_MIN_PIN       Pin(Port1,27)
+#define Z_MIN_PIN       Pin(Port1,22)
 // The Z maximum endstop pin (active high)
 #define Z_MAX_PIN       Pin(Port3,25)
 
@@ -163,7 +163,8 @@
 
 // --- Debugging configuration ---
 // The pin which controls the debug LED (active high)
-#define DEBUG_PIN       Pin(Port1,27)
+//#define DEBUG_PIN       Pin(Port1,27)
+#define DEBUG_PIN	Pin(NULL_PORT,NULL_PORT)
 // Additional Debug Pins
 #define DEBUG_PIN1	Pin(NULL_PORT,NULL_PORT)
 #define DEBUG_PIN2	Pin(NULL_PORT,NULL_PORT)
@@ -197,11 +198,11 @@
 /// high cost of using the pins in a direct manner, we will instead read the
 /// buttons directly by scanning their ports. If any of these definitions are
 /// modified, the #scanButtons() function _must_ be updated to reflect this.
-#define INTERFACE_UP		Pin(NULL_PORT,NULL_PORT)
-#define INTERFACE_DOWN		Pin(NULL_PORT,NULL_PORT)
-#define INTERFACE_RIGHT		Pin(NULL_PORT,NULL_PORT)
-#define INTERFACE_LEFT		Pin(NULL_PORT,NULL_PORT)
-#define INTERFACE_CENTER	Pin(NULL_PORT,NULL_PORT)
+#define INTERFACE_UP		Pin(Port1,16)
+#define INTERFACE_DOWN		Pin(Port0,5)
+#define INTERFACE_RIGHT		Pin(Port1,14)
+#define INTERFACE_LEFT		Pin(Port1,17)
+#define INTERFACE_CENTER	Pin(Port1,1)
 
 #define INTERFACE_GLED		Pin(NULL_PORT,NULL_PORT)
 #define INTERFACE_RLED		Pin(NULL_PORT,NULL_PORT)
@@ -219,6 +220,7 @@
 
 // Extruder thermistor analog pin
 #define THERMISTOR_PIN			26 // ADC3 Extruder0
+#define THERMISTOR_PIN_E2		25 // ADC2 Extruder0
 //#define THERMISTOR_PIN			Pin(Port0,26)
 
 #define HAS_THERMOCOUPLE        0
@@ -231,7 +233,7 @@
 #define DEFAULT_THERMOCOUPLE_VAL	1024
 
 // Platform thermistor analog pin
-#define PLATFORM_PIN            25
+#define PLATFORM_PIN            24
 
 /// POWER Pins for extruders, fans and heated build platform
 #define EX1_PWR	                Pin(Port2,4) // OC4A
