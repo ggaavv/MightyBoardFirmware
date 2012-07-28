@@ -70,7 +70,7 @@ __cs3_interrupt_vector_cortex_m:
     .long   MemManage_Handler           /* MPU Fault Handler            */
     .long   BusFault_Handler            /* Bus Fault Handler            */
     .long   UsageFault_Handler          /* Usage Fault Handler          */
-    .long   0 //0xefff79be                  /* Checksum, see LPC1xxx manual */
+    .long   0 /*0xefff79be                  /* Checksum, see LPC1xxx manual */
     .long   0                           /* Reserved                     */
     .long   0                           /* Reserved                     */
     .long   0                           /* Reserved                     */

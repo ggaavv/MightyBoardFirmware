@@ -26,6 +26,7 @@
 #include "stdio.h"
 
 #include "Delay.hh"
+#include "Motherboard.hh"
 
 extern "C" {
 	#include "lpc17xx_gpio.h"
@@ -443,33 +444,22 @@ void setTarget(Point target_in) {
 /// load up the next movement
 /// WARNING: called from inside the ISR, so get out fast
 bool getNextMove() {
+	DEBUG_LED3.setValue(true);
 //	xprintf("getNextMove" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
 	is_running = false; // this ensures that the interrupt does not .. interrupt us
 
 	if (current_block != NULL) {
-//		xprintf("current_block == NULL" " (%s:%d)\n",_F_,_L_);
-//		_delay_us(10000);
 		current_block->flags &= ~planner::Block::Busy;
 		planner::doneWithNextBlock();
 		current_block = NULL;
 	}
-//	xprintf("current_block == NULL" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
 
 	if (!planner::isReady()) {
-//		xprintf("!planner::isReady()" " (%s:%d)\n",_F_,_L_);
-//		_delay_us(10000);
 		is_running = !planner::isBufferEmpty();
 		return false;
 	}
-//	xprintf("done !planner::isReady()" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
 
 	current_block = planner::getNextBlock();
-
-//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
 
 	// Mark block as busy (being executed by the stepper interrupt)
 	// Also mark it a locked
@@ -478,14 +468,8 @@ bool getNextMove() {
 	Point &target = current_block->target;
 
 	int32_t max_delta = current_block->step_event_count;
-
-//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
 	
 	setTarget(target);
-
-//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
 	
 	current_feedrate_index = 0;
 	int feedrate_being_setup = 0;
@@ -501,9 +485,8 @@ bool getNextMove() {
 		feedrate_being_setup++;
 
 	}
-//	xprintf("done current_block = planner::getNextBlock();" " (%s:%d)\n",_F_,_L_);
-//		_delay_us(10000);
 
+	DEBUG_LED2.setValue(true);
 	// setup plateau
 	if (current_block->decelerate_after > current_block->accelerate_until) {
 		if (feedrate_being_setup == 0)
@@ -515,9 +498,8 @@ bool getNextMove() {
 		feedrate_being_setup++;
 	}
 
-//	DEBUG_LED2.setValue(true);
-//	_delay_us(10000);
 
+	DEBUG_LED1.setValue(true);
 	// setup deceleration
 	if (current_block->decelerate_after < current_block->step_event_count) {
 		if (feedrate_being_setup == 0)
@@ -533,7 +515,9 @@ bool getNextMove() {
 		// We don't setup anything else because we limit to the target speed anyway.
 	}
 
+	DEBUG_LED1.setValue(false);
 	current_block->flags &= ~planner::Block::Locked;
+	DEBUG_LED2.setValue(false);
 
 	if (feedrate == 0) {
 		is_running = false;
@@ -546,8 +530,6 @@ bool getNextMove() {
 
 	timer_counter = 0;
 
-	xprintf("t");
-//	_delay_us(10000);
 
 	intervals = max_delta;
 	intervals_remaining = intervals;
@@ -562,8 +544,6 @@ bool getNextMove() {
 	counter[B_AXIS] = negative_half_interval;
 #endif
 	is_running = true;
-	xprintf("TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS);" " (%s:%d)\n",_F_,_L_);
-	_delay_us(10000);
 	
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
 		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS * 16);
@@ -572,7 +552,8 @@ bool getNextMove() {
 		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS * 16);
 //		OCR3A = INTERVAL_IN_MICROSECONDS * 16;	//TODO find value for this
 	}
-	
+
+	DEBUG_LED3.setValue(false);
 	return true;
 }
 
@@ -714,7 +695,7 @@ bool IsActive(uint8_t axis){
 }
 #endif
 
-void SetAccelerationOn(bool on){
+bool SetAccelerationOn(bool on){
 	acceleration_on = on;
 }
 
@@ -743,22 +724,16 @@ uint8_t getEndstopStatus(){
 
 
 bool doInterrupt() {
-
+	DEBUG_LED4.setDirection(true);
+	DEBUG_LED4.setValue(true);
+//	xprintf("%d" " (%s:%d)\n",Motherboard::getBoard().getCurrentMillis(),_F_,_L_);
 	if (is_running) {
-//	xprintf("is_running" " (%s:%d)\n",_F_,_L_);
-//	_delay_us(10000);
 		if (current_block == NULL) {
-//			xprintf("current_block == NULL" " (%s:%d)\n",_F_,_L_);
-//			_delay_us(10000);
 			bool got_a_move = getNextMove();
 			if (!got_a_move) {
-//				xprintf("!got_a_move" " (%s:%d)\n",_F_,_L_);
-//				_delay_us(10000);
 				return is_running;
 			}
 		}
-//		xprintf("after current_block == NULL" " (%s:%d)\n",_F_,_L_);
-//		_delay_us(10000);
 	
 		timer_counter -= INTERVAL_IN_MICROSECONDS; //interval_microseconds;
 
@@ -780,7 +755,7 @@ bool doInterrupt() {
 			for (int i = 0; i < STEPPER_COUNT; i++){
 				axis_active[i] = IsActive(i);
 			}
-#else		
+#else
 			//TODO: Port this to handle max/min pins = NULL and non-inverted endstops ( see old stepper interface functions)
 			//TODO: READ ENDSTOPS ALL AT ONCE
 			axis_active[X_AXIS] = (delta[X_AXIS] != 0) && !(direction[X_AXIS] ? !_READ(X_MAX_PORT, X_MAX_BIT) : !_READ(X_MIN_PORT, X_MIN_BIT));
@@ -796,7 +771,7 @@ bool doInterrupt() {
 			axis_active[B_AXIS] = (delta[B_AXIS] != 0); 
 #endif
 #endif
-			
+
 			for (uint8_t i = 0; i < feedrate_multiplier; i++){
 				if(axis_active[X_AXIS]){
 					counter[X_AXIS] += delta[X_AXIS] ;
@@ -980,6 +955,8 @@ bool doInterrupt() {
 			planner::abort();
 		return is_homing;
 	}
+	DEBUG_LED4.setValue(false);
+//	xprintf("%d" " (%s:%d)\n",Motherboard::getBoard().getCurrentMillis(),_F_,_L_);
 	return false;
 }
 

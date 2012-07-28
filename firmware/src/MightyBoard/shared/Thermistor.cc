@@ -35,8 +35,8 @@ struct ThermTableEntry {
 Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
     analog_pin(analog_pin_in),
     next_sample(0),
-    table_index(table_index_in),
-    raw_valid(false)
+    raw_valid(false),
+    table_index(table_index_in)
 {
         for (int i = 0; i < SAMPLE_COUNT; i++) {
             sample_buffer[i] = 0;

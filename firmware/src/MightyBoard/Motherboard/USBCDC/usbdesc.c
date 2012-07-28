@@ -35,8 +35,10 @@ const uint8_t USB_DeviceDescriptor[] = {
   0x00,                              /* bDeviceSubClass */
   0x00,                              /* bDeviceProtocol */
   USB_MAX_PACKET0,                   /* bMaxPacketSize0 */
-  WBVAL(0x1FC9),                     /* idVendor */
-  WBVAL(0x2002),                     /* idProduct */
+  //  WBVAL(0x1FC9),                     /* idVendor */
+  //  WBVAL(0x2002),                     /* idProduct */
+  WBVAL(0x23C1),                     /* idVendor */
+  WBVAL(0xB404),                     /* idProduct */
   WBVAL(0x0100), /* 1.00 */          /* bcdDevice */
   0x01,                              /* iManufacturer */
   0x02,                              /* iProduct */

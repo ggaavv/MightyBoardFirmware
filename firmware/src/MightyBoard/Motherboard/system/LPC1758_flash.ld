@@ -35,8 +35,8 @@ MEMORY
   rom (rx)  : ORIGIN = 0x00003000, LENGTH = 0x7D000 /* Bootloader uses first 3Kbytes of flash memory */
   /* rom (rx)  : ORIGIN = 0, LENGTH = 512K */
   ram (rwx) : ORIGIN = 0x10000000, LENGTH = 0x6000
-  ahbb0(rw) : ORIGIN = 0x2007C000, LENGTH = 0x4000
-  ahbb1(rw) : ORIGIN = 0x20080000, LENGTH = 0x4000
+/*   ahbb0(rw) : ORIGIN = 0x2007C000, LENGTH = 0x4000 */
+/*   ahbb1(rw) : ORIGIN = 0x20080000, LENGTH = 0x4000 */
 }
 
 /* These force the linker to search for particular symbols from
@@ -174,7 +174,7 @@ SECTIONS
   {
     *(.stack)
   } >ram
-  
+  /*
   .ahb_bank0(NOLOAD) :
   {
     *(.ahb_sram_bank0 .ahb_sram_bank0.*)
@@ -184,7 +184,7 @@ SECTIONS
   {
     *(.ahb_sram_bank1 .ahb_sram_bank1.*)
   } > ahbb1
-  
+  */
   
   __cs3_region_init_ram = LOADADDR (.data);
   __cs3_region_init_size_ram = _edata - __cs3_region_start_ram;

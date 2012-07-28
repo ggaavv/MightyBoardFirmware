@@ -193,7 +193,7 @@
 #define B_ENABLE_BIT	_BV(26)
 
 
-#define _WRITE(POIO, PIIO, v)  do { if (v) {GPIO_SetValue(POIO, PIIO);} else {GPIO_ClearValue(POIO, PIIO); }; } while (0)
+#define _WRITE(POIO, PIIO, v)  if (v) {GPIO_SetValue(POIO, PIIO);} else {GPIO_ClearValue(POIO, PIIO); };
 #define _READ(POIO, PIIO) ((bool)(FIO_ReadValue(POIO) & PIIO)?1:0)
 
 #endif

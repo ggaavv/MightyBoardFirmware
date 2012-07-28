@@ -26,7 +26,6 @@
 #include "lib_sd/sd_raw.h"
 #include "lib_sd/partition.h"
 
-
 #ifndef USE_DYNAMIC_MEMORY
 #error Dynamic memory should be explicitly disabled in the G3 mobo.
 #endif

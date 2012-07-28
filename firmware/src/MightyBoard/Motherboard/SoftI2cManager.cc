@@ -105,7 +105,7 @@ uint8_t SoftI2cManager::start(uint8_t addressRW, const Pin &sdaPin)
 // issue a stop condition
 void SoftI2cManager::stop()
 {
-  _delay_us(I2C_DELAY_USEC);
+//  _delay_us(I2C_DELAY_USEC);
    sclPin.setValue(true);  
 //  _delay_us(I2C_DELAY_USEC);
     for(uint8_t i = 0; i < numPins; i++)

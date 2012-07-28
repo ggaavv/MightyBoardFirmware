@@ -71,7 +71,8 @@
 // Define as 1 if the slave UART is present; 0 if not.
 #define HAS_SLAVE_UART 1
 // The pin that connects to the driver enable line on the RS485 chip.
-#define TX_ENABLE_PIN   Pin(Port1,21)
+#define TX_ENABLE_PIN   Pin(NULL_PORT,NULL_PORT)
+//#define TX_ENABLE_PIN   Pin(Port1,21)
 // The pin that connects to the active-low recieve enable line on the RS485 chip.
 #define RX_ENABLE_PIN   Pin(Port2,8)
 
@@ -141,9 +142,11 @@
 // The A stepper step pin (active on rising edge)
 #define A_STEP_PIN      Pin(Port1,19)
 // The A direction pin (forward on logic high)
-#define A_DIR_PIN       Pin(Port1,20)
+#define A_DIR_PIN       Pin(NULL_PORT,NULL_PORT)
+//#define A_DIR_PIN       Pin(Port1,20)
 // The A stepper enable pin (active low)
-#define A_ENABLE_PIN    Pin(Port1,21)
+#define A_ENABLE_PIN    Pin(NULL_PORT,NULL_PORT)
+//#define A_ENABLE_PIN    Pin(Port1,21)
 // A stepper potentiometer pin
 #define A_POT_PIN		Pin(NULL_PORT,NULL_PORT)
 

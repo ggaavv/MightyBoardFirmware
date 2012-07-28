@@ -86,7 +86,7 @@ void Motherboard::initClocks(){
 	TIM_TIMERCFG_Type TMR0_Cfg;
 	TIM_MATCHCFG_Type TMR0_Match;
 	TMR0_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR0_Cfg.PrescaleValue = 1;
+	TMR0_Cfg.PrescaleValue = 10;
 	TMR0_Match.MatchChannel = TIM_MR0_INT;
 	TMR0_Match.IntOnMatch = ENABLE;
 	TMR0_Match.ResetOnMatch = ENABLE;
@@ -211,7 +211,7 @@ void Motherboard::reset(bool hard_reset) {
 	initClocks();
 		
 	// Check if the interface board is attached
-	hasInterfaceBoard = interface::isConnected();
+//	hasInterfaceBoard = interface::isConnected();
 	
 //	DEBUG_PIN5.setValue(true);
 
@@ -252,6 +252,10 @@ void Motherboard::reset(bool hard_reset) {
     if(hard_reset)
 	{
 		// Configure the debug pins.
+		DEBUG_LED1.setDirection(true);
+		DEBUG_LED2.setDirection(true);
+		DEBUG_LED3.setDirection(true);
+		DEBUG_LED4.setDirection(true);
 		DEBUG_PIN.setDirection(true);
 		DEBUG_PIN1.setDirection(true);
 		DEBUG_PIN2.setDirection(true);
@@ -512,6 +516,7 @@ volatile uint32_t loop3;
 /// Timer three comparator match interrupt
 //ISR(TIMER3_COMPA_vect) {
 extern "C" void TIMER0_IRQHandler (void){
+	DEBUG_LED1.setDirection(true);
 	DEBUG_LED1.setValue(true);
 //	xprintf("0" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER0_IRQHandler" " (%s:%d)\n",_F_,_L_);
@@ -604,12 +609,14 @@ uint16_t blink_overflow_counter = 0;
 
 //ISR(TIMER2_COMPA_vect) {
 extern "C" void TIMER2_IRQHandler (void){
+	DEBUG_LED2.setDirection(true);
 	DEBUG_LED2.setValue(true);
 //	xprintf("2" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER2_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM2,TIM_MR0_INT);
 	
 	Motherboard::getBoard().UpdateMicros();
+	DEBUG_LED2.setValue(false);
 	
 	if(blink_overflow_counter++ <= 0x080)
 			return;
@@ -663,13 +670,13 @@ extern "C" void TIMER2_IRQHandler (void){
 //			DEBUG_LED2.setValue(led_toggle2);
 		}
 	}
-	DEBUG_LED2.setValue(false);
 }
 
 // piezo buzzer update
 // this interrupt gets garbled with the much more rapid stepper interrupt
 //ISR(TIMER0_COMPA_vect)
 extern "C" void TIMER3_IRQHandler (void){
+	DEBUG_LED3.setDirection(true);
 	DEBUG_LED3.setValue(true);
 //	xprintf("3" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER3_IRQHandler" " (%s:%d)\n",_F_,_L_);

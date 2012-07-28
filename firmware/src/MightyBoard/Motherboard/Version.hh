@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 
-const uint16_t firmware_version = 505;
+const uint16_t firmware_version = 554;
 //#ifndef VERSION
 //#error "Version not defined! Please define the version number for this build."
 //#else

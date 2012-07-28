@@ -312,7 +312,7 @@ void runCommandSlice() {
 		}
 		if(!sdcard::playbackHasNext() && (sd_count < sdcard::getFileSize()) && !sdcard_reset){
 			
-			Motherboard::getBoard().getInterfaceBoard().resetLCD();
+//			Motherboard::getBoard().getInterfaceBoard().resetLCD();
 			Motherboard::getBoard().errorResponse(STATICFAIL_MSG);
 			sdcard_reset = true;
 			/// do the sd card initialization files
@@ -361,22 +361,18 @@ void runCommandSlice() {
 	if (mode == MOVING) {
 //		xprintf("1");
 //		xprintf("12" " (%s:%d)\n",_F_,_L_);
-//		_delay_us(10000);
 		if (!steppers::isRunning()) {
 //			xprintf("2");
 //			xprintf("13" " (%s:%d)\n",_F_,_L_);
-//			_delay_us(10000);
 			mode = READY;
 		} else {
 //			xprintf("3");
 //			xprintf("13" " (%s:%d)\n",_F_,_L_);
-//			_delay_us(10000);
 			if (command_buffer.getLength() > 0) {
 				Motherboard::getBoard().resetUserInputTimeout();
 				uint8_t command = command_buffer[0];
 				if (command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW) {
 //					xprintf("command == HOST_CMD_QUEUE_POINT_EXT || command == HOST_CMD_QUEUE_POINT_NEW" " (%s:%d)\n",_F_,_L_);
-					_delay_us(100);
 					handleMovementCommand(command);
 				}
 				else if (command == HOST_CMD_ENABLE_AXES) {
@@ -443,7 +439,6 @@ void runCommandSlice() {
 
 	if (mode == READY) {
 //		xprintf("mode == READY" " (%s:%d)\n",_F_,_L_);
-//		_delay_us(100);
 		
 		// process next command on the queue.
 		if ((command_buffer.getLength() > 0)){

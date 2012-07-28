@@ -77,7 +77,7 @@ void InterfaceBoard::doUpdate() {
 
 	// If we are building, make sure we show a build menu; otherwise,
 	// turn it off.
-	switch(host::getHostState()) {
+/*	switch(host::getHostState()) {
     case host::HOST_STATE_BUILDING_ONBOARD:
             onboard_build = true;
 	case host::HOST_STATE_BUILDING:
@@ -160,7 +160,7 @@ void InterfaceBoard::doUpdate() {
         // update build data
         screenStack[screenIndex]->setBuildPercentage(buildPercentage);
         screenStack[screenIndex]->update(lcd, false);
-    }
+    }*/
 }
 
 

@@ -12,7 +12,7 @@
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_gpio.h"
 #include "lpc17xx_wdt.h"
-#include "pinout.h"
+//#include "pinout.h"
 #include "lpc17xx_wdt.h"
 
 
