@@ -231,6 +231,7 @@ bool processExtruderCommandPacket() {
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
+			xprintf("SLAVE_CMD_SET_TEMP" " (%s:%d)\n",_F_,_L_);
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
 			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(id).getExtruderHeater().isCooling()){
@@ -252,6 +253,7 @@ bool processExtruderCommandPacket() {
 			board.setValve((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
+			xprintf("SLAVE_CMD_SET_PLATFORM_TEMP" " (%s:%d)\n",_F_,_L_);
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
 			// pause extruder heaters platform is heating up
@@ -274,6 +276,7 @@ bool processExtruderCommandPacket() {
 			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
+			xprintf("SLAVE_CMD_SET_MOTOR_1_PWM" " (%s:%d)\n",_F_,_L_);
 			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_2_PWM:

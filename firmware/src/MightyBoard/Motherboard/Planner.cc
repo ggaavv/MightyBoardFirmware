@@ -82,6 +82,9 @@
 #include "EepromMap.hh"
 
 #include "Delay.hh"
+extern "C" {
+	#include "comm.h"
+}
 
 
 #define  FORCE_INLINE __attribute__((always_inline)) inline
@@ -619,6 +622,7 @@ namespace planner {
 	}
 
 	bool isBufferFull() {
+		xprintf("isBufferFull" " (%s:%d)\n",_F_,_L_);
 		return block_buffer.isFull();//planner_buffer.isFull(); 
 	}
 	
@@ -684,6 +688,7 @@ namespace planner {
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
+		xprintf("addMoveToBuffer" " (%s:%d)\n",_F_,_L_);
 		Point offset_target;
 		offset_target = target + *tool_offsets;
 		

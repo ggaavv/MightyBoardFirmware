@@ -216,7 +216,7 @@ int16_t Heater::getDelta(){
 
 
 void Heater::manage_temperature() {
-	
+	xprintf("manage_temperature" " (%s:%d)\n",_F_,_L_);
 
 	if (next_sense_timeout.hasElapsed()) {
 		

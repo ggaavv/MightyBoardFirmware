@@ -44,7 +44,9 @@ extern "C" {
 	#include "LPC17xx.h"
 	#include "lpc17xx_nvic.h"
 	#include "comm.h"
-#include "lpc17xx_clkpwr.h"
+	#include "lpc17xx_clkpwr.h"
+	#include "lpc17xx_rtc.h"
+	#include "lpc17xx_wdt.h"
 }
 
 /// Instantiate static motherboard instance
@@ -63,7 +65,7 @@ Motherboard::Motherboard() :
             platform_thermistor(PLATFORM_PIN,0),
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
-			using_platform(true),
+			using_platform(false),
 			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
 			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE),
 			hasInterfaceBoard(0)
@@ -87,7 +89,7 @@ void Motherboard::initClocks(){
 	TIM_TIMERCFG_Type TMR0_Cfg;
 	TIM_MATCHCFG_Type TMR0_Match;
 	TMR0_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR0_Cfg.PrescaleValue = 10;
+	TMR0_Cfg.PrescaleValue = 1;
 	TMR0_Match.MatchChannel = TIM_MR0_INT;
 	TMR0_Match.IntOnMatch = ENABLE;
 	TMR0_Match.ResetOnMatch = ENABLE;
@@ -142,7 +144,7 @@ void Motherboard::initClocks(){
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TMR3_Cfg);
 	TIM_ConfigMatch(LPC_TIM3, &TMR3_Match);
-	NVIC_SetPriority(TIMER3_IRQn, 0);
+	NVIC_SetPriority(TIMER3_IRQn, 16);
 	TIM_Cmd(LPC_TIM3,ENABLE);
 	NVIC_EnableIRQ(TIMER3_IRQn);
 //	TCCR1A = 0b00000001;
@@ -175,7 +177,7 @@ void Motherboard::initClocks(){
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM2, TIM_TIMER_MODE, &TMR2_Cfg);
 	TIM_ConfigMatch(LPC_TIM2, &TMR2_Match);
-	NVIC_SetPriority(TIMER2_IRQn, 4);
+	NVIC_SetPriority(TIMER2_IRQn, 12);
 	TIM_Cmd(LPC_TIM2,ENABLE);
 	NVIC_EnableIRQ(TIMER2_IRQn);
 //	TCCR4A = 0b00000001;
@@ -517,8 +519,8 @@ volatile uint32_t loop3;
 /// Timer three comparator match interrupt
 //ISR(TIMER3_COMPA_vect) {
 extern "C" void TIMER0_IRQHandler (void){
-	DEBUG_LED1.setDirection(true);
-	DEBUG_LED1.setValue(true);
+//	DEBUG_LED1.setDirection(true);
+//	DEBUG_LED1.setValue(true);
 //	xprintf("0" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER0_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
@@ -532,7 +534,7 @@ extern "C" void TIMER0_IRQHandler (void){
 //			DEBUG_LED1.setValue(led_toggle0);
 		}
 	}
-	DEBUG_LED1.setValue(false);
+//	DEBUG_LED1.setValue(false);
 }
 
 
@@ -610,8 +612,8 @@ uint16_t blink_overflow_counter = 0;
 
 //ISR(TIMER2_COMPA_vect) {
 extern "C" void TIMER2_IRQHandler (void){
-	DEBUG_LED2.setDirection(true);
-	DEBUG_LED2.setValue(true);
+//	DEBUG_LED2.setDirection(true);
+//	DEBUG_LED2.setValue(true);
 //	xprintf("2" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER2_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM2,TIM_MR0_INT);
@@ -677,8 +679,8 @@ extern "C" void TIMER2_IRQHandler (void){
 // this interrupt gets garbled with the much more rapid stepper interrupt
 //ISR(TIMER0_COMPA_vect)
 extern "C" void TIMER3_IRQHandler (void){
-	DEBUG_LED3.setDirection(true);
-	DEBUG_LED3.setValue(true);
+//	DEBUG_LED3.setDirection(true);
+//	DEBUG_LED3.setValue(true);
 //	xprintf("3" " (%s:%d)\n",_F_,_L_);
 //	xprintf("TIMER3_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM3,TIM_MR0_INT);
@@ -692,7 +694,7 @@ extern "C" void TIMER3_IRQHandler (void){
 //			DEBUG_LED3.setValue(led_toggle3);
 		}
 	}
-	DEBUG_LED3.setValue(false);
+//	DEBUG_LED3.setValue(false);
 }
 
 // HBP PWM
@@ -728,4 +730,23 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 //	}
 }
 
-
+/*
+extern "C" void HardFault_Handler (void){
+	__ASM("TST LR, #4");
+	__ASM("ITE EQ");
+	__ASM("MRSEQ R0, MSP");
+	__ASM("MRSNE R0, PSP");
+	__ASM("B hard_fault_handler_c");
+}
+	xprintf("HardFault_Handler" " (%s:%d)\n",_F_,_L_);
+	DEBUG_LED3.setDirection(true);
+	DEBUG_LED3.setValue(true);
+	_delay_ms(1);
+	NVIC_DisableIRQ(WDT_IRQn);
+	xprintf("WDT_IRQHandler" " (%s:%d)\n",_F_,_L_);
+	SCB->VTOR = (0x00000000 & 0x1FFFFF80);
+	RTC_WriteGPREG(LPC_RTC, 2, 0xbbbbbbbb);
+	WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+	WDT_Start(1);
+	NVIC_EnableIRQ(WDT_IRQn);
+}*/

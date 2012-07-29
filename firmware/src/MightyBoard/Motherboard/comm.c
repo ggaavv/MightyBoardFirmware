@@ -180,8 +180,8 @@ uint8_t comm_gets(void){
 #endif
 
 void comm_put(uint8_t d){
-//	UART_Send(LPC_UART0, &d, 1, BLOCKING);//without interrupt
-	UARTSend(LPC_UART0, &d, 1);//with interrupt
+	UART_Send(LPC_UART0, &d, 1, BLOCKING);//without interrupt
+//	UARTSend(LPC_UART0, &d, 1);//with interrupt
 ////	serial_writechar(d);
 }
 

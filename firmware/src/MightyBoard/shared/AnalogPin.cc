@@ -98,7 +98,8 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
 //    const uint8_t ANALOG_REF = 0x01;
 
 void initAnalogPin(uint8_t pin) {
-	xprintf("initAnalogPin" " (%s:%d)\n",_F_,_L_);
+	xprintf("initAnalogPin pin:%d" " (%s:%d)\n",pin,_F_,_L_);
+	xprintf("pin-23:%d" " (%s:%d)\n",pin-23,_F_,_L_);
             // Analog pins are on ports F and K
 //            if (pin < 8) {
 //                    DDRF &= ~(_BV(pin));
@@ -120,7 +121,6 @@ void initAnalogPin(uint8_t pin) {
 //            ADCSRA |= _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) |
 //                            _BV(ADEN) | _BV(ADIE);
 	  PINSEL_CFG_Type PinCfg;
-
 	  PinCfg.Funcnum = PINSEL_FUNC_1; /* ADC function */
 	  PinCfg.OpenDrain = PINSEL_PINMODE_NORMAL;
 	  PinCfg.Pinmode = PINSEL_PINMODE_PULLUP;
@@ -130,8 +130,6 @@ void initAnalogPin(uint8_t pin) {
 	  GPIO_SetDir(0, _BV(pin), 0);
 
 	  ADC_Init(LPC_ADC, 1000); /* ADC conversion rate = 200Khz */
-	  ADC_IntConfig(LPC_ADC,ADC_ADINTEN3,ENABLE);
-	  ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_3,ENABLE);
 	  NVIC_SetPriority(ADC_IRQn, 17);
     }
 
@@ -140,6 +138,8 @@ void initAnalogPin(uint8_t pin) {
                          volatile bool* finished) {
             // ADSC is cleared when the conversion finishes.
             // We should not start a new read while an existing one is in progress.
+    		  if (*adc_finished == false)
+    			  return false;
 //            if ((ADCSRA & _BV(ADSC)) != 0) {
 //                    return false;
 //            }
@@ -165,6 +165,8 @@ void initAnalogPin(uint8_t pin) {
 //                    ADCSRA |= _BV(ADSC);
 //            }
               // Start conversion
+              ADC_IntConfig(LPC_ADC,pin-23,ENABLE);
+              ADC_ChannelCmd(LPC_ADC,pin-23,ENABLE);
               ADC_StartCmd(LPC_ADC, ADC_START_NOW);
               NVIC_EnableIRQ(ADC_IRQn);
             // An interrupt will signal conversion completion.
@@ -186,15 +188,26 @@ void initAnalogPin(uint8_t pin) {
             *adc_finished = true;
     }*/
     extern "C" void ADC_IRQHandler(void){
-//    	xprintf("A");
-    	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_3,ADC_DATA_DONE)){
-    		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3);
-    		NVIC_DisableIRQ(ADC_IRQn);
+//    	xprintf("A c1:%d",ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_1,ADC_DATA_DONE));
+//    	xprintf("A c2:%d",ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_2,ADC_DATA_DONE));
+//    	xprintf("A c3:%d",ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_3,ADC_DATA_DONE));
+    	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_1,ADC_DATA_DONE)){
+            ADC_IntConfig(LPC_ADC,ADC_ADINTEN1,DISABLE);
+            ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_1,DISABLE);
+//    		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1);
+            *adc_destination = 3948;
     	}
     	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_2,ADC_DATA_DONE)){
+            ADC_IntConfig(LPC_ADC,ADC_ADINTEN2,DISABLE);
+            ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_2,DISABLE);
     		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2);
-    		NVIC_DisableIRQ(ADC_IRQn);
     	}
+    	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_3,ADC_DATA_DONE)){
+            ADC_IntConfig(LPC_ADC,ADC_ADINTEN3,DISABLE);
+            ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_3,DISABLE);
+    		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3);
+    	}
+    	NVIC_DisableIRQ(ADC_IRQn);
     	*adc_finished = true;
     }
 

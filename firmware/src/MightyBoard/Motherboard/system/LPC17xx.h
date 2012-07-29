@@ -83,8 +83,8 @@ typedef enum IRQn
   MCPWM_IRQn                    = 30,       /*!< Motor Control PWM Interrupt                      */
   QEI_IRQn                      = 31,       /*!< Quadrature Encoder Interface Interrupt           */
   PLL1_IRQn                     = 32,       /*!< PLL1 Lock (USB PLL) Interrupt                    */
-  USBActivity_IRQn				= 33,		/*!< USB Activity Interrupt 						  */
-  CANActivity_IRQn				= 34,		/*!< CAN Activity Interrupt 						  */
+  USBActivity_IRQn              = 33,       /*!< USB Activity Interrupt 						  */
+  CANActivity_IRQn              = 34,       /*!< CAN Activity Interrupt 						  */
 } IRQn_Type;
 
 

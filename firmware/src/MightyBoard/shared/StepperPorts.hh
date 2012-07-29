@@ -144,7 +144,7 @@
 
 
 #include "Configuration.hh"
-
+/*
 #define X_STEP_PORT		2	//step
 #define X_STEP_BIT		_BV(13)
 #define X_DIR_PORT		2	//dir
@@ -174,7 +174,7 @@
 #define Z_ENABLE_PORT	1	//enable
 #define Z_ENABLE_BIT	_BV(26)
 #define Z_MIN_PORT		1	//min
-#define Z_MIN_BIT		_BV(27)
+#define Z_MIN_BIT		_BV(22)
 #define Z_MAX_PORT		3	//max
 #define Z_MAX_BIT		_BV(25)
 
@@ -195,5 +195,5 @@
 
 #define _WRITE(POIO, PIIO, v)  if (v) {GPIO_SetValue(POIO, PIIO);} else {GPIO_ClearValue(POIO, PIIO); };
 #define _READ(POIO, PIIO) ((bool)(FIO_ReadValue(POIO) & PIIO)?1:0)
-
+*/
 #endif

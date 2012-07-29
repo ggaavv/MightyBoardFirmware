@@ -67,7 +67,7 @@ char machineName[eeprom_info::MAX_MACHINE_NAME_LEN];
 
 char buildName[MAX_FILE_LEN];
 
-uint32_t buildSteps;
+//uint32_t buildSteps;
 
 /// Used to indicate what the UI should do, and used by
 /// host process to know what state it's in for error/command allowed.
@@ -114,6 +114,8 @@ void runHostSlice() {
 		do_host_reset = false;
 
 		// reset local board
+
+
 		reset(hard_reset);
 		
         // hard_reset can be called, but is not called by any
@@ -563,7 +565,6 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 						|| currentState == HOST_STATE_BUILDING_ONBOARD) {
 					Motherboard::getBoard().indicateError(ERR_RESET_DURING_BUILD);
 				}
-
 				do_host_reset = true; // indicate reset after response has been sent
 				to_host.append8(RC_OK);
 				return true;
@@ -592,6 +593,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handlePause(from_host,to_host);
 				return true;
 			case HOST_CMD_TOOL_QUERY:
+				xprintf("HOST_CMD_TOOL_QUERY" " (%s:%d)\n",_F_,_L_);
 				if(processExtruderQueryPacket(from_host,to_host)){
 					return true;}
 				break;
@@ -761,6 +763,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(firmware_version);
 			return true;
 		case SLAVE_CMD_GET_TEMP:
+			xprintf("SLAVE_CMD_GET_TEMP" " (%s:%d)\n",_F_,_L_);
 			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
@@ -769,6 +772,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_TEMP:
+			xprintf("SLAVE_CMD_GET_PLATFORM_TEMP" " (%s:%d)\n",_F_,_L_);
 			to_host.append8(RC_OK);
 			to_host.append16(board.getPlatformHeater().get_current_temperature());
 			return true;

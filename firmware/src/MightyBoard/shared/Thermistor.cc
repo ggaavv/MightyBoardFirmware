@@ -38,6 +38,10 @@ Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
     raw_valid(false),
     table_index(table_index_in)
 {
+	  if (analog_pin==0)
+		  analog_pin = 26;
+	  if (analog_pin==1)
+		  analog_pin = 25;
         for (int i = 0; i < SAMPLE_COUNT; i++) {
             sample_buffer[i] = 0;
         }
@@ -45,15 +49,11 @@ Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
 
 void Thermistor::init() {
   current_temp = 0;
-  if (analog_pin==0)
-	  analog_pin_out = 26;
-  if (analog_pin==1)
-	  analog_pin_out = 25;
-	initAnalogPin(analog_pin_out);
+	initAnalogPin(analog_pin);
 }
 
 Thermistor::SensorState Thermistor::update() {
-//	xprintf("Thermistor::SensorState Thermistor::update() {" " (%s:%d)\n",_F_,_L_);
+//	xprintf("a:%d" "\n",analog_pin);
 	int16_t temp;
 	bool valid;
 
@@ -84,7 +84,6 @@ Thermistor::SensorState Thermistor::update() {
 
 	// my filter
 	uint32_t sort_table[SAMPLE_COUNT];
-	static uint32_t adc_filtered = 0;
 	static uint32_t adc_table_index = 0;
 	static uint32_t adc_previous_samples[SAMPLE_COUNT];
 	adc_previous_samples[adc_table_index]=raw_value;
@@ -95,10 +94,6 @@ Thermistor::SensorState Thermistor::update() {
 		sort_table[i]=adc_previous_samples[i];
 	std::sort(sort_table, sort_table+SAMPLE_COUNT);
 	temp = sort_table[4];
-
-	// filter the ADC values with simple IIR
-//	adc_filtered = ((adc_filtered * 7) + temp) / 8;
-//	temp = adc_filtered;
 
 	// TODO: The raw_value appears to be 0 the first time this loop is run,
 	//       which causes this failsafe to trigger unnecessarily. Disabling
