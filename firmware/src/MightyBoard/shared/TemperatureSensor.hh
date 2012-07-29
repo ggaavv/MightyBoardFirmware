@@ -53,7 +53,7 @@ public:
 
 	/// Attempt to update the temperature sensor measurement.
 	/// \return #SS_OK if the reading was successful, or an error.
-	virtual SensorState update() =0;
+	virtual SensorState update()=0;
 };
 
 #endif // TEMPERATURE_HH_

@@ -136,6 +136,7 @@ void initAnalogPin(uint8_t pin) {
     bool startAnalogRead(uint8_t pin,
                          volatile int16_t* destination,
                          volatile bool* finished) {
+//    	xprintf("pin-23:%d" " (%s:%d)\n",pin-23,_F_,_L_);
             // ADSC is cleared when the conversion finishes.
             // We should not start a new read while an existing one is in progress.
     		  if (*adc_finished == false)
@@ -188,14 +189,13 @@ void initAnalogPin(uint8_t pin) {
             *adc_finished = true;
     }*/
     extern "C" void ADC_IRQHandler(void){
-//    	xprintf("A c1:%d",ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_1,ADC_DATA_DONE));
-//    	xprintf("A c2:%d",ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_2,ADC_DATA_DONE));
-//    	xprintf("A c3:%d",ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_3,ADC_DATA_DONE));
+    	xprintf("A c1:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1));
+    	xprintf("A c2:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2));
+    	xprintf("A c3:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3));
     	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_1,ADC_DATA_DONE)){
             ADC_IntConfig(LPC_ADC,ADC_ADINTEN1,DISABLE);
             ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_1,DISABLE);
-//    		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1);
-            *adc_destination = 3948;
+    		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1);
     	}
     	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_2,ADC_DATA_DONE)){
             ADC_IntConfig(LPC_ADC,ADC_ADINTEN2,DISABLE);

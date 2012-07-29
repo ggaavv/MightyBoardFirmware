@@ -74,7 +74,7 @@ Heater::Heater(TemperatureSensor& sensor_in,
 
 void Heater::reset() {
 	// TODO: Reset sensor, element here?
-
+	xprintf("Heater::reset()" " (%s:%d)\n",_F_,_L_);
 	current_temperature = 0;
 	startTemp = 0;
 
@@ -216,10 +216,8 @@ int16_t Heater::getDelta(){
 
 
 void Heater::manage_temperature() {
-	xprintf("manage_temperature" " (%s:%d)\n",_F_,_L_);
-
+//	xprintf("manage_temperature" " (%s:%d)\n",_F_,_L_);
 	if (next_sense_timeout.hasElapsed()) {
-		
 		next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
 		case TemperatureSensor::SS_ADC_BUSY:

@@ -53,7 +53,7 @@ void Thermistor::init() {
 }
 
 Thermistor::SensorState Thermistor::update() {
-//	xprintf("a:%d" "\n",analog_pin);
+//	xprintf("Thermistor::SensorState Thermistor::update()" "\n",analog_pin);
 	int16_t temp;
 	bool valid;
 
