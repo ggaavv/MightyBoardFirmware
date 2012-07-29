@@ -46,7 +46,7 @@ extern "C" {
 	#include "comm.h"
 	#include "lpc17xx_clkpwr.h"
 	#include "lpc17xx_rtc.h"
-	#include "lpc17xx_wdt.h"
+	#include "lpc17xx_pwm.h"
 }
 
 /// Instantiate static motherboard instance
@@ -77,6 +77,23 @@ void Motherboard::initClocks(){
 	// Reset and configure timer 0, the piezo buzzer timer
 	// Mode: Phase-correct PWM with OCRnA (WGM2:0 = 101)
 	// Prescaler: set on call by piezo function
+	TIM_TIMERCFG_Type TMR3_Cfg;
+	TIM_MATCHCFG_Type TMR3_Match;
+	TMR3_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
+	TMR3_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
+	TMR3_Match.MatchChannel = TIM_MR0_INT;
+	TMR3_Match.IntOnMatch = ENABLE;
+	TMR3_Match.ResetOnMatch = ENABLE;
+	TMR3_Match.StopOnMatch = DISABLE;
+	TMR3_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
+	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
+	TMR3_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
+	// Set configuration for Tim_config and Tim_MatchConfig
+	TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TMR3_Cfg);
+	TIM_ConfigMatch(LPC_TIM3, &TMR3_Match);
+	NVIC_SetPriority(TIMER3_IRQn, 16);
+	TIM_Cmd(LPC_TIM3,ENABLE);
+	NVIC_EnableIRQ(TIMER3_IRQn);
 //	TCCR0A = 0b01;//0b00000011; ////// default mode off / phase correct piezo   
 //	TCCR0B = 0b01;//0b00001001; //default pre-scaler 1/1
 //	OCR0A = 0;
@@ -85,7 +102,6 @@ void Motherboard::initClocks(){
 	
 	// Reset and configure timer 3, the microsecond and stepper // Steppers only now!
 	// interrupt timer.
-
 	TIM_TIMERCFG_Type TMR0_Cfg;
 	TIM_MATCHCFG_Type TMR0_Match;
 	TMR0_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
@@ -109,57 +125,10 @@ void Motherboard::initClocks(){
 //	TCCR3C = 0x00;
 //	OCR3A = INTERVAL_IN_MICROSECONDS * 16;
 //	TIMSK3 = 0x02; // turn on OCR3A match interrupt
-	
-	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
-//	TCCR2A = 0x00;
-//	TCCR2B = 0x0A; /// prescaler at 1/8
-//	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
-//	OCR2B = 0;
-//	TIMSK2 = 0x02; // turn on OCR5A match interrupt
 
-	
-/*	// reset and configure timer 5 - not currently being used
-	TCCR5A = 0x00;  
-	TCCR5B = 0x09;
-	OCR5A =  0;
-	OCR5B = 0;
-	TIMSK5 = 0x0; */
-	
-	// reset and configure timer 1, the Extruder Two PWM timer
-	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
-	// Prescaler: 1/64 (250 KHz)
-	TIM_TIMERCFG_Type TMR3_Cfg;
-	TIM_MATCHCFG_Type TMR3_Match;
-	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
-	// Initialize timer 1, prescale count time of 100uS
-	TMR3_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR3_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
-	TMR3_Match.MatchChannel = TIM_MR0_INT;
-	TMR3_Match.IntOnMatch = ENABLE;
-	TMR3_Match.ResetOnMatch = ENABLE;
-	TMR3_Match.StopOnMatch = DISABLE;
-	TMR3_Match.ExtMatchOutputType = TIM_EXTMATCH_NOTHING;
-	// Set Match value, count value of INTERVAL_IN_MICROSECONDS (64 * 1uS = 64us )
-	TMR3_Match.MatchValue = INTERVAL_IN_MICROSECONDS;
-	// Set configuration for Tim_config and Tim_MatchConfig
-	TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TMR3_Cfg);
-	TIM_ConfigMatch(LPC_TIM3, &TMR3_Match);
-	NVIC_SetPriority(TIMER3_IRQn, 16);
-	TIM_Cmd(LPC_TIM3,ENABLE);
-	NVIC_EnableIRQ(TIMER3_IRQn);
-//	TCCR1A = 0b00000001;
-//	TCCR1B = 0b00001011; /// set to PWM mode
-//	OCR1A = 0;
-//	OCR1B = 0;
-//	TIMSK1 = 0b00000000; // no interrupts needed
-	
-	// reset and configure timer 2, the Extruder One PWM timer
-	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
-	// Prescaler: 1/64 (250 KHz)
+	// Reset and configure timer 2, the microsecond timer and debug LED flasher timer.
 	TIM_TIMERCFG_Type TMR2_Cfg;
 	TIM_MATCHCFG_Type TMR2_Match;
-	// On reset, Timer0/1 are enabled (PCTIM0/1 = 1), and Timer2/3 are disabled (PCTIM2/3 = 0).
-	// Initialize timer 1, prescale count time of 100uS
 	TMR2_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
 	TMR2_Cfg.PrescaleValue = 1; // reset to 1 - 1uS
 	// Use channel 1, MR1
@@ -180,12 +149,95 @@ void Motherboard::initClocks(){
 	NVIC_SetPriority(TIMER2_IRQn, 12);
 	TIM_Cmd(LPC_TIM2,ENABLE);
 	NVIC_EnableIRQ(TIMER2_IRQn);
+//	TCCR2A = 0x00;
+//	TCCR2B = 0x0A; /// prescaler at 1/8
+//	OCR2A = INTERVAL_IN_MICROSECONDS;  // TODO: update PWM settings to make overflowtime adjustable if desired : currently interupting on overflow
+//	OCR2B = 0;
+//	TIMSK2 = 0x02; // turn on OCR5A match interrupt
+
+	
+/*	// reset and configure timer 5 - not currently being used
+	TCCR5A = 0x00;  
+	TCCR5B = 0x09;
+	OCR5A =  0;
+	OCR5B = 0;
+	TIMSK5 = 0x0; */
+
+	xprintf("// Setup PWM timer" " (%s:%d)\n",_F_,_L_);
+	// Setup PWM timer
+	PWM_TIMERCFG_Type PWMCfgDat;
+	PWM_MATCHCFG_Type PWMMatchCfgDat;
+	PWMCfgDat.PrescaleOption = PWM_TIMER_PRESCALE_USVAL;
+	PWMCfgDat.PrescaleValue = 1000;
+	PWM_Init(LPC_PWM1, PWM_MODE_TIMER, &PWMCfgDat);
+	PWMMatchCfgDat.MatchChannel = 0;
+	PWMMatchCfgDat.IntOnMatch = DISABLE;
+	PWMMatchCfgDat.ResetOnMatch = ENABLE;
+	PWMMatchCfgDat.StopOnMatch = DISABLE;
+	PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
+	PWM_MatchUpdate(LPC_PWM1, 0, 500, PWM_MATCH_UPDATE_NOW);
+	PINSEL_CFG_Type PinCfg;
+
+	// reset and configure timer 1, the Extruder Two PWM timer
+	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
+	// Prescaler: 1/64 (250 KHz)
+	PinCfg.Funcnum = 1;
+	PinCfg.OpenDrain = 0;
+	PinCfg.Pinmode = 0;
+	PinCfg.Portnum = 2;
+	PinCfg.Pinnum = 3;
+	PINSEL_ConfigPin(&PinCfg);
+	PWM_ChannelConfig(LPC_PWM1, 4, PWM_CHANNEL_SINGLE_EDGE);
+	PWM_MatchUpdate(LPC_PWM1, 4, 250, PWM_MATCH_UPDATE_NOW);
+	PWMMatchCfgDat.MatchChannel = 4;
+	PWMMatchCfgDat.IntOnMatch = DISABLE;
+	PWMMatchCfgDat.ResetOnMatch = ENABLE;
+	PWMMatchCfgDat.StopOnMatch = DISABLE;
+	PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
+	PWM_ChannelCmd(LPC_PWM1, 4, ENABLE);
+//	TCCR1A = 0b00000001;
+//	TCCR1B = 0b00001011; /// set to PWM mode
+//	OCR1A = 0;
+//	OCR1B = 0;
+//	TIMSK1 = 0b00000000; // no interrupts needed
+	
+	// reset and configure timer 2, the Extruder One PWM timer
+	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
+	// Prescaler: 1/64 (250 KHz)
+	PinCfg.Funcnum = 1;
+	PinCfg.OpenDrain = 0;
+	PinCfg.Pinmode = 0;
+	PinCfg.Portnum = 2;
+	PinCfg.Pinnum = 4;
+	PINSEL_ConfigPin(&PinCfg);
+	PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
+	PWM_ChannelConfig(LPC_PWM1, 5, PWM_CHANNEL_SINGLE_EDGE);
+	PWM_MatchUpdate(LPC_PWM1, 5, 250, PWM_MATCH_UPDATE_NOW);
+	PWMMatchCfgDat.MatchChannel = 5;
+	PWMMatchCfgDat.IntOnMatch = DISABLE;
+	PWMMatchCfgDat.ResetOnMatch = ENABLE;
+	PWMMatchCfgDat.StopOnMatch = DISABLE;
+	PWM_ChannelCmd(LPC_PWM1, 5, ENABLE);
 //	TCCR4A = 0b00000001;
 //	TCCR4B = 0b00001011; /// set to PWM mode
 //	OCR4A = 0;
 //	OCR4B = 0;
 //	TIMSK4 = 0b00000000; // no interrupts needed
+
+	// Reset and Start counter
+	PWM_ResetCounter(LPC_PWM1);
+	PWM_CounterCmd(LPC_PWM1, ENABLE);
+	// Start PWM now
+	PWM_Cmd(LPC_PWM1, ENABLE);
 }
+
+enum stagger_timers{
+	STAGGER_INTERFACE,
+	STAGGER_MID,
+	STAGGER_EX2,
+	STAGGER_EX1
+}stagger = STAGGER_INTERFACE;
+
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
 /// to any attached toolheads.
@@ -210,6 +262,7 @@ void Motherboard::reset(bool hard_reset) {
 	UART::getHostUART().in.reset();
 	
 	micros = 0;
+	stagger = STAGGER_MID;
 	
 	initClocks();
 		
@@ -363,13 +416,6 @@ void Motherboard::errorResponse(char msg[], bool reset_errorResponse){
 	reset_request = reset_errorResponse;
 }
 
-enum stagger_timers{
-	STAGGER_INTERFACE,
-	STAGGER_MID, 
-	STAGGER_EX2,
-	STAGGER_EX1
-}stagger = STAGGER_INTERFACE;
-
 uint8_t Motherboard::GetErrorStatus(){
 
 	return board_status;
@@ -417,7 +463,7 @@ void Motherboard::runMotherboardSlice() {
 //		}
 		
 //	}
-	
+
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
     if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING)){
@@ -487,7 +533,8 @@ void Motherboard::runMotherboardSlice() {
 		stagger = STAGGER_EX2;
 	}else if (stagger == STAGGER_EX2){
 		Extruder_Two.runExtruderSlice();
-		stagger = STAGGER_INTERFACE;
+//		stagger = STAGGER_INTERFACE;
+		stagger = STAGGER_MID;
 	}
 	
 	

@@ -28,6 +28,7 @@
 extern "C" {
 	#include "lpc17xx_timer.h"
 #include "comm.h"
+#include "lpc17xx_pwm.h"
 }
 
 
@@ -50,8 +51,7 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
 
 
 void ExtruderBoard::reset() {
-
-
+	xprintf("ExtruderBoard::reset()" " (%s:%d)\n",_F_,_L_);
 	// Set the output mode for the mosfets.  
 	Heater_Pin.setValue(false);
 	Heater_Pin.setDirection(true);
@@ -64,7 +64,6 @@ void ExtruderBoard::reset() {
 }
 
 void ExtruderBoard::runExtruderSlice() {
-
         extruder_heater.manage_temperature();
         coolingFan.manageCoolingFan();
 
@@ -81,12 +80,12 @@ void ExtruderBoard::setFan(uint8_t on)
 // Turn on/off PWM for Extruder Two (OC1A)
 void pwmEx2_On(bool on) {
 	if (on) {
-		TIM_Cmd(LPC_TIM1,ENABLE);
-		xprintf("TIM_Cmd(LPC_TIM1,ENABLE)" " (%s:%d)\n",_F_,_L_);
+		PWM_ChannelCmd(LPC_PWM1, 4, ENABLE);
+//		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, ENABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR1A |= 0b10000000;
 	} else {
-		TIM_Cmd(LPC_TIM1,DISABLE);
-		xprintf("TIM_Cmd(LPC_TIM1,DISABLE)" " (%s:%d)\n",_F_,_L_);
+		PWM_ChannelCmd(LPC_PWM1, 4, DISABLE);
+//		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, DISABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR1A &= 0b00111111;
 	}
 }
@@ -94,12 +93,12 @@ void pwmEx2_On(bool on) {
 // Turn on/off PWM for Extruder One (OC4A)
 void pwmEx1_On(bool on) {
 	if (on) {
-		TIM_Cmd(LPC_TIM2,ENABLE);
-		xprintf("TIM_Cmd(LPC_TIM2,ENABLE)" " (%s:%d)\n",_F_,_L_);
+		PWM_ChannelCmd(LPC_PWM1, 5, ENABLE);
+//		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, ENABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR4A |= 0b10000000;
 	} else {
-		TIM_Cmd(LPC_TIM2,DISABLE);
-		xprintf("TIM_Cmd(LPC_TIM2,DISABLE)" " (%s:%d)\n",_F_,_L_);
+		PWM_ChannelCmd(LPC_PWM1, 5, DISABLE);
+//		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, DISABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR4A &= 0b00111111;
 	} 
 }
