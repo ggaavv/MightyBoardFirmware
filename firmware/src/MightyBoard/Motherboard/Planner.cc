@@ -622,7 +622,7 @@ namespace planner {
 	}
 
 	bool isBufferFull() {
-		xprintf("isBufferFull" " (%s:%d)\n",_F_,_L_);
+//		xprintf("isBufferFull" " (%s:%d)\n",_F_,_L_);
 		return block_buffer.isFull();//planner_buffer.isFull(); 
 	}
 	
@@ -688,7 +688,7 @@ namespace planner {
 	// Buffer the move. IOW, add a new block, and recalculate the acceleration accordingly
 	void addMoveToBuffer(const Point& target, const int32_t &us_per_step)
 	{
-		xprintf("addMoveToBuffer" " (%s:%d)\n",_F_,_L_);
+//		xprintf("addMoveToBuffer" " (%s:%d)\n",_F_,_L_);
 		Point offset_target;
 		offset_target = target + *tool_offsets;
 		
@@ -951,6 +951,7 @@ namespace planner {
 
 	void definePosition(const Point& new_position)
 	{
+//	    xprintf("definePosition(const Point& new_position)" " (%s:%d)\n",_F_,_L_);
 		position = new_position;
 		
 		/// Clip Z axis so that plate cannot attempt to move out of build area

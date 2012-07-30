@@ -10,8 +10,8 @@
 namespace interface {
 
 
-LiquidCrystalSerial* lcd;
-InterfaceBoard* board;
+static LiquidCrystalSerial* lcd;   // TODO decide if these need to be static (static added bye gavin)
+static InterfaceBoard* board;		// TODO decide if these need to be static (static added bye gavin)
 
 bool isConnected() {
 	// Avoid repeatedly creating temp objects

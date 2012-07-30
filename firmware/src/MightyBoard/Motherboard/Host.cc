@@ -132,7 +132,7 @@ void runHostSlice() {
 	}
     // new packet coming in
 	if (in.isStarted() && !in.isFinished()) {
-		xprintf("in.isStarted() && !in.isFinished()" " (%s:%d)\n",_F_,_L_);
+//		xprintf("in.isStarted() && !in.isFinished()" " (%s:%d)\n",_F_,_L_);
 		if (!packet_in_timeout.isActive()) {
 			// initiate timeout
 			packet_in_timeout.start(HOST_PACKET_TIMEOUT_MICROS);
@@ -437,7 +437,7 @@ inline void handleReadEeprom(const InPacket& from_host, OutPacket& to_host) {
  * writes a chunk of data from a input packet to eeprom
  */
 inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
-	xprintf("handleWriteEeprom" " (%s:%d)\n",_F_,_L_);
+//	xprintf("handleWriteEeprom" " (%s:%d)\n",_F_,_L_);
     uint16_t offset = from_host.read16(1);
     uint8_t length = from_host.read8(3);
 //	xprintf("%x" " (%s:%d)\n",offset,_F_,_L_);
@@ -446,7 +446,7 @@ inline void handleWriteEeprom(const InPacket& from_host, OutPacket& to_host) {
 //    eeprom_read_block(data, (const void*) offset, length);
     for (int i = 0; i < length; i++) {
     	eeprom::setEeprom8(offset + i, from_host.read8(i + 4));
-		xprintf("%x %x %c" "\n",EEPROM_START_ADDRESS + offset + i,eeprom_address(EEPROM_START_ADDRESS, offset + i),eeprom_address(EEPROM_START_ADDRESS, offset + i));
+//		xprintf("%x %x %c" "\n",EEPROM_START_ADDRESS + offset + i,eeprom_address(EEPROM_START_ADDRESS, offset + i),eeprom_address(EEPROM_START_ADDRESS, offset + i));
 //        data[i] = from_host.read8(i + 4);
     }
 //    ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
@@ -575,6 +575,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handleGetPosition(from_host,to_host);
 				return true;
 			case HOST_CMD_GET_POSITION_EXT:
+//				xprintf("HOST_CMD_GET_POSITION_EXT" " (%s:%d)\n",_F_,_L_);
 				handleGetPositionExt(from_host,to_host);
 				return true;
 			case HOST_CMD_CAPTURE_TO_FILE:
@@ -593,7 +594,7 @@ bool processQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 				handlePause(from_host,to_host);
 				return true;
 			case HOST_CMD_TOOL_QUERY:
-				xprintf("HOST_CMD_TOOL_QUERY" " (%s:%d)\n",_F_,_L_);
+//				xprintf("HOST_CMD_TOOL_QUERY" " (%s:%d)\n",_F_,_L_);
 				if(processExtruderQueryPacket(from_host,to_host)){
 					return true;}
 				break;
@@ -763,7 +764,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append16(firmware_version);
 			return true;
 		case SLAVE_CMD_GET_TEMP:
-			xprintf("SLAVE_CMD_GET_TEMP" " (%s:%d)\n",_F_,_L_);
+//			xprintf("SLAVE_CMD_GET_TEMP" " (%s:%d)\n",_F_,_L_);
 			to_host.append8(RC_OK);
 			to_host.append16(board.getExtruderBoard(id).getExtruderHeater().get_current_temperature());
 			return true;
@@ -772,7 +773,7 @@ bool processExtruderQueryPacket(const InPacket& from_host, OutPacket& to_host) {
 			to_host.append8(board.getExtruderBoard(id).getExtruderHeater().has_reached_target_temperature()?1:0);
 			return true;
 		case SLAVE_CMD_GET_PLATFORM_TEMP:
-			xprintf("SLAVE_CMD_GET_PLATFORM_TEMP" " (%s:%d)\n",_F_,_L_);
+//			xprintf("SLAVE_CMD_GET_PLATFORM_TEMP" " (%s:%d)\n",_F_,_L_);
 			to_host.append8(RC_OK);
 			to_host.append16(board.getPlatformHeater().get_current_temperature());
 			return true;

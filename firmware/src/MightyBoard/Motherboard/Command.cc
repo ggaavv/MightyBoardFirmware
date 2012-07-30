@@ -231,7 +231,7 @@ bool processExtruderCommandPacket() {
 
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
-			xprintf("SLAVE_CMD_SET_TEMP" " (%s:%d)\n",_F_,_L_);
+//			xprintf("SLAVE_CMD_SET_TEMP" " (%s:%d)\n",_F_,_L_);
 			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
 			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(id).getExtruderHeater().isCooling()){
@@ -253,7 +253,7 @@ bool processExtruderCommandPacket() {
 			board.setValve((pop8() & 0x01) != 0);
 			return true;
 		case SLAVE_CMD_SET_PLATFORM_TEMP:
-			xprintf("SLAVE_CMD_SET_PLATFORM_TEMP" " (%s:%d)\n",_F_,_L_);
+//			xprintf("SLAVE_CMD_SET_PLATFORM_TEMP" " (%s:%d)\n",_F_,_L_);
 			board.setUsingPlatform(true);
 			board.getPlatformHeater().set_target_temperature(pop16());
 			// pause extruder heaters platform is heating up
@@ -276,7 +276,7 @@ bool processExtruderCommandPacket() {
 			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_1_PWM:
-			xprintf("SLAVE_CMD_SET_MOTOR_1_PWM" " (%s:%d)\n",_F_,_L_);
+//			xprintf("SLAVE_CMD_SET_MOTOR_1_PWM" " (%s:%d)\n",_F_,_L_);
 			pop8();
 			return true;
 		case SLAVE_CMD_SET_MOTOR_2_PWM:
@@ -354,6 +354,7 @@ void runCommandSlice() {
 	if (paused || heat_shutdown) {	return; }
     
 	if (mode == HOMING) {
+//		xprintf("HOMING" " (%s:%d)\n",_F_,_L_);
 		if (!steppers::isRunning()) {
 			mode = READY;
 		} else if (homing_timeout.hasElapsed()) {
@@ -445,6 +446,7 @@ void runCommandSlice() {
 		
 		// process next command on the queue.
 		if ((command_buffer.getLength() > 0)){
+//			xprintf("command_buffer.getLength() > 0" " (%s:%d)\n",_F_,_L_);
 			Motherboard::getBoard().resetUserInputTimeout();
 			
 			uint8_t command = command_buffer[0];
@@ -473,6 +475,7 @@ void runCommandSlice() {
 					}
 				}
 			} else if (command == HOST_CMD_SET_POSITION_EXT) {
+//				xprintf("HOST_CMD_SET_POSITION_EXT) {" " (%s:%d)\n",_F_,_L_);
 				// check for completion
 				if (command_buffer.getLength() >= 21) {
 					pop8(); // remove the command code
@@ -482,7 +485,7 @@ void runCommandSlice() {
 					int32_t a = pop32();
 					int32_t b = pop32();
 					line_number++;
-					
+//					xprintf("if (command_buffer.getLength() >= 21) {" " (%s:%d)\n",_F_,_L_);
 					planner::definePosition(Point(x,y,z,a,b));
 				}
 			} else if (command == HOST_CMD_DELAY) {
@@ -561,6 +564,7 @@ void runCommandSlice() {
 					
 			} else if (command == HOST_CMD_FIND_AXES_MINIMUM ||
 					command == HOST_CMD_FIND_AXES_MAXIMUM) {
+//				xprintf("HOST_CMD_FIND_AXES_MINIMUM||HOST_CMD_FIND_AXES_MAXIMUM) {" " (%s:%d)\n",_F_,_L_);
 				if (command_buffer.getLength() >= 8) {
 					pop8(); // remove the command
 					uint8_t flags = pop8();
@@ -683,6 +687,7 @@ void runCommandSlice() {
 
 				}			
 			}else if (command == HOST_CMD_TOOL_COMMAND) {
+//				xprintf("HOST_CMD_TOOL_COMMAND" " (%s:%d)\n",_F_,_L_);
 				if (command_buffer.getLength() >= 4) { // needs a payload
 					uint8_t payload_length = command_buffer[3];
 					if (command_buffer.getLength() >= 4+payload_length) {
@@ -692,6 +697,7 @@ void runCommandSlice() {
 				}
 			}
 			} else if (command == HOST_CMD_SET_BUILD_PERCENT){
+//				xprintf("HOST_CMD_SET_BUILD_PERCENT) {" " (%s:%d)\n",_F_,_L_);
 				if (command_buffer.getLength() >= 3){
 					pop8(); // remove the command code
 					uint8_t percent = pop8();
@@ -726,6 +732,7 @@ void runCommandSlice() {
 				Motherboard::getBoard().reset(false);
 				}
 			} else if ( command == HOST_CMD_BUILD_START_NOTIFICATION) {
+//				xprintf("HOST_CMD_BUILD_START_NOTIFICATION" " (%s:%d)\n",_F_,_L_);
 				if (command_buffer.getLength() >= 5){
 					pop8(); // remove the command code
 					int buildSteps = pop32();

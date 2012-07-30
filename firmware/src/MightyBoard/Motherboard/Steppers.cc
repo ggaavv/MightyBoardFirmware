@@ -297,7 +297,7 @@ void abort() {
 	acceleration_tick_counter = 0;
 	current_feedrate_index = 0;
 
-	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS * 16);
+	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS);
 //	OCR3A = INTERVAL_IN_MICROSECONDS * 16;	// TODO: find value
 }
 
@@ -538,10 +538,10 @@ bool getNextMove() {
 	is_running = true;
 	
 	if(delta[Z_AXIS] > ZSTEPS_PER_MM*10){
-		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS * 16);
+		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS);
 //		OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;	//TODO find value for this
 	} else {
-		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS * 16);
+		TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, INTERVAL_IN_MICROSECONDS);
 //		OCR3A = INTERVAL_IN_MICROSECONDS * 16;	//TODO find value for this
 	}
 	return true;
@@ -555,7 +555,7 @@ void startHoming(const bool maximums, const uint8_t axes_enabled, const uint32_t
 	feedrate_inverted = us_per_step;
 	// ToDo: Return to using the interval if the us_per_step > INTERVAL_IN_MICROSECONDS
 	const int32_t negative_half_interval = -1;
-	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS * 16);
+	TIM_UpdateMatchValue(LPC_TIM0,TIM_MR0_INT, HOMING_INTERVAL_IN_MICROSECONDS);
 //	OCR3A = HOMING_INTERVAL_IN_MICROSECONDS * 16;	//TODO find value for this
 	
 	
@@ -715,6 +715,7 @@ uint8_t getEndstopStatus(){
 
 bool doInterrupt() {
 //	xprintf("%d" " (%s:%d)\n",Motherboard::getBoard().getCurrentMillis(),_F_,_L_);
+//	xprintf("%d",is_running);
 	if (is_running) {
 		if (current_block == NULL) {
 			bool got_a_move = getNextMove();
@@ -724,6 +725,7 @@ bool doInterrupt() {
 		}
 	
 		timer_counter -= INTERVAL_IN_MICROSECONDS; //interval_microseconds;
+//		xprintf("%d" " (%s:%d)\n",timer_counter,_F_,_L_);
 
 		if (timer_counter < 0) {
 			// if we are supposed to step too fast, we simulate double-size microsteps

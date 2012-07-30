@@ -189,9 +189,9 @@ void initAnalogPin(uint8_t pin) {
             *adc_finished = true;
     }*/
     extern "C" void ADC_IRQHandler(void){
-    	xprintf("A c1:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1));
-    	xprintf("A c2:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2));
-    	xprintf("A c3:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3));
+//    	xprintf("A c1:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_1));
+//    	xprintf("A c2:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_2));
+//    	xprintf("A c3:%d hc1:%h",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3),ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3));
     	if (ADC_ChannelGetStatus(LPC_ADC,ADC_CHANNEL_1,ADC_DATA_DONE)){
             ADC_IntConfig(LPC_ADC,ADC_ADINTEN1,DISABLE);
             ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_1,DISABLE);

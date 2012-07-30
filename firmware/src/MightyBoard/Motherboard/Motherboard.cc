@@ -92,6 +92,7 @@ void Motherboard::initClocks(){
 	TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TMR3_Cfg);
 	TIM_ConfigMatch(LPC_TIM3, &TMR3_Match);
 	NVIC_SetPriority(TIMER3_IRQn, 16);
+	TIM_ResetCounter(LPC_TIM3);
 	TIM_Cmd(LPC_TIM3,ENABLE);
 	NVIC_EnableIRQ(TIMER3_IRQn);
 //	TCCR0A = 0b01;//0b00000011; ////// default mode off / phase correct piezo   
@@ -116,8 +117,8 @@ void Motherboard::initClocks(){
 	// Set configuration for Tim_config and Tim_MatchConfig
 	TIM_Init(LPC_TIM0, TIM_TIMER_MODE, &TMR0_Cfg);
 	TIM_ConfigMatch(LPC_TIM0, &TMR0_Match);
-	// 0 top priority 32 lowest
 	NVIC_SetPriority(TIMER0_IRQn, 1);
+	TIM_ResetCounter(LPC_TIM0);
 	TIM_Cmd(LPC_TIM0,ENABLE);
 	NVIC_EnableIRQ(TIMER0_IRQn);
 //	TCCR3A = 0x00;
@@ -147,6 +148,7 @@ void Motherboard::initClocks(){
 	TIM_Init(LPC_TIM2, TIM_TIMER_MODE, &TMR2_Cfg);
 	TIM_ConfigMatch(LPC_TIM2, &TMR2_Match);
 	NVIC_SetPriority(TIMER2_IRQn, 12);
+	TIM_ResetCounter(LPC_TIM2);
 	TIM_Cmd(LPC_TIM2,ENABLE);
 	NVIC_EnableIRQ(TIMER2_IRQn);
 //	TCCR2A = 0x00;
@@ -175,6 +177,7 @@ void Motherboard::initClocks(){
 	PWMMatchCfgDat.ResetOnMatch = ENABLE;
 	PWMMatchCfgDat.StopOnMatch = DISABLE;
 	PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
+	PWM_ResetCounter(LPC_PWM1);
 	PWM_MatchUpdate(LPC_PWM1, 0, 500, PWM_MATCH_UPDATE_NOW);
 	PINSEL_CFG_Type PinCfg;
 
@@ -369,6 +372,7 @@ micros_t Motherboard::getCurrentMicros() {
 void Motherboard::doInterrupt() {
 	//micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
+//	xprintf("%d",command::isPaused());
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
 }
