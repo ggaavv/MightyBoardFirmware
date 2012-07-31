@@ -10,6 +10,11 @@
 //#include "Host.hh"
 #include "UtilityScripts.hh"
 
+
+/// this puts a max value on the number of items per menu
+/// TODO : alert during build if number of items exceeds this.
+const static uint8_t MAX_INDICES = 20;
+
 /// states for Welcome Menu
 enum WeclomeStates{
     WELCOME_START,
@@ -127,7 +132,6 @@ class Menu: public Screen {
 public:
 	micros_t getUpdateRate() {return 500L * 1000L;}
 
-
 	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
 
 	void reset();
@@ -146,6 +150,10 @@ protected:
         uint8_t firstItemIndex;         ///< The first selectable item. Set this
                                         ///< to greater than 0 if the first
                                         ///< item(s) are a title)
+        bool selectMode;       			///< true if in counter change state
+		uint8_t selectIndex;        	///< The currently selected item, in a counter change state
+                                        
+        uint8_t counter_item[MAX_INDICES];	///< array defining which idices are counters
 
         /// Draw an item at the current cursor position.
         /// \param[in] index Index of the item to draw
@@ -160,6 +168,11 @@ protected:
         /// menu from the stack, or pop up a confirmation dialog to make sure
         /// that the menu should be removed.
 	virtual void handleCancel();
+	
+		/// Handle update of a menu counter item
+        /// \param[in] index Index of the menu item that was selected
+        /// \param[up] direction of counter, up or down
+	virtual void handleCounterUpdate(uint8_t index, bool up){return;}
 };
 
 /// The Counter menu builds on menu to allow selecting number values .
@@ -272,6 +285,24 @@ public:
     void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
+class BuildFinished: public Screen {
+
+private:
+	bool waiting;
+
+public:
+	
+	bool screenWaiting(void);
+
+	micros_t getUpdateRate() {return 500L * 1000L;}
+	
+	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
+	
+	void reset();
+
+    void notifyButtonPressed(ButtonArray::ButtonName button);
+};
+
 class BotStats: public Screen {
 
 private:
@@ -294,7 +325,7 @@ private:
 	BuildStats build_stats_screen;
 	
 	//Fan ON/OFF
-	//LEDS OFF / COLORS
+	int8_t LEDColor;
 
 	bool is_paused;
 
@@ -309,6 +340,8 @@ protected:
 	void drawItem(uint8_t index, LiquidCrystalSerial& lcd);
     
 	void handleSelect(uint8_t index);
+	
+	void handleCounterUpdate(uint8_t index, bool up);
 };
 
 
@@ -425,28 +458,6 @@ public:
         void notifyButtonPressed(ButtonArray::ButtonName button);
 };
 
-/*class SDSpecialBuild: public Screen{
-	
-	protected:
-		char buildType[host::MAX_FILE_LEN];
-		bool buildFailed;
-		
-
-public:
-	SDSpecialBuild();
-	micros_t getUpdateRate() {return 50L * 1000L;}
-
-
-	void update(LiquidCrystalSerial& lcd, bool forceRedraw);
-
-	void reset();
-	virtual void resetState();
-	
-	bool startBuild(void);
-	void notifyButtonPressed(ButtonArray::ButtonName button);
-
-};*/
-
 class SDMenu: public Menu {
 public:
 	SDMenu();
@@ -454,6 +465,8 @@ public:
 	void resetState();
 	
 	 bool continuousButtons(void) {return true;}
+	 
+	 micros_t getUpdateRate() {return 50L * 1000L;}
 
 protected:
 	bool cardNotFound;
@@ -653,7 +666,7 @@ private:
 	
 };
 
-class SettingsMenu: public CounterMenu {
+class SettingsMenu: public Menu {
 public:
 	SettingsMenu();
     
@@ -703,6 +716,10 @@ private:
 class UtilitiesMenu: public Menu {
 public:
 	UtilitiesMenu();
+	
+	micros_t getUpdateRate() {return 100L * 1000L;}
+	
+	bool continuousButtons(void) {return true;}
 
 
 protected:

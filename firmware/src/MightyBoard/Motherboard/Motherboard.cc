@@ -106,7 +106,7 @@ void Motherboard::initClocks(){
 	TIM_TIMERCFG_Type TMR0_Cfg;
 	TIM_MATCHCFG_Type TMR0_Match;
 	TMR0_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR0_Cfg.PrescaleValue = 1;
+	TMR0_Cfg.PrescaleValue = 30;
 	TMR0_Match.MatchChannel = TIM_MR0_INT;
 	TMR0_Match.IntOnMatch = ENABLE;
 	TMR0_Match.ResetOnMatch = ENABLE;
@@ -271,8 +271,7 @@ void Motherboard::reset(bool hard_reset) {
 		
 	// Check if the interface board is attached
 //	hasInterfaceBoard = interface::isConnected();
-	
-//	DEBUG_PIN5.setValue(true);
+
 
 /*	if (hasInterfaceBoard) {
 
@@ -333,7 +332,7 @@ void Motherboard::reset(bool hard_reset) {
 		cutoff.init();
 		
 		board_status = STATUS_NONE;
-   }
+    } 	
     
      // initialize the extruders
     Extruder_One.reset();
@@ -348,7 +347,7 @@ void Motherboard::reset(bool hard_reset) {
 	platform_heater.set_target_temperature(0);	
 	
 	RGB_LED::setDefaultColor(); 
-	buttonWait = false;
+	buttonWait = false;	
 	
 
 //	DEBUG_LED1.setDirection(true);
@@ -370,15 +369,15 @@ micros_t Motherboard::getCurrentMicros() {
 
 /// Run the motherboard interrupt
 void Motherboard::doInterrupt() {
+
 	//micros += INTERVAL_IN_MICROSECONDS;
 	// Do not move steppers if the board is in a paused state
 //	xprintf("%d",command::isPaused());
 	if (command::isPaused()) return;
 	steppers::doInterrupt();
+	
 }
-
 bool connectionsErrorTriggered = false;
-
 void Motherboard::heaterFail(HeaterFailMode mode){
 
     // record heat fail mode
@@ -420,10 +419,15 @@ void Motherboard::errorResponse(char msg[], bool reset_errorResponse){
 	reset_request = reset_errorResponse;
 }
 
-uint8_t Motherboard::GetErrorStatus(){
+void Motherboard::setBoardStatus(status_states state, bool on){
 
-	return board_status;
+	if (on){
+		board_status |= state;
+	}else{
+		board_status &= ~state;
+	}
 }
+
 
 
 bool triggered = false;
@@ -470,7 +474,7 @@ void Motherboard::runMotherboardSlice() {
 
 	// if no user input for USER_INPUT_TIMEOUT, shutdown heaters and warn user
     // don't do this if a heat failure has occured ( in this case heaters are already shutdown and separate error messaging used)
-    if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING)){
+	if(user_input_timeout.hasElapsed() && !heatShutdown && (host::getHostState() != host::HOST_STATE_BUILDING_FROM_SD) && (host::getHostState() != host::HOST_STATE_BUILDING)){
         // clear timeout
 		user_input_timeout.clear();
 		
@@ -572,7 +576,7 @@ volatile uint32_t loop3;
 extern "C" void TIMER0_IRQHandler (void){
 //	DEBUG_LED1.setDirection(true);
 //	DEBUG_LED1.setValue(true);
-//	xprintf("0" " (%s:%d)\n",_F_,_L_);
+//	xprintf("0");
 //	xprintf("TIMER0_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
 	Motherboard::getBoard().doInterrupt();
@@ -715,7 +719,7 @@ extern "C" void TIMER2_IRQHandler (void){
 			interface_ovfs_remaining = interface_off_time;
 //			interface::setLEDs(false);
 		}
-	}
+	} 
 	if(0){
 		loop2++;
 		if (loop2 > 20){
@@ -764,8 +768,8 @@ void Motherboard::setUsingPlatform(bool is_using) {
 
 void Motherboard::setValve(bool on) {
 //  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		setUsingPlatform(false);
-		pwmHBP_On(false);
+		//setUsingPlatform(false);
+		//pwmHBP_On(false);
 		EXTRA_FET.setDirection(true);
 		EXTRA_FET.setValue(on);
 //	}

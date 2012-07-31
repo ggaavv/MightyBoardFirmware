@@ -177,11 +177,13 @@ void clearLineNumber() {
 
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
+	xprintf("handleMovementCommand" " (%s:%d)\n",_F_,_L_);
 	// if we're already moving, check to make sure the buffer isn't full
 	if (/*mode == MOVING && */planner::isBufferFull()) {
 		return; // we'll be back!
 	}
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {
+		xprintf("HOST_CMD_QUEUE_POINT_EXT" " (%s:%d)\n",_F_,_L_);
 		// check for completion
 		if (command_buffer.getLength() >= 25) {
 			Motherboard::getBoard().resetUserInputTimeout();
@@ -201,6 +203,7 @@ static void handleMovementCommand(const uint8_t &command) {
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
+		xprintf("HOST_CMD_QUEUE_POINT_NEW" " (%s:%d)\n",_F_,_L_);
 		// check for completion
 		if (command_buffer.getLength() >= 26) {
 			Motherboard::getBoard().resetUserInputTimeout();
@@ -232,7 +235,7 @@ bool processExtruderCommandPacket() {
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
 //			xprintf("SLAVE_CMD_SET_TEMP" " (%s:%d)\n",_F_,_L_);
-			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
+			board.getPlatformHeater().set_target_temperature(pop16());
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
 			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(id).getExtruderHeater().isCooling()){
 				check_temp_state = true;
@@ -241,6 +244,7 @@ bool processExtruderCommandPacket() {
 			else {
 				board.getExtruderBoard(id).getExtruderHeater().Pause(false);
 			}
+			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			return true;
 		// can be removed in process via host query works OK
  		case SLAVE_CMD_PAUSE_UNPAUSE:
@@ -265,6 +269,7 @@ bool processExtruderCommandPacket() {
 			check_temp_state = pause_state;
 			board.getExtruderBoard(0).getExtruderHeater().Pause(pause_state);
 			board.getExtruderBoard(1).getExtruderHeater().Pause(pause_state);
+			Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_PREHEATING, false);
 			
 			return true;
         // not being used with 5D
@@ -309,6 +314,7 @@ bool processExtruderCommandPacket() {
 void runCommandSlice() {
     // get command from SD card if building from SD
 	if (sdcard::isPlaying()) {
+		DEBUG_PIN2.setValue(true);
 		while (command_buffer.getRemainingCapacity() > 0 && sdcard::playbackHasNext()) {
 			sd_count++;
 			command_buffer.push(sdcard::playbackNext());
@@ -352,7 +358,6 @@ void runCommandSlice() {
 	}
 	// don't execute commands if paused or shutdown because of heater failure
 	if (paused || heat_shutdown) {	return; }
-    
 	if (mode == HOMING) {
 //		xprintf("HOMING" " (%s:%d)\n",_F_,_L_);
 		if (!steppers::isRunning()) {
@@ -363,15 +368,9 @@ void runCommandSlice() {
 		}
 	}
 	if (mode == MOVING) {
-//		xprintf("1");
-//		xprintf("12" " (%s:%d)\n",_F_,_L_);
 		if (!steppers::isRunning()) {
-//			xprintf("2");
-//			xprintf("13" " (%s:%d)\n",_F_,_L_);
 			mode = READY;
 		} else {
-//			xprintf("3");
-//			xprintf("13" " (%s:%d)\n",_F_,_L_);
 			if (command_buffer.getLength() > 0) {
 				Motherboard::getBoard().resetUserInputTimeout();
 				uint8_t command = command_buffer[0];
@@ -431,7 +430,7 @@ void runCommandSlice() {
 		} else {
 			// Check buttons
 //			InterfaceBoard& ib = Motherboard::getBoard().getInterfaceBoard();
-//			if (ib.buttonPushed()) {
+//			if (ib.buttonPushed()) {			
 //				if(button_timeout_behavior & (1 << BUTTON_CLEAR_SCREEN))
 //					ib.popScreen();
 //				Motherboard::getBoard().interfaceBlink(0,0);

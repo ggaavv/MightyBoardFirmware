@@ -207,15 +207,15 @@ void UART::beginSend() {
 	if (index_ == RS232) {		//uart0 eg usb
 		static unsigned char sendBuffer[64];
 		sendBuffer[0] = UART::getHostUART().out.getNextByteToSend();
-		xprintf("out %d",sendBuffer[0]);
+//		xprintf("out %d",sendBuffer[0]);
 		while (UART::getHostUART().out.isSending()) {
 			uint32_t i;
 			for (i = 1; i < USB_CDC_BUFSIZE-1; i++){
 				sendBuffer[i] = UART::getHostUART().out.getNextByteToSend();
-				xprintf(" %d",sendBuffer[i]);
+//				xprintf(" %d",sendBuffer[i]);
 				if (!UART::getHostUART().out.isSending()) goto skip;
 			}
-			xprintf("\n");
+//			xprintf("\n");
 			skip:
 			USB_WriteEP (CDC_DEP_IN, (unsigned char *)&sendBuffer[0], i+1);
 		}
@@ -311,12 +311,12 @@ uint8_t BulkBufOut  [USB_CDC_BUFSIZE];
 
 extern "C" void CANActivity_IRQHandler(void){
 	int numBytesRead = USB_ReadEP(CDC_DEP_OUT, &BulkBufOut[0]);
-		xprintf("\nin");
+//		xprintf("\nin");
 	for (int i = 0; i < numBytesRead; i++){
-		xprintf(" %d",BulkBufOut[i]);
+//		xprintf(" %d",BulkBufOut[i]);
 		UART::getHostUART().in.processByte( BulkBufOut[i] );
 	}
-	xprintf("\n");
+//	xprintf("\n");
 }
 
 // Reset the UART to a listening state.  This is important for

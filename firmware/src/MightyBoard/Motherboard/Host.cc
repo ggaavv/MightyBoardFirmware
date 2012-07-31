@@ -97,7 +97,7 @@ bool cancelBuild = false;
 
 void runHostSlice() {
 		
-         InPacket& in = UART::getHostUART().in;
+        InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
@@ -105,16 +105,13 @@ void runHostSlice() {
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
-		
-		
-		
+			
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
 			stopBuild();
 		}
 		do_host_reset = false;
 
 		// reset local board
-		
  		reset(hard_reset);
 		
         // hard_reset can be called, but is not called by any
@@ -532,10 +529,11 @@ inline void handleGetBuildStats(OutPacket& to_host) {
         to_host.append32(0);// open spot for filament detect info
 }
 /// get current print stats if printing, or last print stats if not printing
+/// for documentation of these status bytes, see docs/MotherboardStatusBytes.md
 inline void handleGetBoardStatus(OutPacket& to_host) {
 	Motherboard& board = Motherboard::getBoard();
 	to_host.append8(RC_OK);
-	to_host.append8(board.GetErrorStatus());
+	to_host.append8(board.GetBoardStatus());
 }
 
 // query packets (non action, not queued)
@@ -656,7 +654,8 @@ HostState getHostState() {
 
 sdcard::SdErrorCode startBuildFromSD() {
 	sdcard::SdErrorCode e;
-
+	
+	
 	// Attempt to start build
 	e = sdcard::startPlayback(buildName);
 	if (e != sdcard::SD_SUCCESS) {
@@ -672,7 +671,6 @@ sdcard::SdErrorCode startBuildFromSD() {
 	command::reset();
 	steppers::reset();
 	planner::abort();
-	
 
 	currentState = HOST_STATE_BUILDING_FROM_SD;
 
@@ -684,6 +682,7 @@ void startOnboardBuild(uint8_t  build){
 	if(utility::startPlayback(build)){
 		currentState = HOST_STATE_BUILDING_ONBOARD;
 	}
+	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, true);
 	command::reset();
 	planner::abort();
 }
@@ -697,8 +696,18 @@ void stopBuild() {
 		cancel_timeout.start(1000000); //look for commands from repG for one second before resetting
 		cancelBuild = true;
 	}
+	
 	last_print_line = command::getLineNumber();
 	stopPrintTime();
+	//planner::abort();
+	//command::reset();
+	//interface::BuildFinished();
+	
+	//if((state == host::HOST_STATE_BUILDING) ||
+     //       (state == host::HOST_STATE_BUILDING_FROM_SD)){
+	//			host::startOnboardBuild(utility::CANCEL_BUILD);
+	//		}
+	Motherboard::getBoard().setBoardStatus(Motherboard::STATUS_ONBOARD_SCRIPT, false);
 	do_host_reset = true; // indicate reset after response has been sent
 	buildState = BUILD_CANCELED;
 }
