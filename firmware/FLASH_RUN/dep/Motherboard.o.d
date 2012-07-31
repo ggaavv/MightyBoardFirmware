@@ -49,7 +49,9 @@ FLASH_RUN/Motherboard.o: src/MightyBoard/Motherboard/Motherboard.cc \
  src/MightyBoard/Motherboard/Delay.hh \
  src/MightyBoard/Motherboard/lib/include/lpc17xx_timer.h \
  src/MightyBoard/Motherboard/lib/include/lpc17xx_nvic.h \
- src/MightyBoard/Motherboard/lib/include/lpc17xx_clkpwr.h
+ src/MightyBoard/Motherboard/lib/include/lpc17xx_clkpwr.h \
+ src/MightyBoard/Motherboard/lib/include/lpc17xx_rtc.h \
+ src/MightyBoard/Motherboard/lib/include/lpc17xx_pwm.h
 
 src/MightyBoard/Motherboard/Motherboard.hh:
 
@@ -172,3 +174,7 @@ src/MightyBoard/Motherboard/lib/include/lpc17xx_timer.h:
 src/MightyBoard/Motherboard/lib/include/lpc17xx_nvic.h:
 
 src/MightyBoard/Motherboard/lib/include/lpc17xx_clkpwr.h:
+
+src/MightyBoard/Motherboard/lib/include/lpc17xx_rtc.h:
+
+src/MightyBoard/Motherboard/lib/include/lpc17xx_pwm.h:

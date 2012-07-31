@@ -257,29 +257,30 @@
   28:src/MightyBoard/Motherboard/ExtruderBoard.cc **** extern "C" {
   29:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	#include "lpc17xx_timer.h"
   30:src/MightyBoard/Motherboard/ExtruderBoard.cc **** #include "comm.h"
-  31:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
-  32:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  31:src/MightyBoard/Motherboard/ExtruderBoard.cc **** #include "lpc17xx_pwm.h"
+  32:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
   33:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  34:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //ExtruderBoard ExtruderBoard::extruder_board;
-  35:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  36:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
-  37:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		Pin ThermocouplePin_In,	uint16_t eeprom_base) :
-  38:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //     		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
-  39:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			extruder_thermistor(slave_id_in, 0),
-  40:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		extruder_element(slave_id_in),
-  41:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //     		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE
-  42:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		extruder_heater(extruder_thermistor,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
-  43:src/MightyBoard/Motherboard/ExtruderBoard.cc ****         		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),
-  44:src/MightyBoard/Motherboard/ExtruderBoard.cc ****       		coolingFan(extruder_heater, (eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS), 
-  45:src/MightyBoard/Motherboard/ExtruderBoard.cc ****       		slave_id(slave_id_in),
-  46:src/MightyBoard/Motherboard/ExtruderBoard.cc ****       		Heater_Pin(HeaterPin_In),
-  47:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			eeprom_base(eeprom_base)
-  48:src/MightyBoard/Motherboard/ExtruderBoard.cc **** {
-  49:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
-  50:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  34:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  35:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //ExtruderBoard ExtruderBoard::extruder_board;
+  36:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  37:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
+  38:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		Pin ThermocouplePin_In,	uint16_t eeprom_base) :
+  39:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //     		extruder_thermocouple(ThermocouplePin_In,THERMOCOUPLE_SCK,THERMOCOUPLE_SO),
+  40:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			extruder_thermistor(slave_id_in, 0),
+  41:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		extruder_element(slave_id_in),
+  42:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //     		extruder_heater(extruder_thermocouple,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE
+  43:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		extruder_heater(extruder_thermistor,extruder_element,SAMPLE_INTERVAL_MICROS_THERMOCOUPLE,
+  44:src/MightyBoard/Motherboard/ExtruderBoard.cc ****         		  (eeprom_base+ toolhead_eeprom_offsets::EXTRUDER_PID_BASE), true ),
+  45:src/MightyBoard/Motherboard/ExtruderBoard.cc ****       		coolingFan(extruder_heater, (eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS), 
+  46:src/MightyBoard/Motherboard/ExtruderBoard.cc ****       		slave_id(slave_id_in),
+  47:src/MightyBoard/Motherboard/ExtruderBoard.cc ****       		Heater_Pin(HeaterPin_In),
+  48:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			eeprom_base(eeprom_base)
+  49:src/MightyBoard/Motherboard/ExtruderBoard.cc **** {
+  50:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
   51:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  52:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void ExtruderBoard::reset() {
- 177              	 .loc 3 52 0
+  52:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  53:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void ExtruderBoard::reset() {
+ 177              	 .loc 3 53 0
  178              	 .cfi_startproc
  179              	 
  180              	 
@@ -290,10 +291,18 @@
  185              	 .cfi_offset 14,-4
  186              	 .cfi_offset 4,-8
  187 0002 0446     	 mov r4,r0
- 188              	.LVL9:
- 189              	.LBB48:
- 190              	.LBB49:
- 191              	 .file 4 "src/MightyBoard/shared/Pin.hh"
+  54:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	xprintf("ExtruderBoard::reset()" " (%s:%d)\n",_F_,_L_);
+ 188              	 .loc 3 54 0
+ 189 0004 40F20000 	 movw r0,#:lower16:.LC0
+ 190              	.LVL9:
+ 191 0008 C0F20000 	 movt r0,#:upper16:.LC0
+ 192 000c 1149     	 ldr r1,.L23
+ 193 000e 4FF03602 	 mov r2,#54
+ 194 0012 FFF7FEFF 	 bl xprintf
+ 195              	.LVL10:
+ 196              	.LBB48:
+ 197              	.LBB49:
+ 198              	 .file 4 "src/MightyBoard/shared/Pin.hh"
    1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
    2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
    3:src/MightyBoard/shared/Pin.hh **** 
@@ -329,10 +338,9 @@
   33:src/MightyBoard/shared/Pin.hh **** 
   34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
   35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 192              	 .loc 4 35 0
- 193 0004 90F8B530 	 ldrb r3,[r0,#181]
- 194 0008 4BB9     	 cbnz r3,.L22
- 195              	.LVL10:
+ 199              	 .loc 4 35 0
+ 200 0016 94F8B530 	 ldrb r3,[r4,#181]
+ 201 001a 4BB9     	 cbnz r3,.L22
   36:src/MightyBoard/shared/Pin.hh **** 		 	return;
   37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
   38:src/MightyBoard/shared/Pin.hh **** 
@@ -346,555 +354,527 @@
   46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
   47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
   48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
- 196              	 .loc 4 48 0
- 197 000a 90F8B630 	 ldrb r3,[r0,#182]
- 198 000e 90F8B400 	 ldrb r0,[r0,#180]
- 199              	.LVL11:
- 200 0012 4FF00101 	 mov r1,#1
- 201 0016 01FA03F1 	 lsl r1,r1,r3
- 202 001a FFF7FEFF 	 bl GPIO_ClearValue
- 203              	.L22:
- 204              	.LBE49:
- 205              	.LBE48:
-  53:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  54:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+ 202              	 .loc 4 48 0
+ 203 001c 94F8B630 	 ldrb r3,[r4,#182]
+ 204 0020 94F8B400 	 ldrb r0,[r4,#180]
+ 205 0024 4FF00101 	 mov r1,#1
+ 206 0028 01FA03F1 	 lsl r1,r1,r3
+ 207 002c FFF7FEFF 	 bl GPIO_ClearValue
+ 208              	.L22:
+ 209              	.LBE49:
+ 210              	.LBE48:
   55:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	// Set the output mode for the mosfets.  
   56:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	Heater_Pin.setValue(false);
   57:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	Heater_Pin.setDirection(true);
- 206              	 .loc 3 57 0
- 207 001e 04F1B400 	 add r0,r4,#180
- 208 0022 4FF00101 	 mov r1,#1
- 209 0026 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+ 211              	 .loc 3 57 0
+ 212 0030 04F1B400 	 add r0,r4,#180
+ 213 0034 4FF00101 	 mov r1,#1
+ 214 0038 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
   58:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
   59:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	extruder_heater.reset();
- 210              	 .loc 3 59 0
- 211 002a 04F12800 	 add r0,r4,#40
- 212 002e FFF7FEFF 	 bl _ZN6Heater5resetEv
+ 215              	 .loc 3 59 0
+ 216 003c 04F12800 	 add r0,r4,#40
+ 217 0040 FFF7FEFF 	 bl _ZN6Heater5resetEv
   60:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //	extruder_thermocouple.init();
   61:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	extruder_thermistor.init();
- 213              	 .loc 3 61 0
- 214 0032 2046     	 mov r0,r4
- 215 0034 FFF7FEFF 	 bl _ZN10Thermistor4initEv
+ 218              	 .loc 3 61 0
+ 219 0044 2046     	 mov r0,r4
+ 220 0046 FFF7FEFF 	 bl _ZN10Thermistor4initEv
   62:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	coolingFan.reset();
- 216              	 .loc 3 62 0
- 217 0038 04F1BC00 	 add r0,r4,#188
- 218 003c FFF7FEFF 	 bl _ZN10CoolingFan5resetEv
+ 221              	 .loc 3 62 0
+ 222 004a 04F1BC00 	 add r0,r4,#188
+ 223 004e FFF7FEFF 	 bl _ZN10CoolingFan5resetEv
   63:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
   64:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
- 219              	 .loc 3 64 0
- 220 0040 10BD     	 pop {r4,pc}
- 221              	 .cfi_endproc
- 222              	.LFE90:
- 224 0042 00BF     	 .section .text._ZN13ExtruderBoard16runExtruderSliceEv,"ax",%progbits
- 225              	 .align 2
- 226              	 .global _ZN13ExtruderBoard16runExtruderSliceEv
- 227              	 .thumb
- 228              	 .thumb_func
- 230              	_ZN13ExtruderBoard16runExtruderSliceEv:
- 231              	.LFB91:
+ 224              	 .loc 3 64 0
+ 225 0052 10BD     	 pop {r4,pc}
+ 226              	.L24:
+ 227              	 .align 2
+ 228              	.L23:
+ 229 0054 1C000000 	 .word .LC1+28
+ 230              	 .cfi_endproc
+ 231              	.LFE90:
+ 233              	 .section .text._ZN13ExtruderBoard16runExtruderSliceEv,"ax",%progbits
+ 234              	 .align 2
+ 235              	 .global _ZN13ExtruderBoard16runExtruderSliceEv
+ 236              	 .thumb
+ 237              	 .thumb_func
+ 239              	_ZN13ExtruderBoard16runExtruderSliceEv:
+ 240              	.LFB91:
   65:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
   66:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void ExtruderBoard::runExtruderSlice() {
- 232              	 .loc 3 66 0
- 233              	 .cfi_startproc
- 234              	 
- 235              	 
- 236              	.LVL12:
- 237 0000 10B5     	 push {r4,lr}
- 238              	.LCFI3:
- 239              	 .cfi_def_cfa_offset 8
- 240              	 .cfi_offset 14,-4
- 241              	 .cfi_offset 4,-8
- 242 0002 0446     	 mov r4,r0
-  67:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  68:src/MightyBoard/Motherboard/ExtruderBoard.cc ****         extruder_heater.manage_temperature();
- 243              	 .loc 3 68 0
- 244 0004 00F12800 	 add r0,r0,#40
- 245              	.LVL13:
- 246 0008 FFF7FEFF 	 bl _ZN6Heater18manage_temperatureEv
-  69:src/MightyBoard/Motherboard/ExtruderBoard.cc ****         coolingFan.manageCoolingFan();
- 247              	 .loc 3 69 0
- 248 000c 04F1BC00 	 add r0,r4,#188
- 249 0010 FFF7FEFF 	 bl _ZN10CoolingFan16manageCoolingFanEv
-  70:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  71:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
- 250              	 .loc 3 71 0
- 251 0014 10BD     	 pop {r4,pc}
- 252              	 .cfi_endproc
- 253              	.LFE91:
- 255 0016 00BF     	 .section .text._ZN13ExtruderBoard6setFanEh,"ax",%progbits
- 256              	 .align 2
- 257              	 .global _ZN13ExtruderBoard6setFanEh
- 258              	 .thumb
- 259              	 .thumb_func
- 261              	_ZN13ExtruderBoard6setFanEh:
- 262              	.LFB92:
-  72:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  73:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void ExtruderBoard::setFan(uint8_t on)
-  74:src/MightyBoard/Motherboard/ExtruderBoard.cc **** {
- 263              	 .loc 3 74 0
- 264              	 .cfi_startproc
- 265              	 
- 266              	 
- 267              	.LVL14:
- 268 0000 08B5     	 push {r3,lr}
- 269              	.LCFI4:
- 270              	 .cfi_def_cfa_offset 8
- 271              	 .cfi_offset 14,-4
- 272              	 .cfi_offset 3,-8
-  75:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	if(on)
- 273              	 .loc 3 75 0
- 274 0002 21B1     	 cbz r1,.L25
-  76:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		coolingFan.enable();
- 275              	 .loc 3 76 0
- 276 0004 00F1BC00 	 add r0,r0,#188
- 277              	.LVL15:
- 278 0008 FFF7FEFF 	 bl _ZN10CoolingFan6enableEv
- 279              	.LVL16:
- 280 000c 08BD     	 pop {r3,pc}
- 281              	.LVL17:
- 282              	.L25:
-  77:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	else
-  78:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		coolingFan.disable();
- 283              	 .loc 3 78 0
- 284 000e 00F1BC00 	 add r0,r0,#188
- 285              	.LVL18:
- 286 0012 FFF7FEFF 	 bl _ZN10CoolingFan7disableEv
- 287              	.LVL19:
- 288 0016 08BD     	 pop {r3,pc}
- 289              	 .cfi_endproc
- 290              	.LFE92:
- 292              	 .section .text._Z9pwmEx2_Onb,"ax",%progbits
- 293              	 .align 2
- 294              	 .global _Z9pwmEx2_Onb
- 295              	 .thumb
- 296              	 .thumb_func
- 298              	_Z9pwmEx2_Onb:
- 299              	.LFB93:
-  79:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
-  80:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  81:src/MightyBoard/Motherboard/ExtruderBoard.cc **** // Turn on/off PWM for Extruder Two (OC1A)
-  82:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void pwmEx2_On(bool on) {
- 300              	 .loc 3 82 0
- 301              	 .cfi_startproc
- 302              	 
- 303              	 
- 304              	.LVL20:
- 305 0000 08B5     	 push {r3,lr}
- 306              	.LCFI5:
- 307              	 .cfi_def_cfa_offset 8
- 308              	 .cfi_offset 14,-4
- 309              	 .cfi_offset 3,-8
-  83:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	if (on) {
- 310              	 .loc 3 83 0
- 311 0002 88B1     	 cbz r0,.L28
-  84:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		TIM_Cmd(LPC_TIM1,ENABLE);
- 312              	 .loc 3 84 0
- 313 0004 4FF40040 	 mov r0,#32768
- 314              	.LVL21:
- 315 0008 C4F20000 	 movt r0,16384
- 316 000c 4FF00101 	 mov r1,#1
- 317 0010 FFF7FEFF 	 bl TIM_Cmd
-  85:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		xprintf("TIM_Cmd(LPC_TIM1,ENABLE)" " (%s:%d)\n",_F_,_L_);
- 318              	 .loc 3 85 0
- 319 0014 40F20000 	 movw r0,#:lower16:.LC0
- 320 0018 C0F20000 	 movt r0,#:upper16:.LC0
- 321 001c 0B49     	 ldr r1,.L30
- 322 001e 4FF05502 	 mov r2,#85
- 323 0022 FFF7FEFF 	 bl xprintf
- 324 0026 08BD     	 pop {r3,pc}
- 325              	.LVL22:
- 326              	.L28:
-  86:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR1A |= 0b10000000;
-  87:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	} else {
-  88:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		TIM_Cmd(LPC_TIM1,DISABLE);
- 327              	 .loc 3 88 0
- 328 0028 4FF40040 	 mov r0,#32768
- 329              	.LVL23:
- 330 002c C4F20000 	 movt r0,16384
- 331 0030 4FF00001 	 mov r1,#0
- 332 0034 FFF7FEFF 	 bl TIM_Cmd
-  89:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		xprintf("TIM_Cmd(LPC_TIM1,DISABLE)" " (%s:%d)\n",_F_,_L_);
- 333              	 .loc 3 89 0
- 334 0038 40F20000 	 movw r0,#:lower16:.LC2
- 335 003c C0F20000 	 movt r0,#:upper16:.LC2
- 336 0040 0249     	 ldr r1,.L30
- 337 0042 4FF05902 	 mov r2,#89
- 338 0046 FFF7FEFF 	 bl xprintf
- 339 004a 08BD     	 pop {r3,pc}
- 340              	.L31:
- 341              	 .align 2
- 342              	.L30:
- 343 004c 1C000000 	 .word .LC1+28
- 344              	 .cfi_endproc
- 345              	.LFE93:
- 347              	 .section .text._Z9pwmEx1_Onb,"ax",%progbits
- 348              	 .align 2
- 349              	 .global _Z9pwmEx1_Onb
- 350              	 .thumb
- 351              	 .thumb_func
- 353              	_Z9pwmEx1_Onb:
- 354              	.LFB94:
-  90:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR1A &= 0b00111111;
-  91:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	}
-  92:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
-  93:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
-  94:src/MightyBoard/Motherboard/ExtruderBoard.cc **** // Turn on/off PWM for Extruder One (OC4A)
-  95:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void pwmEx1_On(bool on) {
- 355              	 .loc 3 95 0
- 356              	 .cfi_startproc
- 357              	 
- 358              	 
- 359              	.LVL24:
- 360 0000 08B5     	 push {r3,lr}
- 361              	.LCFI6:
- 362              	 .cfi_def_cfa_offset 8
- 363              	 .cfi_offset 14,-4
- 364              	 .cfi_offset 3,-8
-  96:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	if (on) {
- 365              	 .loc 3 96 0
- 366 0002 88B1     	 cbz r0,.L33
-  97:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		TIM_Cmd(LPC_TIM2,ENABLE);
- 367              	 .loc 3 97 0
- 368 0004 4FF00000 	 mov r0,#0
- 369              	.LVL25:
- 370 0008 C4F20900 	 movt r0,16393
- 371 000c 4FF00101 	 mov r1,#1
- 372 0010 FFF7FEFF 	 bl TIM_Cmd
-  98:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		xprintf("TIM_Cmd(LPC_TIM2,ENABLE)" " (%s:%d)\n",_F_,_L_);
- 373              	 .loc 3 98 0
- 374 0014 40F20000 	 movw r0,#:lower16:.LC3
- 375 0018 C0F20000 	 movt r0,#:upper16:.LC3
- 376 001c 0B49     	 ldr r1,.L35
- 377 001e 4FF06202 	 mov r2,#98
- 378 0022 FFF7FEFF 	 bl xprintf
- 379 0026 08BD     	 pop {r3,pc}
- 380              	.LVL26:
- 381              	.L33:
-  99:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR4A |= 0b10000000;
- 100:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	} else {
- 101:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		TIM_Cmd(LPC_TIM2,DISABLE);
- 382              	 .loc 3 101 0
- 383 0028 4FF00000 	 mov r0,#0
- 384              	.LVL27:
- 385 002c C4F20900 	 movt r0,16393
- 386 0030 4FF00001 	 mov r1,#0
- 387 0034 FFF7FEFF 	 bl TIM_Cmd
- 102:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		xprintf("TIM_Cmd(LPC_TIM2,DISABLE)" " (%s:%d)\n",_F_,_L_);
- 388              	 .loc 3 102 0
- 389 0038 40F20000 	 movw r0,#:lower16:.LC4
- 390 003c C0F20000 	 movt r0,#:upper16:.LC4
- 391 0040 0249     	 ldr r1,.L35
- 392 0042 4FF06602 	 mov r2,#102
- 393 0046 FFF7FEFF 	 bl xprintf
- 394 004a 08BD     	 pop {r3,pc}
- 395              	.L36:
- 396              	 .align 2
- 397              	.L35:
- 398 004c 1C000000 	 .word .LC1+28
- 399              	 .cfi_endproc
- 400              	.LFE94:
- 402              	 .section .text._ZN22ExtruderHeatingElement17setHeatingElementEh,"ax",%progbits
- 403              	 .align 2
- 404              	 .global _ZN22ExtruderHeatingElement17setHeatingElementEh
- 405              	 .thumb
- 406              	 .thumb_func
- 408              	_ZN22ExtruderHeatingElement17setHeatingElementEh:
- 409              	.LFB101:
- 103:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR4A &= 0b00111111;
- 104:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	} 
- 105:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
- 106:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
- 107:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
- 108:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	heater_id(id)
- 109:src/MightyBoard/Motherboard/ExtruderBoard.cc **** {
- 110:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
- 111:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
- 112:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
- 410              	 .loc 3 112 0
- 411              	 .cfi_startproc
- 412              	 
- 413              	 
- 414              	.LVL28:
- 415 0000 10B5     	 push {r4,lr}
- 416              	.LCFI7:
- 417              	 .cfi_def_cfa_offset 8
- 418              	 .cfi_offset 14,-4
- 419              	 .cfi_offset 4,-8
- 420 0002 84B0     	 sub sp,sp,#16
- 421              	.LCFI8:
- 422              	 .cfi_def_cfa_offset 24
- 423 0004 0C46     	 mov r4,r1
+ 241              	 .loc 3 66 0
+ 242              	 .cfi_startproc
+ 243              	 
+ 244              	 
+ 245              	.LVL11:
+ 246 0000 10B5     	 push {r4,lr}
+ 247              	.LCFI3:
+ 248              	 .cfi_def_cfa_offset 8
+ 249              	 .cfi_offset 14,-4
+ 250              	 .cfi_offset 4,-8
+ 251 0002 0446     	 mov r4,r0
+  67:src/MightyBoard/Motherboard/ExtruderBoard.cc ****         extruder_heater.manage_temperature();
+ 252              	 .loc 3 67 0
+ 253 0004 00F12800 	 add r0,r0,#40
+ 254              	.LVL12:
+ 255 0008 FFF7FEFF 	 bl _ZN6Heater18manage_temperatureEv
+  68:src/MightyBoard/Motherboard/ExtruderBoard.cc ****         coolingFan.manageCoolingFan();
+ 256              	 .loc 3 68 0
+ 257 000c 04F1BC00 	 add r0,r4,#188
+ 258 0010 FFF7FEFF 	 bl _ZN10CoolingFan16manageCoolingFanEv
+  69:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  70:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+ 259              	 .loc 3 70 0
+ 260 0014 10BD     	 pop {r4,pc}
+ 261              	 .cfi_endproc
+ 262              	.LFE91:
+ 264 0016 00BF     	 .section .text._ZN13ExtruderBoard6setFanEh,"ax",%progbits
+ 265              	 .align 2
+ 266              	 .global _ZN13ExtruderBoard6setFanEh
+ 267              	 .thumb
+ 268              	 .thumb_func
+ 270              	_ZN13ExtruderBoard6setFanEh:
+ 271              	.LFB92:
+  71:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  72:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void ExtruderBoard::setFan(uint8_t on)
+  73:src/MightyBoard/Motherboard/ExtruderBoard.cc **** {
+ 272              	 .loc 3 73 0
+ 273              	 .cfi_startproc
+ 274              	 
+ 275              	 
+ 276              	.LVL13:
+ 277 0000 08B5     	 push {r3,lr}
+ 278              	.LCFI4:
+ 279              	 .cfi_def_cfa_offset 8
+ 280              	 .cfi_offset 14,-4
+ 281              	 .cfi_offset 3,-8
+  74:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	if(on)
+ 282              	 .loc 3 74 0
+ 283 0002 21B1     	 cbz r1,.L27
+  75:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		coolingFan.enable();
+ 284              	 .loc 3 75 0
+ 285 0004 00F1BC00 	 add r0,r0,#188
+ 286              	.LVL14:
+ 287 0008 FFF7FEFF 	 bl _ZN10CoolingFan6enableEv
+ 288              	.LVL15:
+ 289 000c 08BD     	 pop {r3,pc}
+ 290              	.LVL16:
+ 291              	.L27:
+  76:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	else
+  77:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		coolingFan.disable();
+ 292              	 .loc 3 77 0
+ 293 000e 00F1BC00 	 add r0,r0,#188
+ 294              	.LVL17:
+ 295 0012 FFF7FEFF 	 bl _ZN10CoolingFan7disableEv
+ 296              	.LVL18:
+ 297 0016 08BD     	 pop {r3,pc}
+ 298              	 .cfi_endproc
+ 299              	.LFE92:
+ 301              	 .section .text._Z9pwmEx2_Onb,"ax",%progbits
+ 302              	 .align 2
+ 303              	 .global _Z9pwmEx2_Onb
+ 304              	 .thumb
+ 305              	 .thumb_func
+ 307              	_Z9pwmEx2_Onb:
+ 308              	.LFB93:
+  78:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+  79:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  80:src/MightyBoard/Motherboard/ExtruderBoard.cc **** // Turn on/off PWM for Extruder Two (OC1A)
+  81:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void pwmEx2_On(bool on) {
+ 309              	 .loc 3 81 0
+ 310              	 .cfi_startproc
+ 311              	 
+ 312              	 
+ 313              	.LVL19:
+ 314 0000 08B5     	 push {r3,lr}
+ 315              	.LCFI5:
+ 316              	 .cfi_def_cfa_offset 8
+ 317              	 .cfi_offset 14,-4
+ 318              	 .cfi_offset 3,-8
+  82:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	if (on) {
+ 319              	 .loc 3 82 0
+ 320 0002 50B1     	 cbz r0,.L30
+  83:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		PWM_ChannelCmd(LPC_PWM1, 4, ENABLE);
+ 321              	 .loc 3 83 0
+ 322 0004 4FF40040 	 mov r0,#32768
+ 323              	.LVL20:
+ 324 0008 C4F20100 	 movt r0,16385
+ 325 000c 4FF00401 	 mov r1,#4
+ 326 0010 4FF00102 	 mov r2,#1
+ 327 0014 FFF7FEFF 	 bl PWM_ChannelCmd
+ 328 0018 08BD     	 pop {r3,pc}
+ 329              	.LVL21:
+ 330              	.L30:
+  84:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, ENABLE)" " (%s:%d)\n",_F_,_L_);
+  85:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR1A |= 0b10000000;
+  86:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	} else {
+  87:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		PWM_ChannelCmd(LPC_PWM1, 4, DISABLE);
+ 331              	 .loc 3 87 0
+ 332 001a 4FF40040 	 mov r0,#32768
+ 333              	.LVL22:
+ 334 001e C4F20100 	 movt r0,16385
+ 335 0022 4FF00401 	 mov r1,#4
+ 336 0026 4FF00002 	 mov r2,#0
+ 337 002a FFF7FEFF 	 bl PWM_ChannelCmd
+ 338 002e 08BD     	 pop {r3,pc}
+ 339              	 .cfi_endproc
+ 340              	.LFE93:
+ 342              	 .section .text._Z9pwmEx1_Onb,"ax",%progbits
+ 343              	 .align 2
+ 344              	 .global _Z9pwmEx1_Onb
+ 345              	 .thumb
+ 346              	 .thumb_func
+ 348              	_Z9pwmEx1_Onb:
+ 349              	.LFB94:
+  88:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, DISABLE)" " (%s:%d)\n",_F_,_L_);
+  89:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR1A &= 0b00111111;
+  90:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	}
+  91:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+  92:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+  93:src/MightyBoard/Motherboard/ExtruderBoard.cc **** // Turn on/off PWM for Extruder One (OC4A)
+  94:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void pwmEx1_On(bool on) {
+ 350              	 .loc 3 94 0
+ 351              	 .cfi_startproc
+ 352              	 
+ 353              	 
+ 354              	.LVL23:
+ 355 0000 08B5     	 push {r3,lr}
+ 356              	.LCFI6:
+ 357              	 .cfi_def_cfa_offset 8
+ 358              	 .cfi_offset 14,-4
+ 359              	 .cfi_offset 3,-8
+  95:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	if (on) {
+ 360              	 .loc 3 95 0
+ 361 0002 50B1     	 cbz r0,.L33
+  96:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		PWM_ChannelCmd(LPC_PWM1, 5, ENABLE);
+ 362              	 .loc 3 96 0
+ 363 0004 4FF40040 	 mov r0,#32768
+ 364              	.LVL24:
+ 365 0008 C4F20100 	 movt r0,16385
+ 366 000c 4FF00501 	 mov r1,#5
+ 367 0010 4FF00102 	 mov r2,#1
+ 368 0014 FFF7FEFF 	 bl PWM_ChannelCmd
+ 369 0018 08BD     	 pop {r3,pc}
+ 370              	.LVL25:
+ 371              	.L33:
+  97:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, ENABLE)" " (%s:%d)\n",_F_,_L_);
+  98:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR4A |= 0b10000000;
+  99:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	} else {
+ 100:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		PWM_ChannelCmd(LPC_PWM1, 5, DISABLE);
+ 372              	 .loc 3 100 0
+ 373 001a 4FF40040 	 mov r0,#32768
+ 374              	.LVL26:
+ 375 001e C4F20100 	 movt r0,16385
+ 376 0022 4FF00501 	 mov r1,#5
+ 377 0026 4FF00002 	 mov r2,#0
+ 378 002a FFF7FEFF 	 bl PWM_ChannelCmd
+ 379 002e 08BD     	 pop {r3,pc}
+ 380              	 .cfi_endproc
+ 381              	.LFE94:
+ 383              	 .section .text._ZN22ExtruderHeatingElement17setHeatingElementEh,"ax",%progbits
+ 384              	 .align 2
+ 385              	 .global _ZN22ExtruderHeatingElement17setHeatingElementEh
+ 386              	 .thumb
+ 387              	 .thumb_func
+ 389              	_ZN22ExtruderHeatingElement17setHeatingElementEh:
+ 390              	.LFB101:
+ 101:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, DISABLE)" " (%s:%d)\n",_F_,_L_);
+ 102:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //		TCCR4A &= 0b00111111;
+ 103:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	} 
+ 104:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+ 105:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+ 106:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
+ 107:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	heater_id(id)
+ 108:src/MightyBoard/Motherboard/ExtruderBoard.cc **** {
+ 109:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+ 110:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 
+ 111:src/MightyBoard/Motherboard/ExtruderBoard.cc **** void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
+ 391              	 .loc 3 111 0
+ 392              	 .cfi_startproc
+ 393              	 
+ 394              	 
+ 395              	.LVL27:
+ 396 0000 10B5     	 push {r4,lr}
+ 397              	.LCFI7:
+ 398              	 .cfi_def_cfa_offset 8
+ 399              	 .cfi_offset 14,-4
+ 400              	 .cfi_offset 4,-8
+ 401 0002 84B0     	 sub sp,sp,#16
+ 402              	.LCFI8:
+ 403              	 .cfi_def_cfa_offset 24
+ 404 0004 0C46     	 mov r4,r1
+ 112:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	
  113:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	
- 114:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	
- 115:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
- 116:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	   if(heater_id == 0)
- 424              	 .loc 3 116 0
- 425 0006 0379     	 ldrb r3,[r0,#4]
- 426 0008 93BB     	 cbnz r3,.L38
- 117:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	   { 
- 118:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		if (value == 0 || value == 255) {
- 427              	 .loc 3 118 0
- 428 000a 01F1FF33 	 add r3,r1,#-1
- 429 000e DBB2     	 uxtb r3,r3
- 430 0010 FD2B     	 cmp r3,#253
- 431 0012 28D9     	 bls .L39
- 119:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			pwmEx1_On(false);
- 432              	 .loc 3 119 0
- 433 0014 4FF00000 	 mov r0,#0
- 434              	.LVL29:
- 435 0018 FFF7FEFF 	 bl _Z9pwmEx1_Onb
- 436              	.LVL30:
- 120:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			EX1_PWR.setValue(value == 255);
- 437              	 .loc 3 120 0
- 438 001c 6846     	 mov r0,sp
- 439 001e 40F20001 	 movw r1,#:lower16:.LANCHOR1
- 440 0022 C0F20001 	 movt r1,#:upper16:.LANCHOR1
- 441 0026 4FF00402 	 mov r2,#4
- 442 002a FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
- 443              	.LVL31:
- 444              	.LBB54:
- 445              	.LBB55:
+ 114:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+ 115:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	   if(heater_id == 0)
+ 405              	 .loc 3 115 0
+ 406 0006 0379     	 ldrb r3,[r0,#4]
+ 407 0008 93BB     	 cbnz r3,.L36
+ 116:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	   { 
+ 117:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		if (value == 0 || value == 255) {
+ 408              	 .loc 3 117 0
+ 409 000a 01F1FF33 	 add r3,r1,#-1
+ 410 000e DBB2     	 uxtb r3,r3
+ 411 0010 FD2B     	 cmp r3,#253
+ 412 0012 28D9     	 bls .L37
+ 118:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			pwmEx1_On(false);
+ 413              	 .loc 3 118 0
+ 414 0014 4FF00000 	 mov r0,#0
+ 415              	.LVL28:
+ 416 0018 FFF7FEFF 	 bl _Z9pwmEx1_Onb
+ 417              	.LVL29:
+ 119:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			EX1_PWR.setValue(value == 255);
+ 418              	 .loc 3 119 0
+ 419 001c 6846     	 mov r0,sp
+ 420 001e 40F20001 	 movw r1,#:lower16:.LANCHOR1
+ 421 0022 C0F20001 	 movt r1,#:upper16:.LANCHOR1
+ 422 0026 4FF00402 	 mov r2,#4
+ 423 002a FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 424              	.LVL30:
+ 425              	.LBB54:
+ 426              	.LBB55:
   35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 446              	 .loc 4 35 0
- 447 002e 9DF80130 	 ldrb r3,[sp,#1]
- 448 0032 002B     	 cmp r3,#0
- 449 0034 4FD1     	 bne .L37
+ 427              	 .loc 4 35 0
+ 428 002e 9DF80130 	 ldrb r3,[sp,#1]
+ 429 0032 002B     	 cmp r3,#0
+ 430 0034 4FD1     	 bne .L35
   41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
- 450              	 .loc 4 41 0
- 451 0036 FF2C     	 cmp r4,#255
- 452 0038 0AD1     	 bne .L41
+ 431              	 .loc 4 41 0
+ 432 0036 FF2C     	 cmp r4,#255
+ 433 0038 0AD1     	 bne .L39
   44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
- 453              	 .loc 4 44 0
- 454 003a 9DF80230 	 ldrb r3,[sp,#2]
- 455 003e 9DF80000 	 ldrb r0,[sp,#0]
- 456 0042 4FF00101 	 mov r1,#1
- 457 0046 01FA03F1 	 lsl r1,r1,r3
- 458 004a FFF7FEFF 	 bl GPIO_SetValue
- 459 004e 42E0     	 b .L37
- 460              	.L41:
- 461              	 .loc 4 48 0
- 462 0050 9DF80230 	 ldrb r3,[sp,#2]
- 463 0054 9DF80000 	 ldrb r0,[sp,#0]
- 464 0058 4FF00101 	 mov r1,#1
- 465 005c 01FA03F1 	 lsl r1,r1,r3
- 466 0060 FFF7FEFF 	 bl GPIO_ClearValue
- 467 0064 37E0     	 b .L37
- 468              	.LVL32:
- 469              	.L39:
- 470              	.LBE55:
- 471              	.LBE54:
- 121:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			} else {
- 122:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //				OCR4A = value;
- 123:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 				pwmEx1_On(true);
- 472              	 .loc 3 123 0
- 473 0066 4FF00100 	 mov r0,#1
- 474              	.LVL33:
- 475 006a FFF7FEFF 	 bl _Z9pwmEx1_Onb
- 476              	.LVL34:
- 477 006e 32E0     	 b .L37
- 478              	.LVL35:
- 479              	.L38:
+ 434              	 .loc 4 44 0
+ 435 003a 9DF80230 	 ldrb r3,[sp,#2]
+ 436 003e 9DF80000 	 ldrb r0,[sp,#0]
+ 437 0042 4FF00101 	 mov r1,#1
+ 438 0046 01FA03F1 	 lsl r1,r1,r3
+ 439 004a FFF7FEFF 	 bl GPIO_SetValue
+ 440 004e 42E0     	 b .L35
+ 441              	.L39:
+ 442              	 .loc 4 48 0
+ 443 0050 9DF80230 	 ldrb r3,[sp,#2]
+ 444 0054 9DF80000 	 ldrb r0,[sp,#0]
+ 445 0058 4FF00101 	 mov r1,#1
+ 446 005c 01FA03F1 	 lsl r1,r1,r3
+ 447 0060 FFF7FEFF 	 bl GPIO_ClearValue
+ 448 0064 37E0     	 b .L35
+ 449              	.LVL31:
+ 450              	.L37:
+ 451              	.LBE55:
+ 452              	.LBE54:
+ 120:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			} else {
+ 121:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //				OCR4A = value;
+ 122:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 				pwmEx1_On(true);
+ 453              	 .loc 3 122 0
+ 454 0066 4FF00100 	 mov r0,#1
+ 455              	.LVL32:
+ 456 006a FFF7FEFF 	 bl _Z9pwmEx1_Onb
+ 457              	.LVL33:
+ 458 006e 32E0     	 b .L35
+ 459              	.LVL34:
+ 460              	.L36:
+ 123:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 				
  124:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 				
- 125:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 				
- 126:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			}
- 127:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		}
- 128:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		else if(heater_id == 1)
- 480              	 .loc 3 128 0
- 481 0070 012B     	 cmp r3,#1
- 482 0072 30D1     	 bne .L37
- 129:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	   { 
- 130:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		if (value == 0 || value == 255) {
- 483              	 .loc 3 130 0
- 484 0074 01F1FF33 	 add r3,r1,#-1
- 485 0078 DBB2     	 uxtb r3,r3
- 486 007a FD2B     	 cmp r3,#253
- 487 007c 27D9     	 bls .L42
- 131:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			pwmEx2_On(false);
- 488              	 .loc 3 131 0
- 489 007e 4FF00000 	 mov r0,#0
- 490              	.LVL36:
- 491 0082 FFF7FEFF 	 bl _Z9pwmEx2_Onb
- 492              	.LVL37:
- 132:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			EX2_PWR.setValue(value == 255);
- 493              	 .loc 3 132 0
- 494 0086 02A8     	 add r0,sp,#8
- 495 0088 40F20001 	 movw r1,#:lower16:.LANCHOR1
- 496 008c C0F20001 	 movt r1,#:upper16:.LANCHOR1
- 497 0090 4FF00302 	 mov r2,#3
- 498 0094 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
- 499              	.LVL38:
- 500              	.LBB56:
- 501              	.LBB57:
+ 125:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			}
+ 126:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		}
+ 127:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		else if(heater_id == 1)
+ 461              	 .loc 3 127 0
+ 462 0070 012B     	 cmp r3,#1
+ 463 0072 30D1     	 bne .L35
+ 128:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	   { 
+ 129:src/MightyBoard/Motherboard/ExtruderBoard.cc ****      		if (value == 0 || value == 255) {
+ 464              	 .loc 3 129 0
+ 465 0074 01F1FF33 	 add r3,r1,#-1
+ 466 0078 DBB2     	 uxtb r3,r3
+ 467 007a FD2B     	 cmp r3,#253
+ 468 007c 27D9     	 bls .L40
+ 130:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			pwmEx2_On(false);
+ 469              	 .loc 3 130 0
+ 470 007e 4FF00000 	 mov r0,#0
+ 471              	.LVL35:
+ 472 0082 FFF7FEFF 	 bl _Z9pwmEx2_Onb
+ 473              	.LVL36:
+ 131:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			EX2_PWR.setValue(value == 255);
+ 474              	 .loc 3 131 0
+ 475 0086 02A8     	 add r0,sp,#8
+ 476 0088 40F20001 	 movw r1,#:lower16:.LANCHOR1
+ 477 008c C0F20001 	 movt r1,#:upper16:.LANCHOR1
+ 478 0090 4FF00302 	 mov r2,#3
+ 479 0094 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 480              	.LVL37:
+ 481              	.LBB56:
+ 482              	.LBB57:
   35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 502              	 .loc 4 35 0
- 503 0098 9DF80930 	 ldrb r3,[sp,#9]
- 504 009c DBB9     	 cbnz r3,.L37
+ 483              	 .loc 4 35 0
+ 484 0098 9DF80930 	 ldrb r3,[sp,#9]
+ 485 009c DBB9     	 cbnz r3,.L35
   41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
- 505              	 .loc 4 41 0
- 506 009e FF2C     	 cmp r4,#255
- 507 00a0 0AD1     	 bne .L43
+ 486              	 .loc 4 41 0
+ 487 009e FF2C     	 cmp r4,#255
+ 488 00a0 0AD1     	 bne .L41
   44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
- 508              	 .loc 4 44 0
- 509 00a2 9DF80A30 	 ldrb r3,[sp,#10]
- 510 00a6 9DF80800 	 ldrb r0,[sp,#8]
- 511 00aa 4FF00101 	 mov r1,#1
- 512 00ae 01FA03F1 	 lsl r1,r1,r3
- 513 00b2 FFF7FEFF 	 bl GPIO_SetValue
- 514 00b6 0EE0     	 b .L37
- 515              	.L43:
- 516              	 .loc 4 48 0
- 517 00b8 9DF80A30 	 ldrb r3,[sp,#10]
- 518 00bc 9DF80800 	 ldrb r0,[sp,#8]
- 519 00c0 4FF00101 	 mov r1,#1
- 520 00c4 01FA03F1 	 lsl r1,r1,r3
- 521 00c8 FFF7FEFF 	 bl GPIO_ClearValue
- 522 00cc 03E0     	 b .L37
- 523              	.LVL39:
- 524              	.L42:
- 525              	.LBE57:
- 526              	.LBE56:
- 133:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			
- 134:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			} else {
- 135:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //				OCR1A = value;
- 136:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 				pwmEx2_On(true);
- 527              	 .loc 3 136 0
- 528 00ce 4FF00100 	 mov r0,#1
- 529              	.LVL40:
- 530 00d2 FFF7FEFF 	 bl _Z9pwmEx2_Onb
- 531              	.LVL41:
- 532              	.L37:
- 137:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			}
- 138:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		}
- 139:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //	}
- 140:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
- 533              	 .loc 3 140 0
- 534 00d6 04B0     	 add sp,sp,#16
- 535 00d8 10BD     	 pop {r4,pc}
- 536              	 .cfi_endproc
- 537              	.LFE101:
- 539 00da 00BF     	 .section .text._ZN22ExtruderHeatingElementC2Eh,"ax",%progbits
- 540              	 .align 2
- 541              	 .global _ZN22ExtruderHeatingElementC2Eh
- 542              	 .thumb
- 543              	 .thumb_func
- 545              	_ZN22ExtruderHeatingElementC2Eh:
- 546              	.LFB99:
- 107:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
- 547              	 .loc 3 107 0
- 548              	 .cfi_startproc
- 549              	 
- 550              	 
- 551              	 
- 552              	.LVL42:
- 553              	.LBB58:
- 108:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	heater_id(id)
- 554              	 .loc 3 108 0
- 555 0000 014A     	 ldr r2,.L47
- 556 0002 0260     	 str r2,[r0,#0]
- 557 0004 0171     	 strb r1,[r0,#4]
- 558              	.LBE58:
- 110:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
- 559              	 .loc 3 110 0
- 560 0006 7047     	 bx lr
- 561              	.L48:
- 562              	 .align 2
- 563              	.L47:
- 564 0008 08000000 	 .word .LANCHOR0+8
- 565              	 .cfi_endproc
- 566              	.LFE99:
- 568              	 .section .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t,"ax",%progbits
- 569              	 .align 2
- 570              	 .global _ZN13ExtruderBoardC2Eh3PinS0_S0_t
- 571              	 .thumb
- 572              	 .thumb_func
- 574              	_ZN13ExtruderBoardC2Eh3PinS0_S0_t:
- 575              	.LFB88:
-  36:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
- 576              	 .loc 3 36 0
- 577              	 .cfi_startproc
- 578              	 
- 579              	 
- 580              	.LVL43:
- 581 0000 2DE9F047 	 push {r4,r5,r6,r7,r8,r9,sl,lr}
- 582              	.LCFI9:
- 583              	 .cfi_def_cfa_offset 32
- 584              	 .cfi_offset 14,-4
- 585              	 .cfi_offset 10,-8
- 586              	 .cfi_offset 9,-12
- 587              	 .cfi_offset 8,-16
- 588              	 .cfi_offset 7,-20
- 589              	 .cfi_offset 6,-24
- 590              	 .cfi_offset 5,-28
- 591              	 .cfi_offset 4,-32
- 592 0004 82B0     	 sub sp,sp,#8
- 593              	.LCFI10:
- 594              	 .cfi_def_cfa_offset 40
- 595 0006 0446     	 mov r4,r0
- 596 0008 0F46     	 mov r7,r1
- 597 000a 9146     	 mov r9,r2
- 598 000c 9A46     	 mov sl,r3
- 599 000e BDF82C50 	 ldrh r5,[sp,#44]
- 600              	.LBB59:
-  47:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			eeprom_base(eeprom_base)
- 601              	 .loc 3 47 0
- 602 0012 4FF00002 	 mov r2,#0
- 603              	.LVL44:
- 604 0016 FFF7FEFF 	 bl _ZN10ThermistorC1Ehh
- 605              	.LVL45:
- 606 001a 04F12006 	 add r6,r4,#32
- 607 001e 3046     	 mov r0,r6
- 608 0020 3946     	 mov r1,r7
- 609 0022 FFF7FEFF 	 bl _ZN22ExtruderHeatingElementC1Eh
- 610 0026 04F12808 	 add r8,r4,#40
- 611 002a 05F10A03 	 add r3,r5,#10
- 612 002e 9BB2     	 uxth r3,r3
- 613 0030 0093     	 str r3,[sp,#0]
- 614 0032 4FF00103 	 mov r3,#1
- 615 0036 0193     	 str r3,[sp,#4]
- 616 0038 4046     	 mov r0,r8
- 617 003a 2146     	 mov r1,r4
- 618 003c 3246     	 mov r2,r6
- 619 003e 4AF22013 	 movw r3,#41248
- 620 0042 C0F20703 	 movt r3,7
- 621 0046 FFF7FEFF 	 bl _ZN6HeaterC1ER17TemperatureSensorR14HeatingElementmtb
- 622 004a 04F1B400 	 add r0,r4,#180
- 623 004e 4946     	 mov r1,r9
- 624 0050 FFF7FEFF 	 bl _ZN3PinC1ERKS_
- 625 0054 84F8B970 	 strb r7,[r4,#185]
- 626 0058 05F11A02 	 add r2,r5,#26
- 627 005c 04F1BC00 	 add r0,r4,#188
- 628 0060 4146     	 mov r1,r8
- 629 0062 92B2     	 uxth r2,r2
- 630 0064 5346     	 mov r3,sl
- 631 0066 FFF7FEFF 	 bl _ZN10CoolingFanC1ER6HeatertRK3Pin
- 632 006a 84F8DC50 	 strb r5,[r4,#220]
- 633              	.LBE59:
-  49:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
- 634              	 .loc 3 49 0
- 635 006e 2046     	 mov r0,r4
- 636 0070 02B0     	 add sp,sp,#8
- 637 0072 BDE8F087 	 pop {r4,r5,r6,r7,r8,r9,sl,pc}
- 638              	 .cfi_endproc
- 639              	.LFE88:
- 641 0076 00BF     	 .section .text._GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t,"ax",%progbits
- 642              	 .align 2
- 643              	 .thumb
- 644              	 .thumb_func
- 646              	_GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t:
- 647              	.LFB103:
- 648              	 .loc 3 140 0
- 649              	 .cfi_startproc
- 650              	 
- 651              	 
- 652 0000 10B5     	 push {r4,lr}
- 653              	.LCFI11:
- 654              	 .cfi_def_cfa_offset 8
- 655              	 .cfi_offset 14,-4
- 656              	 .cfi_offset 4,-8
- 657              	.LVL46:
- 658              	.LBB62:
- 659              	.LBB63:
- 660              	 .file 5 "src/MightyBoard/shared/LPCPort.hh"
+ 489              	 .loc 4 44 0
+ 490 00a2 9DF80A30 	 ldrb r3,[sp,#10]
+ 491 00a6 9DF80800 	 ldrb r0,[sp,#8]
+ 492 00aa 4FF00101 	 mov r1,#1
+ 493 00ae 01FA03F1 	 lsl r1,r1,r3
+ 494 00b2 FFF7FEFF 	 bl GPIO_SetValue
+ 495 00b6 0EE0     	 b .L35
+ 496              	.L41:
+ 497              	 .loc 4 48 0
+ 498 00b8 9DF80A30 	 ldrb r3,[sp,#10]
+ 499 00bc 9DF80800 	 ldrb r0,[sp,#8]
+ 500 00c0 4FF00101 	 mov r1,#1
+ 501 00c4 01FA03F1 	 lsl r1,r1,r3
+ 502 00c8 FFF7FEFF 	 bl GPIO_ClearValue
+ 503 00cc 03E0     	 b .L35
+ 504              	.LVL38:
+ 505              	.L40:
+ 506              	.LBE57:
+ 507              	.LBE56:
+ 132:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			
+ 133:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			} else {
+ 134:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //				OCR1A = value;
+ 135:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 				pwmEx2_On(true);
+ 508              	 .loc 3 135 0
+ 509 00ce 4FF00100 	 mov r0,#1
+ 510              	.LVL39:
+ 511 00d2 FFF7FEFF 	 bl _Z9pwmEx2_Onb
+ 512              	.LVL40:
+ 513              	.L35:
+ 136:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			}
+ 137:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 		}
+ 138:src/MightyBoard/Motherboard/ExtruderBoard.cc **** //	}
+ 139:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+ 514              	 .loc 3 139 0
+ 515 00d6 04B0     	 add sp,sp,#16
+ 516 00d8 10BD     	 pop {r4,pc}
+ 517              	 .cfi_endproc
+ 518              	.LFE101:
+ 520 00da 00BF     	 .section .text._ZN22ExtruderHeatingElementC2Eh,"ax",%progbits
+ 521              	 .align 2
+ 522              	 .global _ZN22ExtruderHeatingElementC2Eh
+ 523              	 .thumb
+ 524              	 .thumb_func
+ 526              	_ZN22ExtruderHeatingElementC2Eh:
+ 527              	.LFB99:
+ 106:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
+ 528              	 .loc 3 106 0
+ 529              	 .cfi_startproc
+ 530              	 
+ 531              	 
+ 532              	 
+ 533              	.LVL41:
+ 534              	.LBB58:
+ 107:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 	heater_id(id)
+ 535              	 .loc 3 107 0
+ 536 0000 014A     	 ldr r2,.L45
+ 537 0002 0260     	 str r2,[r0,#0]
+ 538 0004 0171     	 strb r1,[r0,#4]
+ 539              	.LBE58:
+ 109:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+ 540              	 .loc 3 109 0
+ 541 0006 7047     	 bx lr
+ 542              	.L46:
+ 543              	 .align 2
+ 544              	.L45:
+ 545 0008 08000000 	 .word .LANCHOR0+8
+ 546              	 .cfi_endproc
+ 547              	.LFE99:
+ 549              	 .section .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t,"ax",%progbits
+ 550              	 .align 2
+ 551              	 .global _ZN13ExtruderBoardC2Eh3PinS0_S0_t
+ 552              	 .thumb
+ 553              	 .thumb_func
+ 555              	_ZN13ExtruderBoardC2Eh3PinS0_S0_t:
+ 556              	.LFB88:
+  37:src/MightyBoard/Motherboard/ExtruderBoard.cc **** ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_In,
+ 557              	 .loc 3 37 0
+ 558              	 .cfi_startproc
+ 559              	 
+ 560              	 
+ 561              	.LVL42:
+ 562 0000 2DE9F047 	 push {r4,r5,r6,r7,r8,r9,sl,lr}
+ 563              	.LCFI9:
+ 564              	 .cfi_def_cfa_offset 32
+ 565              	 .cfi_offset 14,-4
+ 566              	 .cfi_offset 10,-8
+ 567              	 .cfi_offset 9,-12
+ 568              	 .cfi_offset 8,-16
+ 569              	 .cfi_offset 7,-20
+ 570              	 .cfi_offset 6,-24
+ 571              	 .cfi_offset 5,-28
+ 572              	 .cfi_offset 4,-32
+ 573 0004 82B0     	 sub sp,sp,#8
+ 574              	.LCFI10:
+ 575              	 .cfi_def_cfa_offset 40
+ 576 0006 0446     	 mov r4,r0
+ 577 0008 0F46     	 mov r7,r1
+ 578 000a 9146     	 mov r9,r2
+ 579 000c 9A46     	 mov sl,r3
+ 580 000e BDF82C50 	 ldrh r5,[sp,#44]
+ 581              	.LBB59:
+  48:src/MightyBoard/Motherboard/ExtruderBoard.cc **** 			eeprom_base(eeprom_base)
+ 582              	 .loc 3 48 0
+ 583 0012 4FF00002 	 mov r2,#0
+ 584              	.LVL43:
+ 585 0016 FFF7FEFF 	 bl _ZN10ThermistorC1Ehh
+ 586              	.LVL44:
+ 587 001a 04F12006 	 add r6,r4,#32
+ 588 001e 3046     	 mov r0,r6
+ 589 0020 3946     	 mov r1,r7
+ 590 0022 FFF7FEFF 	 bl _ZN22ExtruderHeatingElementC1Eh
+ 591 0026 04F12808 	 add r8,r4,#40
+ 592 002a 05F10A03 	 add r3,r5,#10
+ 593 002e 9BB2     	 uxth r3,r3
+ 594 0030 0093     	 str r3,[sp,#0]
+ 595 0032 4FF00103 	 mov r3,#1
+ 596 0036 0193     	 str r3,[sp,#4]
+ 597 0038 4046     	 mov r0,r8
+ 598 003a 2146     	 mov r1,r4
+ 599 003c 3246     	 mov r2,r6
+ 600 003e 4AF22013 	 movw r3,#41248
+ 601 0042 C0F20703 	 movt r3,7
+ 602 0046 FFF7FEFF 	 bl _ZN6HeaterC1ER17TemperatureSensorR14HeatingElementmtb
+ 603 004a 04F1B400 	 add r0,r4,#180
+ 604 004e 4946     	 mov r1,r9
+ 605 0050 FFF7FEFF 	 bl _ZN3PinC1ERKS_
+ 606 0054 84F8B970 	 strb r7,[r4,#185]
+ 607 0058 05F11A02 	 add r2,r5,#26
+ 608 005c 04F1BC00 	 add r0,r4,#188
+ 609 0060 4146     	 mov r1,r8
+ 610 0062 92B2     	 uxth r2,r2
+ 611 0064 5346     	 mov r3,sl
+ 612 0066 FFF7FEFF 	 bl _ZN10CoolingFanC1ER6HeatertRK3Pin
+ 613 006a 84F8DC50 	 strb r5,[r4,#220]
+ 614              	.LBE59:
+  50:src/MightyBoard/Motherboard/ExtruderBoard.cc **** }
+ 615              	 .loc 3 50 0
+ 616 006e 2046     	 mov r0,r4
+ 617 0070 02B0     	 add sp,sp,#8
+ 618 0072 BDE8F087 	 pop {r4,r5,r6,r7,r8,r9,sl,pc}
+ 619              	 .cfi_endproc
+ 620              	.LFE88:
+ 622 0076 00BF     	 .section .text._GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t,"ax",%progbits
+ 623              	 .align 2
+ 624              	 .thumb
+ 625              	 .thumb_func
+ 627              	_GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t:
+ 628              	.LFB103:
+ 629              	 .loc 3 139 0
+ 630              	 .cfi_startproc
+ 631              	 
+ 632              	 
+ 633 0000 10B5     	 push {r4,lr}
+ 634              	.LCFI11:
+ 635              	 .cfi_def_cfa_offset 8
+ 636              	 .cfi_offset 14,-4
+ 637              	 .cfi_offset 4,-8
+ 638              	.LVL45:
+ 639              	.LBB62:
+ 640              	.LBB63:
+ 641              	 .file 5 "src/MightyBoard/shared/LPCPort.hh"
    1:src/MightyBoard/shared/LPCPort.hh **** /*
    2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
    3:src/MightyBoard/shared/LPCPort.hh **** *
@@ -944,43 +924,43 @@
   47:src/MightyBoard/shared/LPCPort.hh **** 
   48:src/MightyBoard/shared/LPCPort.hh **** 
   49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
- 661              	 .loc 5 49 0
- 662 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
- 663 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
- 664 000a 4FF00001 	 mov r1,#0
- 665 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 642              	 .loc 5 49 0
+ 643 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 644 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 645 000a 4FF00001 	 mov r1,#0
+ 646 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
- 666              	 .loc 5 50 0
- 667 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
- 668 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
- 669 001a 4FF00101 	 mov r1,#1
- 670 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 647              	 .loc 5 50 0
+ 648 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 649 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 650 001a 4FF00101 	 mov r1,#1
+ 651 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
- 671              	 .loc 5 51 0
- 672 0022 40F20000 	 movw r0,#:lower16:.LANCHOR1
- 673 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR1
- 674 002a 4FF00201 	 mov r1,#2
- 675 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 652              	 .loc 5 51 0
+ 653 0022 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 654 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 655 002a 4FF00201 	 mov r1,#2
+ 656 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
- 676              	 .loc 5 52 0
- 677 0032 40F20000 	 movw r0,#:lower16:.LANCHOR4
- 678 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR4
- 679 003a 4FF00301 	 mov r1,#3
- 680 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 657              	 .loc 5 52 0
+ 658 0032 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 659 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 660 003a 4FF00301 	 mov r1,#3
+ 661 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
- 681              	 .loc 5 53 0
- 682 0042 40F20000 	 movw r0,#:lower16:.LANCHOR5
- 683 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR5
- 684 004a 4FF00401 	 mov r1,#4
- 685 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 662              	 .loc 5 53 0
+ 663 0042 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 664 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 665 004a 4FF00401 	 mov r1,#4
+ 666 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   54:src/MightyBoard/shared/LPCPort.hh **** 
   55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
- 686              	 .loc 5 55 0
- 687 0052 40F20004 	 movw r4,#:lower16:.LANCHOR6
- 688 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR6
- 689 005a 2046     	 mov r0,r4
- 690 005c 4FF0FF01 	 mov r1,#255
- 691 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 667              	 .loc 5 55 0
+ 668 0052 40F20004 	 movw r4,#:lower16:.LANCHOR6
+ 669 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR6
+ 670 005a 2046     	 mov r0,r4
+ 671 005c 4FF0FF01 	 mov r1,#255
+ 672 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   49:src/MightyBoard/shared/Pin.hh **** 		}
   50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
   51:src/MightyBoard/shared/Pin.hh **** 	};
@@ -1009,140 +989,118 @@
   74:src/MightyBoard/shared/Pin.hh **** };
   75:src/MightyBoard/shared/Pin.hh **** 
   76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
- 692              	 .loc 4 76 0
- 693 0064 40F20000 	 movw r0,#:lower16:.LANCHOR7
- 694 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR7
- 695 006c 2146     	 mov r1,r4
- 696 006e 4FF00002 	 mov r2,#0
- 697 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
- 698              	.LBE63:
- 699              	.LBE62:
- 700              	 .loc 3 140 0
- 701 0076 10BD     	 pop {r4,pc}
- 702              	 .cfi_endproc
- 703              	.LFE103:
- 705              	 .section .init_array,"aw",%init_array
- 706              	 .align 2
- 707 0000 00000000 	 .word _GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t(target1)
- 708              	 .global _ZTV22ExtruderHeatingElement
- 709              	 .weak _ZTV14HeatingElement
- 710              	 .section .rodata._ZTV14HeatingElement,"aG",%progbits,_ZTV14HeatingElement,comdat
- 711              	 .align 3
- 714              	_ZTV14HeatingElement:
- 715 0000 00000000 	 .word 0
- 716 0004 00000000 	 .word 0
- 717 0008 00000000 	 .word _ZN14HeatingElementD1Ev
- 718 000c 00000000 	 .word _ZN14HeatingElementD0Ev
- 719 0010 00000000 	 .word __cxa_pure_virtual
- 720              	 .weak _ZN14HeatingElementD1Ev
- 721              	 .thumb_set _ZN14HeatingElementD1Ev,_ZN14HeatingElementD2Ev
- 722              	 .weak _ZN22ExtruderHeatingElementD1Ev
- 723              	 .thumb_set _ZN22ExtruderHeatingElementD1Ev,_ZN22ExtruderHeatingElementD2Ev
- 724              	 .global _ZN22ExtruderHeatingElementC1Eh
- 725              	 .thumb_set _ZN22ExtruderHeatingElementC1Eh,_ZN22ExtruderHeatingElementC2Eh
- 726              	 .global _ZN13ExtruderBoardC1Eh3PinS0_S0_t
- 727              	 .thumb_set _ZN13ExtruderBoardC1Eh3PinS0_S0_t,_ZN13ExtruderBoardC2Eh3PinS0_S0_t
- 728 0014 00000000 	 .section .bss._ZL5Port0,"aw",%nobits
- 729              	 .align 2
- 730              	 .set .LANCHOR2,.+0
- 733              	_ZL5Port0:
- 734 0000 00       	 .space 1
- 735 0001 000000   	 .section .rodata._ZTV22ExtruderHeatingElement,"a",%progbits
- 736              	 .align 3
- 737              	 .set .LANCHOR0,.+0
- 740              	_ZTV22ExtruderHeatingElement:
- 741 0000 00000000 	 .word 0
- 742 0004 00000000 	 .word 0
- 743 0008 00000000 	 .word _ZN22ExtruderHeatingElementD1Ev
- 744 000c 00000000 	 .word _ZN22ExtruderHeatingElementD0Ev
- 745 0010 00000000 	 .word _ZN22ExtruderHeatingElement17setHeatingElementEh
- 746 0014 00000000 	 .section .bss._ZL5Port2,"aw",%nobits
- 747              	 .align 2
- 748              	 .set .LANCHOR1,.+0
- 751              	_ZL5Port2:
- 752 0000 00       	 .space 1
- 753 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
- 754              	 .align 2
- 755              	 .set .LANCHOR3,.+0
- 758              	_ZL5Port1:
- 759 0000 00       	 .space 1
- 760 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
- 761              	 .align 2
- 762              	 .set .LANCHOR5,.+0
- 765              	_ZL5Port4:
- 766 0000 00       	 .space 1
- 767 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
- 768              	 .align 2
- 769              	 .set .LANCHOR4,.+0
- 772              	_ZL5Port3:
- 773 0000 00       	 .space 1
- 774 0001 000000   	 .section .rodata.str1.4,"aMS",%progbits,1
- 775              	 .align 2
- 776              	.LC0:
- 777 0000 54494D5F 	 .ascii "TIM_Cmd(LPC_TIM1,ENABLE) (%s:%d)\012\000"
- 777      436D6428 
- 777      4C50435F 
- 777      54494D31 
- 777      2C454E41 
- 778 0022 0000     	 .space 2
- 779              	.LC1:
- 780 0024 7372632F 	 .ascii "src/MightyBoard/Motherboard/ExtruderBoard.cc\000"
- 780      4D696768 
- 780      7479426F 
- 780      6172642F 
- 780      4D6F7468 
- 781 0051 000000   	 .space 3
- 782              	.LC2:
- 783 0054 54494D5F 	 .ascii "TIM_Cmd(LPC_TIM1,DISABLE) (%s:%d)\012\000"
- 783      436D6428 
- 783      4C50435F 
- 783      54494D31 
- 783      2C444953 
- 784 0077 00       	 .space 1
- 785              	.LC3:
- 786 0078 54494D5F 	 .ascii "TIM_Cmd(LPC_TIM2,ENABLE) (%s:%d)\012\000"
- 786      436D6428 
- 786      4C50435F 
- 786      54494D32 
- 786      2C454E41 
- 787 009a 0000     	 .space 2
- 788              	.LC4:
- 789 009c 54494D5F 	 .ascii "TIM_Cmd(LPC_TIM2,DISABLE) (%s:%d)\012\000"
- 789      436D6428 
- 789      4C50435F 
- 789      54494D32 
- 789      2C444953 
- 790 00bf 00       	 .section .bss._ZL8NullPort,"aw",%nobits
- 791              	 .align 2
- 792              	 .set .LANCHOR6,.+0
- 795              	_ZL8NullPort:
- 796 0000 00       	 .space 1
- 797 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
- 798              	 .align 2
- 799              	 .set .LANCHOR7,.+0
- 802              	_ZL7NullPin:
- 803 0000 00000000 	 .space 5
- 803      00
- 804 0005 000000   	 .text
- 805              	.Letext0:
- 806              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
- 807              	 .file 7 "src/MightyBoard/shared/TemperatureSensor.hh"
- 808              	 .file 8 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
- 809              	 .file 9 "src/MightyBoard/Motherboard/system/LPC17xx.h"
- 810              	 .file 10 "src/MightyBoard/shared/PID.hh"
- 811              	 .file 11 "src/MightyBoard/shared/Types.hh"
- 812              	 .file 12 "src/MightyBoard/shared/Timeout.hh"
- 813              	 .file 13 "src/MightyBoard/shared/Heater.hh"
- 814              	 .file 14 "src/MightyBoard/Motherboard/EepromMap.hh"
- 815              	 .file 15 "src/MightyBoard/shared/CoolingFan.hh"
- 816              	 .file 16 "src/MightyBoard/shared/Thermistor.hh"
- 817              	 .file 17 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 673              	 .loc 4 76 0
+ 674 0064 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 675 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 676 006c 2146     	 mov r1,r4
+ 677 006e 4FF00002 	 mov r2,#0
+ 678 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 679              	.LBE63:
+ 680              	.LBE62:
+ 681              	 .loc 3 139 0
+ 682 0076 10BD     	 pop {r4,pc}
+ 683              	 .cfi_endproc
+ 684              	.LFE103:
+ 686              	 .section .init_array,"aw",%init_array
+ 687              	 .align 2
+ 688 0000 00000000 	 .word _GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t(target1)
+ 689              	 .global _ZTV22ExtruderHeatingElement
+ 690              	 .weak _ZTV14HeatingElement
+ 691              	 .section .rodata._ZTV14HeatingElement,"aG",%progbits,_ZTV14HeatingElement,comdat
+ 692              	 .align 3
+ 695              	_ZTV14HeatingElement:
+ 696 0000 00000000 	 .word 0
+ 697 0004 00000000 	 .word 0
+ 698 0008 00000000 	 .word _ZN14HeatingElementD1Ev
+ 699 000c 00000000 	 .word _ZN14HeatingElementD0Ev
+ 700 0010 00000000 	 .word __cxa_pure_virtual
+ 701              	 .weak _ZN14HeatingElementD1Ev
+ 702              	 .thumb_set _ZN14HeatingElementD1Ev,_ZN14HeatingElementD2Ev
+ 703              	 .weak _ZN22ExtruderHeatingElementD1Ev
+ 704              	 .thumb_set _ZN22ExtruderHeatingElementD1Ev,_ZN22ExtruderHeatingElementD2Ev
+ 705              	 .global _ZN22ExtruderHeatingElementC1Eh
+ 706              	 .thumb_set _ZN22ExtruderHeatingElementC1Eh,_ZN22ExtruderHeatingElementC2Eh
+ 707              	 .global _ZN13ExtruderBoardC1Eh3PinS0_S0_t
+ 708              	 .thumb_set _ZN13ExtruderBoardC1Eh3PinS0_S0_t,_ZN13ExtruderBoardC2Eh3PinS0_S0_t
+ 709 0014 00000000 	 .section .bss._ZL5Port0,"aw",%nobits
+ 710              	 .align 2
+ 711              	 .set .LANCHOR2,.+0
+ 714              	_ZL5Port0:
+ 715 0000 00       	 .space 1
+ 716 0001 000000   	 .section .rodata._ZTV22ExtruderHeatingElement,"a",%progbits
+ 717              	 .align 3
+ 718              	 .set .LANCHOR0,.+0
+ 721              	_ZTV22ExtruderHeatingElement:
+ 722 0000 00000000 	 .word 0
+ 723 0004 00000000 	 .word 0
+ 724 0008 00000000 	 .word _ZN22ExtruderHeatingElementD1Ev
+ 725 000c 00000000 	 .word _ZN22ExtruderHeatingElementD0Ev
+ 726 0010 00000000 	 .word _ZN22ExtruderHeatingElement17setHeatingElementEh
+ 727 0014 00000000 	 .section .bss._ZL5Port2,"aw",%nobits
+ 728              	 .align 2
+ 729              	 .set .LANCHOR1,.+0
+ 732              	_ZL5Port2:
+ 733 0000 00       	 .space 1
+ 734 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 735              	 .align 2
+ 736              	 .set .LANCHOR3,.+0
+ 739              	_ZL5Port1:
+ 740 0000 00       	 .space 1
+ 741 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 742              	 .align 2
+ 743              	 .set .LANCHOR5,.+0
+ 746              	_ZL5Port4:
+ 747 0000 00       	 .space 1
+ 748 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 749              	 .align 2
+ 750              	 .set .LANCHOR4,.+0
+ 753              	_ZL5Port3:
+ 754 0000 00       	 .space 1
+ 755 0001 000000   	 .section .rodata.str1.4,"aMS",%progbits,1
+ 756              	 .align 2
+ 757              	.LC0:
+ 758 0000 45787472 	 .ascii "ExtruderBoard::reset() (%s:%d)\012\000"
+ 758      75646572 
+ 758      426F6172 
+ 758      643A3A72 
+ 758      65736574 
+ 759              	.LC1:
+ 760 0020 7372632F 	 .ascii "src/MightyBoard/Motherboard/ExtruderBoard.cc\000"
+ 760      4D696768 
+ 760      7479426F 
+ 760      6172642F 
+ 760      4D6F7468 
+ 761 004d 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 762              	 .align 2
+ 763              	 .set .LANCHOR6,.+0
+ 766              	_ZL8NullPort:
+ 767 0000 00       	 .space 1
+ 768 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 769              	 .align 2
+ 770              	 .set .LANCHOR7,.+0
+ 773              	_ZL7NullPin:
+ 774 0000 00000000 	 .space 5
+ 774      00
+ 775 0005 000000   	 .text
+ 776              	.Letext0:
+ 777              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 778              	 .file 7 "src/MightyBoard/shared/TemperatureSensor.hh"
+ 779              	 .file 8 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 780              	 .file 9 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 781              	 .file 10 "src/MightyBoard/shared/PID.hh"
+ 782              	 .file 11 "src/MightyBoard/shared/Types.hh"
+ 783              	 .file 12 "src/MightyBoard/shared/Timeout.hh"
+ 784              	 .file 13 "src/MightyBoard/shared/Heater.hh"
+ 785              	 .file 14 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 786              	 .file 15 "src/MightyBoard/shared/CoolingFan.hh"
+ 787              	 .file 16 "src/MightyBoard/shared/Thermistor.hh"
+ 788              	 .file 17 "src/MightyBoard/Motherboard/system/core_cm3.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 ExtruderBoard.cc
     {standard input}:19     .text._ZN14HeatingElementD2Ev:00000000 $t
     {standard input}:24     .text._ZN14HeatingElementD2Ev:00000000 _ZN14HeatingElementD2Ev
     {standard input}:42     .text._ZN14HeatingElementD2Ev:00000008 $d
-    {standard input}:714    .rodata._ZTV14HeatingElement:00000000 _ZTV14HeatingElement
+    {standard input}:695    .rodata._ZTV14HeatingElement:00000000 _ZTV14HeatingElement
     {standard input}:47     .text._ZN22ExtruderHeatingElementD2Ev:00000000 $t
     {standard input}:52     .text._ZN22ExtruderHeatingElementD2Ev:00000000 _ZN22ExtruderHeatingElementD2Ev
     {standard input}:77     .text._ZN22ExtruderHeatingElementD2Ev:00000008 $d
@@ -1154,66 +1112,63 @@ DEFINED SYMBOLS
     {standard input}:164    .text._ZN14HeatingElementD0Ev:00000010 $d
     {standard input}:169    .text._ZN13ExtruderBoard5resetEv:00000000 $t
     {standard input}:174    .text._ZN13ExtruderBoard5resetEv:00000000 _ZN13ExtruderBoard5resetEv
-    {standard input}:225    .text._ZN13ExtruderBoard16runExtruderSliceEv:00000000 $t
-    {standard input}:230    .text._ZN13ExtruderBoard16runExtruderSliceEv:00000000 _ZN13ExtruderBoard16runExtruderSliceEv
-    {standard input}:256    .text._ZN13ExtruderBoard6setFanEh:00000000 $t
-    {standard input}:261    .text._ZN13ExtruderBoard6setFanEh:00000000 _ZN13ExtruderBoard6setFanEh
-    {standard input}:293    .text._Z9pwmEx2_Onb:00000000 $t
-    {standard input}:298    .text._Z9pwmEx2_Onb:00000000 _Z9pwmEx2_Onb
-    {standard input}:776    .rodata.str1.4:00000000 .LC0
-    {standard input}:782    .rodata.str1.4:00000054 .LC2
-    {standard input}:343    .text._Z9pwmEx2_Onb:0000004c $d
-    {standard input}:348    .text._Z9pwmEx1_Onb:00000000 $t
-    {standard input}:353    .text._Z9pwmEx1_Onb:00000000 _Z9pwmEx1_Onb
-    {standard input}:785    .rodata.str1.4:00000078 .LC3
-    {standard input}:788    .rodata.str1.4:0000009c .LC4
-    {standard input}:398    .text._Z9pwmEx1_Onb:0000004c $d
-    {standard input}:403    .text._ZN22ExtruderHeatingElement17setHeatingElementEh:00000000 $t
-    {standard input}:408    .text._ZN22ExtruderHeatingElement17setHeatingElementEh:00000000 _ZN22ExtruderHeatingElement17setHeatingElementEh
-    {standard input}:748    .bss._ZL5Port2:00000000 .LANCHOR1
-    {standard input}:540    .text._ZN22ExtruderHeatingElementC2Eh:00000000 $t
-    {standard input}:545    .text._ZN22ExtruderHeatingElementC2Eh:00000000 _ZN22ExtruderHeatingElementC2Eh
-    {standard input}:564    .text._ZN22ExtruderHeatingElementC2Eh:00000008 $d
-    {standard input}:569    .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 $t
-    {standard input}:574    .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 _ZN13ExtruderBoardC2Eh3PinS0_S0_t
-    {standard input}:545    .text._ZN22ExtruderHeatingElementC2Eh:00000000 _ZN22ExtruderHeatingElementC1Eh
-    {standard input}:642    .text._GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 $t
-    {standard input}:646    .text._GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 _GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t
-    {standard input}:730    .bss._ZL5Port0:00000000 .LANCHOR2
-    {standard input}:755    .bss._ZL5Port1:00000000 .LANCHOR3
-    {standard input}:769    .bss._ZL5Port3:00000000 .LANCHOR4
-    {standard input}:762    .bss._ZL5Port4:00000000 .LANCHOR5
-    {standard input}:792    .bss._ZL8NullPort:00000000 .LANCHOR6
-    {standard input}:799    .bss._ZL7NullPin:00000000 .LANCHOR7
-    {standard input}:706    .init_array:00000000 $d
-    {standard input}:740    .rodata._ZTV22ExtruderHeatingElement:00000000 _ZTV22ExtruderHeatingElement
-    {standard input}:711    .rodata._ZTV14HeatingElement:00000000 $d
+    {standard input}:757    .rodata.str1.4:00000000 .LC0
+    {standard input}:229    .text._ZN13ExtruderBoard5resetEv:00000054 $d
+    {standard input}:234    .text._ZN13ExtruderBoard16runExtruderSliceEv:00000000 $t
+    {standard input}:239    .text._ZN13ExtruderBoard16runExtruderSliceEv:00000000 _ZN13ExtruderBoard16runExtruderSliceEv
+    {standard input}:265    .text._ZN13ExtruderBoard6setFanEh:00000000 $t
+    {standard input}:270    .text._ZN13ExtruderBoard6setFanEh:00000000 _ZN13ExtruderBoard6setFanEh
+    {standard input}:302    .text._Z9pwmEx2_Onb:00000000 $t
+    {standard input}:307    .text._Z9pwmEx2_Onb:00000000 _Z9pwmEx2_Onb
+    {standard input}:343    .text._Z9pwmEx1_Onb:00000000 $t
+    {standard input}:348    .text._Z9pwmEx1_Onb:00000000 _Z9pwmEx1_Onb
+    {standard input}:384    .text._ZN22ExtruderHeatingElement17setHeatingElementEh:00000000 $t
+    {standard input}:389    .text._ZN22ExtruderHeatingElement17setHeatingElementEh:00000000 _ZN22ExtruderHeatingElement17setHeatingElementEh
+    {standard input}:729    .bss._ZL5Port2:00000000 .LANCHOR1
+    {standard input}:521    .text._ZN22ExtruderHeatingElementC2Eh:00000000 $t
+    {standard input}:526    .text._ZN22ExtruderHeatingElementC2Eh:00000000 _ZN22ExtruderHeatingElementC2Eh
+    {standard input}:545    .text._ZN22ExtruderHeatingElementC2Eh:00000008 $d
+    {standard input}:550    .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 $t
+    {standard input}:555    .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 _ZN13ExtruderBoardC2Eh3PinS0_S0_t
+    {standard input}:526    .text._ZN22ExtruderHeatingElementC2Eh:00000000 _ZN22ExtruderHeatingElementC1Eh
+    {standard input}:623    .text._GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 $t
+    {standard input}:627    .text._GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 _GLOBAL__sub_I__ZN13ExtruderBoardC2Eh3PinS0_S0_t
+    {standard input}:711    .bss._ZL5Port0:00000000 .LANCHOR2
+    {standard input}:736    .bss._ZL5Port1:00000000 .LANCHOR3
+    {standard input}:750    .bss._ZL5Port3:00000000 .LANCHOR4
+    {standard input}:743    .bss._ZL5Port4:00000000 .LANCHOR5
+    {standard input}:763    .bss._ZL8NullPort:00000000 .LANCHOR6
+    {standard input}:770    .bss._ZL7NullPin:00000000 .LANCHOR7
+    {standard input}:687    .init_array:00000000 $d
+    {standard input}:721    .rodata._ZTV22ExtruderHeatingElement:00000000 _ZTV22ExtruderHeatingElement
+    {standard input}:692    .rodata._ZTV14HeatingElement:00000000 $d
     {standard input}:24     .text._ZN14HeatingElementD2Ev:00000000 _ZN14HeatingElementD1Ev
     {standard input}:52     .text._ZN22ExtruderHeatingElementD2Ev:00000000 _ZN22ExtruderHeatingElementD1Ev
-    {standard input}:574    .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 _ZN13ExtruderBoardC1Eh3PinS0_S0_t
-    {standard input}:729    .bss._ZL5Port0:00000000 $d
-    {standard input}:733    .bss._ZL5Port0:00000000 _ZL5Port0
-    {standard input}:736    .rodata._ZTV22ExtruderHeatingElement:00000000 $d
-    {standard input}:747    .bss._ZL5Port2:00000000 $d
-    {standard input}:751    .bss._ZL5Port2:00000000 _ZL5Port2
-    {standard input}:754    .bss._ZL5Port1:00000000 $d
-    {standard input}:758    .bss._ZL5Port1:00000000 _ZL5Port1
-    {standard input}:761    .bss._ZL5Port4:00000000 $d
-    {standard input}:765    .bss._ZL5Port4:00000000 _ZL5Port4
-    {standard input}:768    .bss._ZL5Port3:00000000 $d
-    {standard input}:772    .bss._ZL5Port3:00000000 _ZL5Port3
-    {standard input}:775    .rodata.str1.4:00000000 $d
-    {standard input}:779    .rodata.str1.4:00000024 .LC1
-    {standard input}:791    .bss._ZL8NullPort:00000000 $d
-    {standard input}:795    .bss._ZL8NullPort:00000000 _ZL8NullPort
-    {standard input}:798    .bss._ZL7NullPin:00000000 $d
-    {standard input}:802    .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:555    .text._ZN13ExtruderBoardC2Eh3PinS0_S0_t:00000000 _ZN13ExtruderBoardC1Eh3PinS0_S0_t
+    {standard input}:710    .bss._ZL5Port0:00000000 $d
+    {standard input}:714    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:717    .rodata._ZTV22ExtruderHeatingElement:00000000 $d
+    {standard input}:728    .bss._ZL5Port2:00000000 $d
+    {standard input}:732    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:735    .bss._ZL5Port1:00000000 $d
+    {standard input}:739    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:742    .bss._ZL5Port4:00000000 $d
+    {standard input}:746    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:749    .bss._ZL5Port3:00000000 $d
+    {standard input}:753    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:756    .rodata.str1.4:00000000 $d
+    {standard input}:759    .rodata.str1.4:00000020 .LC1
+    {standard input}:762    .bss._ZL8NullPort:00000000 $d
+    {standard input}:766    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:769    .bss._ZL7NullPin:00000000 $d
+    {standard input}:773    .bss._ZL7NullPin:00000000 _ZL7NullPin
                      .debug_frame:00000010 $d
                            .group:00000000 _ZN14HeatingElementD5Ev
                            .group:00000000 _ZN22ExtruderHeatingElementD5Ev
 
 UNDEFINED SYMBOLS
 _ZdlPv
+xprintf
 GPIO_ClearValue
 _ZNK3Pin12setDirectionEb
 _ZN6Heater5resetEv
@@ -1223,8 +1178,7 @@ _ZN6Heater18manage_temperatureEv
 _ZN10CoolingFan16manageCoolingFanEv
 _ZN10CoolingFan6enableEv
 _ZN10CoolingFan7disableEv
-TIM_Cmd
-xprintf
+PWM_ChannelCmd
 _ZN3PinC1ERK7LPCPorth
 GPIO_SetValue
 _ZN10ThermistorC1Ehh

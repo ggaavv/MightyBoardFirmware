@@ -1049,1394 +1049,1404 @@
  635              	 
  636              	 
  637              	.LVL59:
- 638 0000 38B5     	 push {r3,r4,r5,lr}
+ 638 0000 70B5     	 push {r4,r5,r6,lr}
  639              	.LCFI9:
  640              	 .cfi_def_cfa_offset 16
  641              	 .cfi_offset 14,-4
- 642              	 .cfi_offset 5,-8
- 643              	 .cfi_offset 4,-12
- 644              	 .cfi_offset 3,-16
- 645 0002 0446     	 mov r4,r0
- 646 0004 0D46     	 mov r5,r1
- 647              	.LBB28:
+ 642              	 .cfi_offset 6,-8
+ 643              	 .cfi_offset 5,-12
+ 644              	 .cfi_offset 4,-16
+ 645 0002 0546     	 mov r5,r0
+ 646 0004 0E46     	 mov r6,r1
+ 647              	.LVL60:
+ 648              	.LBB28:
  308:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	char letter;
- 309:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	while (letter = pgm_read_byte(message++)) {
- 648              	 .loc 2 309 0
- 649 0006 0978     	 ldrb r1,[r1,#0]
- 650              	.LVL60:
- 651 0008 39B1     	 cbz r1,.L52
- 652              	.LVL61:
- 653              	.L54:
- 310:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		write(letter);
- 654              	 .loc 2 310 0
- 655 000a 2368     	 ldr r3,[r4,#0]
- 656 000c 9B68     	 ldr r3,[r3,#8]
- 657 000e 2046     	 mov r0,r4
- 658 0010 9847     	 blx r3
- 309:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	while (letter = pgm_read_byte(message++)) {
- 659              	 .loc 2 309 0
- 660 0012 15F8011F 	 ldrb r1,[r5,#1]!
- 661              	.LVL62:
- 662 0016 0029     	 cmp r1,#0
- 663 0018 F7D1     	 bne .L54
- 664              	.LVL63:
- 665              	.L52:
- 666 001a 38BD     	 pop {r3,r4,r5,pc}
- 667              	.LBE28:
- 668              	 .cfi_endproc
- 669              	.LFE90:
- 671              	 .section .text._ZN19LiquidCrystalSerial11writeSerialEh,"ax",%progbits
- 672              	 .align 2
- 673              	 .global _ZN19LiquidCrystalSerial11writeSerialEh
- 674              	 .thumb
- 675              	 .thumb_func
- 677              	_ZN19LiquidCrystalSerial11writeSerialEh:
- 678              	.LFB94:
- 311:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	}
- 312:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 313:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
- 314:src/MightyBoard/shared/LiquidCrystalSerial.cc **** /************ low level data pushing commands **********/
+ 309:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	uint8_t i = 0;
+ 310:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	while (letter = message[i]) {
+ 649              	 .loc 2 310 0
+ 650 0006 0978     	 ldrb r1,[r1,#0]
+ 651              	.LVL61:
+ 652 0008 59B1     	 cbz r1,.L52
+ 309:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	uint8_t i = 0;
+ 653              	 .loc 2 309 0
+ 654 000a 4FF00004 	 mov r4,#0
+ 655              	.LVL62:
+ 656              	.L54:
+ 311:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		i++;
+ 657              	 .loc 2 311 0
+ 658 000e 04F10104 	 add r4,r4,#1
+ 659 0012 E4B2     	 uxtb r4,r4
+ 660              	.LVL63:
+ 312:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		write(letter);
+ 661              	 .loc 2 312 0
+ 662 0014 2B68     	 ldr r3,[r5,#0]
+ 663 0016 9B68     	 ldr r3,[r3,#8]
+ 664 0018 2846     	 mov r0,r5
+ 665 001a 9847     	 blx r3
+ 310:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	while (letter = message[i]) {
+ 666              	 .loc 2 310 0
+ 667 001c 315D     	 ldrb r1,[r6,r4]
+ 668              	.LVL64:
+ 669 001e 0029     	 cmp r1,#0
+ 670 0020 F5D1     	 bne .L54
+ 671              	.LVL65:
+ 672              	.L52:
+ 673 0022 70BD     	 pop {r4,r5,r6,pc}
+ 674              	.LBE28:
+ 675              	 .cfi_endproc
+ 676              	.LFE90:
+ 678              	 .section .text._ZN19LiquidCrystalSerial11writeSerialEh,"ax",%progbits
+ 679              	 .align 2
+ 680              	 .global _ZN19LiquidCrystalSerial11writeSerialEh
+ 681              	 .thumb
+ 682              	 .thumb_func
+ 684              	_ZN19LiquidCrystalSerial11writeSerialEh:
+ 685              	.LFB94:
+ 313:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	}
+ 314:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
  315:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
- 316:src/MightyBoard/shared/LiquidCrystalSerial.cc **** // write either command or data, with automatic 4/8-bit selection
- 317:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::send(uint8_t value, bool mode) {
- 318:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	
- 319:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	uint8_t modeBits;
- 320:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	// set mode value
- 321:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	if(mode)
- 322:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		modeBits = 0b0010;
- 323:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	else
- 324:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		modeBits = 0b0000;
- 325:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		
- 326:src/MightyBoard/shared/LiquidCrystalSerial.cc ****  //serial assumes 4 bit mode
- 327:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load((value&0xF0) + modeBits);
- 328:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(((value<<4)&0xF0) + modeBits);
- 329:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 330:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
- 331:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::load(uint8_t value)
- 332:src/MightyBoard/shared/LiquidCrystalSerial.cc **** {
- 333:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	writeSerial(value);
- 334:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	pulseEnable(value);
- 335:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 336:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
- 337:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::pulseEnable(uint8_t value) {
- 338:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	
- 339:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);
- 340:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    // set enable to true
- 341:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    value |= 0b01000;
- 342:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
- 343:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);    // enable pulse must be >450ns
- 344:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    //set enable to false
- 345:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    value &= 0b11110111;
- 346:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
- 347:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);   // commands need > 37us to settle [citation needed]
- 348:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 349:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
- 350:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::writeSerial(uint8_t value) {
- 679              	 .loc 2 350 0
- 680              	 .cfi_startproc
- 681              	 
- 682              	 
- 683              	.LVL64:
- 684 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
- 685              	.LCFI10:
- 686              	 .cfi_def_cfa_offset 24
- 687              	 .cfi_offset 14,-4
- 688              	 .cfi_offset 7,-8
- 689              	 .cfi_offset 6,-12
- 690              	 .cfi_offset 5,-16
- 691              	 .cfi_offset 4,-20
- 692              	 .cfi_offset 3,-24
- 693 0002 0446     	 mov r4,r0
- 694 0004 0F46     	 mov r7,r1
- 695              	.LVL65:
- 351:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   
- 352:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   int i;
+ 316:src/MightyBoard/shared/LiquidCrystalSerial.cc **** /************ low level data pushing commands **********/
+ 317:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
+ 318:src/MightyBoard/shared/LiquidCrystalSerial.cc **** // write either command or data, with automatic 4/8-bit selection
+ 319:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::send(uint8_t value, bool mode) {
+ 320:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	
+ 321:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	uint8_t modeBits;
+ 322:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	// set mode value
+ 323:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	if(mode)
+ 324:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		modeBits = 0b0010;
+ 325:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	else
+ 326:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		modeBits = 0b0000;
+ 327:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		
+ 328:src/MightyBoard/shared/LiquidCrystalSerial.cc ****  //serial assumes 4 bit mode
+ 329:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load((value&0xF0) + modeBits);
+ 330:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(((value<<4)&0xF0) + modeBits);
+ 331:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 332:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
+ 333:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::load(uint8_t value)
+ 334:src/MightyBoard/shared/LiquidCrystalSerial.cc **** {
+ 335:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	writeSerial(value);
+ 336:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	pulseEnable(value);
+ 337:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 338:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
+ 339:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::pulseEnable(uint8_t value) {
+ 340:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	
+ 341:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);
+ 342:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    // set enable to true
+ 343:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    value |= 0b01000;
+ 344:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
+ 345:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);    // enable pulse must be >450ns
+ 346:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    //set enable to false
+ 347:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    value &= 0b11110111;
+ 348:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
+ 349:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);   // commands need > 37us to settle [citation needed]
+ 350:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 351:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 
+ 352:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::writeSerial(uint8_t value) {
+ 686              	 .loc 2 352 0
+ 687              	 .cfi_startproc
+ 688              	 
+ 689              	 
+ 690              	.LVL66:
+ 691 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+ 692              	.LCFI10:
+ 693              	 .cfi_def_cfa_offset 24
+ 694              	 .cfi_offset 14,-4
+ 695              	 .cfi_offset 7,-8
+ 696              	 .cfi_offset 6,-12
+ 697              	 .cfi_offset 5,-16
+ 698              	 .cfi_offset 4,-20
+ 699              	 .cfi_offset 3,-24
+ 700 0002 0446     	 mov r4,r0
+ 701 0004 0F46     	 mov r7,r1
+ 702              	.LVL67:
  353:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   
- 354:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   for (i = 7; i >= 0; i--)
- 696              	 .loc 2 354 0
- 697 0006 4FF00705 	 mov r5,#7
- 698              	.LBB42:
- 699              	.LBB43:
- 700              	.LBB44:
- 701              	.LBB45:
- 702              	.LBB46:
+ 354:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   int i;
+ 355:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   
+ 356:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   for (i = 7; i >= 0; i--)
+ 703              	 .loc 2 356 0
+ 704 0006 4FF00705 	 mov r5,#7
+ 705              	.LBB42:
+ 706              	.LBB43:
+ 707              	.LBB44:
+ 708              	.LBB45:
+ 709              	.LBB46:
   45:src/MightyBoard/shared/Pin.hh **** 		} else {
   46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
   47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
   48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
- 703              	 .loc 3 48 0
- 704 000a 4FF00106 	 mov r6,#1
- 705              	.LVL66:
- 706              	.L61:
-  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 707              	 .loc 3 35 0 discriminator 2
- 708 000e E37B     	 ldrb r3,[r4,#15]
- 709 0010 2BB9     	 cbnz r3,.L57
  710              	 .loc 3 48 0
- 711 0012 217C     	 ldrb r1,[r4,#16]
- 712 0014 A07B     	 ldrb r0,[r4,#14]
- 713 0016 06FA01F1 	 lsl r1,r6,r1
- 714 001a FFF7FEFF 	 bl GPIO_ClearValue
- 715              	.L57:
- 716              	.LVL67:
- 717              	.LBE46:
- 718              	.LBE45:
- 719              	.LBB47:
- 720              	.LBB48:
+ 711 000a 4FF00106 	 mov r6,#1
+ 712              	.LVL68:
+ 713              	.L61:
   35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 721              	 .loc 3 35 0 discriminator 2
- 722 001e A37A     	 ldrb r3,[r4,#10]
- 723 0020 8BB9     	 cbnz r3,.L58
- 724              	.LBE48:
- 725              	.LBE47:
- 355:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   {
- 356:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   	  _clk_pin.setValue(false);
- 357:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  bool data = (value >> i) & 0x01 ? true : false;
- 726              	 .loc 2 357 0
- 727 0022 47FA05F3 	 asr r3,r7,r5
- 728              	.LBB50:
- 729              	.LBB49:
+ 714              	 .loc 3 35 0 discriminator 2
+ 715 000e E37B     	 ldrb r3,[r4,#15]
+ 716 0010 2BB9     	 cbnz r3,.L57
+ 717              	 .loc 3 48 0
+ 718 0012 217C     	 ldrb r1,[r4,#16]
+ 719 0014 A07B     	 ldrb r0,[r4,#14]
+ 720 0016 06FA01F1 	 lsl r1,r6,r1
+ 721 001a FFF7FEFF 	 bl GPIO_ClearValue
+ 722              	.L57:
+ 723              	.LVL69:
+ 724              	.LBE46:
+ 725              	.LBE45:
+ 726              	.LBB47:
+ 727              	.LBB48:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 728              	 .loc 3 35 0 discriminator 2
+ 729 001e A37A     	 ldrb r3,[r4,#10]
+ 730 0020 8BB9     	 cbnz r3,.L58
+ 731              	.LBE48:
+ 732              	.LBE47:
+ 357:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   {
+ 358:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   	  _clk_pin.setValue(false);
+ 359:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  bool data = (value >> i) & 0x01 ? true : false;
+ 733              	 .loc 2 359 0
+ 734 0022 47FA05F3 	 asr r3,r7,r5
+ 735              	.LBB50:
+ 736              	.LBB49:
   41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
- 730              	 .loc 3 41 0
- 731 0026 13F0010F 	 tst r3,#1
- 732 002a 06D0     	 beq .L59
+ 737              	 .loc 3 41 0
+ 738 0026 13F0010F 	 tst r3,#1
+ 739 002a 06D0     	 beq .L59
   44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
- 733              	 .loc 3 44 0
- 734 002c E17A     	 ldrb r1,[r4,#11]
- 735 002e 607A     	 ldrb r0,[r4,#9]
- 736 0030 06FA01F1 	 lsl r1,r6,r1
- 737 0034 FFF7FEFF 	 bl GPIO_SetValue
- 738 0038 05E0     	 b .L58
- 739              	.L59:
- 740              	 .loc 3 48 0
- 741 003a E17A     	 ldrb r1,[r4,#11]
- 742 003c 607A     	 ldrb r0,[r4,#9]
- 743 003e 06FA01F1 	 lsl r1,r6,r1
- 744 0042 FFF7FEFF 	 bl GPIO_ClearValue
- 745              	.L58:
- 746              	.LVL68:
- 747              	.LBE49:
- 748              	.LBE50:
- 749              	.LBB51:
- 750              	.LBB52:
+ 740              	 .loc 3 44 0
+ 741 002c E17A     	 ldrb r1,[r4,#11]
+ 742 002e 607A     	 ldrb r0,[r4,#9]
+ 743 0030 06FA01F1 	 lsl r1,r6,r1
+ 744 0034 FFF7FEFF 	 bl GPIO_SetValue
+ 745 0038 05E0     	 b .L58
+ 746              	.L59:
+ 747              	 .loc 3 48 0
+ 748 003a E17A     	 ldrb r1,[r4,#11]
+ 749 003c 607A     	 ldrb r0,[r4,#9]
+ 750 003e 06FA01F1 	 lsl r1,r6,r1
+ 751 0042 FFF7FEFF 	 bl GPIO_ClearValue
+ 752              	.L58:
+ 753              	.LVL70:
+ 754              	.LBE49:
+ 755              	.LBE50:
+ 756              	.LBB51:
+ 757              	.LBB52:
   35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 751              	 .loc 3 35 0 discriminator 2
- 752 0046 E37B     	 ldrb r3,[r4,#15]
- 753 0048 2BB9     	 cbnz r3,.L60
+ 758              	 .loc 3 35 0 discriminator 2
+ 759 0046 E37B     	 ldrb r3,[r4,#15]
+ 760 0048 2BB9     	 cbnz r3,.L60
   44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
- 754              	 .loc 3 44 0
- 755 004a 217C     	 ldrb r1,[r4,#16]
- 756 004c A07B     	 ldrb r0,[r4,#14]
- 757 004e 06FA01F1 	 lsl r1,r6,r1
- 758 0052 FFF7FEFF 	 bl GPIO_SetValue
- 759              	.L60:
- 760              	.LBE52:
- 761              	.LBE51:
- 358:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  _data_pin.setValue(data);
- 359:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  
- 360:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  _clk_pin.setValue(true);
- 361:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  _delay_us(1); 
- 762              	 .loc 2 361 0 discriminator 2
- 763 0056 3046     	 mov r0,r6
- 764 0058 FFF7FEFF 	 bl _delay_us
- 765              	.LBE44:
- 354:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   for (i = 7; i >= 0; i--)
- 766              	 .loc 2 354 0 discriminator 2
- 767 005c 05F1FF35 	 add r5,r5,#-1
- 768              	.LVL69:
- 769 0060 B5F1FF3F 	 cmp r5,#-1
- 770 0064 D3D1     	 bne .L61
- 771              	.LVL70:
- 772              	.LBE43:
- 773              	.LBB53:
- 774              	.LBB54:
+ 761              	 .loc 3 44 0
+ 762 004a 217C     	 ldrb r1,[r4,#16]
+ 763 004c A07B     	 ldrb r0,[r4,#14]
+ 764 004e 06FA01F1 	 lsl r1,r6,r1
+ 765 0052 FFF7FEFF 	 bl GPIO_SetValue
+ 766              	.L60:
+ 767              	.LBE52:
+ 768              	.LBE51:
+ 360:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  _data_pin.setValue(data);
+ 361:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  
+ 362:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  _clk_pin.setValue(true);
+ 363:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	  _delay_us(1); 
+ 769              	 .loc 2 363 0 discriminator 2
+ 770 0056 3046     	 mov r0,r6
+ 771 0058 FFF7FEFF 	 bl _delay_us
+ 772              	.LBE44:
+ 356:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   for (i = 7; i >= 0; i--)
+ 773              	 .loc 2 356 0 discriminator 2
+ 774 005c 05F1FF35 	 add r5,r5,#-1
+ 775              	.LVL71:
+ 776 0060 B5F1FF3F 	 cmp r5,#-1
+ 777 0064 D3D1     	 bne .L61
+ 778              	.LVL72:
+ 779              	.LBE43:
+ 780              	.LBB53:
+ 781              	.LBB54:
   35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 775              	 .loc 3 35 0
- 776 0066 6379     	 ldrb r3,[r4,#5]
- 777 0068 3BB9     	 cbnz r3,.L62
+ 782              	 .loc 3 35 0
+ 783 0066 6379     	 ldrb r3,[r4,#5]
+ 784 0068 3BB9     	 cbnz r3,.L62
   44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
- 778              	 .loc 3 44 0
- 779 006a A379     	 ldrb r3,[r4,#6]
- 780 006c 2079     	 ldrb r0,[r4,#4]
- 781 006e 4FF00101 	 mov r1,#1
- 782 0072 01FA03F1 	 lsl r1,r1,r3
- 783 0076 FFF7FEFF 	 bl GPIO_SetValue
- 784              	.L62:
- 785              	.LBE54:
- 786              	.LBE53:
- 362:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   } 
- 363:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   
- 364:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _strobe_pin.setValue(true);
- 365:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _delay_us(1);
- 787              	 .loc 2 365 0
- 788 007a 4FF00100 	 mov r0,#1
- 789 007e FFF7FEFF 	 bl _delay_us
- 790              	.LVL71:
- 791              	.LBB55:
- 792              	.LBB56:
+ 785              	 .loc 3 44 0
+ 786 006a A379     	 ldrb r3,[r4,#6]
+ 787 006c 2079     	 ldrb r0,[r4,#4]
+ 788 006e 4FF00101 	 mov r1,#1
+ 789 0072 01FA03F1 	 lsl r1,r1,r3
+ 790 0076 FFF7FEFF 	 bl GPIO_SetValue
+ 791              	.L62:
+ 792              	.LBE54:
+ 793              	.LBE53:
+ 364:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   } 
+ 365:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   
+ 366:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _strobe_pin.setValue(true);
+ 367:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _delay_us(1);
+ 794              	 .loc 2 367 0
+ 795 007a 4FF00100 	 mov r0,#1
+ 796 007e FFF7FEFF 	 bl _delay_us
+ 797              	.LVL73:
+ 798              	.LBB55:
+ 799              	.LBB56:
   35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
- 793              	 .loc 3 35 0
- 794 0082 6379     	 ldrb r3,[r4,#5]
- 795 0084 3BB9     	 cbnz r3,.L56
- 796              	 .loc 3 48 0
- 797 0086 A379     	 ldrb r3,[r4,#6]
- 798 0088 2079     	 ldrb r0,[r4,#4]
- 799 008a 4FF00101 	 mov r1,#1
- 800 008e 01FA03F1 	 lsl r1,r1,r3
- 801 0092 FFF7FEFF 	 bl GPIO_ClearValue
- 802              	.L56:
- 803 0096 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
- 804              	.LBE56:
- 805              	.LBE55:
- 806              	.LBE42:
- 807              	 .cfi_endproc
- 808              	.LFE94:
- 810              	 .section .text._ZN19LiquidCrystalSerial11pulseEnableEh,"ax",%progbits
- 811              	 .align 2
- 812              	 .global _ZN19LiquidCrystalSerial11pulseEnableEh
- 813              	 .thumb
- 814              	 .thumb_func
- 816              	_ZN19LiquidCrystalSerial11pulseEnableEh:
- 817              	.LFB93:
- 337:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::pulseEnable(uint8_t value) {
- 818              	 .loc 2 337 0
- 819              	 .cfi_startproc
- 820              	 
- 821              	 
- 822              	.LVL72:
- 823 0000 38B5     	 push {r3,r4,r5,lr}
- 824              	.LCFI11:
- 825              	 .cfi_def_cfa_offset 16
- 826              	 .cfi_offset 14,-4
- 827              	 .cfi_offset 5,-8
- 828              	 .cfi_offset 4,-12
- 829              	 .cfi_offset 3,-16
- 830 0002 0546     	 mov r5,r0
- 831 0004 0C46     	 mov r4,r1
- 339:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);
- 832              	 .loc 2 339 0
- 833 0006 4FF00100 	 mov r0,#1
- 834              	.LVL73:
- 835 000a FFF7FEFF 	 bl _delay_us
- 836              	.LVL74:
- 341:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    value |= 0b01000;
- 837              	 .loc 2 341 0
- 838 000e 44F00804 	 orr r4,r4,#8
- 839              	.LVL75:
- 342:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
- 840              	 .loc 2 342 0
- 841 0012 2846     	 mov r0,r5
- 842 0014 2146     	 mov r1,r4
- 843 0016 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
- 343:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);    // enable pulse must be >450ns
+ 800              	 .loc 3 35 0
+ 801 0082 6379     	 ldrb r3,[r4,#5]
+ 802 0084 3BB9     	 cbnz r3,.L56
+ 803              	 .loc 3 48 0
+ 804 0086 A379     	 ldrb r3,[r4,#6]
+ 805 0088 2079     	 ldrb r0,[r4,#4]
+ 806 008a 4FF00101 	 mov r1,#1
+ 807 008e 01FA03F1 	 lsl r1,r1,r3
+ 808 0092 FFF7FEFF 	 bl GPIO_ClearValue
+ 809              	.L56:
+ 810 0096 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 811              	.LBE56:
+ 812              	.LBE55:
+ 813              	.LBE42:
+ 814              	 .cfi_endproc
+ 815              	.LFE94:
+ 817              	 .section .text._ZN19LiquidCrystalSerial11pulseEnableEh,"ax",%progbits
+ 818              	 .align 2
+ 819              	 .global _ZN19LiquidCrystalSerial11pulseEnableEh
+ 820              	 .thumb
+ 821              	 .thumb_func
+ 823              	_ZN19LiquidCrystalSerial11pulseEnableEh:
+ 824              	.LFB93:
+ 339:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::pulseEnable(uint8_t value) {
+ 825              	 .loc 2 339 0
+ 826              	 .cfi_startproc
+ 827              	 
+ 828              	 
+ 829              	.LVL74:
+ 830 0000 38B5     	 push {r3,r4,r5,lr}
+ 831              	.LCFI11:
+ 832              	 .cfi_def_cfa_offset 16
+ 833              	 .cfi_offset 14,-4
+ 834              	 .cfi_offset 5,-8
+ 835              	 .cfi_offset 4,-12
+ 836              	 .cfi_offset 3,-16
+ 837 0002 0546     	 mov r5,r0
+ 838 0004 0C46     	 mov r4,r1
+ 341:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);
+ 839              	 .loc 2 341 0
+ 840 0006 4FF00100 	 mov r0,#1
+ 841              	.LVL75:
+ 842 000a FFF7FEFF 	 bl _delay_us
+ 843              	.LVL76:
+ 343:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    value |= 0b01000;
  844              	 .loc 2 343 0
- 845 001a 4FF00100 	 mov r0,#1
- 846 001e FFF7FEFF 	 bl _delay_us
- 847              	.LVL76:
- 346:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
- 848              	 .loc 2 346 0
- 849 0022 2846     	 mov r0,r5
- 850 0024 04F0F701 	 and r1,r4,#247
- 851 0028 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
- 347:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);   // commands need > 37us to settle [citation needed]
- 852              	 .loc 2 347 0
- 853 002c 4FF00100 	 mov r0,#1
- 854 0030 FFF7FEFF 	 bl _delay_us
- 348:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 845 000e 44F00804 	 orr r4,r4,#8
+ 846              	.LVL77:
+ 344:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
+ 847              	 .loc 2 344 0
+ 848 0012 2846     	 mov r0,r5
+ 849 0014 2146     	 mov r1,r4
+ 850 0016 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
+ 345:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);    // enable pulse must be >450ns
+ 851              	 .loc 2 345 0
+ 852 001a 4FF00100 	 mov r0,#1
+ 853 001e FFF7FEFF 	 bl _delay_us
+ 854              	.LVL78:
+ 348:src/MightyBoard/shared/LiquidCrystalSerial.cc ****    writeSerial(value);
  855              	 .loc 2 348 0
- 856 0034 38BD     	 pop {r3,r4,r5,pc}
- 857              	 .cfi_endproc
- 858              	.LFE93:
- 860 0036 00BF     	 .section .text._ZN19LiquidCrystalSerial4loadEh,"ax",%progbits
- 861              	 .align 2
- 862              	 .global _ZN19LiquidCrystalSerial4loadEh
- 863              	 .thumb
- 864              	 .thumb_func
- 866              	_ZN19LiquidCrystalSerial4loadEh:
- 867              	.LFB92:
- 332:src/MightyBoard/shared/LiquidCrystalSerial.cc **** {
- 868              	 .loc 2 332 0
- 869              	 .cfi_startproc
- 870              	 
- 871              	 
- 872              	.LVL77:
- 873 0000 38B5     	 push {r3,r4,r5,lr}
- 874              	.LCFI12:
- 875              	 .cfi_def_cfa_offset 16
- 876              	 .cfi_offset 14,-4
- 877              	 .cfi_offset 5,-8
- 878              	 .cfi_offset 4,-12
- 879              	 .cfi_offset 3,-16
- 880 0002 0546     	 mov r5,r0
- 881 0004 0C46     	 mov r4,r1
- 333:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	writeSerial(value);
- 882              	 .loc 2 333 0
- 883 0006 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
- 884              	.LVL78:
- 334:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	pulseEnable(value);
- 885              	 .loc 2 334 0
- 886 000a 2846     	 mov r0,r5
- 887 000c 2146     	 mov r1,r4
- 888 000e FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11pulseEnableEh
- 335:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 856 0022 2846     	 mov r0,r5
+ 857 0024 04F0F701 	 and r1,r4,#247
+ 858 0028 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
+ 349:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(1);   // commands need > 37us to settle [citation needed]
+ 859              	 .loc 2 349 0
+ 860 002c 4FF00100 	 mov r0,#1
+ 861 0030 FFF7FEFF 	 bl _delay_us
+ 350:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 862              	 .loc 2 350 0
+ 863 0034 38BD     	 pop {r3,r4,r5,pc}
+ 864              	 .cfi_endproc
+ 865              	.LFE93:
+ 867 0036 00BF     	 .section .text._ZN19LiquidCrystalSerial4loadEh,"ax",%progbits
+ 868              	 .align 2
+ 869              	 .global _ZN19LiquidCrystalSerial4loadEh
+ 870              	 .thumb
+ 871              	 .thumb_func
+ 873              	_ZN19LiquidCrystalSerial4loadEh:
+ 874              	.LFB92:
+ 334:src/MightyBoard/shared/LiquidCrystalSerial.cc **** {
+ 875              	 .loc 2 334 0
+ 876              	 .cfi_startproc
+ 877              	 
+ 878              	 
+ 879              	.LVL79:
+ 880 0000 38B5     	 push {r3,r4,r5,lr}
+ 881              	.LCFI12:
+ 882              	 .cfi_def_cfa_offset 16
+ 883              	 .cfi_offset 14,-4
+ 884              	 .cfi_offset 5,-8
+ 885              	 .cfi_offset 4,-12
+ 886              	 .cfi_offset 3,-16
+ 887 0002 0546     	 mov r5,r0
+ 888 0004 0C46     	 mov r4,r1
+ 335:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	writeSerial(value);
  889              	 .loc 2 335 0
- 890 0012 38BD     	 pop {r3,r4,r5,pc}
- 891              	 .cfi_endproc
- 892              	.LFE92:
- 894              	 .section .text._ZN19LiquidCrystalSerial4sendEhb,"ax",%progbits
- 895              	 .align 2
- 896              	 .global _ZN19LiquidCrystalSerial4sendEhb
- 897              	 .thumb
- 898              	 .thumb_func
- 900              	_ZN19LiquidCrystalSerial4sendEhb:
- 901              	.LFB91:
- 317:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::send(uint8_t value, bool mode) {
- 902              	 .loc 2 317 0
- 903              	 .cfi_startproc
- 904              	 
- 905              	 
- 906              	.LVL79:
- 907 0000 70B5     	 push {r4,r5,r6,lr}
- 908              	.LCFI13:
- 909              	 .cfi_def_cfa_offset 16
- 910              	 .cfi_offset 14,-4
- 911              	 .cfi_offset 6,-8
- 912              	 .cfi_offset 5,-12
- 913              	 .cfi_offset 4,-16
- 914 0002 0646     	 mov r6,r0
- 915 0004 0D46     	 mov r5,r1
- 916              	.LVL80:
- 917              	.LBB57:
- 322:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		modeBits = 0b0010;
- 918              	 .loc 2 322 0
- 919 0006 002A     	 cmp r2,#0
- 920 0008 14BF     	 ite ne
- 921 000a 0224     	 movne r4,#2
- 922 000c 0024     	 moveq r4,#0
- 923              	.LVL81:
- 327:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load((value&0xF0) + modeBits);
- 924              	 .loc 2 327 0
- 925 000e 21F00F01 	 bic r1,r1,#15
- 926              	.LVL82:
- 927 0012 6118     	 adds r1,r4,r1
- 928 0014 01F0FE01 	 and r1,r1,#254
- 929 0018 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
+ 890 0006 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
+ 891              	.LVL80:
+ 336:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	pulseEnable(value);
+ 892              	 .loc 2 336 0
+ 893 000a 2846     	 mov r0,r5
+ 894 000c 2146     	 mov r1,r4
+ 895 000e FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11pulseEnableEh
+ 337:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 896              	 .loc 2 337 0
+ 897 0012 38BD     	 pop {r3,r4,r5,pc}
+ 898              	 .cfi_endproc
+ 899              	.LFE92:
+ 901              	 .section .text._ZN19LiquidCrystalSerial4sendEhb,"ax",%progbits
+ 902              	 .align 2
+ 903              	 .global _ZN19LiquidCrystalSerial4sendEhb
+ 904              	 .thumb
+ 905              	 .thumb_func
+ 907              	_ZN19LiquidCrystalSerial4sendEhb:
+ 908              	.LFB91:
+ 319:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::send(uint8_t value, bool mode) {
+ 909              	 .loc 2 319 0
+ 910              	 .cfi_startproc
+ 911              	 
+ 912              	 
+ 913              	.LVL81:
+ 914 0000 70B5     	 push {r4,r5,r6,lr}
+ 915              	.LCFI13:
+ 916              	 .cfi_def_cfa_offset 16
+ 917              	 .cfi_offset 14,-4
+ 918              	 .cfi_offset 6,-8
+ 919              	 .cfi_offset 5,-12
+ 920              	 .cfi_offset 4,-16
+ 921 0002 0646     	 mov r6,r0
+ 922 0004 0D46     	 mov r5,r1
+ 923              	.LVL82:
+ 924              	.LBB57:
+ 324:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 		modeBits = 0b0010;
+ 925              	 .loc 2 324 0
+ 926 0006 002A     	 cmp r2,#0
+ 927 0008 14BF     	 ite ne
+ 928 000a 0224     	 movne r4,#2
+ 929 000c 0024     	 moveq r4,#0
  930              	.LVL83:
- 328:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(((value<<4)&0xF0) + modeBits);
- 931              	 .loc 2 328 0
- 932 001c 04EB0514 	 add r4,r4,r5,lsl#4
+ 329:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load((value&0xF0) + modeBits);
+ 931              	 .loc 2 329 0
+ 932 000e 21F00F01 	 bic r1,r1,#15
  933              	.LVL84:
- 934 0020 3046     	 mov r0,r6
- 935 0022 04F0FE01 	 and r1,r4,#254
- 936 0026 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
- 937              	.LBE57:
- 329:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 938              	 .loc 2 329 0
- 939 002a 70BD     	 pop {r4,r5,r6,pc}
- 940              	 .cfi_endproc
- 941              	.LFE91:
- 943              	 .section .text._ZN19LiquidCrystalSerial10createCharEhPh,"ax",%progbits
- 944              	 .align 2
- 945              	 .global _ZN19LiquidCrystalSerial10createCharEhPh
- 946              	 .thumb
- 947              	 .thumb_func
- 949              	_ZN19LiquidCrystalSerial10createCharEhPh:
- 950              	.LFB83:
+ 934 0012 6118     	 adds r1,r4,r1
+ 935 0014 01F0FE01 	 and r1,r1,#254
+ 936 0018 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
+ 937              	.LVL85:
+ 330:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(((value<<4)&0xF0) + modeBits);
+ 938              	 .loc 2 330 0
+ 939 001c 04EB0514 	 add r4,r4,r5,lsl#4
+ 940              	.LVL86:
+ 941 0020 3046     	 mov r0,r6
+ 942 0022 04F0FE01 	 and r1,r4,#254
+ 943 0026 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
+ 944              	.LBE57:
+ 331:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 945              	 .loc 2 331 0
+ 946 002a 70BD     	 pop {r4,r5,r6,pc}
+ 947              	 .cfi_endproc
+ 948              	.LFE91:
+ 950              	 .section .text._ZN19LiquidCrystalSerial10createCharEhPh,"ax",%progbits
+ 951              	 .align 2
+ 952              	 .global _ZN19LiquidCrystalSerial10createCharEhPh
+ 953              	 .thumb
+ 954              	 .thumb_func
+ 956              	_ZN19LiquidCrystalSerial10createCharEhPh:
+ 957              	.LFB83:
  221:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::createChar(uint8_t location, uint8_t charmap[]) {
- 951              	 .loc 2 221 0
- 952              	 .cfi_startproc
- 953              	 
- 954              	 
- 955              	.LVL85:
- 956 0000 70B5     	 push {r4,r5,r6,lr}
- 957              	.LCFI14:
- 958              	 .cfi_def_cfa_offset 16
- 959              	 .cfi_offset 14,-4
- 960              	 .cfi_offset 6,-8
- 961              	 .cfi_offset 5,-12
- 962              	 .cfi_offset 4,-16
- 963 0002 0546     	 mov r5,r0
- 964 0004 1646     	 mov r6,r2
- 965              	.LVL86:
- 966              	.LBB62:
+ 958              	 .loc 2 221 0
+ 959              	 .cfi_startproc
+ 960              	 
+ 961              	 
+ 962              	.LVL87:
+ 963 0000 70B5     	 push {r4,r5,r6,lr}
+ 964              	.LCFI14:
+ 965              	 .cfi_def_cfa_offset 16
+ 966              	 .cfi_offset 14,-4
+ 967              	 .cfi_offset 6,-8
+ 968              	 .cfi_offset 5,-12
+ 969              	 .cfi_offset 4,-16
+ 970 0002 0546     	 mov r5,r0
+ 971 0004 1646     	 mov r6,r2
+ 972              	.LVL88:
+ 973              	.LBB62:
  223:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   command(LCD_SETCGRAMADDR | (location << 3));
- 967              	 .loc 2 223 0
- 968 0006 01F00701 	 and r1,r1,#7
- 969              	.LVL87:
- 970 000a 4FEAC101 	 lsl r1,r1,#3
- 971              	.LBB63:
- 972              	.LBB64:
+ 974              	 .loc 2 223 0
+ 975 0006 01F00701 	 and r1,r1,#7
+ 976              	.LVL89:
+ 977 000a 4FEAC101 	 lsl r1,r1,#3
+ 978              	.LBB63:
+ 979              	.LBB64:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 973              	 .loc 2 232 0
- 974 000e 41F04001 	 orr r1,r1,#64
- 975 0012 4FF00002 	 mov r2,#0
- 976              	.LVL88:
- 977 0016 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 978              	.LVL89:
+ 980              	 .loc 2 232 0
+ 981 000e 41F04001 	 orr r1,r1,#64
+ 982 0012 4FF00002 	 mov r2,#0
+ 983              	.LVL90:
+ 984 0016 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 985              	.LVL91:
  224:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   for (int i=0; i<8; i++) {
- 979              	 .loc 2 224 0
- 980 001a 4FF00004 	 mov r4,#0
- 981              	.LVL90:
- 982              	.L71:
- 983              	.LBE64:
- 984              	.LBE63:
- 985              	.LBB65:
+ 986              	 .loc 2 224 0
+ 987 001a 4FF00004 	 mov r4,#0
+ 988              	.LVL92:
+ 989              	.L71:
+ 990              	.LBE64:
+ 991              	.LBE63:
+ 992              	.LBB65:
  225:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     write(charmap[i]);
- 986              	 .loc 2 225 0 discriminator 2
- 987 001e 2B68     	 ldr r3,[r5,#0]
- 988 0020 9B68     	 ldr r3,[r3,#8]
- 989 0022 2846     	 mov r0,r5
- 990 0024 315D     	 ldrb r1,[r6,r4]
- 991 0026 9847     	 blx r3
+ 993              	 .loc 2 225 0 discriminator 2
+ 994 001e 2B68     	 ldr r3,[r5,#0]
+ 995 0020 9B68     	 ldr r3,[r3,#8]
+ 996 0022 2846     	 mov r0,r5
+ 997 0024 315D     	 ldrb r1,[r6,r4]
+ 998 0026 9847     	 blx r3
  224:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   for (int i=0; i<8; i++) {
- 992              	 .loc 2 224 0 discriminator 2
- 993 0028 04F10104 	 add r4,r4,#1
- 994              	.LVL91:
- 995 002c 082C     	 cmp r4,#8
- 996 002e F6D1     	 bne .L71
- 997              	.LBE65:
- 998              	.LBE62:
+ 999              	 .loc 2 224 0 discriminator 2
+ 1000 0028 04F10104 	 add r4,r4,#1
+ 1001              	.LVL93:
+ 1002 002c 082C     	 cmp r4,#8
+ 1003 002e F6D1     	 bne .L71
+ 1004              	.LBE65:
+ 1005              	.LBE62:
  227:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 999              	 .loc 2 227 0
- 1000 0030 70BD     	 pop {r4,r5,r6,pc}
- 1001              	 .cfi_endproc
- 1002              	.LFE83:
- 1004 0032 00BF     	 .section .text._ZN19LiquidCrystalSerial12noAutoscrollEv,"ax",%progbits
- 1005              	 .align 2
- 1006              	 .global _ZN19LiquidCrystalSerial12noAutoscrollEv
- 1007              	 .thumb
- 1008              	 .thumb_func
- 1010              	_ZN19LiquidCrystalSerial12noAutoscrollEv:
- 1011              	.LFB82:
+ 1006              	 .loc 2 227 0
+ 1007 0030 70BD     	 pop {r4,r5,r6,pc}
+ 1008              	 .cfi_endproc
+ 1009              	.LFE83:
+ 1011 0032 00BF     	 .section .text._ZN19LiquidCrystalSerial12noAutoscrollEv,"ax",%progbits
+ 1012              	 .align 2
+ 1013              	 .global _ZN19LiquidCrystalSerial12noAutoscrollEv
+ 1014              	 .thumb
+ 1015              	 .thumb_func
+ 1017              	_ZN19LiquidCrystalSerial12noAutoscrollEv:
+ 1018              	.LFB82:
  214:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::noAutoscroll(void) {
- 1012              	 .loc 2 214 0
- 1013              	 .cfi_startproc
- 1014              	 
- 1015              	 
- 1016              	.LVL92:
- 1017 0000 08B5     	 push {r3,lr}
- 1018              	.LCFI15:
- 1019              	 .cfi_def_cfa_offset 8
- 1020              	 .cfi_offset 14,-4
- 1021              	 .cfi_offset 3,-8
+ 1019              	 .loc 2 214 0
+ 1020              	 .cfi_startproc
+ 1021              	 
+ 1022              	 
+ 1023              	.LVL94:
+ 1024 0000 08B5     	 push {r3,lr}
+ 1025              	.LCFI15:
+ 1026              	 .cfi_def_cfa_offset 8
+ 1027              	 .cfi_offset 14,-4
+ 1028              	 .cfi_offset 3,-8
  215:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaymode &= ~LCD_ENTRYSHIFTINCREMENT;
- 1022              	 .loc 2 215 0
- 1023 0002 417D     	 ldrb r1,[r0,#21]
- 1024 0004 01F0FE01 	 and r1,r1,#254
- 1025 0008 4175     	 strb r1,[r0,#21]
- 1026              	.LVL93:
- 1027              	.LBB68:
- 1028              	.LBB69:
+ 1029              	 .loc 2 215 0
+ 1030 0002 417D     	 ldrb r1,[r0,#21]
+ 1031 0004 01F0FE01 	 and r1,r1,#254
+ 1032 0008 4175     	 strb r1,[r0,#21]
+ 1033              	.LVL95:
+ 1034              	.LBB68:
+ 1035              	.LBB69:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1029              	 .loc 2 232 0
- 1030 000a 41F00401 	 orr r1,r1,#4
- 1031              	.LVL94:
- 1032 000e 4FF00002 	 mov r2,#0
- 1033 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1034              	.LVL95:
- 1035              	.LBE69:
- 1036              	.LBE68:
+ 1036              	 .loc 2 232 0
+ 1037 000a 41F00401 	 orr r1,r1,#4
+ 1038              	.LVL96:
+ 1039 000e 4FF00002 	 mov r2,#0
+ 1040 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1041              	.LVL97:
+ 1042              	.LBE69:
+ 1043              	.LBE68:
  217:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1037              	 .loc 2 217 0
- 1038 0016 08BD     	 pop {r3,pc}
- 1039              	 .cfi_endproc
- 1040              	.LFE82:
- 1042              	 .section .text._ZN19LiquidCrystalSerial10autoscrollEv,"ax",%progbits
- 1043              	 .align 2
- 1044              	 .global _ZN19LiquidCrystalSerial10autoscrollEv
- 1045              	 .thumb
- 1046              	 .thumb_func
- 1048              	_ZN19LiquidCrystalSerial10autoscrollEv:
- 1049              	.LFB81:
+ 1044              	 .loc 2 217 0
+ 1045 0016 08BD     	 pop {r3,pc}
+ 1046              	 .cfi_endproc
+ 1047              	.LFE82:
+ 1049              	 .section .text._ZN19LiquidCrystalSerial10autoscrollEv,"ax",%progbits
+ 1050              	 .align 2
+ 1051              	 .global _ZN19LiquidCrystalSerial10autoscrollEv
+ 1052              	 .thumb
+ 1053              	 .thumb_func
+ 1055              	_ZN19LiquidCrystalSerial10autoscrollEv:
+ 1056              	.LFB81:
  208:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::autoscroll(void) {
- 1050              	 .loc 2 208 0
- 1051              	 .cfi_startproc
- 1052              	 
- 1053              	 
- 1054              	.LVL96:
- 1055 0000 08B5     	 push {r3,lr}
- 1056              	.LCFI16:
- 1057              	 .cfi_def_cfa_offset 8
- 1058              	 .cfi_offset 14,-4
- 1059              	 .cfi_offset 3,-8
+ 1057              	 .loc 2 208 0
+ 1058              	 .cfi_startproc
+ 1059              	 
+ 1060              	 
+ 1061              	.LVL98:
+ 1062 0000 08B5     	 push {r3,lr}
+ 1063              	.LCFI16:
+ 1064              	 .cfi_def_cfa_offset 8
+ 1065              	 .cfi_offset 14,-4
+ 1066              	 .cfi_offset 3,-8
  209:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaymode |= LCD_ENTRYSHIFTINCREMENT;
- 1060              	 .loc 2 209 0
- 1061 0002 417D     	 ldrb r1,[r0,#21]
- 1062 0004 41F00101 	 orr r1,r1,#1
- 1063 0008 4175     	 strb r1,[r0,#21]
- 1064              	.LVL97:
- 1065              	.LBB72:
- 1066              	.LBB73:
+ 1067              	 .loc 2 209 0
+ 1068 0002 417D     	 ldrb r1,[r0,#21]
+ 1069 0004 41F00101 	 orr r1,r1,#1
+ 1070 0008 4175     	 strb r1,[r0,#21]
+ 1071              	.LVL99:
+ 1072              	.LBB72:
+ 1073              	.LBB73:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1067              	 .loc 2 232 0
- 1068 000a 41F00401 	 orr r1,r1,#4
- 1069              	.LVL98:
- 1070 000e 4FF00002 	 mov r2,#0
- 1071 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1072              	.LVL99:
- 1073              	.LBE73:
- 1074              	.LBE72:
+ 1074              	 .loc 2 232 0
+ 1075 000a 41F00401 	 orr r1,r1,#4
+ 1076              	.LVL100:
+ 1077 000e 4FF00002 	 mov r2,#0
+ 1078 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1079              	.LVL101:
+ 1080              	.LBE73:
+ 1081              	.LBE72:
  211:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1075              	 .loc 2 211 0
- 1076 0016 08BD     	 pop {r3,pc}
- 1077              	 .cfi_endproc
- 1078              	.LFE81:
- 1080              	 .section .text._ZN19LiquidCrystalSerial11rightToLeftEv,"ax",%progbits
- 1081              	 .align 2
- 1082              	 .global _ZN19LiquidCrystalSerial11rightToLeftEv
- 1083              	 .thumb
- 1084              	 .thumb_func
- 1086              	_ZN19LiquidCrystalSerial11rightToLeftEv:
- 1087              	.LFB80:
+ 1082              	 .loc 2 211 0
+ 1083 0016 08BD     	 pop {r3,pc}
+ 1084              	 .cfi_endproc
+ 1085              	.LFE81:
+ 1087              	 .section .text._ZN19LiquidCrystalSerial11rightToLeftEv,"ax",%progbits
+ 1088              	 .align 2
+ 1089              	 .global _ZN19LiquidCrystalSerial11rightToLeftEv
+ 1090              	 .thumb
+ 1091              	 .thumb_func
+ 1093              	_ZN19LiquidCrystalSerial11rightToLeftEv:
+ 1094              	.LFB80:
  202:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::rightToLeft(void) {
- 1088              	 .loc 2 202 0
- 1089              	 .cfi_startproc
- 1090              	 
- 1091              	 
- 1092              	.LVL100:
- 1093 0000 08B5     	 push {r3,lr}
- 1094              	.LCFI17:
- 1095              	 .cfi_def_cfa_offset 8
- 1096              	 .cfi_offset 14,-4
- 1097              	 .cfi_offset 3,-8
+ 1095              	 .loc 2 202 0
+ 1096              	 .cfi_startproc
+ 1097              	 
+ 1098              	 
+ 1099              	.LVL102:
+ 1100 0000 08B5     	 push {r3,lr}
+ 1101              	.LCFI17:
+ 1102              	 .cfi_def_cfa_offset 8
+ 1103              	 .cfi_offset 14,-4
+ 1104              	 .cfi_offset 3,-8
  203:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaymode &= ~LCD_ENTRYLEFT;
- 1098              	 .loc 2 203 0
- 1099 0002 417D     	 ldrb r1,[r0,#21]
- 1100 0004 01F0FD01 	 and r1,r1,#253
- 1101 0008 4175     	 strb r1,[r0,#21]
- 1102              	.LVL101:
- 1103              	.LBB76:
- 1104              	.LBB77:
+ 1105              	 .loc 2 203 0
+ 1106 0002 417D     	 ldrb r1,[r0,#21]
+ 1107 0004 01F0FD01 	 and r1,r1,#253
+ 1108 0008 4175     	 strb r1,[r0,#21]
+ 1109              	.LVL103:
+ 1110              	.LBB76:
+ 1111              	.LBB77:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1105              	 .loc 2 232 0
- 1106 000a 41F00401 	 orr r1,r1,#4
- 1107              	.LVL102:
- 1108 000e 4FF00002 	 mov r2,#0
- 1109 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1110              	.LVL103:
- 1111              	.LBE77:
- 1112              	.LBE76:
+ 1112              	 .loc 2 232 0
+ 1113 000a 41F00401 	 orr r1,r1,#4
+ 1114              	.LVL104:
+ 1115 000e 4FF00002 	 mov r2,#0
+ 1116 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1117              	.LVL105:
+ 1118              	.LBE77:
+ 1119              	.LBE76:
  205:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1113              	 .loc 2 205 0
- 1114 0016 08BD     	 pop {r3,pc}
- 1115              	 .cfi_endproc
- 1116              	.LFE80:
- 1118              	 .section .text._ZN19LiquidCrystalSerial11leftToRightEv,"ax",%progbits
- 1119              	 .align 2
- 1120              	 .global _ZN19LiquidCrystalSerial11leftToRightEv
- 1121              	 .thumb
- 1122              	 .thumb_func
- 1124              	_ZN19LiquidCrystalSerial11leftToRightEv:
- 1125              	.LFB79:
+ 1120              	 .loc 2 205 0
+ 1121 0016 08BD     	 pop {r3,pc}
+ 1122              	 .cfi_endproc
+ 1123              	.LFE80:
+ 1125              	 .section .text._ZN19LiquidCrystalSerial11leftToRightEv,"ax",%progbits
+ 1126              	 .align 2
+ 1127              	 .global _ZN19LiquidCrystalSerial11leftToRightEv
+ 1128              	 .thumb
+ 1129              	 .thumb_func
+ 1131              	_ZN19LiquidCrystalSerial11leftToRightEv:
+ 1132              	.LFB79:
  196:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::leftToRight(void) {
- 1126              	 .loc 2 196 0
- 1127              	 .cfi_startproc
- 1128              	 
- 1129              	 
- 1130              	.LVL104:
- 1131 0000 08B5     	 push {r3,lr}
- 1132              	.LCFI18:
- 1133              	 .cfi_def_cfa_offset 8
- 1134              	 .cfi_offset 14,-4
- 1135              	 .cfi_offset 3,-8
+ 1133              	 .loc 2 196 0
+ 1134              	 .cfi_startproc
+ 1135              	 
+ 1136              	 
+ 1137              	.LVL106:
+ 1138 0000 08B5     	 push {r3,lr}
+ 1139              	.LCFI18:
+ 1140              	 .cfi_def_cfa_offset 8
+ 1141              	 .cfi_offset 14,-4
+ 1142              	 .cfi_offset 3,-8
  197:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaymode |= LCD_ENTRYLEFT;
- 1136              	 .loc 2 197 0
- 1137 0002 417D     	 ldrb r1,[r0,#21]
- 1138 0004 41F00201 	 orr r1,r1,#2
- 1139 0008 4175     	 strb r1,[r0,#21]
- 1140              	.LVL105:
- 1141              	.LBB80:
- 1142              	.LBB81:
+ 1143              	 .loc 2 197 0
+ 1144 0002 417D     	 ldrb r1,[r0,#21]
+ 1145 0004 41F00201 	 orr r1,r1,#2
+ 1146 0008 4175     	 strb r1,[r0,#21]
+ 1147              	.LVL107:
+ 1148              	.LBB80:
+ 1149              	.LBB81:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1143              	 .loc 2 232 0
- 1144 000a 41F00401 	 orr r1,r1,#4
- 1145              	.LVL106:
- 1146 000e 4FF00002 	 mov r2,#0
- 1147 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1148              	.LVL107:
- 1149              	.LBE81:
- 1150              	.LBE80:
+ 1150              	 .loc 2 232 0
+ 1151 000a 41F00401 	 orr r1,r1,#4
+ 1152              	.LVL108:
+ 1153 000e 4FF00002 	 mov r2,#0
+ 1154 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1155              	.LVL109:
+ 1156              	.LBE81:
+ 1157              	.LBE80:
  199:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1151              	 .loc 2 199 0
- 1152 0016 08BD     	 pop {r3,pc}
- 1153              	 .cfi_endproc
- 1154              	.LFE79:
- 1156              	 .section .text._ZN19LiquidCrystalSerial18scrollDisplayRightEv,"ax",%progbits
- 1157              	 .align 2
- 1158              	 .global _ZN19LiquidCrystalSerial18scrollDisplayRightEv
- 1159              	 .thumb
- 1160              	 .thumb_func
- 1162              	_ZN19LiquidCrystalSerial18scrollDisplayRightEv:
- 1163              	.LFB78:
+ 1158              	 .loc 2 199 0
+ 1159 0016 08BD     	 pop {r3,pc}
+ 1160              	 .cfi_endproc
+ 1161              	.LFE79:
+ 1163              	 .section .text._ZN19LiquidCrystalSerial18scrollDisplayRightEv,"ax",%progbits
+ 1164              	 .align 2
+ 1165              	 .global _ZN19LiquidCrystalSerial18scrollDisplayRightEv
+ 1166              	 .thumb
+ 1167              	 .thumb_func
+ 1169              	_ZN19LiquidCrystalSerial18scrollDisplayRightEv:
+ 1170              	.LFB78:
  191:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::scrollDisplayRight(void) {
- 1164              	 .loc 2 191 0
- 1165              	 .cfi_startproc
- 1166              	 
- 1167              	 
- 1168              	.LVL108:
- 1169 0000 08B5     	 push {r3,lr}
- 1170              	.LCFI19:
- 1171              	 .cfi_def_cfa_offset 8
- 1172              	 .cfi_offset 14,-4
- 1173              	 .cfi_offset 3,-8
- 1174              	.LVL109:
- 1175              	.LBB84:
- 1176              	.LBB85:
+ 1171              	 .loc 2 191 0
+ 1172              	 .cfi_startproc
+ 1173              	 
+ 1174              	 
+ 1175              	.LVL110:
+ 1176 0000 08B5     	 push {r3,lr}
+ 1177              	.LCFI19:
+ 1178              	 .cfi_def_cfa_offset 8
+ 1179              	 .cfi_offset 14,-4
+ 1180              	 .cfi_offset 3,-8
+ 1181              	.LVL111:
+ 1182              	.LBB84:
+ 1183              	.LBB85:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1177              	 .loc 2 232 0
- 1178 0002 4FF01C01 	 mov r1,#28
- 1179 0006 4FF00002 	 mov r2,#0
- 1180 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1181              	.LVL110:
- 1182              	.LBE85:
- 1183              	.LBE84:
+ 1184              	 .loc 2 232 0
+ 1185 0002 4FF01C01 	 mov r1,#28
+ 1186 0006 4FF00002 	 mov r2,#0
+ 1187 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1188              	.LVL112:
+ 1189              	.LBE85:
+ 1190              	.LBE84:
  193:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1184              	 .loc 2 193 0
- 1185 000e 08BD     	 pop {r3,pc}
- 1186              	 .cfi_endproc
- 1187              	.LFE78:
- 1189              	 .section .text._ZN19LiquidCrystalSerial17scrollDisplayLeftEv,"ax",%progbits
- 1190              	 .align 2
- 1191              	 .global _ZN19LiquidCrystalSerial17scrollDisplayLeftEv
- 1192              	 .thumb
- 1193              	 .thumb_func
- 1195              	_ZN19LiquidCrystalSerial17scrollDisplayLeftEv:
- 1196              	.LFB77:
+ 1191              	 .loc 2 193 0
+ 1192 000e 08BD     	 pop {r3,pc}
+ 1193              	 .cfi_endproc
+ 1194              	.LFE78:
+ 1196              	 .section .text._ZN19LiquidCrystalSerial17scrollDisplayLeftEv,"ax",%progbits
+ 1197              	 .align 2
+ 1198              	 .global _ZN19LiquidCrystalSerial17scrollDisplayLeftEv
+ 1199              	 .thumb
+ 1200              	 .thumb_func
+ 1202              	_ZN19LiquidCrystalSerial17scrollDisplayLeftEv:
+ 1203              	.LFB77:
  188:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::scrollDisplayLeft(void) {
- 1197              	 .loc 2 188 0
- 1198              	 .cfi_startproc
- 1199              	 
- 1200              	 
- 1201              	.LVL111:
- 1202 0000 08B5     	 push {r3,lr}
- 1203              	.LCFI20:
- 1204              	 .cfi_def_cfa_offset 8
- 1205              	 .cfi_offset 14,-4
- 1206              	 .cfi_offset 3,-8
- 1207              	.LVL112:
- 1208              	.LBB88:
- 1209              	.LBB89:
+ 1204              	 .loc 2 188 0
+ 1205              	 .cfi_startproc
+ 1206              	 
+ 1207              	 
+ 1208              	.LVL113:
+ 1209 0000 08B5     	 push {r3,lr}
+ 1210              	.LCFI20:
+ 1211              	 .cfi_def_cfa_offset 8
+ 1212              	 .cfi_offset 14,-4
+ 1213              	 .cfi_offset 3,-8
+ 1214              	.LVL114:
+ 1215              	.LBB88:
+ 1216              	.LBB89:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1210              	 .loc 2 232 0
- 1211 0002 4FF01801 	 mov r1,#24
- 1212 0006 4FF00002 	 mov r2,#0
- 1213 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1214              	.LVL113:
- 1215              	.LBE89:
- 1216              	.LBE88:
+ 1217              	 .loc 2 232 0
+ 1218 0002 4FF01801 	 mov r1,#24
+ 1219 0006 4FF00002 	 mov r2,#0
+ 1220 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1221              	.LVL115:
+ 1222              	.LBE89:
+ 1223              	.LBE88:
  190:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1217              	 .loc 2 190 0
- 1218 000e 08BD     	 pop {r3,pc}
- 1219              	 .cfi_endproc
- 1220              	.LFE77:
- 1222              	 .section .text._ZN19LiquidCrystalSerial5blinkEv,"ax",%progbits
- 1223              	 .align 2
- 1224              	 .global _ZN19LiquidCrystalSerial5blinkEv
- 1225              	 .thumb
- 1226              	 .thumb_func
- 1228              	_ZN19LiquidCrystalSerial5blinkEv:
- 1229              	.LFB76:
+ 1224              	 .loc 2 190 0
+ 1225 000e 08BD     	 pop {r3,pc}
+ 1226              	 .cfi_endproc
+ 1227              	.LFE77:
+ 1229              	 .section .text._ZN19LiquidCrystalSerial5blinkEv,"ax",%progbits
+ 1230              	 .align 2
+ 1231              	 .global _ZN19LiquidCrystalSerial5blinkEv
+ 1232              	 .thumb
+ 1233              	 .thumb_func
+ 1235              	_ZN19LiquidCrystalSerial5blinkEv:
+ 1236              	.LFB76:
  182:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::blink() {
- 1230              	 .loc 2 182 0
- 1231              	 .cfi_startproc
- 1232              	 
- 1233              	 
- 1234              	.LVL114:
- 1235 0000 08B5     	 push {r3,lr}
- 1236              	.LCFI21:
- 1237              	 .cfi_def_cfa_offset 8
- 1238              	 .cfi_offset 14,-4
- 1239              	 .cfi_offset 3,-8
+ 1237              	 .loc 2 182 0
+ 1238              	 .cfi_startproc
+ 1239              	 
+ 1240              	 
+ 1241              	.LVL116:
+ 1242 0000 08B5     	 push {r3,lr}
+ 1243              	.LCFI21:
+ 1244              	 .cfi_def_cfa_offset 8
+ 1245              	 .cfi_offset 14,-4
+ 1246              	 .cfi_offset 3,-8
  183:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaycontrol |= LCD_BLINKON;
- 1240              	 .loc 2 183 0
- 1241 0002 017D     	 ldrb r1,[r0,#20]
- 1242 0004 41F00101 	 orr r1,r1,#1
- 1243 0008 0175     	 strb r1,[r0,#20]
- 1244              	.LVL115:
- 1245              	.LBB92:
- 1246              	.LBB93:
+ 1247              	 .loc 2 183 0
+ 1248 0002 017D     	 ldrb r1,[r0,#20]
+ 1249 0004 41F00101 	 orr r1,r1,#1
+ 1250 0008 0175     	 strb r1,[r0,#20]
+ 1251              	.LVL117:
+ 1252              	.LBB92:
+ 1253              	.LBB93:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1247              	 .loc 2 232 0
- 1248 000a 41F00801 	 orr r1,r1,#8
- 1249              	.LVL116:
- 1250 000e 4FF00002 	 mov r2,#0
- 1251 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1252              	.LVL117:
- 1253              	.LBE93:
- 1254              	.LBE92:
+ 1254              	 .loc 2 232 0
+ 1255 000a 41F00801 	 orr r1,r1,#8
+ 1256              	.LVL118:
+ 1257 000e 4FF00002 	 mov r2,#0
+ 1258 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1259              	.LVL119:
+ 1260              	.LBE93:
+ 1261              	.LBE92:
  185:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1255              	 .loc 2 185 0
- 1256 0016 08BD     	 pop {r3,pc}
- 1257              	 .cfi_endproc
- 1258              	.LFE76:
- 1260              	 .section .text._ZN19LiquidCrystalSerial7noBlinkEv,"ax",%progbits
- 1261              	 .align 2
- 1262              	 .global _ZN19LiquidCrystalSerial7noBlinkEv
- 1263              	 .thumb
- 1264              	 .thumb_func
- 1266              	_ZN19LiquidCrystalSerial7noBlinkEv:
- 1267              	.LFB75:
+ 1262              	 .loc 2 185 0
+ 1263 0016 08BD     	 pop {r3,pc}
+ 1264              	 .cfi_endproc
+ 1265              	.LFE76:
+ 1267              	 .section .text._ZN19LiquidCrystalSerial7noBlinkEv,"ax",%progbits
+ 1268              	 .align 2
+ 1269              	 .global _ZN19LiquidCrystalSerial7noBlinkEv
+ 1270              	 .thumb
+ 1271              	 .thumb_func
+ 1273              	_ZN19LiquidCrystalSerial7noBlinkEv:
+ 1274              	.LFB75:
  178:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::noBlink() {
- 1268              	 .loc 2 178 0
- 1269              	 .cfi_startproc
- 1270              	 
- 1271              	 
- 1272              	.LVL118:
- 1273 0000 08B5     	 push {r3,lr}
- 1274              	.LCFI22:
- 1275              	 .cfi_def_cfa_offset 8
- 1276              	 .cfi_offset 14,-4
- 1277              	 .cfi_offset 3,-8
+ 1275              	 .loc 2 178 0
+ 1276              	 .cfi_startproc
+ 1277              	 
+ 1278              	 
+ 1279              	.LVL120:
+ 1280 0000 08B5     	 push {r3,lr}
+ 1281              	.LCFI22:
+ 1282              	 .cfi_def_cfa_offset 8
+ 1283              	 .cfi_offset 14,-4
+ 1284              	 .cfi_offset 3,-8
  179:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaycontrol &= ~LCD_BLINKON;
- 1278              	 .loc 2 179 0
- 1279 0002 017D     	 ldrb r1,[r0,#20]
- 1280 0004 01F0FE01 	 and r1,r1,#254
- 1281 0008 0175     	 strb r1,[r0,#20]
- 1282              	.LVL119:
- 1283              	.LBB96:
- 1284              	.LBB97:
+ 1285              	 .loc 2 179 0
+ 1286 0002 017D     	 ldrb r1,[r0,#20]
+ 1287 0004 01F0FE01 	 and r1,r1,#254
+ 1288 0008 0175     	 strb r1,[r0,#20]
+ 1289              	.LVL121:
+ 1290              	.LBB96:
+ 1291              	.LBB97:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1285              	 .loc 2 232 0
- 1286 000a 41F00801 	 orr r1,r1,#8
- 1287              	.LVL120:
- 1288 000e 4FF00002 	 mov r2,#0
- 1289 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1290              	.LVL121:
- 1291              	.LBE97:
- 1292              	.LBE96:
+ 1292              	 .loc 2 232 0
+ 1293 000a 41F00801 	 orr r1,r1,#8
+ 1294              	.LVL122:
+ 1295 000e 4FF00002 	 mov r2,#0
+ 1296 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1297              	.LVL123:
+ 1298              	.LBE97:
+ 1299              	.LBE96:
  181:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1293              	 .loc 2 181 0
- 1294 0016 08BD     	 pop {r3,pc}
- 1295              	 .cfi_endproc
- 1296              	.LFE75:
- 1298              	 .section .text._ZN19LiquidCrystalSerial6cursorEv,"ax",%progbits
- 1299              	 .align 2
- 1300              	 .global _ZN19LiquidCrystalSerial6cursorEv
- 1301              	 .thumb
- 1302              	 .thumb_func
- 1304              	_ZN19LiquidCrystalSerial6cursorEv:
- 1305              	.LFB74:
+ 1300              	 .loc 2 181 0
+ 1301 0016 08BD     	 pop {r3,pc}
+ 1302              	 .cfi_endproc
+ 1303              	.LFE75:
+ 1305              	 .section .text._ZN19LiquidCrystalSerial6cursorEv,"ax",%progbits
+ 1306              	 .align 2
+ 1307              	 .global _ZN19LiquidCrystalSerial6cursorEv
+ 1308              	 .thumb
+ 1309              	 .thumb_func
+ 1311              	_ZN19LiquidCrystalSerial6cursorEv:
+ 1312              	.LFB74:
  172:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::cursor() {
- 1306              	 .loc 2 172 0
- 1307              	 .cfi_startproc
- 1308              	 
- 1309              	 
- 1310              	.LVL122:
- 1311 0000 08B5     	 push {r3,lr}
- 1312              	.LCFI23:
- 1313              	 .cfi_def_cfa_offset 8
- 1314              	 .cfi_offset 14,-4
- 1315              	 .cfi_offset 3,-8
+ 1313              	 .loc 2 172 0
+ 1314              	 .cfi_startproc
+ 1315              	 
+ 1316              	 
+ 1317              	.LVL124:
+ 1318 0000 08B5     	 push {r3,lr}
+ 1319              	.LCFI23:
+ 1320              	 .cfi_def_cfa_offset 8
+ 1321              	 .cfi_offset 14,-4
+ 1322              	 .cfi_offset 3,-8
  173:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaycontrol |= LCD_CURSORON;
- 1316              	 .loc 2 173 0
- 1317 0002 017D     	 ldrb r1,[r0,#20]
- 1318 0004 41F00201 	 orr r1,r1,#2
- 1319 0008 0175     	 strb r1,[r0,#20]
- 1320              	.LVL123:
- 1321              	.LBB100:
- 1322              	.LBB101:
+ 1323              	 .loc 2 173 0
+ 1324 0002 017D     	 ldrb r1,[r0,#20]
+ 1325 0004 41F00201 	 orr r1,r1,#2
+ 1326 0008 0175     	 strb r1,[r0,#20]
+ 1327              	.LVL125:
+ 1328              	.LBB100:
+ 1329              	.LBB101:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1323              	 .loc 2 232 0
- 1324 000a 41F00801 	 orr r1,r1,#8
- 1325              	.LVL124:
- 1326 000e 4FF00002 	 mov r2,#0
- 1327 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1328              	.LVL125:
- 1329              	.LBE101:
- 1330              	.LBE100:
+ 1330              	 .loc 2 232 0
+ 1331 000a 41F00801 	 orr r1,r1,#8
+ 1332              	.LVL126:
+ 1333 000e 4FF00002 	 mov r2,#0
+ 1334 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1335              	.LVL127:
+ 1336              	.LBE101:
+ 1337              	.LBE100:
  175:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1331              	 .loc 2 175 0
- 1332 0016 08BD     	 pop {r3,pc}
- 1333              	 .cfi_endproc
- 1334              	.LFE74:
- 1336              	 .section .text._ZN19LiquidCrystalSerial8noCursorEv,"ax",%progbits
- 1337              	 .align 2
- 1338              	 .global _ZN19LiquidCrystalSerial8noCursorEv
- 1339              	 .thumb
- 1340              	 .thumb_func
- 1342              	_ZN19LiquidCrystalSerial8noCursorEv:
- 1343              	.LFB73:
+ 1338              	 .loc 2 175 0
+ 1339 0016 08BD     	 pop {r3,pc}
+ 1340              	 .cfi_endproc
+ 1341              	.LFE74:
+ 1343              	 .section .text._ZN19LiquidCrystalSerial8noCursorEv,"ax",%progbits
+ 1344              	 .align 2
+ 1345              	 .global _ZN19LiquidCrystalSerial8noCursorEv
+ 1346              	 .thumb
+ 1347              	 .thumb_func
+ 1349              	_ZN19LiquidCrystalSerial8noCursorEv:
+ 1350              	.LFB73:
  168:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::noCursor() {
- 1344              	 .loc 2 168 0
- 1345              	 .cfi_startproc
- 1346              	 
- 1347              	 
- 1348              	.LVL126:
- 1349 0000 08B5     	 push {r3,lr}
- 1350              	.LCFI24:
- 1351              	 .cfi_def_cfa_offset 8
- 1352              	 .cfi_offset 14,-4
- 1353              	 .cfi_offset 3,-8
+ 1351              	 .loc 2 168 0
+ 1352              	 .cfi_startproc
+ 1353              	 
+ 1354              	 
+ 1355              	.LVL128:
+ 1356 0000 08B5     	 push {r3,lr}
+ 1357              	.LCFI24:
+ 1358              	 .cfi_def_cfa_offset 8
+ 1359              	 .cfi_offset 14,-4
+ 1360              	 .cfi_offset 3,-8
  169:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaycontrol &= ~LCD_CURSORON;
- 1354              	 .loc 2 169 0
- 1355 0002 017D     	 ldrb r1,[r0,#20]
- 1356 0004 01F0FD01 	 and r1,r1,#253
- 1357 0008 0175     	 strb r1,[r0,#20]
- 1358              	.LVL127:
- 1359              	.LBB104:
- 1360              	.LBB105:
+ 1361              	 .loc 2 169 0
+ 1362 0002 017D     	 ldrb r1,[r0,#20]
+ 1363 0004 01F0FD01 	 and r1,r1,#253
+ 1364 0008 0175     	 strb r1,[r0,#20]
+ 1365              	.LVL129:
+ 1366              	.LBB104:
+ 1367              	.LBB105:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1361              	 .loc 2 232 0
- 1362 000a 41F00801 	 orr r1,r1,#8
- 1363              	.LVL128:
- 1364 000e 4FF00002 	 mov r2,#0
- 1365 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1366              	.LVL129:
- 1367              	.LBE105:
- 1368              	.LBE104:
+ 1368              	 .loc 2 232 0
+ 1369 000a 41F00801 	 orr r1,r1,#8
+ 1370              	.LVL130:
+ 1371 000e 4FF00002 	 mov r2,#0
+ 1372 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1373              	.LVL131:
+ 1374              	.LBE105:
+ 1375              	.LBE104:
  171:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1369              	 .loc 2 171 0
- 1370 0016 08BD     	 pop {r3,pc}
- 1371              	 .cfi_endproc
- 1372              	.LFE73:
- 1374              	 .section .text._ZN19LiquidCrystalSerial7displayEv,"ax",%progbits
- 1375              	 .align 2
- 1376              	 .global _ZN19LiquidCrystalSerial7displayEv
- 1377              	 .thumb
- 1378              	 .thumb_func
- 1380              	_ZN19LiquidCrystalSerial7displayEv:
- 1381              	.LFB72:
+ 1376              	 .loc 2 171 0
+ 1377 0016 08BD     	 pop {r3,pc}
+ 1378              	 .cfi_endproc
+ 1379              	.LFE73:
+ 1381              	 .section .text._ZN19LiquidCrystalSerial7displayEv,"ax",%progbits
+ 1382              	 .align 2
+ 1383              	 .global _ZN19LiquidCrystalSerial7displayEv
+ 1384              	 .thumb
+ 1385              	 .thumb_func
+ 1387              	_ZN19LiquidCrystalSerial7displayEv:
+ 1388              	.LFB72:
  162:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::display() {
- 1382              	 .loc 2 162 0
- 1383              	 .cfi_startproc
- 1384              	 
- 1385              	 
- 1386              	.LVL130:
- 1387 0000 08B5     	 push {r3,lr}
- 1388              	.LCFI25:
- 1389              	 .cfi_def_cfa_offset 8
- 1390              	 .cfi_offset 14,-4
- 1391              	 .cfi_offset 3,-8
+ 1389              	 .loc 2 162 0
+ 1390              	 .cfi_startproc
+ 1391              	 
+ 1392              	 
+ 1393              	.LVL132:
+ 1394 0000 08B5     	 push {r3,lr}
+ 1395              	.LCFI25:
+ 1396              	 .cfi_def_cfa_offset 8
+ 1397              	 .cfi_offset 14,-4
+ 1398              	 .cfi_offset 3,-8
  163:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaycontrol |= LCD_DISPLAYON;
- 1392              	 .loc 2 163 0
- 1393 0002 017D     	 ldrb r1,[r0,#20]
- 1394 0004 41F00401 	 orr r1,r1,#4
- 1395 0008 0175     	 strb r1,[r0,#20]
- 1396              	.LVL131:
- 1397              	.LBB108:
- 1398              	.LBB109:
+ 1399              	 .loc 2 163 0
+ 1400 0002 017D     	 ldrb r1,[r0,#20]
+ 1401 0004 41F00401 	 orr r1,r1,#4
+ 1402 0008 0175     	 strb r1,[r0,#20]
+ 1403              	.LVL133:
+ 1404              	.LBB108:
+ 1405              	.LBB109:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1399              	 .loc 2 232 0
- 1400 000a 41F00801 	 orr r1,r1,#8
- 1401              	.LVL132:
- 1402 000e 4FF00002 	 mov r2,#0
- 1403 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1404              	.LVL133:
- 1405              	.LBE109:
- 1406              	.LBE108:
+ 1406              	 .loc 2 232 0
+ 1407 000a 41F00801 	 orr r1,r1,#8
+ 1408              	.LVL134:
+ 1409 000e 4FF00002 	 mov r2,#0
+ 1410 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1411              	.LVL135:
+ 1412              	.LBE109:
+ 1413              	.LBE108:
  165:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1407              	 .loc 2 165 0
- 1408 0016 08BD     	 pop {r3,pc}
- 1409              	 .cfi_endproc
- 1410              	.LFE72:
- 1412              	 .section .text._ZN19LiquidCrystalSerial9noDisplayEv,"ax",%progbits
- 1413              	 .align 2
- 1414              	 .global _ZN19LiquidCrystalSerial9noDisplayEv
- 1415              	 .thumb
- 1416              	 .thumb_func
- 1418              	_ZN19LiquidCrystalSerial9noDisplayEv:
- 1419              	.LFB71:
+ 1414              	 .loc 2 165 0
+ 1415 0016 08BD     	 pop {r3,pc}
+ 1416              	 .cfi_endproc
+ 1417              	.LFE72:
+ 1419              	 .section .text._ZN19LiquidCrystalSerial9noDisplayEv,"ax",%progbits
+ 1420              	 .align 2
+ 1421              	 .global _ZN19LiquidCrystalSerial9noDisplayEv
+ 1422              	 .thumb
+ 1423              	 .thumb_func
+ 1425              	_ZN19LiquidCrystalSerial9noDisplayEv:
+ 1426              	.LFB71:
  158:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::noDisplay() {
- 1420              	 .loc 2 158 0
- 1421              	 .cfi_startproc
- 1422              	 
- 1423              	 
- 1424              	.LVL134:
- 1425 0000 08B5     	 push {r3,lr}
- 1426              	.LCFI26:
- 1427              	 .cfi_def_cfa_offset 8
- 1428              	 .cfi_offset 14,-4
- 1429              	 .cfi_offset 3,-8
+ 1427              	 .loc 2 158 0
+ 1428              	 .cfi_startproc
+ 1429              	 
+ 1430              	 
+ 1431              	.LVL136:
+ 1432 0000 08B5     	 push {r3,lr}
+ 1433              	.LCFI26:
+ 1434              	 .cfi_def_cfa_offset 8
+ 1435              	 .cfi_offset 14,-4
+ 1436              	 .cfi_offset 3,-8
  159:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaycontrol &= ~LCD_DISPLAYON;
- 1430              	 .loc 2 159 0
- 1431 0002 017D     	 ldrb r1,[r0,#20]
- 1432 0004 01F0FB01 	 and r1,r1,#251
- 1433 0008 0175     	 strb r1,[r0,#20]
- 1434              	.LVL135:
- 1435              	.LBB112:
- 1436              	.LBB113:
+ 1437              	 .loc 2 159 0
+ 1438 0002 017D     	 ldrb r1,[r0,#20]
+ 1439 0004 01F0FB01 	 and r1,r1,#251
+ 1440 0008 0175     	 strb r1,[r0,#20]
+ 1441              	.LVL137:
+ 1442              	.LBB112:
+ 1443              	.LBB113:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1437              	 .loc 2 232 0
- 1438 000a 41F00801 	 orr r1,r1,#8
- 1439              	.LVL136:
- 1440 000e 4FF00002 	 mov r2,#0
- 1441 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1442              	.LVL137:
- 1443              	.LBE113:
- 1444              	.LBE112:
+ 1444              	 .loc 2 232 0
+ 1445 000a 41F00801 	 orr r1,r1,#8
+ 1446              	.LVL138:
+ 1447 000e 4FF00002 	 mov r2,#0
+ 1448 0012 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1449              	.LVL139:
+ 1450              	.LBE113:
+ 1451              	.LBE112:
  161:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1445              	 .loc 2 161 0
- 1446 0016 08BD     	 pop {r3,pc}
- 1447              	 .cfi_endproc
- 1448              	.LFE71:
- 1450              	 .section .text._ZN19LiquidCrystalSerial9setCursorEhh,"ax",%progbits
- 1451              	 .align 2
- 1452              	 .global _ZN19LiquidCrystalSerial9setCursorEhh
- 1453              	 .thumb
- 1454              	 .thumb_func
- 1456              	_ZN19LiquidCrystalSerial9setCursorEhh:
- 1457              	.LFB70:
+ 1452              	 .loc 2 161 0
+ 1453 0016 08BD     	 pop {r3,pc}
+ 1454              	 .cfi_endproc
+ 1455              	.LFE71:
+ 1457              	 .section .text._ZN19LiquidCrystalSerial9setCursorEhh,"ax",%progbits
+ 1458              	 .align 2
+ 1459              	 .global _ZN19LiquidCrystalSerial9setCursorEhh
+ 1460              	 .thumb
+ 1461              	 .thumb_func
+ 1463              	_ZN19LiquidCrystalSerial9setCursorEhh:
+ 1464              	.LFB70:
  147:src/MightyBoard/shared/LiquidCrystalSerial.cc **** {
- 1458              	 .loc 2 147 0
- 1459              	 .cfi_startproc
- 1460              	 
- 1461              	 
- 1462              	.LVL138:
- 1463 0000 F0B5     	 push {r4,r5,r6,r7,lr}
- 1464              	.LCFI27:
- 1465              	 .cfi_def_cfa_offset 20
- 1466              	 .cfi_offset 14,-4
- 1467              	 .cfi_offset 7,-8
- 1468              	 .cfi_offset 6,-12
- 1469              	 .cfi_offset 5,-16
- 1470              	 .cfi_offset 4,-20
- 1471 0002 85B0     	 sub sp,sp,#20
- 1472              	.LCFI28:
- 1473              	 .cfi_def_cfa_offset 40
- 1474 0004 0446     	 mov r4,r0
- 1475 0006 0E46     	 mov r6,r1
- 1476 0008 1546     	 mov r5,r2
- 1477              	.LBB117:
+ 1465              	 .loc 2 147 0
+ 1466              	 .cfi_startproc
+ 1467              	 
+ 1468              	 
+ 1469              	.LVL140:
+ 1470 0000 F0B5     	 push {r4,r5,r6,r7,lr}
+ 1471              	.LCFI27:
+ 1472              	 .cfi_def_cfa_offset 20
+ 1473              	 .cfi_offset 14,-4
+ 1474              	 .cfi_offset 7,-8
+ 1475              	 .cfi_offset 6,-12
+ 1476              	 .cfi_offset 5,-16
+ 1477              	 .cfi_offset 4,-20
+ 1478 0002 85B0     	 sub sp,sp,#20
+ 1479              	.LCFI28:
+ 1480              	 .cfi_def_cfa_offset 40
+ 1481 0004 0446     	 mov r4,r0
+ 1482 0006 0E46     	 mov r6,r1
+ 1483 0008 1546     	 mov r5,r2
+ 1484              	.LBB117:
  148:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
- 1478              	 .loc 2 148 0
- 1479 000a 40F20003 	 movw r3,#:lower16:.LANCHOR0
- 1480 000e C0F20003 	 movt r3,#:upper16:.LANCHOR0
- 1481 0012 0FCB     	 ldmia r3,{r0,r1,r2,r3}
- 1482              	.LVL139:
- 1483 0014 04AF     	 add r7,sp,#16
- 1484 0016 07E90F00 	 stmdb r7,{r0,r1,r2,r3}
+ 1485              	 .loc 2 148 0
+ 1486 000a 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 1487 000e C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 1488 0012 0FCB     	 ldmia r3,{r0,r1,r2,r3}
+ 1489              	.LVL141:
+ 1490 0014 04AF     	 add r7,sp,#16
+ 1491 0016 07E90F00 	 stmdb r7,{r0,r1,r2,r3}
  149:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   if ( row > _numlines ) {
- 1485              	 .loc 2 149 0
- 1486 001a 637E     	 ldrb r3,[r4,#25]
- 1487 001c AB42     	 cmp r3,r5
+ 1492              	 .loc 2 149 0
+ 1493 001a 637E     	 ldrb r3,[r4,#25]
+ 1494 001c AB42     	 cmp r3,r5
  150:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     row = _numlines-1;    // we count rows starting w/0
- 1488              	 .loc 2 150 0
- 1489 001e 3CBF     	 itt cc
- 1490 0020 03F1FF35 	 addcc r5,r3,#-1
- 1491 0024 EDB2     	 uxtbcc r5,r5
- 1492              	.LVL140:
+ 1495              	 .loc 2 150 0
+ 1496 001e 3CBF     	 itt cc
+ 1497 0020 03F1FF35 	 addcc r5,r3,#-1
+ 1498 0024 EDB2     	 uxtbcc r5,r5
+ 1499              	.LVL142:
  153:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _xcursor = col; _ycursor = row;
- 1493              	 .loc 2 153 0
- 1494 0026 E675     	 strb r6,[r4,#23]
- 1495 0028 2576     	 strb r5,[r4,#24]
- 1496              	.LVL141:
+ 1500              	 .loc 2 153 0
+ 1501 0026 E675     	 strb r6,[r4,#23]
+ 1502 0028 2576     	 strb r5,[r4,#24]
+ 1503              	.LVL143:
  154:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
- 1497              	 .loc 2 154 0
- 1498 002a 04AB     	 add r3,sp,#16
- 1499 002c 03EB8505 	 add r5,r3,r5,lsl#2
- 1500              	.LVL142:
- 1501 0030 55F8101C 	 ldr r1,[r5,#-16]
- 1502 0034 7618     	 adds r6,r6,r1
- 1503 0036 66F07F01 	 orn r1,r6,#127
- 1504              	.LBB118:
- 1505              	.LBB119:
+ 1504              	 .loc 2 154 0
+ 1505 002a 04AB     	 add r3,sp,#16
+ 1506 002c 03EB8505 	 add r5,r3,r5,lsl#2
+ 1507              	.LVL144:
+ 1508 0030 55F8101C 	 ldr r1,[r5,#-16]
+ 1509 0034 7618     	 adds r6,r6,r1
+ 1510 0036 66F07F01 	 orn r1,r6,#127
+ 1511              	.LBB118:
+ 1512              	.LBB119:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1506              	 .loc 2 232 0
- 1507 003a 2046     	 mov r0,r4
- 1508 003c C9B2     	 uxtb r1,r1
- 1509 003e 4FF00002 	 mov r2,#0
- 1510 0042 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1511              	.LBE119:
- 1512              	.LBE118:
- 1513              	.LBE117:
+ 1513              	 .loc 2 232 0
+ 1514 003a 2046     	 mov r0,r4
+ 1515 003c C9B2     	 uxtb r1,r1
+ 1516 003e 4FF00002 	 mov r2,#0
+ 1517 0042 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1518              	.LBE119:
+ 1519              	.LBE118:
+ 1520              	.LBE117:
  155:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1514              	 .loc 2 155 0
- 1515 0046 05B0     	 add sp,sp,#20
- 1516 0048 F0BD     	 pop {r4,r5,r6,r7,pc}
- 1517              	 .cfi_endproc
- 1518              	.LFE70:
- 1520 004a 00BF     	 .section .text._ZN19LiquidCrystalSerial5writeEh,"axG",%progbits,_ZN19LiquidCrystalSerial5writeEh,comdat
- 1521              	 .align 2
- 1522              	 .weak _ZN19LiquidCrystalSerial5writeEh
- 1523              	 .thumb
- 1524              	 .thumb_func
- 1526              	_ZN19LiquidCrystalSerial5writeEh:
- 1527              	.LFB85:
+ 1521              	 .loc 2 155 0
+ 1522 0046 05B0     	 add sp,sp,#20
+ 1523 0048 F0BD     	 pop {r4,r5,r6,r7,pc}
+ 1524              	 .cfi_endproc
+ 1525              	.LFE70:
+ 1527 004a 00BF     	 .section .text._ZN19LiquidCrystalSerial5writeEh,"axG",%progbits,_ZN19LiquidCrystalSerial5writeEh,comdat
+ 1528              	 .align 2
+ 1529              	 .weak _ZN19LiquidCrystalSerial5writeEh
+ 1530              	 .thumb
+ 1531              	 .thumb_func
+ 1533              	_ZN19LiquidCrystalSerial5writeEh:
+ 1534              	.LFB85:
  235:src/MightyBoard/shared/LiquidCrystalSerial.cc **** inline void LiquidCrystalSerial::write(uint8_t value) {
- 1528              	 .loc 2 235 0
- 1529              	 .cfi_startproc
- 1530              	 
- 1531              	 
- 1532              	.LVL143:
- 1533 0000 10B5     	 push {r4,lr}
- 1534              	.LCFI29:
- 1535              	 .cfi_def_cfa_offset 8
- 1536              	 .cfi_offset 14,-4
- 1537              	 .cfi_offset 4,-8
- 1538 0002 0446     	 mov r4,r0
+ 1535              	 .loc 2 235 0
+ 1536              	 .cfi_startproc
+ 1537              	 
+ 1538              	 
+ 1539              	.LVL145:
+ 1540 0000 10B5     	 push {r4,lr}
+ 1541              	.LCFI29:
+ 1542              	 .cfi_def_cfa_offset 8
+ 1543              	 .cfi_offset 14,-4
+ 1544              	 .cfi_offset 4,-8
+ 1545 0002 0446     	 mov r4,r0
  236:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, true);
- 1539              	 .loc 2 236 0
- 1540 0004 4FF00102 	 mov r2,#1
- 1541 0008 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1542              	.LVL144:
+ 1546              	 .loc 2 236 0
+ 1547 0004 4FF00102 	 mov r2,#1
+ 1548 0008 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1549              	.LVL146:
  237:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _xcursor++;
- 1543              	 .loc 2 237 0
- 1544 000c E37D     	 ldrb r3,[r4,#23]
- 1545 000e 03F10103 	 add r3,r3,#1
- 1546 0012 DBB2     	 uxtb r3,r3
- 1547 0014 E375     	 strb r3,[r4,#23]
+ 1550              	 .loc 2 237 0
+ 1551 000c E37D     	 ldrb r3,[r4,#23]
+ 1552 000e 03F10103 	 add r3,r3,#1
+ 1553 0012 DBB2     	 uxtb r3,r3
+ 1554 0014 E375     	 strb r3,[r4,#23]
  238:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   if(_xcursor >= _numCols)
- 1548              	 .loc 2 238 0
- 1549 0016 A27E     	 ldrb r2,[r4,#26]
- 1550 0018 9A42     	 cmp r2,r3
- 1551 001a 08D8     	 bhi .L87
+ 1555              	 .loc 2 238 0
+ 1556 0016 A27E     	 ldrb r2,[r4,#26]
+ 1557 0018 9A42     	 cmp r2,r3
+ 1558 001a 08D8     	 bhi .L87
  239:src/MightyBoard/shared/LiquidCrystalSerial.cc **** 	setCursor(0,_ycursor+1);
- 1552              	 .loc 2 239 0
- 1553 001c 227E     	 ldrb r2,[r4,#24]
- 1554 001e 02F10102 	 add r2,r2,#1
- 1555 0022 2046     	 mov r0,r4
- 1556 0024 4FF00001 	 mov r1,#0
- 1557 0028 D2B2     	 uxtb r2,r2
- 1558 002a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial9setCursorEhh
- 1559              	.L87:
- 1560 002e 10BD     	 pop {r4,pc}
- 1561              	 .cfi_endproc
- 1562              	.LFE85:
- 1564              	 .section .text._ZN19LiquidCrystalSerial4homeEv,"ax",%progbits
- 1565              	 .align 2
- 1566              	 .global _ZN19LiquidCrystalSerial4homeEv
- 1567              	 .thumb
- 1568              	 .thumb_func
- 1570              	_ZN19LiquidCrystalSerial4homeEv:
- 1571              	.LFB69:
+ 1559              	 .loc 2 239 0
+ 1560 001c 227E     	 ldrb r2,[r4,#24]
+ 1561 001e 02F10102 	 add r2,r2,#1
+ 1562 0022 2046     	 mov r0,r4
+ 1563 0024 4FF00001 	 mov r1,#0
+ 1564 0028 D2B2     	 uxtb r2,r2
+ 1565 002a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial9setCursorEhh
+ 1566              	.L87:
+ 1567 002e 10BD     	 pop {r4,pc}
+ 1568              	 .cfi_endproc
+ 1569              	.LFE85:
+ 1571              	 .section .text._ZN19LiquidCrystalSerial4homeEv,"ax",%progbits
+ 1572              	 .align 2
+ 1573              	 .global _ZN19LiquidCrystalSerial4homeEv
+ 1574              	 .thumb
+ 1575              	 .thumb_func
+ 1577              	_ZN19LiquidCrystalSerial4homeEv:
+ 1578              	.LFB69:
  141:src/MightyBoard/shared/LiquidCrystalSerial.cc **** {
- 1572              	 .loc 2 141 0
- 1573              	 .cfi_startproc
- 1574              	 
- 1575              	 
- 1576              	.LVL145:
- 1577 0000 08B5     	 push {r3,lr}
- 1578              	.LCFI30:
- 1579              	 .cfi_def_cfa_offset 8
- 1580              	 .cfi_offset 14,-4
- 1581              	 .cfi_offset 3,-8
- 1582              	.LVL146:
- 1583              	.LBB122:
- 1584              	.LBB123:
+ 1579              	 .loc 2 141 0
+ 1580              	 .cfi_startproc
+ 1581              	 
+ 1582              	 
+ 1583              	.LVL147:
+ 1584 0000 08B5     	 push {r3,lr}
+ 1585              	.LCFI30:
+ 1586              	 .cfi_def_cfa_offset 8
+ 1587              	 .cfi_offset 14,-4
+ 1588              	 .cfi_offset 3,-8
+ 1589              	.LVL148:
+ 1590              	.LBB122:
+ 1591              	.LBB123:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1585              	 .loc 2 232 0
- 1586 0002 4FF00201 	 mov r1,#2
- 1587 0006 4FF00002 	 mov r2,#0
- 1588 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1589              	.LVL147:
- 1590              	.LBE123:
- 1591              	.LBE122:
+ 1592              	 .loc 2 232 0
+ 1593 0002 4FF00201 	 mov r1,#2
+ 1594 0006 4FF00002 	 mov r2,#0
+ 1595 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1596              	.LVL149:
+ 1597              	.LBE123:
+ 1598              	.LBE122:
  143:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(2000);  // this command takes a long time!
- 1592              	 .loc 2 143 0
- 1593 000e 4FF4FA60 	 mov r0,#2000
- 1594 0012 FFF7FEFF 	 bl _delay_us
+ 1599              	 .loc 2 143 0
+ 1600 000e 4FF4FA60 	 mov r0,#2000
+ 1601 0012 FFF7FEFF 	 bl _delay_us
  144:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1595              	 .loc 2 144 0
- 1596 0016 08BD     	 pop {r3,pc}
- 1597              	 .cfi_endproc
- 1598              	.LFE69:
- 1600              	 .section .text._ZN19LiquidCrystalSerial5clearEv,"ax",%progbits
- 1601              	 .align 2
- 1602              	 .global _ZN19LiquidCrystalSerial5clearEv
- 1603              	 .thumb
- 1604              	 .thumb_func
- 1606              	_ZN19LiquidCrystalSerial5clearEv:
- 1607              	.LFB68:
+ 1602              	 .loc 2 144 0
+ 1603 0016 08BD     	 pop {r3,pc}
+ 1604              	 .cfi_endproc
+ 1605              	.LFE69:
+ 1607              	 .section .text._ZN19LiquidCrystalSerial5clearEv,"ax",%progbits
+ 1608              	 .align 2
+ 1609              	 .global _ZN19LiquidCrystalSerial5clearEv
+ 1610              	 .thumb
+ 1611              	 .thumb_func
+ 1613              	_ZN19LiquidCrystalSerial5clearEv:
+ 1614              	.LFB68:
  135:src/MightyBoard/shared/LiquidCrystalSerial.cc **** {
- 1608              	 .loc 2 135 0
- 1609              	 .cfi_startproc
- 1610              	 
- 1611              	 
- 1612              	.LVL148:
- 1613 0000 08B5     	 push {r3,lr}
- 1614              	.LCFI31:
- 1615              	 .cfi_def_cfa_offset 8
- 1616              	 .cfi_offset 14,-4
- 1617              	 .cfi_offset 3,-8
- 1618              	.LVL149:
- 1619              	.LBB126:
- 1620              	.LBB127:
+ 1615              	 .loc 2 135 0
+ 1616              	 .cfi_startproc
+ 1617              	 
+ 1618              	 
+ 1619              	.LVL150:
+ 1620 0000 08B5     	 push {r3,lr}
+ 1621              	.LCFI31:
+ 1622              	 .cfi_def_cfa_offset 8
+ 1623              	 .cfi_offset 14,-4
+ 1624              	 .cfi_offset 3,-8
+ 1625              	.LVL151:
+ 1626              	.LBB126:
+ 1627              	.LBB127:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1621              	 .loc 2 232 0
- 1622 0002 4FF00101 	 mov r1,#1
- 1623 0006 4FF00002 	 mov r2,#0
- 1624 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1625              	.LVL150:
- 1626              	.LBE127:
- 1627              	.LBE126:
+ 1628              	 .loc 2 232 0
+ 1629 0002 4FF00101 	 mov r1,#1
+ 1630 0006 4FF00002 	 mov r2,#0
+ 1631 000a FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1632              	.LVL152:
+ 1633              	.LBE127:
+ 1634              	.LBE126:
  137:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(2000);  // this command takes a long time!
- 1628              	 .loc 2 137 0
- 1629 000e 4FF4FA60 	 mov r0,#2000
- 1630 0012 FFF7FEFF 	 bl _delay_us
+ 1635              	 .loc 2 137 0
+ 1636 000e 4FF4FA60 	 mov r0,#2000
+ 1637 0012 FFF7FEFF 	 bl _delay_us
  138:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1631              	 .loc 2 138 0
- 1632 0016 08BD     	 pop {r3,pc}
- 1633              	 .cfi_endproc
- 1634              	.LFE68:
- 1636              	 .section .text._ZN19LiquidCrystalSerial5beginEhhh,"ax",%progbits
- 1637              	 .align 2
- 1638              	 .global _ZN19LiquidCrystalSerial5beginEhhh
- 1639              	 .thumb
- 1640              	 .thumb_func
- 1642              	_ZN19LiquidCrystalSerial5beginEhhh:
- 1643              	.LFB67:
+ 1638              	 .loc 2 138 0
+ 1639 0016 08BD     	 pop {r3,pc}
+ 1640              	 .cfi_endproc
+ 1641              	.LFE68:
+ 1643              	 .section .text._ZN19LiquidCrystalSerial5beginEhhh,"ax",%progbits
+ 1644              	 .align 2
+ 1645              	 .global _ZN19LiquidCrystalSerial5beginEhhh
+ 1646              	 .thumb
+ 1647              	 .thumb_func
+ 1649              	_ZN19LiquidCrystalSerial5beginEhhh:
+ 1650              	.LFB67:
   53:src/MightyBoard/shared/LiquidCrystalSerial.cc **** void LiquidCrystalSerial::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
- 1644              	 .loc 2 53 0
- 1645              	 .cfi_startproc
- 1646              	 
- 1647              	 
- 1648              	.LVL151:
- 1649 0000 10B5     	 push {r4,lr}
- 1650              	.LCFI32:
- 1651              	 .cfi_def_cfa_offset 8
- 1652              	 .cfi_offset 14,-4
- 1653              	 .cfi_offset 4,-8
- 1654 0002 84B0     	 sub sp,sp,#16
- 1655              	.LCFI33:
- 1656              	 .cfi_def_cfa_offset 24
- 1657 0004 0446     	 mov r4,r0
- 1658              	.LBB139:
+ 1651              	 .loc 2 53 0
+ 1652              	 .cfi_startproc
+ 1653              	 
+ 1654              	 
+ 1655              	.LVL153:
+ 1656 0000 10B5     	 push {r4,lr}
+ 1657              	.LCFI32:
+ 1658              	 .cfi_def_cfa_offset 8
+ 1659              	 .cfi_offset 14,-4
+ 1660              	 .cfi_offset 4,-8
+ 1661 0002 84B0     	 sub sp,sp,#16
+ 1662              	.LCFI33:
+ 1663              	 .cfi_def_cfa_offset 24
+ 1664 0004 0446     	 mov r4,r0
+ 1665              	.LBB139:
   54:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   if (lines > 1) {
- 1659              	 .loc 2 54 0
- 1660 0006 012A     	 cmp r2,#1
+ 1666              	 .loc 2 54 0
+ 1667 0006 012A     	 cmp r2,#1
   55:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _displayfunction |= LCD_2LINE;
- 1661              	 .loc 2 55 0
- 1662 0008 82BF     	 ittt hi
- 1663 000a C07C     	 ldrbhi r0,[r0,#19]
- 1664              	.LVL152:
- 1665 000c 40F00800 	 orrhi r0,r0,#8
- 1666 0010 E074     	 strbhi r0,[r4,#19]
+ 1668              	 .loc 2 55 0
+ 1669 0008 82BF     	 ittt hi
+ 1670 000a C07C     	 ldrbhi r0,[r0,#19]
+ 1671              	.LVL154:
+ 1672 000c 40F00800 	 orrhi r0,r0,#8
+ 1673 0010 E074     	 strbhi r0,[r4,#19]
   57:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _numlines = lines;
- 1667              	 .loc 2 57 0
- 1668 0012 6276     	 strb r2,[r4,#25]
+ 1674              	 .loc 2 57 0
+ 1675 0012 6276     	 strb r2,[r4,#25]
   58:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _numCols = cols;
- 1669              	 .loc 2 58 0
- 1670 0014 A176     	 strb r1,[r4,#26]
+ 1676              	 .loc 2 58 0
+ 1677 0014 A176     	 strb r1,[r4,#26]
   61:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   if ((dotsize != 0) && (lines == 1)) {
- 1671              	 .loc 2 61 0
- 1672 0016 012A     	 cmp r2,#1
- 1673 0018 14BF     	 ite ne
- 1674 001a 0022     	 movne r2,#0
- 1675              	.LVL153:
- 1676 001c 0122     	 moveq r2,#1
- 1677 001e 002B     	 cmp r3,#0
- 1678 0020 0CBF     	 ite eq
- 1679 0022 0022     	 moveq r2,#0
- 1680 0024 02F00102 	 andne r2,r2,#1
- 1681 0028 1AB1     	 cbz r2,.L93
+ 1678              	 .loc 2 61 0
+ 1679 0016 012A     	 cmp r2,#1
+ 1680 0018 14BF     	 ite ne
+ 1681 001a 0022     	 movne r2,#0
+ 1682              	.LVL155:
+ 1683 001c 0122     	 moveq r2,#1
+ 1684 001e 002B     	 cmp r3,#0
+ 1685 0020 0CBF     	 ite eq
+ 1686 0022 0022     	 moveq r2,#0
+ 1687 0024 02F00102 	 andne r2,r2,#1
+ 1688 0028 1AB1     	 cbz r2,.L93
   62:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _displayfunction |= LCD_5x10DOTS;
- 1682              	 .loc 2 62 0
- 1683 002a E37C     	 ldrb r3,[r4,#19]
- 1684              	.LVL154:
- 1685 002c 43F00403 	 orr r3,r3,#4
- 1686 0030 E374     	 strb r3,[r4,#19]
- 1687              	.L93:
+ 1689              	 .loc 2 62 0
+ 1690 002a E37C     	 ldrb r3,[r4,#19]
+ 1691              	.LVL156:
+ 1692 002c 43F00403 	 orr r3,r3,#4
+ 1693 0030 E374     	 strb r3,[r4,#19]
+ 1694              	.L93:
   68:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _delay_us(50000);
- 1688              	 .loc 2 68 0
- 1689 0032 4CF25030 	 movw r0,#50000
- 1690 0036 FFF7FEFF 	 bl _delay_us
- 1691              	.LVL155:
+ 1695              	 .loc 2 68 0
+ 1696 0032 4CF25030 	 movw r0,#50000
+ 1697 0036 FFF7FEFF 	 bl _delay_us
+ 1698              	.LVL157:
   70:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   writeSerial(0b00000000);
- 1692              	 .loc 2 70 0
- 1693 003a 2046     	 mov r0,r4
- 1694 003c 4FF00001 	 mov r1,#0
- 1695 0040 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
+ 1699              	 .loc 2 70 0
+ 1700 003a 2046     	 mov r0,r4
+ 1701 003c 4FF00001 	 mov r1,#0
+ 1702 0040 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial11writeSerialEh
   73:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   if (! (_displayfunction & LCD_8BITMODE)) {
- 1696              	 .loc 2 73 0
- 1697 0044 E17C     	 ldrb r1,[r4,#19]
- 1698 0046 11F0100F 	 tst r1,#16
- 1699 004a 20D1     	 bne .L94
+ 1703              	 .loc 2 73 0
+ 1704 0044 E17C     	 ldrb r1,[r4,#19]
+ 1705 0046 11F0100F 	 tst r1,#16
+ 1706 004a 20D1     	 bne .L94
   78:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(0x03 << 4);
- 1700              	 .loc 2 78 0
- 1701 004c 2046     	 mov r0,r4
- 1702 004e 4FF03001 	 mov r1,#48
- 1703 0052 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
+ 1707              	 .loc 2 78 0
+ 1708 004c 2046     	 mov r0,r4
+ 1709 004e 4FF03001 	 mov r1,#48
+ 1710 0052 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
   79:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _delay_us(4500); // wait min 4.1ms
- 1704              	 .loc 2 79 0
- 1705 0056 41F29410 	 movw r0,#4500
- 1706 005a FFF7FEFF 	 bl _delay_us
+ 1711              	 .loc 2 79 0
+ 1712 0056 41F29410 	 movw r0,#4500
+ 1713 005a FFF7FEFF 	 bl _delay_us
   82:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(0x03 << 4);
- 1707              	 .loc 2 82 0
- 1708 005e 2046     	 mov r0,r4
- 1709 0060 4FF03001 	 mov r1,#48
- 1710 0064 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
+ 1714              	 .loc 2 82 0
+ 1715 005e 2046     	 mov r0,r4
+ 1716 0060 4FF03001 	 mov r1,#48
+ 1717 0064 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
   83:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _delay_us(4500); // wait min 4.1ms
- 1711              	 .loc 2 83 0
- 1712 0068 41F29410 	 movw r0,#4500
- 1713 006c FFF7FEFF 	 bl _delay_us
+ 1718              	 .loc 2 83 0
+ 1719 0068 41F29410 	 movw r0,#4500
+ 1720 006c FFF7FEFF 	 bl _delay_us
   86:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(0x03 << 4); 
- 1714              	 .loc 2 86 0
- 1715 0070 2046     	 mov r0,r4
- 1716 0072 4FF03001 	 mov r1,#48
- 1717 0076 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
+ 1721              	 .loc 2 86 0
+ 1722 0070 2046     	 mov r0,r4
+ 1723 0072 4FF03001 	 mov r1,#48
+ 1724 0076 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
   87:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _delay_us(150);
- 1718              	 .loc 2 87 0
- 1719 007a 4FF09600 	 mov r0,#150
- 1720 007e FFF7FEFF 	 bl _delay_us
+ 1725              	 .loc 2 87 0
+ 1726 007a 4FF09600 	 mov r0,#150
+ 1727 007e FFF7FEFF 	 bl _delay_us
   90:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     load(0x02 << 4); 
- 1721              	 .loc 2 90 0
- 1722 0082 2046     	 mov r0,r4
- 1723 0084 4FF02001 	 mov r1,#32
- 1724 0088 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
- 1725 008c 1EE0     	 b .L95
- 1726              	.L94:
- 1727              	.LVL156:
- 1728              	.LBB140:
- 1729              	.LBB141:
+ 1728              	 .loc 2 90 0
+ 1729 0082 2046     	 mov r0,r4
+ 1730 0084 4FF02001 	 mov r1,#32
+ 1731 0088 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4loadEh
+ 1732 008c 1EE0     	 b .L95
+ 1733              	.L94:
+ 1734              	.LVL158:
+ 1735              	.LBB140:
+ 1736              	.LBB141:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1730              	 .loc 2 232 0
- 1731 008e 2046     	 mov r0,r4
- 1732 0090 41F02001 	 orr r1,r1,#32
- 1733              	.LVL157:
- 1734 0094 4FF00002 	 mov r2,#0
- 1735 0098 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1736              	.LBE141:
- 1737              	.LBE140:
+ 1737              	 .loc 2 232 0
+ 1738 008e 2046     	 mov r0,r4
+ 1739 0090 41F02001 	 orr r1,r1,#32
+ 1740              	.LVL159:
+ 1741 0094 4FF00002 	 mov r2,#0
+ 1742 0098 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1743              	.LBE141:
+ 1744              	.LBE140:
   97:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _delay_us(4500);  // wait more than 4.1ms
- 1738              	 .loc 2 97 0
- 1739 009c 41F29410 	 movw r0,#4500
- 1740 00a0 FFF7FEFF 	 bl _delay_us
- 1741              	.LVL158:
+ 1745              	 .loc 2 97 0
+ 1746 009c 41F29410 	 movw r0,#4500
+ 1747 00a0 FFF7FEFF 	 bl _delay_us
+ 1748              	.LVL160:
  100:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     command(LCD_FUNCTIONSET | _displayfunction);
- 1742              	 .loc 2 100 0
- 1743 00a4 E17C     	 ldrb r1,[r4,#19]
- 1744              	.LBB142:
- 1745              	.LBB143:
+ 1749              	 .loc 2 100 0
+ 1750 00a4 E17C     	 ldrb r1,[r4,#19]
+ 1751              	.LBB142:
+ 1752              	.LBB143:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1746              	 .loc 2 232 0
- 1747 00a6 2046     	 mov r0,r4
- 1748 00a8 41F02001 	 orr r1,r1,#32
- 1749 00ac 4FF00002 	 mov r2,#0
- 1750 00b0 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1751              	.LVL159:
- 1752              	.LBE143:
- 1753              	.LBE142:
+ 1753              	 .loc 2 232 0
+ 1754 00a6 2046     	 mov r0,r4
+ 1755 00a8 41F02001 	 orr r1,r1,#32
+ 1756 00ac 4FF00002 	 mov r2,#0
+ 1757 00b0 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1758              	.LVL161:
+ 1759              	.LBE143:
+ 1760              	.LBE142:
  101:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _delay_us(150);
- 1754              	 .loc 2 101 0
- 1755 00b4 4FF09600 	 mov r0,#150
- 1756 00b8 FFF7FEFF 	 bl _delay_us
- 1757              	.LVL160:
+ 1761              	 .loc 2 101 0
+ 1762 00b4 4FF09600 	 mov r0,#150
+ 1763 00b8 FFF7FEFF 	 bl _delay_us
+ 1764              	.LVL162:
  104:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     command(LCD_FUNCTIONSET | _displayfunction);
- 1758              	 .loc 2 104 0
- 1759 00bc E17C     	 ldrb r1,[r4,#19]
- 1760              	.LBB144:
- 1761              	.LBB145:
+ 1765              	 .loc 2 104 0
+ 1766 00bc E17C     	 ldrb r1,[r4,#19]
+ 1767              	.LBB144:
+ 1768              	.LBB145:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1762              	 .loc 2 232 0
- 1763 00be 2046     	 mov r0,r4
- 1764 00c0 41F02001 	 orr r1,r1,#32
- 1765 00c4 4FF00002 	 mov r2,#0
- 1766 00c8 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1767              	.LVL161:
- 1768              	.L95:
- 1769              	.LBE145:
- 1770              	.LBE144:
+ 1769              	 .loc 2 232 0
+ 1770 00be 2046     	 mov r0,r4
+ 1771 00c0 41F02001 	 orr r1,r1,#32
+ 1772 00c4 4FF00002 	 mov r2,#0
+ 1773 00c8 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1774              	.LVL163:
+ 1775              	.L95:
+ 1776              	.LBE145:
+ 1777              	.LBE144:
  108:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   command(LCD_FUNCTIONSET | _displayfunction);  
- 1771              	 .loc 2 108 0
- 1772 00cc E17C     	 ldrb r1,[r4,#19]
- 1773              	.LBB146:
- 1774              	.LBB147:
+ 1778              	 .loc 2 108 0
+ 1779 00cc E17C     	 ldrb r1,[r4,#19]
+ 1780              	.LBB146:
+ 1781              	.LBB147:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1775              	 .loc 2 232 0
- 1776 00ce 2046     	 mov r0,r4
- 1777 00d0 41F02001 	 orr r1,r1,#32
- 1778 00d4 4FF00002 	 mov r2,#0
- 1779 00d8 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1780              	.LVL162:
- 1781              	.LBE147:
- 1782              	.LBE146:
+ 1782              	 .loc 2 232 0
+ 1783 00ce 2046     	 mov r0,r4
+ 1784 00d0 41F02001 	 orr r1,r1,#32
+ 1785 00d4 4FF00002 	 mov r2,#0
+ 1786 00d8 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1787              	.LVL164:
+ 1788              	.LBE147:
+ 1789              	.LBE146:
  111:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;  
- 1783              	 .loc 2 111 0
- 1784 00dc 4FF00403 	 mov r3,#4
- 1785 00e0 2375     	 strb r3,[r4,#20]
+ 1790              	 .loc 2 111 0
+ 1791 00dc 4FF00403 	 mov r3,#4
+ 1792 00e0 2375     	 strb r3,[r4,#20]
  112:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   display();
- 1786              	 .loc 2 112 0
- 1787 00e2 2046     	 mov r0,r4
- 1788 00e4 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial7displayEv
+ 1793              	 .loc 2 112 0
+ 1794 00e2 2046     	 mov r0,r4
+ 1795 00e4 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial7displayEv
  115:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   clear();
- 1789              	 .loc 2 115 0
- 1790 00e8 2046     	 mov r0,r4
- 1791 00ea FFF7FEFF 	 bl _ZN19LiquidCrystalSerial5clearEv
+ 1796              	 .loc 2 115 0
+ 1797 00e8 2046     	 mov r0,r4
+ 1798 00ea FFF7FEFF 	 bl _ZN19LiquidCrystalSerial5clearEv
  118:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   _displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
- 1792              	 .loc 2 118 0
- 1793 00ee 4FF00203 	 mov r3,#2
- 1794 00f2 6375     	 strb r3,[r4,#21]
- 1795              	.LVL163:
- 1796              	.LBB148:
- 1797              	.LBB149:
+ 1799              	 .loc 2 118 0
+ 1800 00ee 4FF00203 	 mov r3,#2
+ 1801 00f2 6375     	 strb r3,[r4,#21]
+ 1802              	.LVL165:
+ 1803              	.LBB148:
+ 1804              	.LBB149:
  232:src/MightyBoard/shared/LiquidCrystalSerial.cc ****   send(value, false);
- 1798              	 .loc 2 232 0
- 1799 00f4 2046     	 mov r0,r4
- 1800 00f6 4FF00601 	 mov r1,#6
- 1801 00fa 4FF00002 	 mov r2,#0
- 1802 00fe FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
- 1803              	.LBE149:
- 1804              	.LBE148:
+ 1805              	 .loc 2 232 0
+ 1806 00f4 2046     	 mov r0,r4
+ 1807 00f6 4FF00601 	 mov r1,#6
+ 1808 00fa 4FF00002 	 mov r2,#0
+ 1809 00fe FFF7FEFF 	 bl _ZN19LiquidCrystalSerial4sendEhb
+ 1810              	.LBE149:
+ 1811              	.LBE148:
  123:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     uint8_t right[] = {0,4,2,1,2,4,0};
- 1805              	 .loc 2 123 0
- 1806 0102 40F20002 	 movw r2,#:lower16:.LANCHOR0
- 1807 0106 C0F20002 	 movt r2,#:upper16:.LANCHOR0
- 1808 010a 1346     	 mov r3,r2
- 1809 010c 53F8100F 	 ldr r0,[r3,#16]!
- 1810 0110 0290     	 str r0,[sp,#8]
- 1811 0112 9988     	 ldrh r1,[r3,#4]
- 1812 0114 9B79     	 ldrb r3,[r3,#6]
- 1813 0116 ADF80C10 	 strh r1,[sp,#12]
- 1814 011a 8DF80E30 	 strb r3,[sp,#14]
+ 1812              	 .loc 2 123 0
+ 1813 0102 40F20002 	 movw r2,#:lower16:.LANCHOR0
+ 1814 0106 C0F20002 	 movt r2,#:upper16:.LANCHOR0
+ 1815 010a 1346     	 mov r3,r2
+ 1816 010c 53F8100F 	 ldr r0,[r3,#16]!
+ 1817 0110 0290     	 str r0,[sp,#8]
+ 1818 0112 9988     	 ldrh r1,[r3,#4]
+ 1819 0114 9B79     	 ldrb r3,[r3,#6]
+ 1820 0116 ADF80C10 	 strh r1,[sp,#12]
+ 1821 011a 8DF80E30 	 strb r3,[sp,#14]
  124:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     uint8_t down[] = {0,0,0,0,0,0x11,0xA,4};
- 1815              	 .loc 2 124 0
- 1816 011e 6B46     	 mov r3,sp
- 1817 0120 52F8180F 	 ldr r0,[r2,#24]!
- 1818 0124 5168     	 ldr r1,[r2,#4]
- 1819 0126 03C3     	 stmia r3!,{r0,r1}
+ 1822              	 .loc 2 124 0
+ 1823 011e 6B46     	 mov r3,sp
+ 1824 0120 52F8180F 	 ldr r0,[r2,#24]!
+ 1825 0124 5168     	 ldr r1,[r2,#4]
+ 1826 0126 03C3     	 stmia r3!,{r0,r1}
  126:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     createChar(0, right);
- 1820              	 .loc 2 126 0
- 1821 0128 2046     	 mov r0,r4
- 1822 012a 4FF00001 	 mov r1,#0
- 1823 012e 1A46     	 mov r2,r3
- 1824 0130 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
+ 1827              	 .loc 2 126 0
+ 1828 0128 2046     	 mov r0,r4
+ 1829 012a 4FF00001 	 mov r1,#0
+ 1830 012e 1A46     	 mov r2,r3
+ 1831 0130 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
  127:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     createChar(0, right);
- 1825              	 .loc 2 127 0
- 1826 0134 2046     	 mov r0,r4
- 1827 0136 4FF00001 	 mov r1,#0
- 1828 013a 02AA     	 add r2,sp,#8
- 1829 013c FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
+ 1832              	 .loc 2 127 0
+ 1833 0134 2046     	 mov r0,r4
+ 1834 0136 4FF00001 	 mov r1,#0
+ 1835 013a 02AA     	 add r2,sp,#8
+ 1836 013c FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
  128:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     createChar(1, down);
- 1830              	 .loc 2 128 0
- 1831 0140 2046     	 mov r0,r4
- 1832 0142 4FF00101 	 mov r1,#1
- 1833 0146 6A46     	 mov r2,sp
- 1834 0148 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
+ 1837              	 .loc 2 128 0
+ 1838 0140 2046     	 mov r0,r4
+ 1839 0142 4FF00101 	 mov r1,#1
+ 1840 0146 6A46     	 mov r2,sp
+ 1841 0148 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
  129:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     createChar(1, down);
- 1835              	 .loc 2 129 0
- 1836 014c 2046     	 mov r0,r4
- 1837 014e 4FF00101 	 mov r1,#1
- 1838 0152 6A46     	 mov r2,sp
- 1839 0154 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
- 1840              	.LBE139:
+ 1842              	 .loc 2 129 0
+ 1843 014c 2046     	 mov r0,r4
+ 1844 014e 4FF00101 	 mov r1,#1
+ 1845 0152 6A46     	 mov r2,sp
+ 1846 0154 FFF7FEFF 	 bl _ZN19LiquidCrystalSerial10createCharEhPh
+ 1847              	.LBE139:
  131:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1841              	 .loc 2 131 0
- 1842 0158 04B0     	 add sp,sp,#16
- 1843 015a 10BD     	 pop {r4,pc}
- 1844              	 .cfi_endproc
- 1845              	.LFE67:
- 1847              	 .section .text._GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_,"ax",%progbits
- 1848              	 .align 2
- 1849              	 .thumb
- 1850              	 .thumb_func
- 1852              	_GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_:
- 1853              	.LFB96:
- 366:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _strobe_pin.setValue(false);
- 367:src/MightyBoard/shared/LiquidCrystalSerial.cc ****      
- 368:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
- 1854              	 .loc 2 368 0
- 1855              	 .cfi_startproc
- 1856              	 
- 1857              	 
- 1858 0000 10B5     	 push {r4,lr}
- 1859              	.LCFI34:
- 1860              	 .cfi_def_cfa_offset 8
- 1861              	 .cfi_offset 14,-4
- 1862              	 .cfi_offset 4,-8
- 1863              	.LVL164:
- 1864              	.LBB152:
- 1865              	.LBB153:
- 1866              	 .file 4 "src/MightyBoard/shared/LPCPort.hh"
+ 1848              	 .loc 2 131 0
+ 1849 0158 04B0     	 add sp,sp,#16
+ 1850 015a 10BD     	 pop {r4,pc}
+ 1851              	 .cfi_endproc
+ 1852              	.LFE67:
+ 1854              	 .section .text._GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_,"ax",%progbits
+ 1855              	 .align 2
+ 1856              	 .thumb
+ 1857              	 .thumb_func
+ 1859              	_GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_:
+ 1860              	.LFB96:
+ 368:src/MightyBoard/shared/LiquidCrystalSerial.cc ****     _strobe_pin.setValue(false);
+ 369:src/MightyBoard/shared/LiquidCrystalSerial.cc ****      
+ 370:src/MightyBoard/shared/LiquidCrystalSerial.cc **** }
+ 1861              	 .loc 2 370 0
+ 1862              	 .cfi_startproc
+ 1863              	 
+ 1864              	 
+ 1865 0000 10B5     	 push {r4,lr}
+ 1866              	.LCFI34:
+ 1867              	 .cfi_def_cfa_offset 8
+ 1868              	 .cfi_offset 14,-4
+ 1869              	 .cfi_offset 4,-8
+ 1870              	.LVL166:
+ 1871              	.LBB152:
+ 1872              	.LBB153:
+ 1873              	 .file 4 "src/MightyBoard/shared/LPCPort.hh"
    1:src/MightyBoard/shared/LPCPort.hh **** /*
    2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
    3:src/MightyBoard/shared/LPCPort.hh **** *
@@ -2486,43 +2496,43 @@
   47:src/MightyBoard/shared/LPCPort.hh **** 
   48:src/MightyBoard/shared/LPCPort.hh **** 
   49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
- 1867              	 .loc 4 49 0
- 1868 0002 40F20000 	 movw r0,#:lower16:.LANCHOR1
- 1869 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR1
- 1870 000a 4FF00001 	 mov r1,#0
- 1871 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1874              	 .loc 4 49 0
+ 1875 0002 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 1876 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 1877 000a 4FF00001 	 mov r1,#0
+ 1878 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
- 1872              	 .loc 4 50 0
- 1873 0012 40F20000 	 movw r0,#:lower16:.LANCHOR2
- 1874 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR2
- 1875 001a 4FF00101 	 mov r1,#1
- 1876 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1879              	 .loc 4 50 0
+ 1880 0012 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 1881 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 1882 001a 4FF00101 	 mov r1,#1
+ 1883 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
- 1877              	 .loc 4 51 0
- 1878 0022 40F20000 	 movw r0,#:lower16:.LANCHOR3
- 1879 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR3
- 1880 002a 4FF00201 	 mov r1,#2
- 1881 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1884              	 .loc 4 51 0
+ 1885 0022 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 1886 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 1887 002a 4FF00201 	 mov r1,#2
+ 1888 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
- 1882              	 .loc 4 52 0
- 1883 0032 40F20000 	 movw r0,#:lower16:.LANCHOR4
- 1884 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR4
- 1885 003a 4FF00301 	 mov r1,#3
- 1886 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1889              	 .loc 4 52 0
+ 1890 0032 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 1891 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 1892 003a 4FF00301 	 mov r1,#3
+ 1893 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
- 1887              	 .loc 4 53 0
- 1888 0042 40F20000 	 movw r0,#:lower16:.LANCHOR5
- 1889 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR5
- 1890 004a 4FF00401 	 mov r1,#4
- 1891 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1894              	 .loc 4 53 0
+ 1895 0042 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 1896 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 1897 004a 4FF00401 	 mov r1,#4
+ 1898 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   54:src/MightyBoard/shared/LPCPort.hh **** 
   55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
- 1892              	 .loc 4 55 0
- 1893 0052 40F20004 	 movw r4,#:lower16:.LANCHOR6
- 1894 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR6
- 1895 005a 2046     	 mov r0,r4
- 1896 005c 4FF0FF01 	 mov r1,#255
- 1897 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1899              	 .loc 4 55 0
+ 1900 0052 40F20004 	 movw r4,#:lower16:.LANCHOR6
+ 1901 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR6
+ 1902 005a 2046     	 mov r0,r4
+ 1903 005c 4FF0FF01 	 mov r1,#255
+ 1904 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   49:src/MightyBoard/shared/Pin.hh **** 		}
   50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
   51:src/MightyBoard/shared/Pin.hh **** 	};
@@ -2551,106 +2561,106 @@
   74:src/MightyBoard/shared/Pin.hh **** };
   75:src/MightyBoard/shared/Pin.hh **** 
   76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
- 1898              	 .loc 3 76 0
- 1899 0064 40F20000 	 movw r0,#:lower16:.LANCHOR7
- 1900 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR7
- 1901 006c 2146     	 mov r1,r4
- 1902 006e 4FF00002 	 mov r2,#0
- 1903 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
- 1904              	.LBE153:
- 1905              	.LBE152:
- 1906              	 .loc 2 368 0
- 1907 0076 10BD     	 pop {r4,pc}
- 1908              	 .cfi_endproc
- 1909              	.LFE96:
- 1911              	 .section .init_array,"aw",%init_array
- 1912              	 .align 2
- 1913 0000 00000000 	 .word _GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_(target1)
- 1914              	 .weak _ZTV19LiquidCrystalSerial
- 1915              	 .section .rodata._ZTV19LiquidCrystalSerial,"aG",%progbits,_ZTV19LiquidCrystalSerial,comdat
- 1916              	 .align 3
- 1919              	_ZTV19LiquidCrystalSerial:
- 1920 0000 00000000 	 .word 0
- 1921 0004 00000000 	 .word 0
- 1922 0008 00000000 	 .word _ZN19LiquidCrystalSerialD1Ev
- 1923 000c 00000000 	 .word _ZN19LiquidCrystalSerialD0Ev
- 1924 0010 00000000 	 .word _ZN19LiquidCrystalSerial5writeEh
- 1925              	 .weak _ZN19LiquidCrystalSerialD1Ev
- 1926              	 .thumb_set _ZN19LiquidCrystalSerialD1Ev,_ZN19LiquidCrystalSerialD2Ev
- 1927              	 .global _ZN19LiquidCrystalSerialC1E3PinS0_S0_
- 1928              	 .thumb_set _ZN19LiquidCrystalSerialC1E3PinS0_S0_,_ZN19LiquidCrystalSerialC2E3PinS0_S0_
- 1929 0014 00000000 	 .section .rodata
- 1930              	 .align 2
- 1931              	 .set .LANCHOR0,.+0
- 1932              	.LC0:
- 1933 0000 00000000 	 .word 0
- 1934 0004 40000000 	 .word 64
- 1935 0008 14000000 	 .word 20
- 1936 000c 54000000 	 .word 84
- 1937              	.LC1:
- 1938 0010 00       	 .byte 0
- 1939 0011 04       	 .byte 4
- 1940 0012 02       	 .byte 2
- 1941 0013 01       	 .byte 1
- 1942 0014 02       	 .byte 2
- 1943 0015 04       	 .byte 4
- 1944 0016 00       	 .byte 0
- 1945 0017 00       	 .space 1
- 1946              	.LC2:
- 1947 0018 00       	 .byte 0
- 1948 0019 00       	 .byte 0
- 1949 001a 00       	 .byte 0
- 1950 001b 00       	 .byte 0
- 1951 001c 00       	 .byte 0
- 1952 001d 11       	 .byte 17
- 1953 001e 0A       	 .byte 10
- 1954 001f 04       	 .byte 4
- 1955              	 .section .bss._ZL5Port0,"aw",%nobits
- 1956              	 .align 2
- 1957              	 .set .LANCHOR1,.+0
- 1960              	_ZL5Port0:
- 1961 0000 00       	 .space 1
- 1962 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 1905              	 .loc 3 76 0
+ 1906 0064 40F20000 	 movw r0,#:lower16:.LANCHOR7
+ 1907 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR7
+ 1908 006c 2146     	 mov r1,r4
+ 1909 006e 4FF00002 	 mov r2,#0
+ 1910 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 1911              	.LBE153:
+ 1912              	.LBE152:
+ 1913              	 .loc 2 370 0
+ 1914 0076 10BD     	 pop {r4,pc}
+ 1915              	 .cfi_endproc
+ 1916              	.LFE96:
+ 1918              	 .section .init_array,"aw",%init_array
+ 1919              	 .align 2
+ 1920 0000 00000000 	 .word _GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_(target1)
+ 1921              	 .weak _ZTV19LiquidCrystalSerial
+ 1922              	 .section .rodata._ZTV19LiquidCrystalSerial,"aG",%progbits,_ZTV19LiquidCrystalSerial,comdat
+ 1923              	 .align 3
+ 1926              	_ZTV19LiquidCrystalSerial:
+ 1927 0000 00000000 	 .word 0
+ 1928 0004 00000000 	 .word 0
+ 1929 0008 00000000 	 .word _ZN19LiquidCrystalSerialD1Ev
+ 1930 000c 00000000 	 .word _ZN19LiquidCrystalSerialD0Ev
+ 1931 0010 00000000 	 .word _ZN19LiquidCrystalSerial5writeEh
+ 1932              	 .weak _ZN19LiquidCrystalSerialD1Ev
+ 1933              	 .thumb_set _ZN19LiquidCrystalSerialD1Ev,_ZN19LiquidCrystalSerialD2Ev
+ 1934              	 .global _ZN19LiquidCrystalSerialC1E3PinS0_S0_
+ 1935              	 .thumb_set _ZN19LiquidCrystalSerialC1E3PinS0_S0_,_ZN19LiquidCrystalSerialC2E3PinS0_S0_
+ 1936 0014 00000000 	 .section .rodata
+ 1937              	 .align 2
+ 1938              	 .set .LANCHOR0,.+0
+ 1939              	.LC0:
+ 1940 0000 00000000 	 .word 0
+ 1941 0004 40000000 	 .word 64
+ 1942 0008 14000000 	 .word 20
+ 1943 000c 54000000 	 .word 84
+ 1944              	.LC1:
+ 1945 0010 00       	 .byte 0
+ 1946 0011 04       	 .byte 4
+ 1947 0012 02       	 .byte 2
+ 1948 0013 01       	 .byte 1
+ 1949 0014 02       	 .byte 2
+ 1950 0015 04       	 .byte 4
+ 1951 0016 00       	 .byte 0
+ 1952 0017 00       	 .space 1
+ 1953              	.LC2:
+ 1954 0018 00       	 .byte 0
+ 1955 0019 00       	 .byte 0
+ 1956 001a 00       	 .byte 0
+ 1957 001b 00       	 .byte 0
+ 1958 001c 00       	 .byte 0
+ 1959 001d 11       	 .byte 17
+ 1960 001e 0A       	 .byte 10
+ 1961 001f 04       	 .byte 4
+ 1962              	 .section .bss._ZL5Port0,"aw",%nobits
  1963              	 .align 2
- 1964              	 .set .LANCHOR2,.+0
- 1967              	_ZL5Port1:
+ 1964              	 .set .LANCHOR1,.+0
+ 1967              	_ZL5Port0:
  1968 0000 00       	 .space 1
- 1969 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 1969 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
  1970              	 .align 2
- 1971              	 .set .LANCHOR3,.+0
- 1974              	_ZL5Port2:
+ 1971              	 .set .LANCHOR2,.+0
+ 1974              	_ZL5Port1:
  1975 0000 00       	 .space 1
- 1976 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 1976 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
  1977              	 .align 2
- 1978              	 .set .LANCHOR4,.+0
- 1981              	_ZL5Port3:
+ 1978              	 .set .LANCHOR3,.+0
+ 1981              	_ZL5Port2:
  1982 0000 00       	 .space 1
- 1983 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 1983 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
  1984              	 .align 2
- 1985              	 .set .LANCHOR5,.+0
- 1988              	_ZL5Port4:
+ 1985              	 .set .LANCHOR4,.+0
+ 1988              	_ZL5Port3:
  1989 0000 00       	 .space 1
- 1990 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 1990 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
  1991              	 .align 2
- 1992              	 .set .LANCHOR6,.+0
- 1995              	_ZL8NullPort:
+ 1992              	 .set .LANCHOR5,.+0
+ 1995              	_ZL5Port4:
  1996 0000 00       	 .space 1
- 1997 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 1997 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
  1998              	 .align 2
- 1999              	 .set .LANCHOR7,.+0
- 2002              	_ZL7NullPin:
- 2003 0000 00000000 	 .space 5
- 2003      00
- 2004 0005 000000   	 .text
- 2005              	.Letext0:
- 2006              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
- 2007              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 1999              	 .set .LANCHOR6,.+0
+ 2002              	_ZL8NullPort:
+ 2003 0000 00       	 .space 1
+ 2004 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 2005              	 .align 2
+ 2006              	 .set .LANCHOR7,.+0
+ 2009              	_ZL7NullPin:
+ 2010 0000 00000000 	 .space 5
+ 2010      00
+ 2011 0005 000000   	 .text
+ 2012              	.Letext0:
+ 2013              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 2014              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 LiquidCrystalSerial.cc
     {standard input}:19     .text._ZN19LiquidCrystalSerialD2Ev:00000000 $t
     {standard input}:24     .text._ZN19LiquidCrystalSerialD2Ev:00000000 _ZN19LiquidCrystalSerialD2Ev
     {standard input}:42     .text._ZN19LiquidCrystalSerialD2Ev:00000008 $d
-    {standard input}:1919   .rodata._ZTV19LiquidCrystalSerial:00000000 _ZTV19LiquidCrystalSerial
+    {standard input}:1926   .rodata._ZTV19LiquidCrystalSerial:00000000 _ZTV19LiquidCrystalSerial
     {standard input}:47     .text._ZN19LiquidCrystalSerialD0Ev:00000000 $t
     {standard input}:52     .text._ZN19LiquidCrystalSerialD0Ev:00000000 _ZN19LiquidCrystalSerialD0Ev
     {standard input}:82     .text._ZN19LiquidCrystalSerialD0Ev:00000010 $d
@@ -2672,79 +2682,79 @@ DEFINED SYMBOLS
     {standard input}:586    .text._ZN19LiquidCrystalSerial11writeStringEPc:00000000 _ZN19LiquidCrystalSerial11writeStringEPc
     {standard input}:626    .text._ZN19LiquidCrystalSerial17writeFromPgmspaceEPKc:00000000 $t
     {standard input}:631    .text._ZN19LiquidCrystalSerial17writeFromPgmspaceEPKc:00000000 _ZN19LiquidCrystalSerial17writeFromPgmspaceEPKc
-    {standard input}:672    .text._ZN19LiquidCrystalSerial11writeSerialEh:00000000 $t
-    {standard input}:677    .text._ZN19LiquidCrystalSerial11writeSerialEh:00000000 _ZN19LiquidCrystalSerial11writeSerialEh
-    {standard input}:811    .text._ZN19LiquidCrystalSerial11pulseEnableEh:00000000 $t
-    {standard input}:816    .text._ZN19LiquidCrystalSerial11pulseEnableEh:00000000 _ZN19LiquidCrystalSerial11pulseEnableEh
-    {standard input}:861    .text._ZN19LiquidCrystalSerial4loadEh:00000000 $t
-    {standard input}:866    .text._ZN19LiquidCrystalSerial4loadEh:00000000 _ZN19LiquidCrystalSerial4loadEh
-    {standard input}:895    .text._ZN19LiquidCrystalSerial4sendEhb:00000000 $t
-    {standard input}:900    .text._ZN19LiquidCrystalSerial4sendEhb:00000000 _ZN19LiquidCrystalSerial4sendEhb
-    {standard input}:944    .text._ZN19LiquidCrystalSerial10createCharEhPh:00000000 $t
-    {standard input}:949    .text._ZN19LiquidCrystalSerial10createCharEhPh:00000000 _ZN19LiquidCrystalSerial10createCharEhPh
-    {standard input}:1005   .text._ZN19LiquidCrystalSerial12noAutoscrollEv:00000000 $t
-    {standard input}:1010   .text._ZN19LiquidCrystalSerial12noAutoscrollEv:00000000 _ZN19LiquidCrystalSerial12noAutoscrollEv
-    {standard input}:1043   .text._ZN19LiquidCrystalSerial10autoscrollEv:00000000 $t
-    {standard input}:1048   .text._ZN19LiquidCrystalSerial10autoscrollEv:00000000 _ZN19LiquidCrystalSerial10autoscrollEv
-    {standard input}:1081   .text._ZN19LiquidCrystalSerial11rightToLeftEv:00000000 $t
-    {standard input}:1086   .text._ZN19LiquidCrystalSerial11rightToLeftEv:00000000 _ZN19LiquidCrystalSerial11rightToLeftEv
-    {standard input}:1119   .text._ZN19LiquidCrystalSerial11leftToRightEv:00000000 $t
-    {standard input}:1124   .text._ZN19LiquidCrystalSerial11leftToRightEv:00000000 _ZN19LiquidCrystalSerial11leftToRightEv
-    {standard input}:1157   .text._ZN19LiquidCrystalSerial18scrollDisplayRightEv:00000000 $t
-    {standard input}:1162   .text._ZN19LiquidCrystalSerial18scrollDisplayRightEv:00000000 _ZN19LiquidCrystalSerial18scrollDisplayRightEv
-    {standard input}:1190   .text._ZN19LiquidCrystalSerial17scrollDisplayLeftEv:00000000 $t
-    {standard input}:1195   .text._ZN19LiquidCrystalSerial17scrollDisplayLeftEv:00000000 _ZN19LiquidCrystalSerial17scrollDisplayLeftEv
-    {standard input}:1223   .text._ZN19LiquidCrystalSerial5blinkEv:00000000 $t
-    {standard input}:1228   .text._ZN19LiquidCrystalSerial5blinkEv:00000000 _ZN19LiquidCrystalSerial5blinkEv
-    {standard input}:1261   .text._ZN19LiquidCrystalSerial7noBlinkEv:00000000 $t
-    {standard input}:1266   .text._ZN19LiquidCrystalSerial7noBlinkEv:00000000 _ZN19LiquidCrystalSerial7noBlinkEv
-    {standard input}:1299   .text._ZN19LiquidCrystalSerial6cursorEv:00000000 $t
-    {standard input}:1304   .text._ZN19LiquidCrystalSerial6cursorEv:00000000 _ZN19LiquidCrystalSerial6cursorEv
-    {standard input}:1337   .text._ZN19LiquidCrystalSerial8noCursorEv:00000000 $t
-    {standard input}:1342   .text._ZN19LiquidCrystalSerial8noCursorEv:00000000 _ZN19LiquidCrystalSerial8noCursorEv
-    {standard input}:1375   .text._ZN19LiquidCrystalSerial7displayEv:00000000 $t
-    {standard input}:1380   .text._ZN19LiquidCrystalSerial7displayEv:00000000 _ZN19LiquidCrystalSerial7displayEv
-    {standard input}:1413   .text._ZN19LiquidCrystalSerial9noDisplayEv:00000000 $t
-    {standard input}:1418   .text._ZN19LiquidCrystalSerial9noDisplayEv:00000000 _ZN19LiquidCrystalSerial9noDisplayEv
-    {standard input}:1451   .text._ZN19LiquidCrystalSerial9setCursorEhh:00000000 $t
-    {standard input}:1456   .text._ZN19LiquidCrystalSerial9setCursorEhh:00000000 _ZN19LiquidCrystalSerial9setCursorEhh
-    {standard input}:1931   .rodata:00000000 .LANCHOR0
-    {standard input}:1521   .text._ZN19LiquidCrystalSerial5writeEh:00000000 $t
-    {standard input}:1526   .text._ZN19LiquidCrystalSerial5writeEh:00000000 _ZN19LiquidCrystalSerial5writeEh
-    {standard input}:1565   .text._ZN19LiquidCrystalSerial4homeEv:00000000 $t
-    {standard input}:1570   .text._ZN19LiquidCrystalSerial4homeEv:00000000 _ZN19LiquidCrystalSerial4homeEv
-    {standard input}:1601   .text._ZN19LiquidCrystalSerial5clearEv:00000000 $t
-    {standard input}:1606   .text._ZN19LiquidCrystalSerial5clearEv:00000000 _ZN19LiquidCrystalSerial5clearEv
-    {standard input}:1637   .text._ZN19LiquidCrystalSerial5beginEhhh:00000000 $t
-    {standard input}:1642   .text._ZN19LiquidCrystalSerial5beginEhhh:00000000 _ZN19LiquidCrystalSerial5beginEhhh
-    {standard input}:1848   .text._GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_:00000000 $t
-    {standard input}:1852   .text._GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_:00000000 _GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_
-    {standard input}:1957   .bss._ZL5Port0:00000000 .LANCHOR1
-    {standard input}:1964   .bss._ZL5Port1:00000000 .LANCHOR2
-    {standard input}:1971   .bss._ZL5Port2:00000000 .LANCHOR3
-    {standard input}:1978   .bss._ZL5Port3:00000000 .LANCHOR4
-    {standard input}:1985   .bss._ZL5Port4:00000000 .LANCHOR5
-    {standard input}:1992   .bss._ZL8NullPort:00000000 .LANCHOR6
-    {standard input}:1999   .bss._ZL7NullPin:00000000 .LANCHOR7
-    {standard input}:1912   .init_array:00000000 $d
-    {standard input}:1916   .rodata._ZTV19LiquidCrystalSerial:00000000 $d
+    {standard input}:679    .text._ZN19LiquidCrystalSerial11writeSerialEh:00000000 $t
+    {standard input}:684    .text._ZN19LiquidCrystalSerial11writeSerialEh:00000000 _ZN19LiquidCrystalSerial11writeSerialEh
+    {standard input}:818    .text._ZN19LiquidCrystalSerial11pulseEnableEh:00000000 $t
+    {standard input}:823    .text._ZN19LiquidCrystalSerial11pulseEnableEh:00000000 _ZN19LiquidCrystalSerial11pulseEnableEh
+    {standard input}:868    .text._ZN19LiquidCrystalSerial4loadEh:00000000 $t
+    {standard input}:873    .text._ZN19LiquidCrystalSerial4loadEh:00000000 _ZN19LiquidCrystalSerial4loadEh
+    {standard input}:902    .text._ZN19LiquidCrystalSerial4sendEhb:00000000 $t
+    {standard input}:907    .text._ZN19LiquidCrystalSerial4sendEhb:00000000 _ZN19LiquidCrystalSerial4sendEhb
+    {standard input}:951    .text._ZN19LiquidCrystalSerial10createCharEhPh:00000000 $t
+    {standard input}:956    .text._ZN19LiquidCrystalSerial10createCharEhPh:00000000 _ZN19LiquidCrystalSerial10createCharEhPh
+    {standard input}:1012   .text._ZN19LiquidCrystalSerial12noAutoscrollEv:00000000 $t
+    {standard input}:1017   .text._ZN19LiquidCrystalSerial12noAutoscrollEv:00000000 _ZN19LiquidCrystalSerial12noAutoscrollEv
+    {standard input}:1050   .text._ZN19LiquidCrystalSerial10autoscrollEv:00000000 $t
+    {standard input}:1055   .text._ZN19LiquidCrystalSerial10autoscrollEv:00000000 _ZN19LiquidCrystalSerial10autoscrollEv
+    {standard input}:1088   .text._ZN19LiquidCrystalSerial11rightToLeftEv:00000000 $t
+    {standard input}:1093   .text._ZN19LiquidCrystalSerial11rightToLeftEv:00000000 _ZN19LiquidCrystalSerial11rightToLeftEv
+    {standard input}:1126   .text._ZN19LiquidCrystalSerial11leftToRightEv:00000000 $t
+    {standard input}:1131   .text._ZN19LiquidCrystalSerial11leftToRightEv:00000000 _ZN19LiquidCrystalSerial11leftToRightEv
+    {standard input}:1164   .text._ZN19LiquidCrystalSerial18scrollDisplayRightEv:00000000 $t
+    {standard input}:1169   .text._ZN19LiquidCrystalSerial18scrollDisplayRightEv:00000000 _ZN19LiquidCrystalSerial18scrollDisplayRightEv
+    {standard input}:1197   .text._ZN19LiquidCrystalSerial17scrollDisplayLeftEv:00000000 $t
+    {standard input}:1202   .text._ZN19LiquidCrystalSerial17scrollDisplayLeftEv:00000000 _ZN19LiquidCrystalSerial17scrollDisplayLeftEv
+    {standard input}:1230   .text._ZN19LiquidCrystalSerial5blinkEv:00000000 $t
+    {standard input}:1235   .text._ZN19LiquidCrystalSerial5blinkEv:00000000 _ZN19LiquidCrystalSerial5blinkEv
+    {standard input}:1268   .text._ZN19LiquidCrystalSerial7noBlinkEv:00000000 $t
+    {standard input}:1273   .text._ZN19LiquidCrystalSerial7noBlinkEv:00000000 _ZN19LiquidCrystalSerial7noBlinkEv
+    {standard input}:1306   .text._ZN19LiquidCrystalSerial6cursorEv:00000000 $t
+    {standard input}:1311   .text._ZN19LiquidCrystalSerial6cursorEv:00000000 _ZN19LiquidCrystalSerial6cursorEv
+    {standard input}:1344   .text._ZN19LiquidCrystalSerial8noCursorEv:00000000 $t
+    {standard input}:1349   .text._ZN19LiquidCrystalSerial8noCursorEv:00000000 _ZN19LiquidCrystalSerial8noCursorEv
+    {standard input}:1382   .text._ZN19LiquidCrystalSerial7displayEv:00000000 $t
+    {standard input}:1387   .text._ZN19LiquidCrystalSerial7displayEv:00000000 _ZN19LiquidCrystalSerial7displayEv
+    {standard input}:1420   .text._ZN19LiquidCrystalSerial9noDisplayEv:00000000 $t
+    {standard input}:1425   .text._ZN19LiquidCrystalSerial9noDisplayEv:00000000 _ZN19LiquidCrystalSerial9noDisplayEv
+    {standard input}:1458   .text._ZN19LiquidCrystalSerial9setCursorEhh:00000000 $t
+    {standard input}:1463   .text._ZN19LiquidCrystalSerial9setCursorEhh:00000000 _ZN19LiquidCrystalSerial9setCursorEhh
+    {standard input}:1938   .rodata:00000000 .LANCHOR0
+    {standard input}:1528   .text._ZN19LiquidCrystalSerial5writeEh:00000000 $t
+    {standard input}:1533   .text._ZN19LiquidCrystalSerial5writeEh:00000000 _ZN19LiquidCrystalSerial5writeEh
+    {standard input}:1572   .text._ZN19LiquidCrystalSerial4homeEv:00000000 $t
+    {standard input}:1577   .text._ZN19LiquidCrystalSerial4homeEv:00000000 _ZN19LiquidCrystalSerial4homeEv
+    {standard input}:1608   .text._ZN19LiquidCrystalSerial5clearEv:00000000 $t
+    {standard input}:1613   .text._ZN19LiquidCrystalSerial5clearEv:00000000 _ZN19LiquidCrystalSerial5clearEv
+    {standard input}:1644   .text._ZN19LiquidCrystalSerial5beginEhhh:00000000 $t
+    {standard input}:1649   .text._ZN19LiquidCrystalSerial5beginEhhh:00000000 _ZN19LiquidCrystalSerial5beginEhhh
+    {standard input}:1855   .text._GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_:00000000 $t
+    {standard input}:1859   .text._GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_:00000000 _GLOBAL__sub_I__ZN19LiquidCrystalSerialC2E3PinS0_S0_
+    {standard input}:1964   .bss._ZL5Port0:00000000 .LANCHOR1
+    {standard input}:1971   .bss._ZL5Port1:00000000 .LANCHOR2
+    {standard input}:1978   .bss._ZL5Port2:00000000 .LANCHOR3
+    {standard input}:1985   .bss._ZL5Port3:00000000 .LANCHOR4
+    {standard input}:1992   .bss._ZL5Port4:00000000 .LANCHOR5
+    {standard input}:1999   .bss._ZL8NullPort:00000000 .LANCHOR6
+    {standard input}:2006   .bss._ZL7NullPin:00000000 .LANCHOR7
+    {standard input}:1919   .init_array:00000000 $d
+    {standard input}:1923   .rodata._ZTV19LiquidCrystalSerial:00000000 $d
     {standard input}:24     .text._ZN19LiquidCrystalSerialD2Ev:00000000 _ZN19LiquidCrystalSerialD1Ev
     {standard input}:161    .text._ZN19LiquidCrystalSerialC2E3PinS0_S0_:00000000 _ZN19LiquidCrystalSerialC1E3PinS0_S0_
-    {standard input}:1930   .rodata:00000000 $d
-    {standard input}:1956   .bss._ZL5Port0:00000000 $d
-    {standard input}:1960   .bss._ZL5Port0:00000000 _ZL5Port0
-    {standard input}:1963   .bss._ZL5Port1:00000000 $d
-    {standard input}:1967   .bss._ZL5Port1:00000000 _ZL5Port1
-    {standard input}:1970   .bss._ZL5Port2:00000000 $d
-    {standard input}:1974   .bss._ZL5Port2:00000000 _ZL5Port2
-    {standard input}:1977   .bss._ZL5Port3:00000000 $d
-    {standard input}:1981   .bss._ZL5Port3:00000000 _ZL5Port3
-    {standard input}:1984   .bss._ZL5Port4:00000000 $d
-    {standard input}:1988   .bss._ZL5Port4:00000000 _ZL5Port4
-    {standard input}:1991   .bss._ZL8NullPort:00000000 $d
-    {standard input}:1995   .bss._ZL8NullPort:00000000 _ZL8NullPort
-    {standard input}:1998   .bss._ZL7NullPin:00000000 $d
-    {standard input}:2002   .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:1937   .rodata:00000000 $d
+    {standard input}:1963   .bss._ZL5Port0:00000000 $d
+    {standard input}:1967   .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:1970   .bss._ZL5Port1:00000000 $d
+    {standard input}:1974   .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:1977   .bss._ZL5Port2:00000000 $d
+    {standard input}:1981   .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:1984   .bss._ZL5Port3:00000000 $d
+    {standard input}:1988   .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:1991   .bss._ZL5Port4:00000000 $d
+    {standard input}:1995   .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:1998   .bss._ZL8NullPort:00000000 $d
+    {standard input}:2002   .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:2005   .bss._ZL7NullPin:00000000 $d
+    {standard input}:2009   .bss._ZL7NullPin:00000000 _ZL7NullPin
                      .debug_frame:00000010 $d
     {standard input}:373    .text._ZN19LiquidCrystalSerial10writeInt32Emh:0000001f $d
     {standard input}:373    .text._ZN19LiquidCrystalSerial10writeInt32Emh:00000020 $t

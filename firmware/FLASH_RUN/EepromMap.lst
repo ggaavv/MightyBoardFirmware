@@ -765,297 +765,65 @@
  133              	 .cfi_startproc
  134              	 
  135              	 
- 136 0000 00B5     	 push {lr}
+ 136 0000 08B5     	 push {r3,lr}
  137              	.LCFI0:
- 138              	 .cfi_def_cfa_offset 4
+ 138              	 .cfi_def_cfa_offset 8
  139              	 .cfi_offset 14,-4
- 140 0002 8DB0     	 sub sp,sp,#52
- 141              	.LCFI1:
- 142              	 .cfi_def_cfa_offset 56
- 143              	.LBB36:
+ 140              	 .cfi_offset 3,-8
+ 141              	.LBB36:
   77:src/MightyBoard/Motherboard/EepromMap.cc **** 	xprintf("save_to_flash" " (%s:%d)\n",_F_,_L_);
- 144              	 .loc 1 77 0
- 145 0004 40F20000 	 movw r0,#:lower16:.LC5
- 146 0008 C0F20000 	 movt r0,#:upper16:.LC5
- 147 000c 1149     	 ldr r1,.L9
- 148 000e 4FF04D02 	 mov r2,#77
- 149 0012 FFF7FEFF 	 bl xprintf
- 150              	.LBB37:
- 151              	.LBB38:
- 152              	 .loc 2 556 0
+ 142              	 .loc 1 77 0
+ 143 0002 40F20000 	 movw r0,#:lower16:.LC5
+ 144 0006 C0F20000 	 movt r0,#:upper16:.LC5
+ 145 000a 0549     	 ldr r1,.L9
+ 146 000c 4FF04D02 	 mov r2,#77
+ 147 0010 FFF7FEFF 	 bl xprintf
+ 148              	.LBB37:
+ 149              	.LBB38:
+ 150              	 .loc 2 556 0
+ 151              	
+ 152 0014 72B6     	 cpsid i
  153              	
- 154 0016 72B6     	 cpsid i
- 155              	
- 156              	.LVL4:
- 157              	 .thumb
- 158              	.LBE38:
- 159              	.LBE37:
- 160              	.LBB39:
- 161              	.LBB40:
- 162              	.LBB41:
- 163              	 .file 3 "src/MightyBoard/Motherboard/IAP/IAP.hh"
-   1:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    IAP : internal Flash memory access library
-   2:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-   3:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        The internal Flash memory access is described in the LPC1768 usermanual. 
-   4:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *            http://www.nxp.com/documents/user_manual/UM10360.pdf
-   5:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-   6:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *            Chapter  2: "LPC17xx Memory map"
-   7:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *            Chapter 32: "LPC17xx Flash memory interface and programming"
-   8:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *                refering Rev. 01 - 4 January 2010
-   9:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-  10:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Released under the MIT License: http://mbed.org/license/mit
-  11:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-  12:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        revision 1.0  09-Mar-2010   1st release
-  13:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        revision 1.1  12-Mar-2010   chaged: to make possible to reserve flash area for user
-  14:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *                                            it can be set by USER_FLASH_AREA_START and USER_FLASH
-  15:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
-  16:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
-  17:src/MightyBoard/Motherboard/IAP/IAP.hh **** #ifndef        MBED_IAP
-  18:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define        MBED_IAP
-  19:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
-  20:src/MightyBoard/Motherboard/IAP/IAP.hh **** //#include    "mbed.h"
-  21:src/MightyBoard/Motherboard/IAP/IAP.hh **** extern "C" {
-  22:src/MightyBoard/Motherboard/IAP/IAP.hh **** 	#include    "system_LPC17xx.h"
-  23:src/MightyBoard/Motherboard/IAP/IAP.hh **** }
-  24:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
-  25:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     USER_FLASH_AREA_START   FLASH_SECTOR_2
-  26:src/MightyBoard/Motherboard/IAP/IAP.hh **** //#define     USER_FLASH_AREA_START   FLASH_SECTOR_29
-  27:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     USER_FLASH_AREA_SIZE    (FLASH_SECTOR_SIZE_0_TO_15 * 1)
-  28:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
-  29:src/MightyBoard/Motherboard/IAP/IAP.hh **** /*
-  30:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  memory map information is available in next URL also.
-  31:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *    http://mbed.org/projects/libraries/svn/mbed/trunk/LPC1768/LPC17xx.h
-  32:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
-  33:src/MightyBoard/Motherboard/IAP/IAP.hh ****  
-  34:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    Table for start adress of sectors
-  35:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *    
-  36:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        LPC1768 internal flash memory sector numbers and addresses
-  37:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-  38:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        LPC1768 flash memory are and sector number/size
-  39:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Table 568 "Sectors in a LPC17xx device", Section 5. "Sector numbers", usermanual
-  40:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-  41:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        0x00000000 - 0x0007FFFF        flash (29 sectors)
-  42:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-  43:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector0:     0x00000000 - 0x00000FFF        4K
-  44:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector1:     0x00001000 - 0x00001FFF        4K
-  45:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector2:     0x00002000 - 0x00002FFF        4K
-  46:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector3:     0x00003000 - 0x00003FFF        4K
-  47:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector4:     0x00004000 - 0x00004FFF        4K
-  48:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector5:     0x00005000 - 0x00005FFF        4K
-  49:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector6:     0x00006000 - 0x00006FFF        4K
-  50:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector7:     0x00007000 - 0x00007FFF        4K
-  51:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector8:     0x00008000 - 0x00008FFF        4K
-  52:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector9:     0x00009000 - 0x00009FFF        4K
-  53:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector10:    0x0000A000 - 0x0000AFFF        4K
-  54:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector11:    0x0000B000 - 0x0000BFFF        4K
-  55:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector12:    0x0000C000 - 0x0000CFFF        4K
-  56:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector13:    0x0000D000 - 0x0000DFFF        4K
-  57:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector14:    0x0000E000 - 0x0000EFFF        4K
-  58:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector15:    0x0000F000 - 0x0000FFFF        4K
-  59:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
-  60:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector16:    0x00010000 - 0x00017FFF        32K
-  61:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector17:    0x00018000 - 0x0001FFFF        32K
-  62:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector18:    0x00020000 - 0x00027FFF        32K
-  63:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector19:    0x00028000 - 0x0002FFFF        32K
-  64:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector20:    0x00030000 - 0x00037FFF        32K
-  65:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector21:    0x00038000 - 0x0003FFFF        32K
-  66:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector22:    0x00040000 - 0x00047FFF        32K
-  67:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector23:    0x00048000 - 0x0004FFFF        32K
-  68:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector24:    0x00050000 - 0x00057FFF        32K
-  69:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector25:    0x00058000 - 0x0005FFFF        32K
-  70:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector26:    0x00060000 - 0x00067FFF        32K
-  71:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector27:    0x00068000 - 0x0006FFFF        32K
-  72:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector28:    0x00070000 - 0x00077FFF        32K
-  73:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *      Sector29:    0x00078000 - 0x0007FFFF        32K
-  74:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
-  75:src/MightyBoard/Motherboard/IAP/IAP.hh ****  
-  76:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_0       0x00000000
-  77:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_1       0x00001000
-  78:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_2       0x00002000
-  79:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_3       0x00003000
-  80:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_4       0x00004000
-  81:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_5       0x00005000
-  82:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_6       0x00006000
-  83:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_7       0x00007000
-  84:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_8       0x00008000
-  85:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_9       0x00009000
-  86:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_10      0x0000A000
-  87:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_11      0x0000B000
-  88:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_12      0x0000C000
-  89:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_13      0x0000D000
-  90:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_14      0x0000E000
-  91:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_15      0x0000F000
-  92:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_16      0x00010000
-  93:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_17      0x00018000
-  94:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_18      0x00020000
-  95:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_19      0x00028000
-  96:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_20      0x00030000
-  97:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_21      0x00038000
-  98:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_22      0x00040000
-  99:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_23      0x00048000
- 100:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_24      0x00050000
- 101:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_25      0x00058000
- 102:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_26      0x00060000
- 103:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_27      0x00068000
- 104:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_28      0x00070000
- 105:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_29      0x00078000
- 106:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 107:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_SIZE_0_TO_15    ( 4 * 1024)
- 108:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     FLASH_SECTOR_SIZE_16_TO_29   (32 * 1024)
- 109:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 110:src/MightyBoard/Motherboard/IAP/IAP.hh **** /*
- 111:src/MightyBoard/Motherboard/IAP/IAP.hh **** static char * sector_start_adress[]    = {
- 112:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_0,
- 113:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_1,
- 114:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_2,
- 115:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_3,
- 116:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_4,
- 117:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_5,
- 118:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_6,
- 119:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_7,
- 120:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_8,
- 121:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_9,
- 122:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_10,
- 123:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_11,
- 124:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_12,
- 125:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_13,
- 126:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_14,
- 127:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_15,
- 128:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_16,
- 129:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_17,
- 130:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_18,
- 131:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_19,
- 132:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_20,
- 133:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_21,
- 134:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_22,
- 135:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_23,
- 136:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_24,
- 137:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_25,
- 138:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_26,
- 139:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_27,
- 140:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_28,
- 141:src/MightyBoard/Motherboard/IAP/IAP.hh ****     (char *)FLASH_SECTOR_29    
- 142:src/MightyBoard/Motherboard/IAP/IAP.hh **** };
- 143:src/MightyBoard/Motherboard/IAP/IAP.hh **** */
- 144:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 145:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    Error code by IAP routine
- 146:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  
- 147:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Table 588 "ISP Return Codes Summary", Section 7.15 "ISP Return Codes", usermanual
- 148:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
- 149:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 150:src/MightyBoard/Motherboard/IAP/IAP.hh **** enum error_code
- 151:src/MightyBoard/Motherboard/IAP/IAP.hh ****     {
- 152:src/MightyBoard/Motherboard/IAP/IAP.hh ****             CMD_SUCCESS,
- 153:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_COMMAND,
- 154:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SRC_ADDR_ERROR,
- 155:src/MightyBoard/Motherboard/IAP/IAP.hh ****             DST_ADDR_ERROR,
- 156:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SRC_ADDR_NOT_MAPPED,
- 157:src/MightyBoard/Motherboard/IAP/IAP.hh ****             DST_ADDR_NOT_MAPPED,
- 158:src/MightyBoard/Motherboard/IAP/IAP.hh ****             COUNT_ERROR,
- 159:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_SECTOR,
- 160:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SECTOR_NOT_BLANK,
- 161:src/MightyBoard/Motherboard/IAP/IAP.hh ****             SECTOR_NOT_PREPARED_FOR_WRITE_OPERATION,
- 162:src/MightyBoard/Motherboard/IAP/IAP.hh ****             COMPARE_ERROR,
- 163:src/MightyBoard/Motherboard/IAP/IAP.hh ****             BUSY,
- 164:src/MightyBoard/Motherboard/IAP/IAP.hh ****             PARAM_ERROR,
- 165:src/MightyBoard/Motherboard/IAP/IAP.hh ****             ADDR_ERROR,
- 166:src/MightyBoard/Motherboard/IAP/IAP.hh ****             ADDR_NOT_MAPPED,
- 167:src/MightyBoard/Motherboard/IAP/IAP.hh ****             CMD_LOCKED,
- 168:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_CODE,
- 169:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_BAUD_RATE,
- 170:src/MightyBoard/Motherboard/IAP/IAP.hh ****             INVALID_STOP_BIT,
- 171:src/MightyBoard/Motherboard/IAP/IAP.hh ****             CODE_READ_PROTECTION_ENABLED
- 172:src/MightyBoard/Motherboard/IAP/IAP.hh ****     };
- 173:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 174:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 175:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 176:src/MightyBoard/Motherboard/IAP/IAP.hh **** /*
- 177:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  IAP routine entry
- 178:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *
- 179:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Chapter 8. "IAP commands", usermanual
- 180:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
- 181:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 182:src/MightyBoard/Motherboard/IAP/IAP.hh **** #define     IAP_LOCATION    0x1fff1ff1
- 183:src/MightyBoard/Motherboard/IAP/IAP.hh **** typedef     void (*IAP_call)(unsigned int [], unsigned int []);
- 184:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 185:src/MightyBoard/Motherboard/IAP/IAP.hh **** /**    IAP class
- 186:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *  
- 187:src/MightyBoard/Motherboard/IAP/IAP.hh ****  *        Interface for internal flash memory access
- 188:src/MightyBoard/Motherboard/IAP/IAP.hh ****  */
- 189:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 190:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 191:src/MightyBoard/Motherboard/IAP/IAP.hh **** class IAP {
- 192:src/MightyBoard/Motherboard/IAP/IAP.hh **** public:
- 193:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 194:src/MightyBoard/Motherboard/IAP/IAP.hh ****     /*
- 195:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *  SystemCoreClock ??? :  
- 196:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *    http://mbed.org/forum/mbed/topic/229/
- 197:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *    http://mbed.org/users/simon/programs/SystemCoreClock/16mhsh/
- 198:src/MightyBoard/Motherboard/IAP/IAP.hh ****      */
- 199:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 200:src/MightyBoard/Motherboard/IAP/IAP.hh ****     
- 201:src/MightyBoard/Motherboard/IAP/IAP.hh ****     /**    Constructor for IAP
- 202:src/MightyBoard/Motherboard/IAP/IAP.hh ****      *
- 203:src/MightyBoard/Motherboard/IAP/IAP.hh ****      */
- 204:src/MightyBoard/Motherboard/IAP/IAP.hh **** 
- 205:src/MightyBoard/Motherboard/IAP/IAP.hh ****     IAP() : iap_entry( reinterpret_cast<IAP_call>(IAP_LOCATION) ), cclk_kHz( SystemCoreClock / 1000
- 164              	 .loc 3 205 0
- 165 0018 41F6F173 	 movw r3,#8177
- 166 001c C1F6FF73 	 movt r3,8191
- 167 0020 0093     	 str r3,[sp,#0]
- 168 0022 40F20003 	 movw r3,#:lower16:SystemCoreClock
- 169 0026 C0F20003 	 movt r3,#:upper16:SystemCoreClock
- 170 002a 1A68     	 ldr r2,[r3,#0]
- 171 002c 44F6D353 	 movw r3,#19923
- 172 0030 C1F26203 	 movt r3,4194
- 173 0034 A3FB0213 	 umull r1,r3,r3,r2
- 174 0038 4FEA9313 	 lsr r3,r3,#6
- 175 003c 0B93     	 str r3,[sp,#44]
- 176              	.LBE41:
- 177              	.LBE40:
- 178              	.LBE39:
+ 154              	.LVL4:
+ 155              	 .thumb
+ 156              	.LBE38:
+ 157              	.LBE37:
+ 158              	.LBB39:
+ 159              	.LBB40:
+ 545:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsie i");
+ 160              	 .loc 2 545 0
+ 161              	
+ 162 0016 62B6     	 cpsie i
+ 163              	
+ 164              	 .thumb
+ 165              	.LBE40:
+ 166              	.LBE39:
   78:src/MightyBoard/Motherboard/EepromMap.cc **** 	__disable_irq ();
   79:src/MightyBoard/Motherboard/EepromMap.cc **** 	IAP in_ap_prog;
-  80:src/MightyBoard/Motherboard/EepromMap.cc **** 	int error_code_ret = in_ap_prog.erase(USER_FLASH_AREA_START, USER_FLASH_AREA_START);
- 179              	 .loc 1 80 0
- 180 003e 6846     	 mov r0,sp
- 181 0040 4FF40051 	 mov r1,#8192
- 182 0044 0A46     	 mov r2,r1
- 183 0046 FFF7FEFF 	 bl _ZN3IAP5eraseEii
- 184              	.LBB42:
- 185              	.LBB43:
- 545:src/MightyBoard/Motherboard/system/core_cmFunc.h ****   __ASM volatile ("cpsie i");
- 186              	 .loc 2 545 0
- 187              	
- 188 004a 62B6     	 cpsie i
- 189              	
- 190              	 .thumb
- 191              	.LBE43:
- 192              	.LBE42:
+  80:src/MightyBoard/Motherboard/EepromMap.cc **** //	int error_code_ret = in_ap_prog.erase(USER_FLASH_AREA_START, USER_FLASH_AREA_START);
   81:src/MightyBoard/Motherboard/EepromMap.cc **** //	error_code_ret = in_ap_prog.write((char)0x10007000, (char)USER_FLASH_AREA_START, (int)USER_FLASH
   82:src/MightyBoard/Motherboard/EepromMap.cc **** 	// read all variables back into Ram
   83:src/MightyBoard/Motherboard/EepromMap.cc **** 	__enable_irq ();
   84:src/MightyBoard/Motherboard/EepromMap.cc **** 	clearflashupdate();
- 193              	 .loc 1 84 0
- 194 004c FFF7FEFF 	 bl _ZN6eeprom16clearflashupdateEv
- 195              	.LBE36:
+ 167              	 .loc 1 84 0
+ 168 0018 FFF7FEFF 	 bl _ZN6eeprom16clearflashupdateEv
+ 169              	.LBE36:
   85:src/MightyBoard/Motherboard/EepromMap.cc **** };
- 196              	 .loc 1 85 0
- 197 0050 0DB0     	 add sp,sp,#52
- 198 0052 00BD     	 pop {pc}
- 199              	.L10:
- 200              	 .align 2
- 201              	.L9:
- 202 0054 1C000000 	 .word .LC6+28
- 203              	 .cfi_endproc
- 204              	.LFE93:
- 206              	 .section .text._ZN6eeprom20setDefaultCoolingFanEt,"ax",%progbits
- 207              	 .align 2
- 208              	 .global _ZN6eeprom20setDefaultCoolingFanEt
- 209              	 .thumb
- 210              	 .thumb_func
- 212              	_ZN6eeprom20setDefaultCoolingFanEt:
- 213              	.LFB94:
+ 170              	 .loc 1 85 0
+ 171 001c 08BD     	 pop {r3,pc}
+ 172              	.L10:
+ 173 001e 00BF     	 .align 2
+ 174              	.L9:
+ 175 0020 1C000000 	 .word .LC6+28
+ 176              	 .cfi_endproc
+ 177              	.LFE93:
+ 179              	 .section .text._ZN6eeprom20setDefaultCoolingFanEt,"ax",%progbits
+ 180              	 .align 2
+ 181              	 .global _ZN6eeprom20setDefaultCoolingFanEt
+ 182              	 .thumb
+ 183              	 .thumb_func
+ 185              	_ZN6eeprom20setDefaultCoolingFanEt:
+ 186              	.LFB94:
   86:src/MightyBoard/Motherboard/EepromMap.cc **** /*
   87:src/MightyBoard/Motherboard/EepromMap.cc **** uint8_t microstep_pinout(uint8_t port_no) {
   88:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t microsteping_port;
@@ -1075,46 +843,46 @@
  102:src/MightyBoard/Motherboard/EepromMap.cc ****  * @param eeprom_base start of eeprom map of cooling settings
  103:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  104:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultCoolingFan(uint16_t eeprom_base){
- 214              	 .loc 1 104 0
- 215              	 .cfi_startproc
- 216              	 
- 217              	 
- 218              	.LVL5:
- 219 0000 10B5     	 push {r4,lr}
- 220              	.LCFI2:
- 221              	 .cfi_def_cfa_offset 8
- 222              	 .cfi_offset 14,-4
- 223              	 .cfi_offset 4,-8
- 224 0002 0446     	 mov r4,r0
- 225              	.LVL6:
- 226              	.LBB44:
+ 187              	 .loc 1 104 0
+ 188              	 .cfi_startproc
+ 189              	 
+ 190              	 
+ 191              	.LVL5:
+ 192 0000 10B5     	 push {r4,lr}
+ 193              	.LCFI1:
+ 194              	 .cfi_def_cfa_offset 8
+ 195              	 .cfi_offset 14,-4
+ 196              	 .cfi_offset 4,-8
+ 197 0002 0446     	 mov r4,r0
+ 198              	.LVL6:
+ 199              	.LBB41:
  105:src/MightyBoard/Motherboard/EepromMap.cc **** 
  106:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t fan_settings[] = {1, DEFAULT_COOLING_FAN_SETPOINT_C};
  107:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET, fan_settings[0]);
- 227              	 .loc 1 107 0
- 228 0004 4FF00101 	 mov r1,#1
- 229 0008 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 230              	.LVL7:
+ 200              	 .loc 1 107 0
+ 201 0004 4FF00101 	 mov r1,#1
+ 202 0008 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 203              	.LVL7:
  108:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFSET+1, fan_settings[1]);
- 231              	 .loc 1 108 0
- 232 000c 04F10100 	 add r0,r4,#1
- 233 0010 80B2     	 uxth r0,r0
- 234 0012 4FF03201 	 mov r1,#50
- 235 0016 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 236              	.LBE44:
+ 204              	 .loc 1 108 0
+ 205 000c 04F10100 	 add r0,r4,#1
+ 206 0010 80B2     	 uxth r0,r0
+ 207 0012 4FF03201 	 mov r1,#50
+ 208 0016 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 209              	.LBE41:
  109:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block( fan_settings, (uint8_t*)(eeprom_base + cooler_eeprom_offsets::ENABLE_OFFS
  110:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 237              	 .loc 1 110 0
- 238 001a 10BD     	 pop {r4,pc}
- 239              	 .cfi_endproc
- 240              	.LFE94:
- 242              	 .section .text._ZN6eeprom13setDefaultPIDEt,"ax",%progbits
- 243              	 .align 2
- 244              	 .global _ZN6eeprom13setDefaultPIDEt
- 245              	 .thumb
- 246              	 .thumb_func
- 248              	_ZN6eeprom13setDefaultPIDEt:
- 249              	.LFB95:
+ 210              	 .loc 1 110 0
+ 211 001a 10BD     	 pop {r4,pc}
+ 212              	 .cfi_endproc
+ 213              	.LFE94:
+ 215              	 .section .text._ZN6eeprom13setDefaultPIDEt,"ax",%progbits
+ 216              	 .align 2
+ 217              	 .global _ZN6eeprom13setDefaultPIDEt
+ 218              	 .thumb
+ 219              	 .thumb_func
+ 221              	_ZN6eeprom13setDefaultPIDEt:
+ 222              	.LFB95:
  111:src/MightyBoard/Motherboard/EepromMap.cc **** 
  112:src/MightyBoard/Motherboard/EepromMap.cc **** 
  113:src/MightyBoard/Motherboard/EepromMap.cc **** /**
@@ -1123,49 +891,49 @@
  116:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  117:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultPID(uint16_t eeprom_base)
  118:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 250              	 .loc 1 118 0
- 251              	 .cfi_startproc
- 252              	 
- 253              	 
- 254              	.LVL8:
- 255 0000 10B5     	 push {r4,lr}
- 256              	.LCFI3:
- 257              	 .cfi_def_cfa_offset 8
- 258              	 .cfi_offset 14,-4
- 259              	 .cfi_offset 4,-8
- 260 0002 0446     	 mov r4,r0
+ 223              	 .loc 1 118 0
+ 224              	 .cfi_startproc
+ 225              	 
+ 226              	 
+ 227              	.LVL8:
+ 228 0000 10B5     	 push {r4,lr}
+ 229              	.LCFI2:
+ 230              	 .cfi_def_cfa_offset 8
+ 231              	 .cfi_offset 14,-4
+ 232              	 .cfi_offset 4,-8
+ 233 0002 0446     	 mov r4,r0
  119:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + pid_eeprom_offsets::P_TERM_OFFSET, DEFAULT_P_VALUE);
- 261              	 .loc 1 119 0
- 262 0004 4FF00701 	 mov r1,#7
- 263 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 264              	.LVL9:
+ 234              	 .loc 1 119 0
+ 235 0004 4FF00701 	 mov r1,#7
+ 236 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 237              	.LVL9:
  120:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET, DEFAULT_I_VALUE);
- 265              	 .loc 1 120 0
- 266 000c 04F10200 	 add r0,r4,#2
- 267 0010 80B2     	 uxth r0,r0
- 268 0012 4FF00001 	 mov r1,#0
- 269 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 238              	 .loc 1 120 0
+ 239 000c 04F10200 	 add r0,r4,#2
+ 240 0010 80B2     	 uxth r0,r0
+ 241 0012 4FF00001 	 mov r1,#0
+ 242 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  121:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET, DEFAULT_D_VALUE);
- 270              	 .loc 1 121 0
- 271 001a 04F10400 	 add r0,r4,#4
- 272 001e 80B2     	 uxth r0,r0
- 273 0020 4FF02401 	 mov r1,#36
- 274 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 243              	 .loc 1 121 0
+ 244 001a 04F10400 	 add r0,r4,#4
+ 245 001e 80B2     	 uxth r0,r0
+ 246 0020 4FF02401 	 mov r1,#36
+ 247 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  122:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::P_TERM_OFFSET ), DEFAULT_P_VALUE);
  123:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::I_TERM_OFFSET ), DEFAULT_I_VALUE);
  124:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16(( eeprom_base + pid_eeprom_offsets::D_TERM_OFFSET ), DEFAULT_D_VALUE);
  125:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 275              	 .loc 1 125 0
- 276 0028 10BD     	 pop {r4,pc}
- 277              	 .cfi_endproc
- 278              	.LFE95:
- 280 002a 00BF     	 .section .text._ZN6eeprom19setDefaultsExtruderEit,"ax",%progbits
- 281              	 .align 2
- 282              	 .global _ZN6eeprom19setDefaultsExtruderEit
- 283              	 .thumb
- 284              	 .thumb_func
- 286              	_ZN6eeprom19setDefaultsExtruderEit:
- 287              	.LFB96:
+ 248              	 .loc 1 125 0
+ 249 0028 10BD     	 pop {r4,pc}
+ 250              	 .cfi_endproc
+ 251              	.LFE95:
+ 253 002a 00BF     	 .section .text._ZN6eeprom19setDefaultsExtruderEit,"ax",%progbits
+ 254              	 .align 2
+ 255              	 .global _ZN6eeprom19setDefaultsExtruderEit
+ 256              	 .thumb
+ 257              	 .thumb_func
+ 259              	_ZN6eeprom19setDefaultsExtruderEit:
+ 260              	.LFB96:
  126:src/MightyBoard/Motherboard/EepromMap.cc **** 
  127:src/MightyBoard/Motherboard/EepromMap.cc **** 
  128:src/MightyBoard/Motherboard/EepromMap.cc **** /**
@@ -1175,128 +943,128 @@
  132:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  133:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultsExtruder(int index,uint16_t eeprom_base)
  134:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 288              	 .loc 1 134 0
- 289              	 .cfi_startproc
- 290              	 
- 291              	 
- 292              	.LVL10:
- 293 0000 10B5     	 push {r4,lr}
- 294              	.LCFI4:
- 295              	 .cfi_def_cfa_offset 8
- 296              	 .cfi_offset 14,-4
- 297              	 .cfi_offset 4,-8
- 298 0002 0C46     	 mov r4,r1
- 299              	.LVL11:
- 300              	.LBB45:
- 301              	.LBB46:
+ 261              	 .loc 1 134 0
+ 262              	 .cfi_startproc
+ 263              	 
+ 264              	 
+ 265              	.LVL10:
+ 266 0000 10B5     	 push {r4,lr}
+ 267              	.LCFI3:
+ 268              	 .cfi_def_cfa_offset 8
+ 269              	 .cfi_offset 14,-4
+ 270              	 .cfi_offset 4,-8
+ 271 0002 0C46     	 mov r4,r1
+ 272              	.LVL11:
+ 273              	.LBB42:
+ 274              	.LBB43:
  135:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t featuresT0 = eeprom_info::HEATER_0_PRESENT | eeprom_info::HEATER_0_THERMISTOR | eeprom_inf
  136:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t featuresT1 = eeprom_info::HEATER_1_PRESENT | eeprom_info::HEATER_1_THERMISTOR | eeprom_inf
  137:src/MightyBoard/Motherboard/EepromMap.cc **** 	if( index == 0 ){
- 302              	 .loc 1 137 0
- 303 0004 60B9     	 cbnz r0,.L14
- 304              	.LVL12:
- 305              	.LBB47:
+ 275              	 .loc 1 137 0
+ 276 0004 60B9     	 cbnz r0,.L14
+ 277              	.LVL12:
+ 278              	.LBB44:
  138:src/MightyBoard/Motherboard/EepromMap.cc **** 		int slaveId = '12';
  139:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::FEATURES, featuresT0);
- 306              	 .loc 1 139 0
- 307 0006 0846     	 mov r0,r1
- 308              	.LVL13:
- 309 0008 4FF00701 	 mov r1,#7
- 310              	.LVL14:
- 311 000c FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 279              	 .loc 1 139 0
+ 280 0006 0846     	 mov r0,r1
+ 281              	.LVL13:
+ 282 0008 4FF00701 	 mov r1,#7
+ 283              	.LVL14:
+ 284 000c FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
  140:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::SLAVE_ID, slaveId);
- 312              	 .loc 1 140 0
- 313 0010 04F11800 	 add r0,r4,#24
- 314 0014 80B2     	 uxth r0,r0
- 315 0016 4FF03201 	 mov r1,#50
- 316 001a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 317 001e 0BE0     	 b .L15
- 318              	.LVL15:
- 319              	.L14:
- 320              	.LBE47:
- 321              	.LBB48:
+ 285              	 .loc 1 140 0
+ 286 0010 04F11800 	 add r0,r4,#24
+ 287 0014 80B2     	 uxth r0,r0
+ 288 0016 4FF03201 	 mov r1,#50
+ 289 001a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 290 001e 0BE0     	 b .L15
+ 291              	.LVL15:
+ 292              	.L14:
+ 293              	.LBE44:
+ 294              	.LBB45:
  141:src/MightyBoard/Motherboard/EepromMap.cc **** //	    eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT0);
  142:src/MightyBoard/Motherboard/EepromMap.cc **** //		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
  143:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
  144:src/MightyBoard/Motherboard/EepromMap.cc **** 	else{
  145:src/MightyBoard/Motherboard/EepromMap.cc **** 		int slaveId = '32';
  146:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::FEATURES, featuresT1);
- 322              	 .loc 1 146 0
- 323 0020 0846     	 mov r0,r1
- 324              	.LVL16:
- 325 0022 4FF03801 	 mov r1,#56
- 326              	.LVL17:
- 327 0026 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 295              	 .loc 1 146 0
+ 296 0020 0846     	 mov r0,r1
+ 297              	.LVL16:
+ 298 0022 4FF03801 	 mov r1,#56
+ 299              	.LVL17:
+ 300 0026 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
  147:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_base + toolhead_eeprom_offsets::SLAVE_ID, slaveId);
- 328              	 .loc 1 147 0
- 329 002a 04F11800 	 add r0,r4,#24
- 330 002e 80B2     	 uxth r0,r0
- 331 0030 4FF03201 	 mov r1,#50
- 332 0034 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 333              	.LVL18:
- 334              	.L15:
- 335              	.LBE48:
- 336              	.LBE46:
+ 301              	 .loc 1 147 0
+ 302 002a 04F11800 	 add r0,r4,#24
+ 303 002e 80B2     	 uxth r0,r0
+ 304 0030 4FF03201 	 mov r1,#50
+ 305 0034 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 306              	.LVL18:
+ 307              	.L15:
+ 308              	.LBE45:
+ 309              	.LBE43:
  148:src/MightyBoard/Motherboard/EepromMap.cc **** //		eeprom_write_byte( (uint8_t*)(eeprom_base + toolhead_eeprom_offsets::FEATURES),featuresT1);
  149:src/MightyBoard/Motherboard/EepromMap.cc **** //		eeprom_write_byte( (uint8_t*)eeprom_base +toolhead_eeprom_offsets::SLAVE_ID,slaveId);
  150:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
  151:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultPID(eeprom_base + toolhead_eeprom_offsets::EXTRUDER_PID_BASE);
- 337              	 .loc 1 151 0
- 338 0038 04F10A00 	 add r0,r4,#10
- 339 003c 80B2     	 uxth r0,r0
- 340 003e FFF7FEFF 	 bl _ZN6eeprom13setDefaultPIDEt
+ 310              	 .loc 1 151 0
+ 311 0038 04F10A00 	 add r0,r4,#10
+ 312 003c 80B2     	 uxth r0,r0
+ 313 003e FFF7FEFF 	 bl _ZN6eeprom13setDefaultPIDEt
  152:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultPID(eeprom_base + toolhead_eeprom_offsets::HBP_PID_BASE);
- 341              	 .loc 1 152 0
- 342 0042 04F11000 	 add r0,r4,#16
- 343 0046 80B2     	 uxth r0,r0
- 344 0048 FFF7FEFF 	 bl _ZN6eeprom13setDefaultPIDEt
+ 314              	 .loc 1 152 0
+ 315 0042 04F11000 	 add r0,r4,#16
+ 316 0046 80B2     	 uxth r0,r0
+ 317 0048 FFF7FEFF 	 bl _ZN6eeprom13setDefaultPIDEt
  153:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultCoolingFan(eeprom_base + toolhead_eeprom_offsets::COOLING_FAN_SETTINGS);
- 345              	 .loc 1 153 0
- 346 004c 04F11A00 	 add r0,r4,#26
- 347 0050 80B2     	 uxth r0,r0
- 348 0052 FFF7FEFF 	 bl _ZN6eeprom20setDefaultCoolingFanEt
+ 318              	 .loc 1 153 0
+ 319 004c 04F11A00 	 add r0,r4,#26
+ 320 0050 80B2     	 uxth r0,r0
+ 321 0052 FFF7FEFF 	 bl _ZN6eeprom20setDefaultCoolingFanEt
  154:src/MightyBoard/Motherboard/EepromMap.cc **** 
  155:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_FORWARD_TIME, 500);
- 349              	 .loc 1 155 0
- 350 0056 04F10600 	 add r0,r4,#6
- 351 005a 80B2     	 uxth r0,r0
- 352 005c 4FF4FA71 	 mov r1,#500
- 353 0060 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 322              	 .loc 1 155 0
+ 323 0056 04F10600 	 add r0,r4,#6
+ 324 005a 80B2     	 uxth r0,r0
+ 325 005c 4FF4FA71 	 mov r1,#500
+ 326 0060 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  156:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_STOP_TIME, 5);
- 354              	 .loc 1 156 0
- 355 0064 04F10200 	 add r0,r4,#2
- 356 0068 80B2     	 uxth r0,r0
- 357 006a 4FF00501 	 mov r1,#5
- 358 006e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 327              	 .loc 1 156 0
+ 328 0064 04F10200 	 add r0,r4,#2
+ 329 0068 80B2     	 uxth r0,r0
+ 330 006a 4FF00501 	 mov r1,#5
+ 331 006e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  157:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_REVERSE_TIME, 500);
- 359              	 .loc 1 157 0
- 360 0072 04F10400 	 add r0,r4,#4
- 361 0076 80B2     	 uxth r0,r0
- 362 0078 4FF4FA71 	 mov r1,#500
- 363 007c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 332              	 .loc 1 157 0
+ 333 0072 04F10400 	 add r0,r4,#4
+ 334 0076 80B2     	 uxth r0,r0
+ 335 0078 4FF4FA71 	 mov r1,#500
+ 336 007c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  158:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + toolhead_eeprom_offsets::BACKOFF_TRIGGER_TIME, 300);
- 364              	 .loc 1 158 0
- 365 0080 04F10800 	 add r0,r4,#8
- 366 0084 80B2     	 uxth r0,r0
- 367 0086 4FF49671 	 mov r1,#300
- 368 008a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 369              	.LBE45:
+ 337              	 .loc 1 158 0
+ 338 0080 04F10800 	 add r0,r4,#8
+ 339 0084 80B2     	 uxth r0,r0
+ 340 0086 4FF49671 	 mov r1,#300
+ 341 008a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 342              	.LBE42:
  159:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_FORWARD_TIME),50
  160:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_STOP_TIME),5);
  161:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_REVERSE_TIME),50
  162:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + toolhead_eeprom_offsets::BACKOFF_TRIGGER_TIME),30
  163:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 370              	 .loc 1 163 0
- 371 008e 10BD     	 pop {r4,pc}
- 372              	 .cfi_endproc
- 373              	.LFE96:
- 375              	 .section .text._ZN6eeprom18SetDefaultsThermalEt,"ax",%progbits
- 376              	 .align 2
- 377              	 .global _ZN6eeprom18SetDefaultsThermalEt
- 378              	 .thumb
- 379              	 .thumb_func
- 381              	_ZN6eeprom18SetDefaultsThermalEt:
- 382              	.LFB97:
+ 343              	 .loc 1 163 0
+ 344 008e 10BD     	 pop {r4,pc}
+ 345              	 .cfi_endproc
+ 346              	.LFE96:
+ 348              	 .section .text._ZN6eeprom18SetDefaultsThermalEt,"ax",%progbits
+ 349              	 .align 2
+ 350              	 .global _ZN6eeprom18SetDefaultsThermalEt
+ 351              	 .thumb
+ 352              	 .thumb_func
+ 354              	_ZN6eeprom18SetDefaultsThermalEt:
+ 355              	.LFB97:
  164:src/MightyBoard/Motherboard/EepromMap.cc **** 
  165:src/MightyBoard/Motherboard/EepromMap.cc **** 
  166:src/MightyBoard/Motherboard/EepromMap.cc **** /**
@@ -1305,44 +1073,44 @@
  169:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  170:src/MightyBoard/Motherboard/EepromMap.cc **** void SetDefaultsThermal(uint16_t eeprom_base)
  171:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 383              	 .loc 1 171 0
- 384              	 .cfi_startproc
- 385              	 
- 386              	 
- 387              	.LVL19:
- 388 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
- 389              	.LCFI5:
- 390              	 .cfi_def_cfa_offset 24
- 391              	 .cfi_offset 14,-4
- 392              	 .cfi_offset 7,-8
- 393              	 .cfi_offset 6,-12
- 394              	 .cfi_offset 5,-16
- 395              	 .cfi_offset 4,-20
- 396              	 .cfi_offset 3,-24
- 397 0002 0446     	 mov r4,r0
- 398              	.LBB49:
+ 356              	 .loc 1 171 0
+ 357              	 .cfi_startproc
+ 358              	 
+ 359              	 
+ 360              	.LVL19:
+ 361 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+ 362              	.LCFI4:
+ 363              	 .cfi_def_cfa_offset 24
+ 364              	 .cfi_offset 14,-4
+ 365              	 .cfi_offset 7,-8
+ 366              	 .cfi_offset 6,-12
+ 367              	 .cfi_offset 5,-16
+ 368              	 .cfi_offset 4,-20
+ 369              	 .cfi_offset 3,-24
+ 370 0002 0446     	 mov r4,r0
+ 371              	.LBB46:
  172:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_R0_OFFSET, THERM_R0_DEFAULT_VALUE);
- 399              	 .loc 1 172 0
- 400 0004 48F2A061 	 movw r1,#34464
- 401 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 402              	.LVL20:
+ 372              	 .loc 1 172 0
+ 373 0004 48F2A061 	 movw r1,#34464
+ 374 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 375              	.LVL20:
  173:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_T0_OFFSET, THERM_T0_DEFAULT_VALUE);
- 403              	 .loc 1 173 0
- 404 000c 04F10400 	 add r0,r4,#4
- 405 0010 80B2     	 uxth r0,r0
- 406 0012 4FF01901 	 mov r1,#25
- 407 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 376              	 .loc 1 173 0
+ 377 000c 04F10400 	 add r0,r4,#4
+ 378 0010 80B2     	 uxth r0,r0
+ 379 0012 4FF01901 	 mov r1,#25
+ 380 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  174:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_BETA_OFFSET, THERM_BETA_DEFAULT_VALUE);
- 408              	 .loc 1 174 0
- 409 001a 04F10800 	 add r0,r4,#8
- 410 001e 80B2     	 uxth r0,r0
- 411 0020 40F6E371 	 movw r1,#4067
- 412 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 413              	.LVL21:
- 414 0028 04F11004 	 add r4,r4,#16
- 415 002c A4B2     	 uxth r4,r4
- 416 002e 4FF00006 	 mov r6,#0
- 417              	.LBB50:
+ 381              	 .loc 1 174 0
+ 382 001a 04F10800 	 add r0,r4,#8
+ 383 001e 80B2     	 uxth r0,r0
+ 384 0020 40F6E371 	 movw r1,#4067
+ 385 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 386              	.LVL21:
+ 387 0028 04F11004 	 add r4,r4,#16
+ 388 002c A4B2     	 uxth r4,r4
+ 389 002e 4FF00006 	 mov r6,#0
+ 390              	.LBB47:
  175:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_R
  176:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_T
  177:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_B
@@ -1352,48 +1120,48 @@
  181:src/MightyBoard/Motherboard/EepromMap.cc **** 	/// write the default thermal table.
  182:src/MightyBoard/Motherboard/EepromMap.cc **** 	for(uint8_t i=0;i<NUMTEMPS;i++){
  183:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET+i, default_therm_table[i].adc);
- 418              	 .loc 1 183 0
- 419 0032 40F20007 	 movw r7,#:lower16:default_therm_table
- 420 0036 C0F20007 	 movt r7,#:upper16:default_therm_table
- 421              	.LVL22:
- 422              	.L17:
- 423              	 .loc 1 183 0 is_stmt 0 discriminator 2
- 424 003a F519     	 adds r5,r6,r7
- 425 003c 2046     	 mov r0,r4
- 426 003e B95B     	 ldrh r1,[r7,r6]
- 427 0040 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 391              	 .loc 1 183 0
+ 392 0032 40F20007 	 movw r7,#:lower16:default_therm_table
+ 393 0036 C0F20007 	 movt r7,#:upper16:default_therm_table
+ 394              	.LVL22:
+ 395              	.L17:
+ 396              	 .loc 1 183 0 is_stmt 0 discriminator 2
+ 397 003a F519     	 adds r5,r6,r7
+ 398 003c 2046     	 mov r0,r4
+ 399 003e B95B     	 ldrh r1,[r7,r6]
+ 400 0040 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  184:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom16(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET+i+2, default_therm_table[i].val
- 428              	 .loc 1 184 0 is_stmt 1 discriminator 2
- 429 0044 04F10200 	 add r0,r4,#2
- 430 0048 80B2     	 uxth r0,r0
- 431 004a 6988     	 ldrh r1,[r5,#2]
- 432 004c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 433 0050 06F10406 	 add r6,r6,#4
- 434 0054 04F10104 	 add r4,r4,#1
- 435 0058 A4B2     	 uxth r4,r4
+ 401              	 .loc 1 184 0 is_stmt 1 discriminator 2
+ 402 0044 04F10200 	 add r0,r4,#2
+ 403 0048 80B2     	 uxth r0,r0
+ 404 004a 6988     	 ldrh r1,[r5,#2]
+ 405 004c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 406 0050 06F10406 	 add r6,r6,#4
+ 407 0054 04F10104 	 add r4,r4,#1
+ 408 0058 A4B2     	 uxth r4,r4
  182:src/MightyBoard/Motherboard/EepromMap.cc **** 	for(uint8_t i=0;i<NUMTEMPS;i++){
- 436              	 .loc 1 182 0 discriminator 2
- 437 005a 7C2E     	 cmp r6,#124
- 438 005c EDD1     	 bne .L17
- 439              	.LBE50:
- 440              	.LBE49:
+ 409              	 .loc 1 182 0 discriminator 2
+ 410 005a 7C2E     	 cmp r6,#124
+ 411 005c EDD1     	 bne .L17
+ 412              	.LBE47:
+ 413              	.LBE46:
  185:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_
  186:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %d" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_base + therm_eeprom_offsets::THERM_
  187:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
  188:src/MightyBoard/Motherboard/EepromMap.cc **** 	//	eeprom_write_block( (const uint8_t*)default_therm_table,
  189:src/MightyBoard/Motherboard/EepromMap.cc **** //			(uint8_t*)(eeprom_base + therm_eeprom_offsets::THERM_DATA_OFFSET), sizeof(uint16_t)*2*NUMTEMPS
  190:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 441              	 .loc 1 190 0
- 442 005e F8BD     	 pop {r3,r4,r5,r6,r7,pc}
- 443              	 .cfi_endproc
- 444              	.LFE97:
- 446              	 .section .text._ZN6eeprom20setDefaultLedEffectsEt,"ax",%progbits
- 447              	 .align 2
- 448              	 .global _ZN6eeprom20setDefaultLedEffectsEt
- 449              	 .thumb
- 450              	 .thumb_func
- 452              	_ZN6eeprom20setDefaultLedEffectsEt:
- 453              	.LFB98:
+ 414              	 .loc 1 190 0
+ 415 005e F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 416              	 .cfi_endproc
+ 417              	.LFE97:
+ 419              	 .section .text._ZN6eeprom20setDefaultLedEffectsEt,"ax",%progbits
+ 420              	 .align 2
+ 421              	 .global _ZN6eeprom20setDefaultLedEffectsEt
+ 422              	 .thumb
+ 423              	 .thumb_func
+ 425              	_ZN6eeprom20setDefaultLedEffectsEt:
+ 426              	.LFB98:
  191:src/MightyBoard/Motherboard/EepromMap.cc **** 
  192:src/MightyBoard/Motherboard/EepromMap.cc **** typedef struct Color {
  193:src/MightyBoard/Motherboard/EepromMap.cc **** 	int8_t red;
@@ -1409,70 +1177,70 @@
  203:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  204:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultLedEffects(uint16_t eeprom_base)
  205:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 454              	 .loc 1 205 0
- 455              	 .cfi_startproc
- 456              	 
- 457              	 
- 458              	.LVL23:
- 459 0000 10B5     	 push {r4,lr}
- 460              	.LCFI6:
- 461              	 .cfi_def_cfa_offset 8
- 462              	 .cfi_offset 14,-4
- 463              	 .cfi_offset 4,-8
- 464 0002 0446     	 mov r4,r0
- 465              	.LBB51:
+ 427              	 .loc 1 205 0
+ 428              	 .cfi_startproc
+ 429              	 
+ 430              	 
+ 431              	.LVL23:
+ 432 0000 10B5     	 push {r4,lr}
+ 433              	.LCFI5:
+ 434              	 .cfi_def_cfa_offset 8
+ 435              	 .cfi_offset 14,-4
+ 436              	 .cfi_offset 4,-8
+ 437 0002 0446     	 mov r4,r0
+ 438              	.LBB48:
  206:src/MightyBoard/Motherboard/EepromMap.cc **** 	Color colors;
  207:src/MightyBoard/Motherboard/EepromMap.cc **** 
  208:src/MightyBoard/Motherboard/EepromMap.cc **** 	// default color is white
  209:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET, LED_DEFAULT_WHITE);
- 466              	 .loc 1 209 0
- 467 0004 4FF00001 	 mov r1,#0
- 468 0008 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 469              	.LVL24:
+ 439              	 .loc 1 209 0
+ 440 0004 4FF00001 	 mov r1,#0
+ 441 0008 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 442              	.LVL24:
  210:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET, 1);
- 470              	 .loc 1 210 0
- 471 000c 04F10200 	 add r0,r4,#2
- 472 0010 80B2     	 uxth r0,r0
- 473 0012 4FF00101 	 mov r1,#1
- 474 0016 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 475              	.LVL25:
+ 443              	 .loc 1 210 0
+ 444 000c 04F10200 	 add r0,r4,#2
+ 445 0010 80B2     	 uxth r0,r0
+ 446 0012 4FF00101 	 mov r1,#1
+ 447 0016 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 448              	.LVL25:
  211:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::BASIC_COLOR_OFFSET), LED_DEFAUL
  212:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_base + blink_eeprom_offsets::LED_HEAT_OFFSET), 1);
  213:src/MightyBoard/Motherboard/EepromMap.cc ****     
  214:src/MightyBoard/Motherboard/EepromMap.cc **** 	colors.red=0xFF; colors.green =colors.blue =0x00;
  215:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, colors.red);
- 476              	 .loc 1 215 0
- 477 001a 04F10400 	 add r0,r4,#4
- 478 001e 80B2     	 uxth r0,r0
- 479 0020 4FF0FF01 	 mov r1,#255
- 480 0024 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 449              	 .loc 1 215 0
+ 450 001a 04F10400 	 add r0,r4,#4
+ 451 001e 80B2     	 uxth r0,r0
+ 452 0020 4FF0FF01 	 mov r1,#255
+ 453 0024 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
  216:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+1, colors.green);
- 481              	 .loc 1 216 0
- 482 0028 04F10500 	 add r0,r4,#5
- 483 002c 80B2     	 uxth r0,r0
- 484 002e 4FF00001 	 mov r1,#0
- 485 0032 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 454              	 .loc 1 216 0
+ 455 0028 04F10500 	 add r0,r4,#5
+ 456 002c 80B2     	 uxth r0,r0
+ 457 002e 4FF00001 	 mov r1,#0
+ 458 0032 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
  217:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+2, colors.blue);
- 486              	 .loc 1 217 0
- 487 0036 04F10600 	 add r0,r4,#6
- 488 003a 80B2     	 uxth r0,r0
- 489 003c 4FF00001 	 mov r1,#0
- 490 0040 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 491              	.LBE51:
+ 459              	 .loc 1 217 0
+ 460 0036 04F10600 	 add r0,r4,#6
+ 461 003a 80B2     	 uxth r0,r0
+ 462 003c 4FF00001 	 mov r1,#0
+ 463 0040 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 464              	.LBE48:
  218:src/MightyBoard/Motherboard/EepromMap.cc **** 
  219:src/MightyBoard/Motherboard/EepromMap.cc **** 	//	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_base + blink_eeprom_offsets::CUSTOM_COLOR_O
  220:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 492              	 .loc 1 220 0
- 493 0044 10BD     	 pop {r4,pc}
- 494              	 .cfi_endproc
- 495              	.LFE98:
- 497 0046 00BF     	 .section .text._ZN6eeprom14setCustomColorEhhh,"ax",%progbits
- 498              	 .align 2
- 499              	 .global _ZN6eeprom14setCustomColorEhhh
- 500              	 .thumb
- 501              	 .thumb_func
- 503              	_ZN6eeprom14setCustomColorEhhh:
- 504              	.LFB99:
+ 465              	 .loc 1 220 0
+ 466 0044 10BD     	 pop {r4,pc}
+ 467              	 .cfi_endproc
+ 468              	.LFE98:
+ 470 0046 00BF     	 .section .text._ZN6eeprom14setCustomColorEhhh,"ax",%progbits
+ 471              	 .align 2
+ 472              	 .global _ZN6eeprom14setCustomColorEhhh
+ 473              	 .thumb
+ 474              	 .thumb_func
+ 476              	_ZN6eeprom14setCustomColorEhhh:
+ 477              	.LFB99:
  221:src/MightyBoard/Motherboard/EepromMap.cc ****     /**
  222:src/MightyBoard/Motherboard/EepromMap.cc ****      *
  223:src/MightyBoard/Motherboard/EepromMap.cc ****      * @param red value
@@ -1481,23 +1249,23 @@
  226:src/MightyBoard/Motherboard/EepromMap.cc ****      */
  227:src/MightyBoard/Motherboard/EepromMap.cc **** 
  228:src/MightyBoard/Motherboard/EepromMap.cc **** void setCustomColor(uint8_t red, uint8_t green, uint8_t blue){
- 505              	 .loc 1 228 0
- 506              	 .cfi_startproc
- 507              	 
- 508              	 
- 509              	.LVL26:
- 510 0000 38B5     	 push {r3,r4,r5,lr}
- 511              	.LCFI7:
- 512              	 .cfi_def_cfa_offset 16
- 513              	 .cfi_offset 14,-4
- 514              	 .cfi_offset 5,-8
- 515              	 .cfi_offset 4,-12
- 516              	 .cfi_offset 3,-16
- 517 0002 0346     	 mov r3,r0
- 518 0004 0D46     	 mov r5,r1
- 519 0006 1446     	 mov r4,r2
- 520              	.LVL27:
- 521              	.LBB52:
+ 478              	 .loc 1 228 0
+ 479              	 .cfi_startproc
+ 480              	 
+ 481              	 
+ 482              	.LVL26:
+ 483 0000 38B5     	 push {r3,r4,r5,lr}
+ 484              	.LCFI6:
+ 485              	 .cfi_def_cfa_offset 16
+ 486              	 .cfi_offset 14,-4
+ 487              	 .cfi_offset 5,-8
+ 488              	 .cfi_offset 4,-12
+ 489              	 .cfi_offset 3,-16
+ 490 0002 0346     	 mov r3,r0
+ 491 0004 0D46     	 mov r5,r1
+ 492 0006 1446     	 mov r4,r2
+ 493              	.LVL27:
+ 494              	.LBB49:
  229:src/MightyBoard/Motherboard/EepromMap.cc **** 	
  230:src/MightyBoard/Motherboard/EepromMap.cc **** 	Color colors;
  231:src/MightyBoard/Motherboard/EepromMap.cc **** 	
@@ -1506,37 +1274,37 @@
  234:src/MightyBoard/Motherboard/EepromMap.cc **** 	
  235:src/MightyBoard/Motherboard/EepromMap.cc **** 	colors.red=red; colors.green = green; colors.blue =blue;
  236:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET, colors.
- 522              	 .loc 1 236 0
- 523 0008 4FF4A270 	 mov r0,#324
- 524              	.LVL28:
- 525 000c 1946     	 mov r1,r3
- 526              	.LVL29:
- 527 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 528              	.LVL30:
+ 495              	 .loc 1 236 0
+ 496 0008 4FF4A270 	 mov r0,#324
+ 497              	.LVL28:
+ 498 000c 1946     	 mov r1,r3
+ 499              	.LVL29:
+ 500 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 501              	.LVL30:
  237:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+1, color
- 529              	 .loc 1 237 0
- 530 0012 40F24510 	 movw r0,#325
- 531 0016 2946     	 mov r1,r5
- 532 0018 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 502              	 .loc 1 237 0
+ 503 0012 40F24510 	 movw r0,#325
+ 504 0016 2946     	 mov r1,r5
+ 505 0018 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
  238:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_offsets::CUSTOM_COLOR_OFFSET+2, color
- 533              	 .loc 1 238 0
- 534 001c 4FF4A370 	 mov r0,#326
- 535 0020 2146     	 mov r1,r4
- 536 0022 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 537              	.LBE52:
+ 506              	 .loc 1 238 0
+ 507 001c 4FF4A370 	 mov r0,#326
+ 508 0020 2146     	 mov r1,r4
+ 509 0022 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 510              	.LBE49:
  239:src/MightyBoard/Motherboard/EepromMap.cc **** 	//	eeprom_write_block((void*)&colors,(uint8_t*)(eeprom_offsets::LED_STRIP_SETTINGS + blink_eeprom_
  240:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 538              	 .loc 1 240 0
- 539 0026 38BD     	 pop {r3,r4,r5,pc}
- 540              	 .cfi_endproc
- 541              	.LFE99:
- 543              	 .section .text._ZN6eeprom18eeprom_write_soundE5Soundt,"ax",%progbits
- 544              	 .align 2
- 545              	 .global _ZN6eeprom18eeprom_write_soundE5Soundt
- 546              	 .thumb
- 547              	 .thumb_func
- 549              	_ZN6eeprom18eeprom_write_soundE5Soundt:
- 550              	.LFB100:
+ 511              	 .loc 1 240 0
+ 512 0026 38BD     	 pop {r3,r4,r5,pc}
+ 513              	 .cfi_endproc
+ 514              	.LFE99:
+ 516              	 .section .text._ZN6eeprom18eeprom_write_soundE5Soundt,"ax",%progbits
+ 517              	 .align 2
+ 518              	 .global _ZN6eeprom18eeprom_write_soundE5Soundt
+ 519              	 .thumb
+ 520              	 .thumb_func
+ 522              	_ZN6eeprom18eeprom_write_soundE5Soundt:
+ 523              	.LFB100:
  241:src/MightyBoard/Motherboard/EepromMap.cc **** 
  242:src/MightyBoard/Motherboard/EepromMap.cc ****     /**
  243:src/MightyBoard/Motherboard/EepromMap.cc ****      *
@@ -1545,48 +1313,48 @@
  246:src/MightyBoard/Motherboard/EepromMap.cc ****      */   
  247:src/MightyBoard/Motherboard/EepromMap.cc **** void eeprom_write_sound(Sound sound, uint16_t dest)
  248:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 551              	 .loc 1 248 0
- 552              	 .cfi_startproc
- 553              	 
- 554              	 
- 555              	.LVL31:
- 556 0000 10B5     	 push {r4,lr}
- 557              	.LCFI8:
- 558              	 .cfi_def_cfa_offset 8
- 559              	 .cfi_offset 14,-4
- 560              	 .cfi_offset 4,-8
- 561 0002 82B0     	 sub sp,sp,#8
- 562              	.LCFI9:
- 563              	 .cfi_def_cfa_offset 16
- 564 0004 0190     	 str r0,[sp,#4]
- 565 0006 0C46     	 mov r4,r1
+ 524              	 .loc 1 248 0
+ 525              	 .cfi_startproc
+ 526              	 
+ 527              	 
+ 528              	.LVL31:
+ 529 0000 10B5     	 push {r4,lr}
+ 530              	.LCFI7:
+ 531              	 .cfi_def_cfa_offset 8
+ 532              	 .cfi_offset 14,-4
+ 533              	 .cfi_offset 4,-8
+ 534 0002 82B0     	 sub sp,sp,#8
+ 535              	.LCFI8:
+ 536              	 .cfi_def_cfa_offset 16
+ 537 0004 0190     	 str r0,[sp,#4]
+ 538 0006 0C46     	 mov r4,r1
  249:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(dest,sound.freq);
- 566              	 .loc 1 249 0
- 567 0008 81B2     	 uxth r1,r0
- 568              	.LVL32:
- 569 000a 2046     	 mov r0,r4
- 570 000c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 539              	 .loc 1 249 0
+ 540 0008 81B2     	 uxth r1,r0
+ 541              	.LVL32:
+ 542 000a 2046     	 mov r0,r4
+ 543 000c FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  250:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(dest + 2, sound.durationMs);
- 571              	 .loc 1 250 0
- 572 0010 04F10200 	 add r0,r4,#2
- 573 0014 80B2     	 uxth r0,r0
- 574 0016 BDF80610 	 ldrh r1,[sp,#6]
- 575 001a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 544              	 .loc 1 250 0
+ 545 0010 04F10200 	 add r0,r4,#2
+ 546 0014 80B2     	 uxth r0,r0
+ 547 0016 BDF80610 	 ldrh r1,[sp,#6]
+ 548 001a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  251:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)dest, 	sound.freq);
  252:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)dest + 2, sound.durationMs);
  253:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 576              	 .loc 1 253 0
- 577 001e 02B0     	 add sp,sp,#8
- 578 0020 10BD     	 pop {r4,pc}
- 579              	 .cfi_endproc
- 580              	.LFE100:
- 582 0022 00BF     	 .section .text._ZN6eeprom21setDefaultBuzzEffectsEt,"ax",%progbits
- 583              	 .align 2
- 584              	 .global _ZN6eeprom21setDefaultBuzzEffectsEt
- 585              	 .thumb
- 586              	 .thumb_func
- 588              	_ZN6eeprom21setDefaultBuzzEffectsEt:
- 589              	.LFB101:
+ 549              	 .loc 1 253 0
+ 550 001e 02B0     	 add sp,sp,#8
+ 551 0020 10BD     	 pop {r4,pc}
+ 552              	 .cfi_endproc
+ 553              	.LFE100:
+ 555 0022 00BF     	 .section .text._ZN6eeprom21setDefaultBuzzEffectsEt,"ax",%progbits
+ 556              	 .align 2
+ 557              	 .global _ZN6eeprom21setDefaultBuzzEffectsEt
+ 558              	 .thumb
+ 559              	 .thumb_func
+ 561              	_ZN6eeprom21setDefaultBuzzEffectsEt:
+ 562              	.LFB101:
  254:src/MightyBoard/Motherboard/EepromMap.cc **** 
  255:src/MightyBoard/Motherboard/EepromMap.cc **** /**
  256:src/MightyBoard/Motherboard/EepromMap.cc ****  *
@@ -1594,45 +1362,45 @@
  258:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  259:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultBuzzEffects(uint16_t eeprom_base)
  260:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 590              	 .loc 1 260 0
- 591              	 .cfi_startproc
- 592              	 
- 593              	 
- 594              	.LVL33:
- 595 0000 00B5     	 push {lr}
- 596              	.LCFI10:
- 597              	 .cfi_def_cfa_offset 4
- 598              	 .cfi_offset 14,-4
- 599 0002 83B0     	 sub sp,sp,#12
- 600              	.LCFI11:
- 601              	 .cfi_def_cfa_offset 16
- 602 0004 0146     	 mov r1,r0
- 603              	.LBB53:
+ 563              	 .loc 1 260 0
+ 564              	 .cfi_startproc
+ 565              	 
+ 566              	 
+ 567              	.LVL33:
+ 568 0000 00B5     	 push {lr}
+ 569              	.LCFI9:
+ 570              	 .cfi_def_cfa_offset 4
+ 571              	 .cfi_offset 14,-4
+ 572 0002 83B0     	 sub sp,sp,#12
+ 573              	.LCFI10:
+ 574              	 .cfi_def_cfa_offset 16
+ 575 0004 0146     	 mov r1,r0
+ 576              	.LBB50:
  261:src/MightyBoard/Motherboard/EepromMap.cc **** 	Sound blare = {NOTE_B2, 500};
- 604              	 .loc 1 261 0
- 605 0006 40F20003 	 movw r3,#:lower16:.LANCHOR0
- 606 000a C0F20003 	 movt r3,#:upper16:.LANCHOR0
- 607 000e 1868     	 ldr r0,[r3,#0]
- 608              	.LVL34:
- 609 0010 0190     	 str r0,[sp,#4]
+ 577              	 .loc 1 261 0
+ 578 0006 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 579 000a C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 580 000e 1868     	 ldr r0,[r3,#0]
+ 581              	.LVL34:
+ 582 0010 0190     	 str r0,[sp,#4]
  262:src/MightyBoard/Motherboard/EepromMap.cc **** 	eeprom_write_sound(blare,eeprom_base + buzz_eeprom_offsets::BASIC_BUZZ_OFFSET);
- 610              	 .loc 1 262 0
- 611 0012 0198     	 ldr r0,[sp,#4]
- 612 0014 FFF7FEFF 	 bl _ZN6eeprom18eeprom_write_soundE5Soundt
- 613              	.LBE53:
+ 583              	 .loc 1 262 0
+ 584 0012 0198     	 ldr r0,[sp,#4]
+ 585 0014 FFF7FEFF 	 bl _ZN6eeprom18eeprom_write_soundE5Soundt
+ 586              	.LBE50:
  263:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 614              	 .loc 1 263 0
- 615 0018 03B0     	 add sp,sp,#12
- 616 001a 00BD     	 pop {pc}
- 617              	 .cfi_endproc
- 618              	.LFE101:
- 620              	 .section .text._ZN6eeprom18setDefaultsPreheatEt,"ax",%progbits
- 621              	 .align 2
- 622              	 .global _ZN6eeprom18setDefaultsPreheatEt
- 623              	 .thumb
- 624              	 .thumb_func
- 626              	_ZN6eeprom18setDefaultsPreheatEt:
- 627              	.LFB102:
+ 587              	 .loc 1 263 0
+ 588 0018 03B0     	 add sp,sp,#12
+ 589 001a 00BD     	 pop {pc}
+ 590              	 .cfi_endproc
+ 591              	.LFE101:
+ 593              	 .section .text._ZN6eeprom18setDefaultsPreheatEt,"ax",%progbits
+ 594              	 .align 2
+ 595              	 .global _ZN6eeprom18setDefaultsPreheatEt
+ 596              	 .thumb
+ 597              	 .thumb_func
+ 599              	_ZN6eeprom18setDefaultsPreheatEt:
+ 600              	.LFB102:
  264:src/MightyBoard/Motherboard/EepromMap.cc ****     
  265:src/MightyBoard/Motherboard/EepromMap.cc **** /**
  266:src/MightyBoard/Motherboard/EepromMap.cc ****  *
@@ -1640,56 +1408,56 @@
  268:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  269:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultsPreheat(uint16_t eeprom_base)
  270:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 628              	 .loc 1 270 0
- 629              	 .cfi_startproc
- 630              	 
- 631              	 
- 632              	.LVL35:
- 633 0000 10B5     	 push {r4,lr}
- 634              	.LCFI12:
- 635              	 .cfi_def_cfa_offset 8
- 636              	 .cfi_offset 14,-4
- 637              	 .cfi_offset 4,-8
- 638 0002 0446     	 mov r4,r0
+ 601              	 .loc 1 270 0
+ 602              	 .cfi_startproc
+ 603              	 
+ 604              	 
+ 605              	.LVL35:
+ 606 0000 10B5     	 push {r4,lr}
+ 607              	.LCFI11:
+ 608              	 .cfi_def_cfa_offset 8
+ 609              	 .cfi_offset 14,-4
+ 610              	 .cfi_offset 4,-8
+ 611 0002 0446     	 mov r4,r0
  271:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET, 220);
- 639              	 .loc 1 271 0
- 640 0004 4FF0DC01 	 mov r1,#220
- 641 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 642              	.LVL36:
+ 612              	 .loc 1 271 0
+ 613 0004 4FF0DC01 	 mov r1,#220
+ 614 0008 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 615              	.LVL36:
  272:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET, 220);
- 643              	 .loc 1 272 0
- 644 000c 04F10200 	 add r0,r4,#2
- 645 0010 80B2     	 uxth r0,r0
- 646 0012 4FF0DC01 	 mov r1,#220
- 647 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 616              	 .loc 1 272 0
+ 617 000c 04F10200 	 add r0,r4,#2
+ 618 0010 80B2     	 uxth r0,r0
+ 619 0012 4FF0DC01 	 mov r1,#220
+ 620 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  273:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET, 110);
- 648              	 .loc 1 273 0
- 649 001a 04F10400 	 add r0,r4,#4
- 650 001e 80B2     	 uxth r0,r0
- 651 0020 4FF06E01 	 mov r1,#110
- 652 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 621              	 .loc 1 273 0
+ 622 001a 04F10400 	 add r0,r4,#4
+ 623 001e 80B2     	 uxth r0,r0
+ 624 0020 4FF06E01 	 mov r1,#110
+ 625 0024 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  274:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET, (1<<HEAT_MASK_RIGHT) + (1
- 653              	 .loc 1 274 0
- 654 0028 04F10600 	 add r0,r4,#6
- 655 002c 80B2     	 uxth r0,r0
- 656 002e 4FF00501 	 mov r1,#5
- 657 0032 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 626              	 .loc 1 274 0
+ 627 0028 04F10600 	 add r0,r4,#6
+ 628 002c 80B2     	 uxth r0,r0
+ 629 002e 4FF00501 	 mov r1,#5
+ 630 0032 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  275:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_RIGHT_OFFSET), 22
  276:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_LEFT_OFFSET), 220
  277:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_PLATFORM_OFFSET),
  278:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_byte((uint8_t*)(eeprom_base + preheat_eeprom_offsets::PREHEAT_ON_OFF_OFFSET), (1
  279:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 658              	 .loc 1 279 0
- 659 0036 10BD     	 pop {r4,pc}
- 660              	 .cfi_endproc
- 661              	.LFE102:
- 663              	 .section .text._ZN6eeprom23setDefaultsAccelerationEv,"ax",%progbits
- 664              	 .align 2
- 665              	 .global _ZN6eeprom23setDefaultsAccelerationEv
- 666              	 .thumb
- 667              	 .thumb_func
- 669              	_ZN6eeprom23setDefaultsAccelerationEv:
- 670              	.LFB103:
+ 631              	 .loc 1 279 0
+ 632 0036 10BD     	 pop {r4,pc}
+ 633              	 .cfi_endproc
+ 634              	.LFE102:
+ 636              	 .section .text._ZN6eeprom23setDefaultsAccelerationEv,"ax",%progbits
+ 637              	 .align 2
+ 638              	 .global _ZN6eeprom23setDefaultsAccelerationEv
+ 639              	 .thumb
+ 640              	 .thumb_func
+ 642              	_ZN6eeprom23setDefaultsAccelerationEv:
+ 643              	.LFB103:
  280:src/MightyBoard/Motherboard/EepromMap.cc **** 
  281:src/MightyBoard/Motherboard/EepromMap.cc **** 
  282:src/MightyBoard/Motherboard/EepromMap.cc **** /**
@@ -1698,56 +1466,56 @@
  285:src/MightyBoard/Motherboard/EepromMap.cc ****  * want to cleanly call this function externally
  286:src/MightyBoard/Motherboard/EepromMap.cc ****  */
  287:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultsAcceleration(){
- 671              	 .loc 1 287 0
- 672              	 .cfi_startproc
- 673              	 
- 674              	 
- 675 0000 08B5     	 push {r3,lr}
- 676              	.LCFI13:
- 677              	 .cfi_def_cfa_offset 8
- 678              	 .cfi_offset 14,-4
- 679              	 .cfi_offset 3,-8
+ 644              	 .loc 1 287 0
+ 645              	 .cfi_startproc
+ 646              	 
+ 647              	 
+ 648 0000 08B5     	 push {r3,lr}
+ 649              	.LCFI12:
+ 650              	 .cfi_def_cfa_offset 8
+ 651              	 .cfi_offset 14,-4
+ 652              	 .cfi_offset 3,-8
  288:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::ACCELERATION_SETT
  289:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + eeprom_offsets::ACCELERATION_SETTINGS + accele
  290:src/MightyBoard/Motherboard/EepromMap.cc **** //	_delay_us(10000);
  291:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACTIVE_OFFSET, 0x0
- 680              	 .loc 1 291 0
- 681 0002 4FF4B770 	 mov r0,#366
- 682 0006 4FF00101 	 mov r1,#1
- 683 000a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 653              	 .loc 1 291 0
+ 654 0002 4FF4B770 	 mov r0,#366
+ 655 0006 4FF00101 	 mov r1,#1
+ 656 000a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
  292:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE
- 684              	 .loc 1 292 0
- 685 000e 4FF4B870 	 mov r0,#368
- 686 0012 40F6B831 	 movw r1,#3000
- 687 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 657              	 .loc 1 292 0
+ 658 000e 4FF4B870 	 mov r0,#368
+ 659 0012 40F6B831 	 movw r1,#3000
+ 660 0016 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  293:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offs
  294:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_off
  295:src/MightyBoard/Motherboard/EepromMap.cc ****     
  296:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
- 688              	 .loc 1 296 0
- 689 001a 4FF4B970 	 mov r0,#370
- 690 001e 40F6B831 	 movw r1,#3000
- 691 0022 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 661              	 .loc 1 296 0
+ 662 001a 4FF4B970 	 mov r0,#370
+ 663 001e 40F6B831 	 movw r1,#3000
+ 664 0022 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  297:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
- 692              	 .loc 1 297 0
- 693 0026 4FF4BA70 	 mov r0,#372
- 694 002a 40F6B831 	 movw r1,#3000
- 695 002e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 665              	 .loc 1 297 0
+ 666 0026 4FF4BA70 	 mov r0,#372
+ 667 002a 40F6B831 	 movw r1,#3000
+ 668 002e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  298:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
- 696              	 .loc 1 298 0
- 697 0032 4FF4BB70 	 mov r0,#374
- 698 0036 4FF47A71 	 mov r1,#1000
- 699 003a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 669              	 .loc 1 298 0
+ 670 0032 4FF4BB70 	 mov r0,#374
+ 671 0036 4FF47A71 	 mov r1,#1000
+ 672 003a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  299:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
- 700              	 .loc 1 299 0
- 701 003e 4FF4BC70 	 mov r0,#376
- 702 0042 40F6B831 	 movw r1,#3000
- 703 0046 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 673              	 .loc 1 299 0
+ 674 003e 4FF4BC70 	 mov r0,#376
+ 675 0042 40F6B831 	 movw r1,#3000
+ 676 0046 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  300:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET
- 704              	 .loc 1 300 0
- 705 004a 4FF4BD70 	 mov r0,#378
- 706 004e 40F6B831 	 movw r1,#3000
- 707 0052 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 677              	 .loc 1 300 0
+ 678 004a 4FF4BD70 	 mov r0,#378
+ 679 004e 40F6B831 	 movw r1,#3000
+ 680 0052 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  301:src/MightyBoard/Motherboard/EepromMap.cc **** //  eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offse
  302:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
  303:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
@@ -1755,639 +1523,754 @@
  305:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
  306:src/MightyBoard/Motherboard/EepromMap.cc **** 
  307:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
- 708              	 .loc 1 307 0
- 709 0056 4FF4BE70 	 mov r0,#380
- 710 005a 4FF01401 	 mov r1,#20
- 711 005e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 681              	 .loc 1 307 0
+ 682 0056 4FF4BE70 	 mov r0,#380
+ 683 005a 4FF01401 	 mov r1,#20
+ 684 005e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  308:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
- 712              	 .loc 1 308 0
- 713 0062 4FF4C070 	 mov r0,#384
- 714 0066 4FF00101 	 mov r1,#1
- 715 006a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 685              	 .loc 1 308 0
+ 686 0062 4FF4BF70 	 mov r0,#382
+ 687 0066 4FF01401 	 mov r1,#20
+ 688 006a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  309:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
- 716              	 .loc 1 309 0
- 717 006e 4FF4C170 	 mov r0,#386
- 718 0072 4FF00201 	 mov r1,#2
- 719 0076 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 689              	 .loc 1 309 0
+ 690 006e 4FF4C070 	 mov r0,#384
+ 691 0072 4FF00101 	 mov r1,#1
+ 692 0076 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  310:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
- 720              	 .loc 1 310 0
- 721 007a 4FF4C270 	 mov r0,#388
- 722 007e 4FF00201 	 mov r1,#2
- 723 0082 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 311:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
+ 693              	 .loc 1 310 0
+ 694 007a 4FF4C170 	 mov r0,#386
+ 695 007e 4FF00201 	 mov r1,#2
+ 696 0082 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 311:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET 
+ 697              	 .loc 1 311 0
+ 698 0086 4FF4C270 	 mov r0,#388
+ 699 008a 4FF00201 	 mov r1,#2
+ 700 008e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
  312:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
  313:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
  314:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
- 315:src/MightyBoard/Motherboard/EepromMap.cc **** 	
- 316:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DE
- 724              	 .loc 1 316 0
- 725 0086 4FF4C370 	 mov r0,#390
- 726 008a 4FF00F01 	 mov r1,#15
- 727 008e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 317:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
- 318:src/MightyBoard/Motherboard/EepromMap.cc **** 	
- 319:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, _BV
- 728              	 .loc 1 319 0
- 729 0092 4FF4C470 	 mov r0,#392
- 730 0096 4FF08001 	 mov r1,#128
- 731 009a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 320:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets
- 321:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 732              	 .loc 1 321 0
- 733 009e 08BD     	 pop {r3,pc}
- 734              	 .cfi_endproc
- 735              	.LFE103:
- 737              	 .section .text._ZN6eeprom12isSingleToolEv,"ax",%progbits
- 738              	 .align 2
- 739              	 .global _ZN6eeprom12isSingleToolEv
- 740              	 .thumb
- 741              	 .thumb_func
- 743              	_ZN6eeprom12isSingleToolEv:
- 744              	.LFB107:
- 322:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 323:src/MightyBoard/Motherboard/EepromMap.cc **** /// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
- 324:src/MightyBoard/Motherboard/EepromMap.cc **** /// from idealized point-center of the toolhead
- 325:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultAxisHomePositions()
- 326:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 327:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_
- 328:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(isSingleTool()){
- 329:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
- 330:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
- 331:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
- 332:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
- 333:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + (eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+i)
- 334:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4), homes[i]);
- 335:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
- 336:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 
- 337:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 338:src/MightyBoard/Motherboard/EepromMap.cc ****     
- 339:src/MightyBoard/Motherboard/EepromMap.cc **** /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
- 340:src/MightyBoard/Motherboard/EepromMap.cc **** void factoryResetEEPROM() {
- 341:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 342:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("factoryResetEEPROM" " (%s:%d)\n",_F_,_L_);
- 343:src/MightyBoard/Motherboard/EepromMap.cc **** 	// Default: enstops inverted, Z axis inverted
- 344:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
- 345:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 346:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper in
+ 315:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
+ 316:src/MightyBoard/Motherboard/EepromMap.cc **** //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK
+ 317:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 318:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::MINIMUM_SPEED, DE
+ 701              	 .loc 1 318 0
+ 702 0092 4FF4C370 	 mov r0,#390
+ 703 0096 4FF00F01 	 mov r1,#15
+ 704 009a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 319:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offset
+ 320:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 321:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, _BV
+ 705              	 .loc 1 321 0
+ 706 009e 4FF4C470 	 mov r0,#392
+ 707 00a2 4FF08001 	 mov r1,#128
+ 708 00a6 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 322:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets
+ 323:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 709              	 .loc 1 323 0
+ 710 00aa 08BD     	 pop {r3,pc}
+ 711              	 .cfi_endproc
+ 712              	.LFE103:
+ 714              	 .section .text._ZN6eeprom12isSingleToolEv,"ax",%progbits
+ 715              	 .align 2
+ 716              	 .global _ZN6eeprom12isSingleToolEv
+ 717              	 .thumb
+ 718              	 .thumb_func
+ 720              	_ZN6eeprom12isSingleToolEv:
+ 721              	.LFB107:
+ 324:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 325:src/MightyBoard/Motherboard/EepromMap.cc **** /// Writes to EEPROM the default toolhead 'home' values to idicate toolhead offset
+ 326:src/MightyBoard/Motherboard/EepromMap.cc **** /// from idealized point-center of the toolhead
+ 327:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultAxisHomePositions()
+ 328:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 329:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_
+ 330:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(isSingleTool()){
+ 331:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
+ 332:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+ 333:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 334:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 335:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + (eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+i)
+ 336:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4), homes[i]);
+ 337:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 338:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block((uint8_t*)&(homes[0]),(uint8_t*)(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS), 
+ 339:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 340:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 341:src/MightyBoard/Motherboard/EepromMap.cc **** /// Does a factory reset (resets all defaults except home/endstops, axis direction and tool count)
+ 342:src/MightyBoard/Motherboard/EepromMap.cc **** void factoryResetEEPROM() {
+ 343:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 344:src/MightyBoard/Motherboard/EepromMap.cc **** //	xprintf("factoryResetEEPROM" " (%s:%d)\n",_F_,_L_);
+ 345:src/MightyBoard/Motherboard/EepromMap.cc **** 	// Default: enstops inverted, Z axis inverted
+ 346:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t endstop_invert = 0b10011111; // all endstops inverted
  347:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 348:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
- 349:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
- 350:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 351:src/MightyBoard/Motherboard/EepromMap.cc **** 	/// Write 'MainBoard' settings
- 352:src/MightyBoard/Motherboard/EepromMap.cc **** 	char machine_name_in[] = "The Replicator";
- 353:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
- 354:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::MACHINE_NAME+i, machine_name_in[i]);
- 355:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %c" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::MACHINE_NAME+i)*4,eeprom_a
- 356:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
- 357:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
- 358:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
- 359:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::DIGI_POT_SETTINGS+i, vRefBase[i]);
- 360:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %c" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::DIGI_POT_SETTINGS+i)*4,eep
- 361:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
- 362:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
- 363:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
- 364:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
- 365:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
- 366:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
- 367:src/MightyBoard/Motherboard/EepromMap.cc ****     
- 368:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 369:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
- 370:src/MightyBoard/Motherboard/EepromMap.cc ****     
- 371:src/MightyBoard/Motherboard/EepromMap.cc ****     /// store the default axis lengths for the machine
- 372:src/MightyBoard/Motherboard/EepromMap.cc ****     for (uint8_t i=0;i<5;i++){
- 373:src/MightyBoard/Motherboard/EepromMap.cc ****     	setEeprom32(eeprom_offsets::AXIS_LENGTHS+(i*4), replicator_axis_lengths::axis_lengths[i]);
- 374:src/MightyBoard/Motherboard/EepromMap.cc ****     }
- 375:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_o
- 376:src/MightyBoard/Motherboard/EepromMap.cc ****     
- 377:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsAcceleration();
- 378:src/MightyBoard/Motherboard/EepromMap.cc **** 	
- 379:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
- 380:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
- 381:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 382:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Thermal table settings
- 383:src/MightyBoard/Motherboard/EepromMap.cc ****     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
- 384:src/MightyBoard/Motherboard/EepromMap.cc ****     
- 385:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Preheat heater settings
- 386:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
- 387:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 388:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write MightyBoard VID/PID. Only after verification does production write
- 389:src/MightyBoard/Motherboard/EepromMap.cc ****     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
- 390:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO, vidPid[0]);
- 391:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO+2, vidPid[1]);
- 392:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
- 393:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 394:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Write 'extruder 0' settings
- 395:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
- 396:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 397:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Write 'extruder 1' stttings
- 398:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
- 399:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 400:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write blink and buzz defaults
- 401:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
- 402:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
- 403:src/MightyBoard/Motherboard/EepromMap.cc ****     
- 404:src/MightyBoard/Motherboard/EepromMap.cc ****     // startup script flag is cleared
- 405:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0);
- 406:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
- 407:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 408:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 409:src/MightyBoard/Motherboard/EepromMap.cc **** void setToolHeadCount(uint8_t count){
- 410:src/MightyBoard/Motherboard/EepromMap.cc **** 	// update toolhead count
- 411:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(count > 2)
- 412:src/MightyBoard/Motherboard/EepromMap.cc **** 		count = 1;
- 413:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, count);
- 414:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
- 415:src/MightyBoard/Motherboard/EepromMap.cc **** 	
- 416:src/MightyBoard/Motherboard/EepromMap.cc **** 	// update XY axis offsets to match tool head settins
- 417:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
- 418:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 419:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 420:src/MightyBoard/Motherboard/EepromMap.cc ****     // check single / dual tool status
- 421:src/MightyBoard/Motherboard/EepromMap.cc **** bool isSingleTool(){
- 745              	 .loc 1 421 0
- 746              	 .cfi_startproc
- 747              	 
- 748              	 
- 749 0000 08B5     	 push {r3,lr}
- 750              	.LCFI14:
- 751              	 .cfi_def_cfa_offset 8
- 752              	 .cfi_offset 14,-4
- 753              	 .cfi_offset 3,-8
- 422:src/MightyBoard/Motherboard/EepromMap.cc **** 	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1);
- 754              	 .loc 1 422 0
- 755 0002 4FF04200 	 mov r0,#66
- 756 0006 4FF00101 	 mov r1,#1
- 757 000a FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
- 423:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 758              	 .loc 1 423 0
- 759 000e 0128     	 cmp r0,#1
- 760 0010 14BF     	 ite ne
- 761 0012 0020     	 movne r0,#0
- 762 0014 0120     	 moveq r0,#1
- 763 0016 08BD     	 pop {r3,pc}
- 764              	 .cfi_endproc
- 765              	.LFE107:
- 767              	 .section .text._ZN6eeprom27setDefaultAxisHomePositionsEv,"ax",%progbits
- 768              	 .align 2
- 769              	 .global _ZN6eeprom27setDefaultAxisHomePositionsEv
- 770              	 .thumb
- 771              	 .thumb_func
- 773              	_ZN6eeprom27setDefaultAxisHomePositionsEv:
- 774              	.LFB104:
- 326:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 775              	 .loc 1 326 0
- 776              	 .cfi_startproc
- 777              	 
- 778              	 
- 779 0000 30B5     	 push {r4,r5,lr}
- 780              	.LCFI15:
- 781              	 .cfi_def_cfa_offset 12
- 782              	 .cfi_offset 14,-4
- 783              	 .cfi_offset 5,-8
- 784              	 .cfi_offset 4,-12
- 785 0002 87B0     	 sub sp,sp,#28
- 786              	.LCFI16:
- 787              	 .cfi_def_cfa_offset 40
- 788              	.LBB54:
- 327:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_
- 789              	 .loc 1 327 0
- 790 0004 01AC     	 add r4,sp,#4
- 791 0006 0E4D     	 ldr r5,.L30
- 792 0008 0FCD     	 ldmia r5!,{r0,r1,r2,r3}
- 793 000a 0FC4     	 stmia r4!,{r0,r1,r2,r3}
- 794 000c 2B68     	 ldr r3,[r5,#0]
- 795 000e 2360     	 str r3,[r4,#0]
- 328:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(isSingleTool()){
- 796              	 .loc 1 328 0
- 797 0010 FFF7FEFF 	 bl _ZN6eeprom12isSingleToolEv
- 798 0014 28B1     	 cbz r0,.L27
- 329:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
- 799              	 .loc 1 329 0
- 800 0016 43F2E573 	 movw r3,#14309
- 801 001a 0193     	 str r3,[sp,#4]
- 330:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
- 802              	 .loc 1 330 0
- 803 001c 41F67A23 	 movw r3,#6778
- 804 0020 0293     	 str r3,[sp,#8]
- 805              	.L27:
- 806              	.LVL37:
- 330:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
- 807              	 .loc 1 330 0 is_stmt 0 discriminator 1
- 808 0022 6D46     	 mov r5,sp
- 809              	.LBE54:
- 326:src/MightyBoard/Motherboard/EepromMap.cc **** {
- 810              	 .loc 1 326 0 is_stmt 1 discriminator 1
- 811 0024 4FF00E04 	 mov r4,#14
- 812              	.LVL38:
- 813              	.L28:
- 814              	.LBB56:
- 815              	.LBB55:
- 334:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4), homes[i]);
- 816              	 .loc 1 334 0 discriminator 2
- 817 0028 2046     	 mov r0,r4
- 818 002a 55F8041F 	 ldr r1,[r5,#4]!
- 819 002e FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
- 820 0032 04F10404 	 add r4,r4,#4
- 821 0036 A4B2     	 uxth r4,r4
- 332:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
- 822              	 .loc 1 332 0 discriminator 2
- 823 0038 222C     	 cmp r4,#34
- 824 003a F5D1     	 bne .L28
- 825              	.LBE55:
- 826              	.LBE56:
- 337:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 827              	 .loc 1 337 0
- 828 003c 07B0     	 add sp,sp,#28
- 829 003e 30BD     	 pop {r4,r5,pc}
- 830              	.L31:
- 831              	 .align 2
- 832              	.L30:
- 833 0040 04000000 	 .word .LANCHOR0+4
- 834              	 .cfi_endproc
- 835              	.LFE104:
- 837              	 .section .text._ZN6eeprom16setToolHeadCountEh,"ax",%progbits
- 838              	 .align 2
- 839              	 .global _ZN6eeprom16setToolHeadCountEh
- 840              	 .thumb
- 841              	 .thumb_func
- 843              	_ZN6eeprom16setToolHeadCountEh:
- 844              	.LFB106:
- 409:src/MightyBoard/Motherboard/EepromMap.cc **** void setToolHeadCount(uint8_t count){
- 845              	 .loc 1 409 0
- 846              	 .cfi_startproc
- 847              	 
- 848              	 
- 849              	.LVL39:
- 850 0000 08B5     	 push {r3,lr}
- 851              	.LCFI17:
- 852              	 .cfi_def_cfa_offset 8
- 853              	 .cfi_offset 14,-4
- 854              	 .cfi_offset 3,-8
- 855 0002 0146     	 mov r1,r0
- 856              	.LVL40:
- 413:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, count);
- 857              	 .loc 1 413 0
- 858 0004 4FF04200 	 mov r0,#66
- 859              	.LVL41:
- 860 0008 0229     	 cmp r1,#2
- 861 000a 88BF     	 it hi
- 862 000c 0121     	 movhi r1,#1
- 863              	.LVL42:
- 864 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 417:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
- 865              	 .loc 1 417 0
- 866 0012 FFF7FEFF 	 bl _ZN6eeprom27setDefaultAxisHomePositionsEv
- 418:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 867              	 .loc 1 418 0
- 868 0016 08BD     	 pop {r3,pc}
- 869              	 .cfi_endproc
- 870              	.LFE106:
- 872              	 .section .text._ZN6eeprom18factoryResetEEPROMEv,"ax",%progbits
- 873              	 .align 2
- 874              	 .global _ZN6eeprom18factoryResetEEPROMEv
- 875              	 .thumb
- 876              	 .thumb_func
- 878              	_ZN6eeprom18factoryResetEEPROMEv:
- 879              	.LFB105:
- 340:src/MightyBoard/Motherboard/EepromMap.cc **** void factoryResetEEPROM() {
- 880              	 .loc 1 340 0
- 881              	 .cfi_startproc
- 882              	 
- 883              	 
- 884 0000 30B5     	 push {r4,r5,lr}
- 885              	.LCFI18:
- 886              	 .cfi_def_cfa_offset 12
- 887              	 .cfi_offset 14,-4
- 888              	 .cfi_offset 5,-8
- 889              	 .cfi_offset 4,-12
- 890 0002 87B0     	 sub sp,sp,#28
- 891              	.LCFI19:
- 892              	 .cfi_def_cfa_offset 40
- 893              	.LVL43:
- 894              	.LBB57:
- 348:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
- 895              	 .loc 1 348 0
- 896 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
- 897 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
- 898 000c 53F8180F 	 ldr r0,[r3,#24]!
- 899 0010 0490     	 str r0,[sp,#16]
- 900 0012 1B79     	 ldrb r3,[r3,#4]
- 901 0014 8DF81430 	 strb r3,[sp,#20]
- 902              	.LVL44:
- 352:src/MightyBoard/Motherboard/EepromMap.cc **** 	char machine_name_in[] = "The Replicator";
- 903              	 .loc 1 352 0
- 904 0018 40F20003 	 movw r3,#:lower16:.LC7
- 905 001c C0F20003 	 movt r3,#:upper16:.LC7
- 906 0020 6C46     	 mov r4,sp
- 907 0022 0FCB     	 ldmia r3,{r0,r1,r2,r3}
- 908 0024 07C4     	 stmia r4!,{r0,r1,r2}
- 909 0026 24F8023B 	 strh r3,[r4],#2
- 910 002a 4FEA1343 	 lsr r3,r3,#16
- 911 002e 2370     	 strb r3,[r4,#0]
- 912              	.LVL45:
- 913 0030 0DF1FF35 	 add r5,sp,#-1
- 914 0034 4FF02204 	 mov r4,#34
- 915              	.LVL46:
- 916              	.L36:
- 917              	.LBB58:
- 354:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::MACHINE_NAME+i, machine_name_in[i]);
- 918              	 .loc 1 354 0 discriminator 2
- 919 0038 2046     	 mov r0,r4
- 920 003a 15F8011F 	 ldrb r1,[r5,#1]!
- 921 003e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 922 0042 04F10104 	 add r4,r4,#1
- 923 0046 A4B2     	 uxth r4,r4
- 353:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
- 924              	 .loc 1 353 0 discriminator 2
- 925 0048 322C     	 cmp r4,#50
- 926 004a F5D1     	 bne .L36
- 353:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
- 927              	 .loc 1 353 0 is_stmt 0
- 928 004c 0DF10F05 	 add r5,sp,#15
- 929 0050 4FF00604 	 mov r4,#6
- 930              	.L37:
- 931              	.LBE58:
- 932              	.LBB59:
- 359:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::DIGI_POT_SETTINGS+i, vRefBase[i]);
- 933              	 .loc 1 359 0 is_stmt 1 discriminator 2
- 934 0054 2046     	 mov r0,r4
- 935 0056 15F8011F 	 ldrb r1,[r5,#1]!
- 936 005a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 937 005e 04F10104 	 add r4,r4,#1
- 938 0062 A4B2     	 uxth r4,r4
- 358:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
- 939              	 .loc 1 358 0 discriminator 2
- 940 0064 0B2C     	 cmp r4,#11
- 941 0066 F5D1     	 bne .L37
- 942              	.LBE59:
- 363:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
- 943              	 .loc 1 363 0
- 944 0068 4FF00400 	 mov r0,#4
- 945 006c 4FF09F01 	 mov r1,#159
- 946 0070 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 365:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
- 947              	 .loc 1 365 0
- 948 0074 4FF00C00 	 mov r0,#12
- 949 0078 4FF01B01 	 mov r1,#27
- 950 007c FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 369:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
- 951              	 .loc 1 369 0
- 952 0080 FFF7FEFF 	 bl _ZN6eeprom27setDefaultAxisHomePositionsEv
- 953              	.LVL47:
- 954 0084 224D     	 ldr r5,.L42
- 955 0086 4FF4C674 	 mov r4,#396
- 956              	.LVL48:
- 957              	.L38:
- 958              	.LBB60:
- 373:src/MightyBoard/Motherboard/EepromMap.cc ****     	setEeprom32(eeprom_offsets::AXIS_LENGTHS+(i*4), replicator_axis_lengths::axis_lengths[i]);
- 959              	 .loc 1 373 0 discriminator 2
- 960 008a 2046     	 mov r0,r4
- 961 008c 55F8041F 	 ldr r1,[r5,#4]!
- 962 0090 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
- 963 0094 04F10404 	 add r4,r4,#4
- 964 0098 A4B2     	 uxth r4,r4
- 372:src/MightyBoard/Motherboard/EepromMap.cc ****     for (uint8_t i=0;i<5;i++){
- 965              	 .loc 1 372 0 discriminator 2
- 966 009a B4F5D07F 	 cmp r4,#416
- 967 009e F4D1     	 bne .L38
- 968              	.LBE60:
- 377:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsAcceleration();
- 969              	 .loc 1 377 0
- 970 00a0 FFF7FEFF 	 bl _ZN6eeprom23setDefaultsAccelerationEv
- 379:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
- 971              	 .loc 1 379 0
- 972 00a4 4FF4B070 	 mov r0,#352
- 973 00a8 4FF00101 	 mov r1,#1
- 974 00ac FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 383:src/MightyBoard/Motherboard/EepromMap.cc ****     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
- 975              	 .loc 1 383 0
- 976 00b0 4FF07400 	 mov r0,#116
- 977 00b4 FFF7FEFF 	 bl _ZN6eeprom18SetDefaultsThermalEt
- 386:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
- 978              	 .loc 1 386 0
- 979 00b8 4FF4AC70 	 mov r0,#344
- 980 00bc FFF7FEFF 	 bl _ZN6eeprom18setDefaultsPreheatEt
- 390:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO, vidPid[0]);
- 981              	 .loc 1 390 0
- 982 00c0 4FF04400 	 mov r0,#68
- 983 00c4 42F2C131 	 movw r1,#9153
- 984 00c8 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 391:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO+2, vidPid[1]);
- 985              	 .loc 1 391 0
- 986 00cc 4FF04600 	 mov r0,#70
- 987 00d0 4BF20441 	 movw r1,#46084
- 988 00d4 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
- 395:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
- 989              	 .loc 1 395 0
- 990 00d8 4FF00000 	 mov r0,#0
- 991 00dc 4FF48071 	 mov r1,#256
- 992 00e0 FFF7FEFF 	 bl _ZN6eeprom19setDefaultsExtruderEit
- 398:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
- 993              	 .loc 1 398 0
- 994 00e4 4FF00100 	 mov r0,#1
- 995 00e8 4FF48E71 	 mov r1,#284
- 996 00ec FFF7FEFF 	 bl _ZN6eeprom19setDefaultsExtruderEit
- 401:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
- 997              	 .loc 1 401 0
- 998 00f0 4FF4A070 	 mov r0,#320
- 999 00f4 FFF7FEFF 	 bl _ZN6eeprom20setDefaultLedEffectsEt
- 402:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
- 1000              	 .loc 1 402 0
- 1001 00f8 4FF4A570 	 mov r0,#330
- 1002 00fc FFF7FEFF 	 bl _ZN6eeprom21setDefaultBuzzEffectsEt
- 405:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0);
- 1003              	 .loc 1 405 0
- 1004 0100 4FF4AB70 	 mov r0,#342
- 1005 0104 4FF00001 	 mov r1,#0
- 1006 0108 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 1007              	.LBE57:
- 407:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 1008              	 .loc 1 407 0
- 1009 010c 07B0     	 add sp,sp,#28
- 1010 010e 30BD     	 pop {r4,r5,pc}
- 1011              	.L43:
- 1012              	 .align 2
- 1013              	.L42:
- 1014 0110 FCFFFFFF 	 .word .LANCHOR1-4
- 1015              	 .cfi_endproc
- 1016              	.LFE105:
- 1018              	 .section .text._ZN6eeprom18setDefaultSettingsEv,"ax",%progbits
- 1019              	 .align 2
- 1020              	 .global _ZN6eeprom18setDefaultSettingsEv
- 1021              	 .thumb
- 1022              	 .thumb_func
- 1024              	_ZN6eeprom18setDefaultSettingsEv:
- 1025              	.LFB108:
- 424:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 425:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 426:src/MightyBoard/Motherboard/EepromMap.cc **** // reset the settings that can be changed via the onboard UI to defaults
- 427:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultSettings(){
- 1026              	 .loc 1 427 0
- 1027              	 .cfi_startproc
- 1028              	 
- 1029              	 
- 1030 0000 08B5     	 push {r3,lr}
- 1031              	.LCFI20:
- 1032              	 .cfi_def_cfa_offset 8
- 1033              	 .cfi_offset 14,-4
- 1034              	 .cfi_offset 3,-8
- 428:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write blink and buzz defaults
- 429:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
- 1035              	 .loc 1 429 0
- 1036 0002 4FF4A070 	 mov r0,#320
- 1037 0006 FFF7FEFF 	 bl _ZN6eeprom20setDefaultLedEffectsEt
- 430:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
- 1038              	 .loc 1 430 0
- 1039 000a 4FF4A570 	 mov r0,#330
- 1040 000e FFF7FEFF 	 bl _ZN6eeprom21setDefaultBuzzEffectsEt
- 431:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
- 1041              	 .loc 1 431 0
- 1042 0012 4FF4AC70 	 mov r0,#344
- 1043 0016 FFF7FEFF 	 bl _ZN6eeprom18setDefaultsPreheatEt
- 432:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
- 1044              	 .loc 1 432 0
- 1045 001a 4FF4B070 	 mov r0,#352
- 1046 001e 4FF00101 	 mov r1,#1
- 1047 0022 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 433:src/MightyBoard/Motherboard/EepromMap.cc **** //   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
- 434:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 1048              	 .loc 1 434 0
- 1049 0026 08BD     	 pop {r3,pc}
- 1050              	 .cfi_endproc
- 1051              	.LFE108:
- 1053              	 .section .text._ZN6eeprom30storeToolheadToleranceDefaultsEv,"ax",%progbits
- 1054              	 .align 2
- 1055              	 .global _ZN6eeprom30storeToolheadToleranceDefaultsEv
- 1056              	 .thumb
- 1057              	 .thumb_func
- 1059              	_ZN6eeprom30storeToolheadToleranceDefaultsEv:
- 1060              	.LFB109:
- 435:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 436:src/MightyBoard/Motherboard/EepromMap.cc **** //
- 437:src/MightyBoard/Motherboard/EepromMap.cc **** void storeToolheadToleranceDefaults(){
- 1061              	 .loc 1 437 0
- 1062              	 .cfi_startproc
- 1063              	 
- 1064              	 
- 1065 0000 00B5     	 push {lr}
- 1066              	.LCFI21:
- 1067              	 .cfi_def_cfa_offset 4
- 1068              	 .cfi_offset 14,-4
- 1069 0002 85B0     	 sub sp,sp,#20
- 1070              	.LCFI22:
- 1071              	 .cfi_def_cfa_offset 24
- 1072              	.LBB61:
- 438:src/MightyBoard/Motherboard/EepromMap.cc **** 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
- 439:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t offsets[3] = {0,0,0};
- 1073              	 .loc 1 439 0
- 1074 0004 4FF00001 	 mov r1,#0
- 1075 0008 0191     	 str r1,[sp,#4]
- 1076 000a 0291     	 str r1,[sp,#8]
- 1077 000c 0391     	 str r1,[sp,#12]
- 1078              	.LVL49:
- 1079              	.LBB62:
- 440:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<3;i++){
- 441:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS+(i*4), offsets[i]);
- 1080              	 .loc 1 441 0
- 1081 000e 4FF4B170 	 mov r0,#354
- 1082 0012 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
- 1083              	.LVL50:
- 1084 0016 4FF4B370 	 mov r0,#358
- 1085 001a 0299     	 ldr r1,[sp,#8]
- 1086 001c FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
- 1087              	.LVL51:
- 1088 0020 4FF4B570 	 mov r0,#362
- 1089 0024 0399     	 ldr r1,[sp,#12]
- 1090 0026 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
- 1091              	.LVL52:
- 1092              	.LBE62:
- 1093              	.LBE61:
- 442:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::TOOLHEAD_OFFSET_
- 443:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS+(i*4
- 444:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
- 445:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS),
- 446:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 1094              	 .loc 1 446 0
- 1095 002a 05B0     	 add sp,sp,#20
- 1096 002c 00BD     	 pop {pc}
- 1097              	 .cfi_endproc
- 1098              	.LFE109:
- 1100 002e 00BF     	 .section .text._ZN6eeprom15fullResetEEPROMEv,"ax",%progbits
- 1101              	 .align 2
- 1102              	 .global _ZN6eeprom15fullResetEEPROMEv
- 1103              	 .thumb
- 1104              	 .thumb_func
- 1106              	_ZN6eeprom15fullResetEEPROMEv:
- 1107              	.LFB110:
- 447:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 448:src/MightyBoard/Motherboard/EepromMap.cc **** /// Initialize entire eeprom map, including factor-set settings
- 449:src/MightyBoard/Motherboard/EepromMap.cc **** void fullResetEEPROM() {
- 1108              	 .loc 1 449 0
- 1109              	 .cfi_startproc
- 1110              	 
- 1111              	 
- 1112 0000 08B5     	 push {r3,lr}
- 1113              	.LCFI23:
- 1114              	 .cfi_def_cfa_offset 8
- 1115              	 .cfi_offset 14,-4
- 1116              	 .cfi_offset 3,-8
- 1117              	.LBB63:
- 450:src/MightyBoard/Motherboard/EepromMap.cc **** 	write_ff_to_ram();
- 1118              	 .loc 1 450 0
- 1119 0002 FFF7FEFF 	 bl _ZN6eeprom15write_ff_to_ramEv
- 1120              	.LVL53:
- 451:src/MightyBoard/Motherboard/EepromMap.cc **** 	// axis inversion settings
- 452:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t axis_invert = 0b10111; // invert XYBZ
- 453:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_INVERSION, axis_invert);
- 1121              	 .loc 1 453 0
- 1122 0006 4FF00200 	 mov r0,#2
- 1123 000a 4FF01701 	 mov r1,#23
- 1124 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 454:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
- 455:src/MightyBoard/Motherboard/EepromMap.cc **** 	
- 456:src/MightyBoard/Motherboard/EepromMap.cc **** 	// tool count settings
- 457:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, 1);
- 1125              	 .loc 1 457 0
- 1126 0012 4FF04200 	 mov r0,#66
- 1127 0016 4FF00101 	 mov r1,#1
- 1128 001a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
- 458:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
- 459:src/MightyBoard/Motherboard/EepromMap.cc **** 	
- 460:src/MightyBoard/Motherboard/EepromMap.cc **** 	// toolhead offset defaults
- 461:src/MightyBoard/Motherboard/EepromMap.cc **** 	storeToolheadToleranceDefaults();
- 1129              	 .loc 1 461 0
- 1130 001e FFF7FEFF 	 bl _ZN6eeprom30storeToolheadToleranceDefaultsEv
+ 348:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper in
+ 349:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 350:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+ 351:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
+ 352:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 353:src/MightyBoard/Motherboard/EepromMap.cc **** 	/// Write 'MainBoard' settings
+ 354:src/MightyBoard/Motherboard/EepromMap.cc **** 	char machine_name_in[] = "The Replicator";
+ 355:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
+ 356:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::MACHINE_NAME+i, machine_name_in[i]);
+ 357:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %c" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::MACHINE_NAME+i)*4,eeprom_a
+ 358:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 359:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block("The Replicator",(uint8_t*)eeprom_offsets::MACHINE_NAME,20); // name is null
+ 360:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 361:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::DIGI_POT_SETTINGS+i, vRefBase[i]);
+ 362:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x %c" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::DIGI_POT_SETTINGS+i)*4,eep
+ 363:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 364:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block(&(vRefBase[0]),(uint8_t*)(eeprom_offsets::DIGI_POT_SETTINGS), 5 );
+ 365:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+ 366:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+ 367:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+ 368:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+ 369:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 370:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 371:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 372:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 373:src/MightyBoard/Motherboard/EepromMap.cc ****     /// store the default axis lengths for the machine
+ 374:src/MightyBoard/Motherboard/EepromMap.cc ****     for (uint8_t i=0;i<5;i++){
+ 375:src/MightyBoard/Motherboard/EepromMap.cc ****     	setEeprom32(eeprom_offsets::AXIS_LENGTHS+(i*4), replicator_axis_lengths::axis_lengths[i]);
+ 376:src/MightyBoard/Motherboard/EepromMap.cc ****     }
+ 377:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block((uint8_t*)&(replicator_axis_lengths::axis_lengths[0]), (uint8_t*)(eeprom_o
+ 378:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 379:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsAcceleration();
+ 380:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 381:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 382:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 383:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 384:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Thermal table settings
+ 385:src/MightyBoard/Motherboard/EepromMap.cc ****     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+ 386:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 387:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Preheat heater settings
+ 388:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+ 389:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 390:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write MightyBoard VID/PID. Only after verification does production write
+ 391:src/MightyBoard/Motherboard/EepromMap.cc ****     /// a proper 'The Replicator' PID/VID to eeprom, and to the USB chip
+ 392:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO, vidPid[0]);
+ 393:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO+2, vidPid[1]);
+ 394:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_block(&(vidPid[0]),(uint8_t*)eeprom_offsets::VID_PID_INFO,4);
+ 395:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 396:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Write 'extruder 0' settings
+ 397:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
+ 398:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 399:src/MightyBoard/Motherboard/EepromMap.cc ****     /// Write 'extruder 1' stttings
+ 400:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
+ 401:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 402:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write blink and buzz defaults
+ 403:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+ 404:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+ 405:src/MightyBoard/Motherboard/EepromMap.cc ****     
+ 406:src/MightyBoard/Motherboard/EepromMap.cc ****     // startup script flag is cleared
+ 407:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0);
+ 408:src/MightyBoard/Motherboard/EepromMap.cc **** //    eeprom_write_byte((uint8_t*)eeprom_offsets::FIRST_BOOT_FLAG, 0);
+ 409:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 410:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 411:src/MightyBoard/Motherboard/EepromMap.cc **** void setToolHeadCount(uint8_t count){
+ 412:src/MightyBoard/Motherboard/EepromMap.cc **** 	// update toolhead count
+ 413:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(count > 2)
+ 414:src/MightyBoard/Motherboard/EepromMap.cc **** 		count = 1;
+ 415:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, count);
+ 416:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, count);
+ 417:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 418:src/MightyBoard/Motherboard/EepromMap.cc **** 	// update XY axis offsets to match tool head settins
+ 419:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 420:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 421:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 422:src/MightyBoard/Motherboard/EepromMap.cc ****     // check single / dual tool status
+ 423:src/MightyBoard/Motherboard/EepromMap.cc **** bool isSingleTool(){
+ 722              	 .loc 1 423 0
+ 723              	 .cfi_startproc
+ 724              	 
+ 725              	 
+ 726 0000 08B5     	 push {r3,lr}
+ 727              	.LCFI13:
+ 728              	 .cfi_def_cfa_offset 8
+ 729              	 .cfi_offset 14,-4
+ 730              	 .cfi_offset 3,-8
+ 424:src/MightyBoard/Motherboard/EepromMap.cc **** 	return (getEeprom8(eeprom_offsets::TOOL_COUNT, 1) == 1);
+ 731              	 .loc 1 424 0
+ 732 0002 4FF04200 	 mov r0,#66
+ 733 0006 4FF00101 	 mov r1,#1
+ 734 000a FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
+ 425:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 735              	 .loc 1 425 0
+ 736 000e 0128     	 cmp r0,#1
+ 737 0010 14BF     	 ite ne
+ 738 0012 0020     	 movne r0,#0
+ 739 0014 0120     	 moveq r0,#1
+ 740 0016 08BD     	 pop {r3,pc}
+ 741              	 .cfi_endproc
+ 742              	.LFE107:
+ 744              	 .section .text._ZN6eeprom27setDefaultAxisHomePositionsEv,"ax",%progbits
+ 745              	 .align 2
+ 746              	 .global _ZN6eeprom27setDefaultAxisHomePositionsEv
+ 747              	 .thumb
+ 748              	 .thumb_func
+ 750              	_ZN6eeprom27setDefaultAxisHomePositionsEv:
+ 751              	.LFB104:
+ 328:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 752              	 .loc 1 328 0
+ 753              	 .cfi_startproc
+ 754              	 
+ 755              	 
+ 756 0000 30B5     	 push {r4,r5,lr}
+ 757              	.LCFI14:
+ 758              	 .cfi_def_cfa_offset 12
+ 759              	 .cfi_offset 14,-4
+ 760              	 .cfi_offset 5,-8
+ 761              	 .cfi_offset 4,-12
+ 762 0002 87B0     	 sub sp,sp,#28
+ 763              	.LCFI15:
+ 764              	 .cfi_def_cfa_offset 40
+ 765              	.LBB51:
+ 329:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t homes[5] = {replicator_axis_offsets::DUAL_X_OFFSET_STEPS,replicator_axis_offsets::DUAL_Y_
+ 766              	 .loc 1 329 0
+ 767 0004 01AC     	 add r4,sp,#4
+ 768 0006 0E4D     	 ldr r5,.L30
+ 769 0008 0FCD     	 ldmia r5!,{r0,r1,r2,r3}
+ 770 000a 0FC4     	 stmia r4!,{r0,r1,r2,r3}
+ 771 000c 2B68     	 ldr r3,[r5,#0]
+ 772 000e 2360     	 str r3,[r4,#0]
+ 330:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(isSingleTool()){
+ 773              	 .loc 1 330 0
+ 774 0010 FFF7FEFF 	 bl _ZN6eeprom12isSingleToolEv
+ 775 0014 28B1     	 cbz r0,.L27
+ 331:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[0] = replicator_axis_offsets::SINGLE_X_OFFSET_STEPS;
+ 776              	 .loc 1 331 0
+ 777 0016 43F2E573 	 movw r3,#14309
+ 778 001a 0193     	 str r3,[sp,#4]
+ 332:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+ 779              	 .loc 1 332 0
+ 780 001c 41F67A23 	 movw r3,#6778
+ 781 0020 0293     	 str r3,[sp,#8]
+ 782              	.L27:
+ 783              	.LVL37:
+ 332:src/MightyBoard/Motherboard/EepromMap.cc **** 		homes[1] = replicator_axis_offsets::SINGLE_Y_OFFSET_STEPS;
+ 784              	 .loc 1 332 0 is_stmt 0 discriminator 1
+ 785 0022 6D46     	 mov r5,sp
+ 786              	.LBE51:
+ 328:src/MightyBoard/Motherboard/EepromMap.cc **** {
+ 787              	 .loc 1 328 0 is_stmt 1 discriminator 1
+ 788 0024 4FF00E04 	 mov r4,#14
+ 789              	.LVL38:
+ 790              	.L28:
+ 791              	.LBB53:
+ 792              	.LBB52:
+ 336:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::AXIS_HOME_POSITIONS_STEPS+(i*4), homes[i]);
+ 793              	 .loc 1 336 0 discriminator 2
+ 794 0028 2046     	 mov r0,r4
+ 795 002a 55F8041F 	 ldr r1,[r5,#4]!
+ 796 002e FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 797 0032 04F10404 	 add r4,r4,#4
+ 798 0036 A4B2     	 uxth r4,r4
+ 334:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 799              	 .loc 1 334 0 discriminator 2
+ 800 0038 222C     	 cmp r4,#34
+ 801 003a F5D1     	 bne .L28
+ 802              	.LBE52:
+ 803              	.LBE53:
+ 339:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 804              	 .loc 1 339 0
+ 805 003c 07B0     	 add sp,sp,#28
+ 806 003e 30BD     	 pop {r4,r5,pc}
+ 807              	.L31:
+ 808              	 .align 2
+ 809              	.L30:
+ 810 0040 04000000 	 .word .LANCHOR0+4
+ 811              	 .cfi_endproc
+ 812              	.LFE104:
+ 814              	 .section .text._ZN6eeprom16setToolHeadCountEh,"ax",%progbits
+ 815              	 .align 2
+ 816              	 .global _ZN6eeprom16setToolHeadCountEh
+ 817              	 .thumb
+ 818              	 .thumb_func
+ 820              	_ZN6eeprom16setToolHeadCountEh:
+ 821              	.LFB106:
+ 411:src/MightyBoard/Motherboard/EepromMap.cc **** void setToolHeadCount(uint8_t count){
+ 822              	 .loc 1 411 0
+ 823              	 .cfi_startproc
+ 824              	 
+ 825              	 
+ 826              	.LVL39:
+ 827 0000 08B5     	 push {r3,lr}
+ 828              	.LCFI16:
+ 829              	 .cfi_def_cfa_offset 8
+ 830              	 .cfi_offset 14,-4
+ 831              	 .cfi_offset 3,-8
+ 832 0002 0146     	 mov r1,r0
+ 833              	.LVL40:
+ 415:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, count);
+ 834              	 .loc 1 415 0
+ 835 0004 4FF04200 	 mov r0,#66
+ 836              	.LVL41:
+ 837 0008 0229     	 cmp r1,#2
+ 838 000a 88BF     	 it hi
+ 839 000c 0121     	 movhi r1,#1
+ 840              	.LVL42:
+ 841 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 419:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 842              	 .loc 1 419 0
+ 843 0012 FFF7FEFF 	 bl _ZN6eeprom27setDefaultAxisHomePositionsEv
+ 420:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 844              	 .loc 1 420 0
+ 845 0016 08BD     	 pop {r3,pc}
+ 846              	 .cfi_endproc
+ 847              	.LFE106:
+ 849              	 .section .text._ZN6eeprom18factoryResetEEPROMEv,"ax",%progbits
+ 850              	 .align 2
+ 851              	 .global _ZN6eeprom18factoryResetEEPROMEv
+ 852              	 .thumb
+ 853              	 .thumb_func
+ 855              	_ZN6eeprom18factoryResetEEPROMEv:
+ 856              	.LFB105:
+ 342:src/MightyBoard/Motherboard/EepromMap.cc **** void factoryResetEEPROM() {
+ 857              	 .loc 1 342 0
+ 858              	 .cfi_startproc
+ 859              	 
+ 860              	 
+ 861 0000 30B5     	 push {r4,r5,lr}
+ 862              	.LCFI17:
+ 863              	 .cfi_def_cfa_offset 12
+ 864              	 .cfi_offset 14,-4
+ 865              	 .cfi_offset 5,-8
+ 866              	 .cfi_offset 4,-12
+ 867 0002 87B0     	 sub sp,sp,#28
+ 868              	.LCFI18:
+ 869              	 .cfi_def_cfa_offset 40
+ 870              	.LVL43:
+ 871              	.LBB54:
+ 350:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t vRefBase[] = {118,118,40,118,118};  //(AB maxed out)
+ 872              	 .loc 1 350 0
+ 873 0004 40F20003 	 movw r3,#:lower16:.LANCHOR0
+ 874 0008 C0F20003 	 movt r3,#:upper16:.LANCHOR0
+ 875 000c 53F8180F 	 ldr r0,[r3,#24]!
+ 876 0010 0490     	 str r0,[sp,#16]
+ 877 0012 1B79     	 ldrb r3,[r3,#4]
+ 878 0014 8DF81430 	 strb r3,[sp,#20]
+ 879              	.LVL44:
+ 354:src/MightyBoard/Motherboard/EepromMap.cc **** 	char machine_name_in[] = "The Replicator";
+ 880              	 .loc 1 354 0
+ 881 0018 40F20003 	 movw r3,#:lower16:.LC7
+ 882 001c C0F20003 	 movt r3,#:upper16:.LC7
+ 883 0020 6C46     	 mov r4,sp
+ 884 0022 0FCB     	 ldmia r3,{r0,r1,r2,r3}
+ 885 0024 07C4     	 stmia r4!,{r0,r1,r2}
+ 886 0026 24F8023B 	 strh r3,[r4],#2
+ 887 002a 4FEA1343 	 lsr r3,r3,#16
+ 888 002e 2370     	 strb r3,[r4,#0]
+ 889              	.LVL45:
+ 890 0030 0DF1FF35 	 add r5,sp,#-1
+ 891 0034 4FF02204 	 mov r4,#34
+ 892              	.LVL46:
+ 893              	.L36:
+ 894              	.LBB55:
+ 356:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::MACHINE_NAME+i, machine_name_in[i]);
+ 895              	 .loc 1 356 0 discriminator 2
+ 896 0038 2046     	 mov r0,r4
+ 897 003a 15F8011F 	 ldrb r1,[r5,#1]!
+ 898 003e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 899 0042 04F10104 	 add r4,r4,#1
+ 900 0046 A4B2     	 uxth r4,r4
+ 355:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
+ 901              	 .loc 1 355 0 discriminator 2
+ 902 0048 322C     	 cmp r4,#50
+ 903 004a F5D1     	 bne .L36
+ 355:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<16;i++){
+ 904              	 .loc 1 355 0 is_stmt 0
+ 905 004c 0DF10F05 	 add r5,sp,#15
+ 906 0050 4FF00604 	 mov r4,#6
+ 907              	.L37:
+ 908              	.LBE55:
+ 909              	.LBB56:
+ 361:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom8(eeprom_offsets::DIGI_POT_SETTINGS+i, vRefBase[i]);
+ 910              	 .loc 1 361 0 is_stmt 1 discriminator 2
+ 911 0054 2046     	 mov r0,r4
+ 912 0056 15F8011F 	 ldrb r1,[r5,#1]!
+ 913 005a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 914 005e 04F10104 	 add r4,r4,#1
+ 915 0062 A4B2     	 uxth r4,r4
+ 360:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<5;i++){
+ 916              	 .loc 1 360 0 discriminator 2
+ 917 0064 0B2C     	 cmp r4,#11
+ 918 0066 F5D1     	 bne .L37
+ 919              	.LBE56:
+ 365:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::ENDSTOP_INVERSION, endstop_invert);
+ 920              	 .loc 1 365 0
+ 921 0068 4FF00400 	 mov r0,#4
+ 922 006c 4FF09F01 	 mov r1,#159
+ 923 0070 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 367:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_HOME_DIRECTION, home_direction);
+ 924              	 .loc 1 367 0
+ 925 0074 4FF00C00 	 mov r0,#12
+ 926 0078 4FF01B01 	 mov r1,#27
+ 927 007c FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 371:src/MightyBoard/Motherboard/EepromMap.cc **** 	setDefaultAxisHomePositions();
+ 928              	 .loc 1 371 0
+ 929 0080 FFF7FEFF 	 bl _ZN6eeprom27setDefaultAxisHomePositionsEv
+ 930              	.LVL47:
+ 931 0084 224D     	 ldr r5,.L42
+ 932 0086 4FF4C674 	 mov r4,#396
+ 933              	.LVL48:
+ 934              	.L38:
+ 935              	.LBB57:
+ 375:src/MightyBoard/Motherboard/EepromMap.cc ****     	setEeprom32(eeprom_offsets::AXIS_LENGTHS+(i*4), replicator_axis_lengths::axis_lengths[i]);
+ 936              	 .loc 1 375 0 discriminator 2
+ 937 008a 2046     	 mov r0,r4
+ 938 008c 55F8041F 	 ldr r1,[r5,#4]!
+ 939 0090 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 940 0094 04F10404 	 add r4,r4,#4
+ 941 0098 A4B2     	 uxth r4,r4
+ 374:src/MightyBoard/Motherboard/EepromMap.cc ****     for (uint8_t i=0;i<5;i++){
+ 942              	 .loc 1 374 0 discriminator 2
+ 943 009a B4F5D07F 	 cmp r4,#416
+ 944 009e F4D1     	 bne .L38
+ 945              	.LBE57:
+ 379:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsAcceleration();
+ 946              	 .loc 1 379 0
+ 947 00a0 FFF7FEFF 	 bl _ZN6eeprom23setDefaultsAccelerationEv
+ 381:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 948              	 .loc 1 381 0
+ 949 00a4 4FF4B070 	 mov r0,#352
+ 950 00a8 4FF00101 	 mov r1,#1
+ 951 00ac FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 385:src/MightyBoard/Motherboard/EepromMap.cc ****     SetDefaultsThermal(eeprom_offsets::THERM_TABLE);
+ 952              	 .loc 1 385 0
+ 953 00b0 4FF07400 	 mov r0,#116
+ 954 00b4 FFF7FEFF 	 bl _ZN6eeprom18SetDefaultsThermalEt
+ 388:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+ 955              	 .loc 1 388 0
+ 956 00b8 4FF4AC70 	 mov r0,#344
+ 957 00bc FFF7FEFF 	 bl _ZN6eeprom18setDefaultsPreheatEt
+ 392:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO, vidPid[0]);
+ 958              	 .loc 1 392 0
+ 959 00c0 4FF04400 	 mov r0,#68
+ 960 00c4 42F2C131 	 movw r1,#9153
+ 961 00c8 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 393:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom16(eeprom_offsets::VID_PID_INFO+2, vidPid[1]);
+ 962              	 .loc 1 393 0
+ 963 00cc 4FF04600 	 mov r0,#70
+ 964 00d0 4BF20441 	 movw r1,#46084
+ 965 00d4 FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 397:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(0,eeprom_offsets::T0_DATA_BASE);
+ 966              	 .loc 1 397 0
+ 967 00d8 4FF00000 	 mov r0,#0
+ 968 00dc 4FF48071 	 mov r1,#256
+ 969 00e0 FFF7FEFF 	 bl _ZN6eeprom19setDefaultsExtruderEit
+ 400:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsExtruder(1,eeprom_offsets::T1_DATA_BASE);
+ 970              	 .loc 1 400 0
+ 971 00e4 4FF00100 	 mov r0,#1
+ 972 00e8 4FF48E71 	 mov r1,#284
+ 973 00ec FFF7FEFF 	 bl _ZN6eeprom19setDefaultsExtruderEit
+ 403:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+ 974              	 .loc 1 403 0
+ 975 00f0 4FF4A070 	 mov r0,#320
+ 976 00f4 FFF7FEFF 	 bl _ZN6eeprom20setDefaultLedEffectsEt
+ 404:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+ 977              	 .loc 1 404 0
+ 978 00f8 4FF4A570 	 mov r0,#330
+ 979 00fc FFF7FEFF 	 bl _ZN6eeprom21setDefaultBuzzEffectsEt
+ 407:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FIRST_BOOT_FLAG, 0);
+ 980              	 .loc 1 407 0
+ 981 0100 4FF4AB70 	 mov r0,#342
+ 982 0104 4FF00001 	 mov r1,#0
+ 983 0108 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 984              	.LBE54:
+ 409:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 985              	 .loc 1 409 0
+ 986 010c 07B0     	 add sp,sp,#28
+ 987 010e 30BD     	 pop {r4,r5,pc}
+ 988              	.L43:
+ 989              	 .align 2
+ 990              	.L42:
+ 991 0110 FCFFFFFF 	 .word .LANCHOR1-4
+ 992              	 .cfi_endproc
+ 993              	.LFE105:
+ 995              	 .section .text._ZN6eeprom18setDefaultSettingsEv,"ax",%progbits
+ 996              	 .align 2
+ 997              	 .global _ZN6eeprom18setDefaultSettingsEv
+ 998              	 .thumb
+ 999              	 .thumb_func
+ 1001              	_ZN6eeprom18setDefaultSettingsEv:
+ 1002              	.LFB108:
+ 426:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 427:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 428:src/MightyBoard/Motherboard/EepromMap.cc **** // reset the settings that can be changed via the onboard UI to defaults
+ 429:src/MightyBoard/Motherboard/EepromMap.cc **** void setDefaultSettings(){
+ 1003              	 .loc 1 429 0
+ 1004              	 .cfi_startproc
+ 1005              	 
+ 1006              	 
+ 1007 0000 08B5     	 push {r3,lr}
+ 1008              	.LCFI19:
+ 1009              	 .cfi_def_cfa_offset 8
+ 1010              	 .cfi_offset 14,-4
+ 1011              	 .cfi_offset 3,-8
+ 430:src/MightyBoard/Motherboard/EepromMap.cc ****     /// write blink and buzz defaults
+ 431:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultLedEffects(eeprom_offsets::LED_STRIP_SETTINGS);
+ 1012              	 .loc 1 431 0
+ 1013 0002 4FF4A070 	 mov r0,#320
+ 1014 0006 FFF7FEFF 	 bl _ZN6eeprom20setDefaultLedEffectsEt
+ 432:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultBuzzEffects(eeprom_offsets::BUZZ_SETTINGS);
+ 1015              	 .loc 1 432 0
+ 1016 000a 4FF4A570 	 mov r0,#330
+ 1017 000e FFF7FEFF 	 bl _ZN6eeprom21setDefaultBuzzEffectsEt
+ 433:src/MightyBoard/Motherboard/EepromMap.cc ****     setDefaultsPreheat(eeprom_offsets::PREHEAT_SETTINGS);
+ 1018              	 .loc 1 433 0
+ 1019 0012 4FF4AC70 	 mov r0,#344
+ 1020 0016 FFF7FEFF 	 bl _ZN6eeprom18setDefaultsPreheatEt
+ 434:src/MightyBoard/Motherboard/EepromMap.cc ****     setEeprom8(eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 1021              	 .loc 1 434 0
+ 1022 001a 4FF4B070 	 mov r0,#352
+ 1023 001e 4FF00101 	 mov r1,#1
+ 1024 0022 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 435:src/MightyBoard/Motherboard/EepromMap.cc **** //   eeprom_write_byte((uint8_t*)eeprom_offsets::FILAMENT_HELP_SETTINGS, 1);
+ 436:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1025              	 .loc 1 436 0
+ 1026 0026 08BD     	 pop {r3,pc}
+ 1027              	 .cfi_endproc
+ 1028              	.LFE108:
+ 1030              	 .section .text._ZN6eeprom30storeToolheadToleranceDefaultsEv,"ax",%progbits
+ 1031              	 .align 2
+ 1032              	 .global _ZN6eeprom30storeToolheadToleranceDefaultsEv
+ 1033              	 .thumb
+ 1034              	 .thumb_func
+ 1036              	_ZN6eeprom30storeToolheadToleranceDefaultsEv:
+ 1037              	.LFB109:
+ 437:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 438:src/MightyBoard/Motherboard/EepromMap.cc **** //
+ 439:src/MightyBoard/Motherboard/EepromMap.cc **** void storeToolheadToleranceDefaults(){
+ 1038              	 .loc 1 439 0
+ 1039              	 .cfi_startproc
+ 1040              	 
+ 1041              	 
+ 1042 0000 00B5     	 push {lr}
+ 1043              	.LCFI20:
+ 1044              	 .cfi_def_cfa_offset 4
+ 1045              	 .cfi_offset 14,-4
+ 1046 0002 85B0     	 sub sp,sp,#20
+ 1047              	.LCFI21:
+ 1048              	 .cfi_def_cfa_offset 24
+ 1049              	.LBB58:
+ 440:src/MightyBoard/Motherboard/EepromMap.cc **** 	// assume t0 to t1 distance is in specifications (0 steps tolerance error)
+ 441:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint32_t offsets[3] = {0,0,0};
+ 1050              	 .loc 1 441 0
+ 1051 0004 4FF00001 	 mov r1,#0
+ 1052 0008 0191     	 str r1,[sp,#4]
+ 1053 000a 0291     	 str r1,[sp,#8]
+ 1054 000c 0391     	 str r1,[sp,#12]
+ 1055              	.LVL49:
+ 1056              	.LBB59:
+ 442:src/MightyBoard/Motherboard/EepromMap.cc **** 	for (uint8_t i=0;i<3;i++){
+ 443:src/MightyBoard/Motherboard/EepromMap.cc **** 		setEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS+(i*4), offsets[i]);
+ 1057              	 .loc 1 443 0
+ 1058 000e 4FF4B170 	 mov r0,#354
+ 1059 0012 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 1060              	.LVL50:
+ 1061 0016 4FF4B370 	 mov r0,#358
+ 1062 001a 0299     	 ldr r1,[sp,#8]
+ 1063 001c FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 1064              	.LVL51:
+ 1065 0020 4FF4B570 	 mov r0,#362
+ 1066 0024 0399     	 ldr r1,[sp,#12]
+ 1067 0026 FFF7FEFF 	 bl _ZN6eeprom11setEeprom32Etm
+ 1068              	.LVL52:
+ 1069              	.LBE59:
+ 1070              	.LBE58:
+ 444:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::TOOLHEAD_OFFSET_
+ 445:src/MightyBoard/Motherboard/EepromMap.cc **** //		xprintf("%x" " (%s:%d)\n",(EEPROM_START_ADDRESS + eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS+(i*4
+ 446:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
+ 447:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS),
+ 448:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1071              	 .loc 1 448 0
+ 1072 002a 05B0     	 add sp,sp,#20
+ 1073 002c 00BD     	 pop {pc}
+ 1074              	 .cfi_endproc
+ 1075              	.LFE109:
+ 1077 002e 00BF     	 .section .text._ZN6eeprom15updateBuildTimeEhh,"ax",%progbits
+ 1078              	 .align 2
+ 1079              	 .global _ZN6eeprom15updateBuildTimeEhh
+ 1080              	 .thumb
+ 1081              	 .thumb_func
+ 1083              	_ZN6eeprom15updateBuildTimeEhh:
+ 1084              	.LFB110:
+ 449:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 450:src/MightyBoard/Motherboard/EepromMap.cc **** void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
+ 1085              	 .loc 1 450 0
+ 1086              	 .cfi_startproc
+ 1087              	 
+ 1088              	 
+ 1089              	.LVL53:
+ 1090 0000 70B5     	 push {r4,r5,r6,lr}
+ 1091              	.LCFI22:
+ 1092              	 .cfi_def_cfa_offset 16
+ 1093              	 .cfi_offset 14,-4
+ 1094              	 .cfi_offset 6,-8
+ 1095              	 .cfi_offset 5,-12
+ 1096              	 .cfi_offset 4,-16
+ 1097 0002 0646     	 mov r6,r0
+ 1098 0004 0D46     	 mov r5,r1
+ 1099              	.LBB60:
+ 451:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 452:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint16_t hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_
+ 1100              	 .loc 1 452 0
+ 1101 0006 4FF4D070 	 mov r0,#416
+ 1102              	.LVL54:
+ 1103 000a 4FF00001 	 mov r1,#0
+ 1104              	.LVL55:
+ 1105 000e FFF7FEFF 	 bl _ZN6eeprom11getEeprom16Ett
+ 1106 0012 0446     	 mov r4,r0
+ 1107              	.LVL56:
+ 453:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTE
+ 1108              	 .loc 1 453 0
+ 1109 0014 4FF4D170 	 mov r0,#418
+ 1110              	.LVL57:
+ 1111 0018 4FF00001 	 mov r1,#0
+ 1112 001c FFF7FEFF 	 bl _ZN6eeprom10getEeprom8Eth
+ 1113              	.LVL58:
+ 454:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 455:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t total_minutes = new_minutes + minutes;
+ 1114              	 .loc 1 455 0
+ 1115 0020 4019     	 adds r0,r0,r5
+ 1116              	.LVL59:
+ 1117 0022 C0B2     	 uxtb r0,r0
+ 1118              	.LVL60:
+ 456:src/MightyBoard/Motherboard/EepromMap.cc **** 	minutes = total_minutes % 60;
+ 1119              	 .loc 1 456 0
+ 1120 0024 48F68905 	 movw r5,#34953
+ 1121 0028 C8F68805 	 movt r5,34952
+ 1122 002c A5FB0035 	 umull r3,r5,r5,r0
+ 1123 0030 4FEA5515 	 lsr r5,r5,#5
+ 1124 0034 C5EB0515 	 rsb r5,r5,r5,lsl#4
+ 1125 0038 A0EB8505 	 sub r5,r0,r5,lsl#2
+ 1126 003c EDB2     	 uxtb r5,r5
+ 1127              	.LVL61:
+ 457:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 458:src/MightyBoard/Motherboard/EepromMap.cc **** 	// increment hours if minutes are over 60
+ 459:src/MightyBoard/Motherboard/EepromMap.cc **** 	if(total_minutes > 60){
+ 1128              	 .loc 1 459 0
+ 1129 003e 3C28     	 cmp r0,#60
+ 460:src/MightyBoard/Motherboard/EepromMap.cc **** 		hours++;
+ 1130              	 .loc 1 460 0
+ 1131 0040 84BF     	 itt hi
+ 1132 0042 0134     	 addhi r4,r4,#1
+ 1133              	.LVL62:
+ 1134 0044 A4B2     	 uxthhi r4,r4
+ 1135              	.LVL63:
+ 461:src/MightyBoard/Motherboard/EepromMap.cc **** 	}
  462:src/MightyBoard/Motherboard/EepromMap.cc **** 	
- 463:src/MightyBoard/Motherboard/EepromMap.cc **** 	factoryResetEEPROM();
- 1131              	 .loc 1 463 0
- 1132 0022 FFF7FEFF 	 bl _ZN6eeprom18factoryResetEEPROMEv
- 1133              	.LBE63:
- 464:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 1134              	 .loc 1 464 0
- 1135 0026 08BD     	 pop {r3,pc}
- 1136              	 .cfi_endproc
- 1137              	.LFE110:
- 1139              	 .section .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv,"ax",%progbits
- 1140              	 .align 2
- 1141              	 .thumb
- 1142              	 .thumb_func
- 1144              	_GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:
- 1145              	.LFB112:
- 465:src/MightyBoard/Motherboard/EepromMap.cc **** 
- 466:src/MightyBoard/Motherboard/EepromMap.cc **** }
- 1146              	 .loc 1 466 0
- 1147              	 .cfi_startproc
- 1148              	 
- 1149              	 
- 1150 0000 10B5     	 push {r4,lr}
- 1151              	.LCFI24:
- 1152              	 .cfi_def_cfa_offset 8
- 1153              	 .cfi_offset 14,-4
- 1154              	 .cfi_offset 4,-8
- 1155              	.LVL54:
- 1156              	.LBB66:
- 1157              	.LBB67:
- 1158              	 .file 4 "src/MightyBoard/shared/LPCPort.hh"
+ 463:src/MightyBoard/Motherboard/EepromMap.cc **** 	// update build time
+ 464:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET, hours + new_hours
+ 1136              	 .loc 1 464 0
+ 1137 0046 A419     	 adds r4,r4,r6
+ 1138              	.LVL64:
+ 1139 0048 4FF4D070 	 mov r0,#416
+ 1140              	.LVL65:
+ 1141 004c A1B2     	 uxth r1,r4
+ 1142 004e FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 465:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET, minutes);
+ 1143              	 .loc 1 465 0
+ 1144 0052 4FF4D170 	 mov r0,#418
+ 1145 0056 2946     	 mov r1,r5
+ 1146 0058 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 1147              	.LBE60:
+ 466:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSE
+ 467:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFS
+ 468:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 469:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1148              	 .loc 1 469 0
+ 1149 005c 70BD     	 pop {r4,r5,r6,pc}
+ 1150              	 .cfi_endproc
+ 1151              	.LFE110:
+ 1153 005e 00BF     	 .section .text._ZN6eeprom15fullResetEEPROMEv,"ax",%progbits
+ 1154              	 .align 2
+ 1155              	 .global _ZN6eeprom15fullResetEEPROMEv
+ 1156              	 .thumb
+ 1157              	 .thumb_func
+ 1159              	_ZN6eeprom15fullResetEEPROMEv:
+ 1160              	.LFB111:
+ 470:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 471:src/MightyBoard/Motherboard/EepromMap.cc **** /// Initialize entire eeprom map, including factor-set settings
+ 472:src/MightyBoard/Motherboard/EepromMap.cc **** void fullResetEEPROM() {
+ 1161              	 .loc 1 472 0
+ 1162              	 .cfi_startproc
+ 1163              	 
+ 1164              	 
+ 1165 0000 08B5     	 push {r3,lr}
+ 1166              	.LCFI23:
+ 1167              	 .cfi_def_cfa_offset 8
+ 1168              	 .cfi_offset 14,-4
+ 1169              	 .cfi_offset 3,-8
+ 1170              	.LBB61:
+ 473:src/MightyBoard/Motherboard/EepromMap.cc **** 	write_ff_to_ram();
+ 1171              	 .loc 1 473 0
+ 1172 0002 FFF7FEFF 	 bl _ZN6eeprom15write_ff_to_ramEv
+ 1173              	.LVL66:
+ 474:src/MightyBoard/Motherboard/EepromMap.cc **** 	// axis inversion settings
+ 475:src/MightyBoard/Motherboard/EepromMap.cc **** 	uint8_t axis_invert = 0b10111; // invert XYBZ
+ 476:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::AXIS_INVERSION, axis_invert);
+ 1174              	 .loc 1 476 0
+ 1175 0006 4FF00200 	 mov r0,#2
+ 1176 000a 4FF01701 	 mov r1,#23
+ 1177 000e FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 477:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
+ 478:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 479:src/MightyBoard/Motherboard/EepromMap.cc **** 	// tool count settings
+ 480:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOOL_COUNT, 1);
+ 1178              	 .loc 1 480 0
+ 1179 0012 4FF04200 	 mov r0,#66
+ 1180 0016 4FF00101 	 mov r1,#1
+ 1181 001a FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 481:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)eeprom_offsets::TOOL_COUNT, 1);
+ 482:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 483:src/MightyBoard/Motherboard/EepromMap.cc **** 	// toolhead offset defaults
+ 484:src/MightyBoard/Motherboard/EepromMap.cc **** 	storeToolheadToleranceDefaults();
+ 1182              	 .loc 1 484 0
+ 1183 001e FFF7FEFF 	 bl _ZN6eeprom30storeToolheadToleranceDefaultsEv
+ 485:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 486:src/MightyBoard/Motherboard/EepromMap.cc **** 	// set build time to zero
+ 487:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET, 0);
+ 1184              	 .loc 1 487 0
+ 1185 0022 4FF4D070 	 mov r0,#416
+ 1186 0026 4FF00001 	 mov r1,#0
+ 1187 002a FFF7FEFF 	 bl _ZN6eeprom11setEeprom16Ett
+ 488:src/MightyBoard/Motherboard/EepromMap.cc **** 	setEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET, 0);
+ 1188              	 .loc 1 488 0
+ 1189 002e 4FF4D170 	 mov r0,#418
+ 1190 0032 4FF00001 	 mov r1,#0
+ 1191 0036 FFF7FEFF 	 bl _ZN6eeprom10setEeprom8Eth
+ 489:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSE
+ 490:src/MightyBoard/Motherboard/EepromMap.cc **** //	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFS
+ 491:src/MightyBoard/Motherboard/EepromMap.cc **** 	
+ 492:src/MightyBoard/Motherboard/EepromMap.cc **** 	factoryResetEEPROM();
+ 1192              	 .loc 1 492 0
+ 1193 003a FFF7FEFF 	 bl _ZN6eeprom18factoryResetEEPROMEv
+ 1194              	.LBE61:
+ 493:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1195              	 .loc 1 493 0
+ 1196 003e 08BD     	 pop {r3,pc}
+ 1197              	 .cfi_endproc
+ 1198              	.LFE111:
+ 1200              	 .section .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv,"ax",%progbits
+ 1201              	 .align 2
+ 1202              	 .thumb
+ 1203              	 .thumb_func
+ 1205              	_GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:
+ 1206              	.LFB113:
+ 494:src/MightyBoard/Motherboard/EepromMap.cc **** 
+ 495:src/MightyBoard/Motherboard/EepromMap.cc **** }
+ 1207              	 .loc 1 495 0
+ 1208              	 .cfi_startproc
+ 1209              	 
+ 1210              	 
+ 1211 0000 10B5     	 push {r4,lr}
+ 1212              	.LCFI24:
+ 1213              	 .cfi_def_cfa_offset 8
+ 1214              	 .cfi_offset 14,-4
+ 1215              	 .cfi_offset 4,-8
+ 1216              	.LVL67:
+ 1217              	.LBB64:
+ 1218              	.LBB65:
+ 1219              	 .file 3 "src/MightyBoard/shared/LPCPort.hh"
    1:src/MightyBoard/shared/LPCPort.hh **** /*
    2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
    3:src/MightyBoard/shared/LPCPort.hh **** *
@@ -2437,44 +2320,44 @@
   47:src/MightyBoard/shared/LPCPort.hh **** 
   48:src/MightyBoard/shared/LPCPort.hh **** 
   49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
- 1159              	 .loc 4 49 0
- 1160 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
- 1161 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
- 1162 000a 4FF00001 	 mov r1,#0
- 1163 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1220              	 .loc 3 49 0
+ 1221 0002 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 1222 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 1223 000a 4FF00001 	 mov r1,#0
+ 1224 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
- 1164              	 .loc 4 50 0
- 1165 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
- 1166 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
- 1167 001a 4FF00101 	 mov r1,#1
- 1168 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1225              	 .loc 3 50 0
+ 1226 0012 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 1227 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 1228 001a 4FF00101 	 mov r1,#1
+ 1229 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
- 1169              	 .loc 4 51 0
- 1170 0022 40F20000 	 movw r0,#:lower16:.LANCHOR4
- 1171 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR4
- 1172 002a 4FF00201 	 mov r1,#2
- 1173 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1230              	 .loc 3 51 0
+ 1231 0022 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 1232 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 1233 002a 4FF00201 	 mov r1,#2
+ 1234 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
- 1174              	 .loc 4 52 0
- 1175 0032 40F20000 	 movw r0,#:lower16:.LANCHOR5
- 1176 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR5
- 1177 003a 4FF00301 	 mov r1,#3
- 1178 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1235              	 .loc 3 52 0
+ 1236 0032 40F20000 	 movw r0,#:lower16:.LANCHOR5
+ 1237 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR5
+ 1238 003a 4FF00301 	 mov r1,#3
+ 1239 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
- 1179              	 .loc 4 53 0
- 1180 0042 40F20000 	 movw r0,#:lower16:.LANCHOR6
- 1181 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR6
- 1182 004a 4FF00401 	 mov r1,#4
- 1183 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1240              	 .loc 3 53 0
+ 1241 0042 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 1242 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 1243 004a 4FF00401 	 mov r1,#4
+ 1244 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   54:src/MightyBoard/shared/LPCPort.hh **** 
   55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
- 1184              	 .loc 4 55 0
- 1185 0052 40F20004 	 movw r4,#:lower16:.LANCHOR7
- 1186 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR7
- 1187 005a 2046     	 mov r0,r4
- 1188 005c 4FF0FF01 	 mov r1,#255
- 1189 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
- 1190              	 .file 5 "src/MightyBoard/shared/Pin.hh"
+ 1245              	 .loc 3 55 0
+ 1246 0052 40F20004 	 movw r4,#:lower16:.LANCHOR7
+ 1247 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR7
+ 1248 005a 2046     	 mov r0,r4
+ 1249 005c 4FF0FF01 	 mov r1,#255
+ 1250 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 1251              	 .file 4 "src/MightyBoard/shared/Pin.hh"
    1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
    2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
    3:src/MightyBoard/shared/Pin.hh **** 
@@ -2551,116 +2434,117 @@
   74:src/MightyBoard/shared/Pin.hh **** };
   75:src/MightyBoard/shared/Pin.hh **** 
   76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
- 1191              	 .loc 5 76 0
- 1192 0064 40F20000 	 movw r0,#:lower16:.LANCHOR8
- 1193 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR8
- 1194 006c 2146     	 mov r1,r4
- 1195 006e 4FF00002 	 mov r2,#0
- 1196 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
- 1197              	.LBE67:
- 1198              	.LBE66:
- 1199              	 .loc 1 466 0
- 1200 0076 10BD     	 pop {r4,pc}
- 1201              	 .cfi_endproc
- 1202              	.LFE112:
- 1204              	 .section .init_array,"aw",%init_array
- 1205              	 .align 2
- 1206 0000 00000000 	 .word _GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv(target1)
- 1207              	 .section .rodata
- 1208              	 .align 2
- 1209              	 .set .LANCHOR0,.+0
- 1210              	.LC3:
- 1211 0000 7B00     	 .short 123
- 1212 0002 F401     	 .short 500
- 1213              	.LC2:
- 1214 0004 E5370000 	 .word 14309
- 1215 0008 941B0000 	 .word 7060
- 1216 000c 00000000 	 .word 0
- 1217 0010 00000000 	 .word 0
- 1218 0014 00000000 	 .word 0
- 1219              	.LC0:
- 1220 0018 76       	 .byte 118
- 1221 0019 76       	 .byte 118
- 1222 001a 28       	 .byte 40
- 1223 001b 76       	 .byte 118
- 1224 001c 76       	 .byte 118
- 1225 001d 000000   	 .section .bss._ZL5Port0,"aw",%nobits
- 1226              	 .align 2
- 1227              	 .set .LANCHOR2,.+0
- 1230              	_ZL5Port0:
- 1231 0000 00       	 .space 1
- 1232 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
- 1233              	 .align 2
- 1234              	 .set .LANCHOR3,.+0
- 1237              	_ZL5Port1:
- 1238 0000 00       	 .space 1
- 1239 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
- 1240              	 .align 2
- 1241              	 .set .LANCHOR4,.+0
- 1244              	_ZL5Port2:
- 1245 0000 00       	 .space 1
- 1246 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
- 1247              	 .align 2
- 1248              	 .set .LANCHOR5,.+0
- 1251              	_ZL5Port3:
- 1252 0000 00       	 .space 1
- 1253 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
- 1254              	 .align 2
- 1255              	 .set .LANCHOR6,.+0
- 1258              	_ZL5Port4:
- 1259 0000 00       	 .space 1
- 1260 0001 000000   	 .section .rodata.str1.4,"aMS",%progbits,1
- 1261              	 .align 2
- 1262              	.LC5:
- 1263 0000 73617665 	 .ascii "save_to_flash (%s:%d)\012\000"
- 1263      5F746F5F 
- 1263      666C6173 
- 1263      68202825 
- 1263      733A2564 
- 1264 0017 00       	 .space 1
- 1265              	.LC6:
- 1266 0018 7372632F 	 .ascii "src/MightyBoard/Motherboard/EepromMap.cc\000"
- 1266      4D696768 
- 1266      7479426F 
- 1266      6172642F 
- 1266      4D6F7468 
- 1267 0041 000000   	 .space 3
- 1268              	.LC7:
- 1269 0044 54686520 	 .ascii "The Replicator\000"
- 1269      5265706C 
- 1269      69636174 
- 1269      6F7200
- 1270 0053 00       	 .section .bss._ZL8NullPort,"aw",%nobits
- 1271              	 .align 2
- 1272              	 .set .LANCHOR7,.+0
- 1275              	_ZL8NullPort:
- 1276 0000 00       	 .space 1
- 1277 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
- 1278              	 .align 2
- 1279              	 .set .LANCHOR8,.+0
- 1282              	_ZL7NullPin:
- 1283 0000 00000000 	 .space 5
- 1283      00
- 1284 0005 000000   	 .section .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE,"a",%progbits
- 1285              	 .align 2
- 1286              	 .set .LANCHOR1,.+0
- 1289              	_ZN23replicator_axis_lengthsL12axis_lengthsE:
- 1290 0000 BD290000 	 .word 10685
- 1291 0004 4E110100 	 .word 69966
- 1292 0008 60EA0000 	 .word 60000
- 1293 000c 80E79200 	 .word 9627520
- 1294 0010 80E79200 	 .word 9627520
- 1295              	 .text
- 1296              	.Letext0:
- 1297              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
- 1298              	 .file 7 "src/MightyBoard/Motherboard/EepromMap.hh"
- 1299              	 .file 8 "src/MightyBoard/shared/ThermistorTable.hh"
- 1300              	 .file 9 "src/MightyBoard/Motherboard/Piezo.hh"
- 1301              	 .file 10 "src/MightyBoard/Motherboard/RGB_LED.hh"
- 1302              	 .file 11 "src/MightyBoard/shared/TemperatureSensor.hh"
- 1303              	 .file 12 "src/MightyBoard/shared/HeatingElement.hh"
- 1304              	 .file 13 "src/MightyBoard/Motherboard/system/core_cm3.h"
- 1305              	 .file 14 "src/MightyBoard/Motherboard/system/system_LPC17xx.h"
+ 1252              	 .loc 4 76 0
+ 1253 0064 40F20000 	 movw r0,#:lower16:.LANCHOR8
+ 1254 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR8
+ 1255 006c 2146     	 mov r1,r4
+ 1256 006e 4FF00002 	 mov r2,#0
+ 1257 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 1258              	.LBE65:
+ 1259              	.LBE64:
+ 1260              	 .loc 1 495 0
+ 1261 0076 10BD     	 pop {r4,pc}
+ 1262              	 .cfi_endproc
+ 1263              	.LFE113:
+ 1265              	 .section .init_array,"aw",%init_array
+ 1266              	 .align 2
+ 1267 0000 00000000 	 .word _GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv(target1)
+ 1268              	 .section .rodata
+ 1269              	 .align 2
+ 1270              	 .set .LANCHOR0,.+0
+ 1271              	.LC3:
+ 1272 0000 7B00     	 .short 123
+ 1273 0002 F401     	 .short 500
+ 1274              	.LC2:
+ 1275 0004 E5370000 	 .word 14309
+ 1276 0008 941B0000 	 .word 7060
+ 1277 000c 00000000 	 .word 0
+ 1278 0010 00000000 	 .word 0
+ 1279 0014 00000000 	 .word 0
+ 1280              	.LC0:
+ 1281 0018 76       	 .byte 118
+ 1282 0019 76       	 .byte 118
+ 1283 001a 28       	 .byte 40
+ 1284 001b 76       	 .byte 118
+ 1285 001c 76       	 .byte 118
+ 1286 001d 000000   	 .section .bss._ZL5Port0,"aw",%nobits
+ 1287              	 .align 2
+ 1288              	 .set .LANCHOR2,.+0
+ 1291              	_ZL5Port0:
+ 1292 0000 00       	 .space 1
+ 1293 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 1294              	 .align 2
+ 1295              	 .set .LANCHOR3,.+0
+ 1298              	_ZL5Port1:
+ 1299 0000 00       	 .space 1
+ 1300 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 1301              	 .align 2
+ 1302              	 .set .LANCHOR4,.+0
+ 1305              	_ZL5Port2:
+ 1306 0000 00       	 .space 1
+ 1307 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 1308              	 .align 2
+ 1309              	 .set .LANCHOR5,.+0
+ 1312              	_ZL5Port3:
+ 1313 0000 00       	 .space 1
+ 1314 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 1315              	 .align 2
+ 1316              	 .set .LANCHOR6,.+0
+ 1319              	_ZL5Port4:
+ 1320 0000 00       	 .space 1
+ 1321 0001 000000   	 .section .rodata.str1.4,"aMS",%progbits,1
+ 1322              	 .align 2
+ 1323              	.LC5:
+ 1324 0000 73617665 	 .ascii "save_to_flash (%s:%d)\012\000"
+ 1324      5F746F5F 
+ 1324      666C6173 
+ 1324      68202825 
+ 1324      733A2564 
+ 1325 0017 00       	 .space 1
+ 1326              	.LC6:
+ 1327 0018 7372632F 	 .ascii "src/MightyBoard/Motherboard/EepromMap.cc\000"
+ 1327      4D696768 
+ 1327      7479426F 
+ 1327      6172642F 
+ 1327      4D6F7468 
+ 1328 0041 000000   	 .space 3
+ 1329              	.LC7:
+ 1330 0044 54686520 	 .ascii "The Replicator\000"
+ 1330      5265706C 
+ 1330      69636174 
+ 1330      6F7200
+ 1331 0053 00       	 .section .bss._ZL8NullPort,"aw",%nobits
+ 1332              	 .align 2
+ 1333              	 .set .LANCHOR7,.+0
+ 1336              	_ZL8NullPort:
+ 1337 0000 00       	 .space 1
+ 1338 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 1339              	 .align 2
+ 1340              	 .set .LANCHOR8,.+0
+ 1343              	_ZL7NullPin:
+ 1344 0000 00000000 	 .space 5
+ 1344      00
+ 1345 0005 000000   	 .section .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE,"a",%progbits
+ 1346              	 .align 2
+ 1347              	 .set .LANCHOR1,.+0
+ 1350              	_ZN23replicator_axis_lengthsL12axis_lengthsE:
+ 1351 0000 BD290000 	 .word 10685
+ 1352 0004 361B0000 	 .word 6966
+ 1353 0008 60EA0000 	 .word 60000
+ 1354 000c 80E79200 	 .word 9627520
+ 1355 0010 80E79200 	 .word 9627520
+ 1356              	 .text
+ 1357              	.Letext0:
+ 1358              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1359              	 .file 6 "src/MightyBoard/Motherboard/EepromMap.hh"
+ 1360              	 .file 7 "src/MightyBoard/shared/ThermistorTable.hh"
+ 1361              	 .file 8 "src/MightyBoard/Motherboard/Piezo.hh"
+ 1362              	 .file 9 "src/MightyBoard/Motherboard/RGB_LED.hh"
+ 1363              	 .file 10 "src/MightyBoard/shared/TemperatureSensor.hh"
+ 1364              	 .file 11 "src/MightyBoard/shared/HeatingElement.hh"
+ 1365              	 .file 12 "src/MightyBoard/Motherboard/IAP/IAP.hh"
+ 1366              	 .file 13 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 1367              	 .file 14 "src/MightyBoard/Motherboard/system/system_LPC17xx.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 EepromMap.cc
     {standard input}:19     .text._ZN6eeprom15write_ff_to_ramEv:00000000 $t
@@ -2669,86 +2553,87 @@ DEFINED SYMBOLS
     {standard input}:79     .text._ZN6eeprom19read_all_from_flashEv:00000000 _ZN6eeprom19read_all_from_flashEv
     {standard input}:125    .text._ZN6eeprom13save_to_flashEv:00000000 $t
     {standard input}:130    .text._ZN6eeprom13save_to_flashEv:00000000 _ZN6eeprom13save_to_flashEv
-    {standard input}:1262   .rodata.str1.4:00000000 .LC5
-    {standard input}:202    .text._ZN6eeprom13save_to_flashEv:00000054 $d
-    {standard input}:207    .text._ZN6eeprom20setDefaultCoolingFanEt:00000000 $t
-    {standard input}:212    .text._ZN6eeprom20setDefaultCoolingFanEt:00000000 _ZN6eeprom20setDefaultCoolingFanEt
-    {standard input}:243    .text._ZN6eeprom13setDefaultPIDEt:00000000 $t
-    {standard input}:248    .text._ZN6eeprom13setDefaultPIDEt:00000000 _ZN6eeprom13setDefaultPIDEt
-    {standard input}:281    .text._ZN6eeprom19setDefaultsExtruderEit:00000000 $t
-    {standard input}:286    .text._ZN6eeprom19setDefaultsExtruderEit:00000000 _ZN6eeprom19setDefaultsExtruderEit
-    {standard input}:376    .text._ZN6eeprom18SetDefaultsThermalEt:00000000 $t
-    {standard input}:381    .text._ZN6eeprom18SetDefaultsThermalEt:00000000 _ZN6eeprom18SetDefaultsThermalEt
-    {standard input}:447    .text._ZN6eeprom20setDefaultLedEffectsEt:00000000 $t
-    {standard input}:452    .text._ZN6eeprom20setDefaultLedEffectsEt:00000000 _ZN6eeprom20setDefaultLedEffectsEt
-    {standard input}:498    .text._ZN6eeprom14setCustomColorEhhh:00000000 $t
-    {standard input}:503    .text._ZN6eeprom14setCustomColorEhhh:00000000 _ZN6eeprom14setCustomColorEhhh
-    {standard input}:544    .text._ZN6eeprom18eeprom_write_soundE5Soundt:00000000 $t
-    {standard input}:549    .text._ZN6eeprom18eeprom_write_soundE5Soundt:00000000 _ZN6eeprom18eeprom_write_soundE5Soundt
-    {standard input}:583    .text._ZN6eeprom21setDefaultBuzzEffectsEt:00000000 $t
-    {standard input}:588    .text._ZN6eeprom21setDefaultBuzzEffectsEt:00000000 _ZN6eeprom21setDefaultBuzzEffectsEt
-    {standard input}:1209   .rodata:00000000 .LANCHOR0
-    {standard input}:621    .text._ZN6eeprom18setDefaultsPreheatEt:00000000 $t
-    {standard input}:626    .text._ZN6eeprom18setDefaultsPreheatEt:00000000 _ZN6eeprom18setDefaultsPreheatEt
-    {standard input}:664    .text._ZN6eeprom23setDefaultsAccelerationEv:00000000 $t
-    {standard input}:669    .text._ZN6eeprom23setDefaultsAccelerationEv:00000000 _ZN6eeprom23setDefaultsAccelerationEv
-    {standard input}:738    .text._ZN6eeprom12isSingleToolEv:00000000 $t
-    {standard input}:743    .text._ZN6eeprom12isSingleToolEv:00000000 _ZN6eeprom12isSingleToolEv
-    {standard input}:768    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000000 $t
-    {standard input}:773    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000000 _ZN6eeprom27setDefaultAxisHomePositionsEv
-    {standard input}:833    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000040 $d
-    {standard input}:838    .text._ZN6eeprom16setToolHeadCountEh:00000000 $t
-    {standard input}:843    .text._ZN6eeprom16setToolHeadCountEh:00000000 _ZN6eeprom16setToolHeadCountEh
-    {standard input}:873    .text._ZN6eeprom18factoryResetEEPROMEv:00000000 $t
-    {standard input}:878    .text._ZN6eeprom18factoryResetEEPROMEv:00000000 _ZN6eeprom18factoryResetEEPROMEv
-    {standard input}:1268   .rodata.str1.4:00000044 .LC7
-    {standard input}:1014   .text._ZN6eeprom18factoryResetEEPROMEv:00000110 $d
-    {standard input}:1019   .text._ZN6eeprom18setDefaultSettingsEv:00000000 $t
-    {standard input}:1024   .text._ZN6eeprom18setDefaultSettingsEv:00000000 _ZN6eeprom18setDefaultSettingsEv
-    {standard input}:1054   .text._ZN6eeprom30storeToolheadToleranceDefaultsEv:00000000 $t
-    {standard input}:1059   .text._ZN6eeprom30storeToolheadToleranceDefaultsEv:00000000 _ZN6eeprom30storeToolheadToleranceDefaultsEv
-    {standard input}:1101   .text._ZN6eeprom15fullResetEEPROMEv:00000000 $t
-    {standard input}:1106   .text._ZN6eeprom15fullResetEEPROMEv:00000000 _ZN6eeprom15fullResetEEPROMEv
-    {standard input}:1140   .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:00000000 $t
-    {standard input}:1144   .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:00000000 _GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv
-    {standard input}:1227   .bss._ZL5Port0:00000000 .LANCHOR2
-    {standard input}:1234   .bss._ZL5Port1:00000000 .LANCHOR3
-    {standard input}:1241   .bss._ZL5Port2:00000000 .LANCHOR4
-    {standard input}:1248   .bss._ZL5Port3:00000000 .LANCHOR5
-    {standard input}:1255   .bss._ZL5Port4:00000000 .LANCHOR6
-    {standard input}:1272   .bss._ZL8NullPort:00000000 .LANCHOR7
-    {standard input}:1279   .bss._ZL7NullPin:00000000 .LANCHOR8
-    {standard input}:1205   .init_array:00000000 $d
-    {standard input}:1208   .rodata:00000000 $d
-    {standard input}:1226   .bss._ZL5Port0:00000000 $d
-    {standard input}:1230   .bss._ZL5Port0:00000000 _ZL5Port0
-    {standard input}:1233   .bss._ZL5Port1:00000000 $d
-    {standard input}:1237   .bss._ZL5Port1:00000000 _ZL5Port1
-    {standard input}:1240   .bss._ZL5Port2:00000000 $d
-    {standard input}:1244   .bss._ZL5Port2:00000000 _ZL5Port2
-    {standard input}:1247   .bss._ZL5Port3:00000000 $d
-    {standard input}:1251   .bss._ZL5Port3:00000000 _ZL5Port3
-    {standard input}:1254   .bss._ZL5Port4:00000000 $d
-    {standard input}:1258   .bss._ZL5Port4:00000000 _ZL5Port4
-    {standard input}:1261   .rodata.str1.4:00000000 $d
-    {standard input}:1265   .rodata.str1.4:00000018 .LC6
-    {standard input}:1271   .bss._ZL8NullPort:00000000 $d
-    {standard input}:1275   .bss._ZL8NullPort:00000000 _ZL8NullPort
-    {standard input}:1278   .bss._ZL7NullPin:00000000 $d
-    {standard input}:1282   .bss._ZL7NullPin:00000000 _ZL7NullPin
-    {standard input}:1285   .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE:00000000 $d
-    {standard input}:1289   .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE:00000000 _ZN23replicator_axis_lengthsL12axis_lengthsE
+    {standard input}:1323   .rodata.str1.4:00000000 .LC5
+    {standard input}:175    .text._ZN6eeprom13save_to_flashEv:00000020 $d
+    {standard input}:180    .text._ZN6eeprom20setDefaultCoolingFanEt:00000000 $t
+    {standard input}:185    .text._ZN6eeprom20setDefaultCoolingFanEt:00000000 _ZN6eeprom20setDefaultCoolingFanEt
+    {standard input}:216    .text._ZN6eeprom13setDefaultPIDEt:00000000 $t
+    {standard input}:221    .text._ZN6eeprom13setDefaultPIDEt:00000000 _ZN6eeprom13setDefaultPIDEt
+    {standard input}:254    .text._ZN6eeprom19setDefaultsExtruderEit:00000000 $t
+    {standard input}:259    .text._ZN6eeprom19setDefaultsExtruderEit:00000000 _ZN6eeprom19setDefaultsExtruderEit
+    {standard input}:349    .text._ZN6eeprom18SetDefaultsThermalEt:00000000 $t
+    {standard input}:354    .text._ZN6eeprom18SetDefaultsThermalEt:00000000 _ZN6eeprom18SetDefaultsThermalEt
+    {standard input}:420    .text._ZN6eeprom20setDefaultLedEffectsEt:00000000 $t
+    {standard input}:425    .text._ZN6eeprom20setDefaultLedEffectsEt:00000000 _ZN6eeprom20setDefaultLedEffectsEt
+    {standard input}:471    .text._ZN6eeprom14setCustomColorEhhh:00000000 $t
+    {standard input}:476    .text._ZN6eeprom14setCustomColorEhhh:00000000 _ZN6eeprom14setCustomColorEhhh
+    {standard input}:517    .text._ZN6eeprom18eeprom_write_soundE5Soundt:00000000 $t
+    {standard input}:522    .text._ZN6eeprom18eeprom_write_soundE5Soundt:00000000 _ZN6eeprom18eeprom_write_soundE5Soundt
+    {standard input}:556    .text._ZN6eeprom21setDefaultBuzzEffectsEt:00000000 $t
+    {standard input}:561    .text._ZN6eeprom21setDefaultBuzzEffectsEt:00000000 _ZN6eeprom21setDefaultBuzzEffectsEt
+    {standard input}:1270   .rodata:00000000 .LANCHOR0
+    {standard input}:594    .text._ZN6eeprom18setDefaultsPreheatEt:00000000 $t
+    {standard input}:599    .text._ZN6eeprom18setDefaultsPreheatEt:00000000 _ZN6eeprom18setDefaultsPreheatEt
+    {standard input}:637    .text._ZN6eeprom23setDefaultsAccelerationEv:00000000 $t
+    {standard input}:642    .text._ZN6eeprom23setDefaultsAccelerationEv:00000000 _ZN6eeprom23setDefaultsAccelerationEv
+    {standard input}:715    .text._ZN6eeprom12isSingleToolEv:00000000 $t
+    {standard input}:720    .text._ZN6eeprom12isSingleToolEv:00000000 _ZN6eeprom12isSingleToolEv
+    {standard input}:745    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000000 $t
+    {standard input}:750    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000000 _ZN6eeprom27setDefaultAxisHomePositionsEv
+    {standard input}:810    .text._ZN6eeprom27setDefaultAxisHomePositionsEv:00000040 $d
+    {standard input}:815    .text._ZN6eeprom16setToolHeadCountEh:00000000 $t
+    {standard input}:820    .text._ZN6eeprom16setToolHeadCountEh:00000000 _ZN6eeprom16setToolHeadCountEh
+    {standard input}:850    .text._ZN6eeprom18factoryResetEEPROMEv:00000000 $t
+    {standard input}:855    .text._ZN6eeprom18factoryResetEEPROMEv:00000000 _ZN6eeprom18factoryResetEEPROMEv
+    {standard input}:1329   .rodata.str1.4:00000044 .LC7
+    {standard input}:991    .text._ZN6eeprom18factoryResetEEPROMEv:00000110 $d
+    {standard input}:996    .text._ZN6eeprom18setDefaultSettingsEv:00000000 $t
+    {standard input}:1001   .text._ZN6eeprom18setDefaultSettingsEv:00000000 _ZN6eeprom18setDefaultSettingsEv
+    {standard input}:1031   .text._ZN6eeprom30storeToolheadToleranceDefaultsEv:00000000 $t
+    {standard input}:1036   .text._ZN6eeprom30storeToolheadToleranceDefaultsEv:00000000 _ZN6eeprom30storeToolheadToleranceDefaultsEv
+    {standard input}:1078   .text._ZN6eeprom15updateBuildTimeEhh:00000000 $t
+    {standard input}:1083   .text._ZN6eeprom15updateBuildTimeEhh:00000000 _ZN6eeprom15updateBuildTimeEhh
+    {standard input}:1154   .text._ZN6eeprom15fullResetEEPROMEv:00000000 $t
+    {standard input}:1159   .text._ZN6eeprom15fullResetEEPROMEv:00000000 _ZN6eeprom15fullResetEEPROMEv
+    {standard input}:1201   .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:00000000 $t
+    {standard input}:1205   .text._GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv:00000000 _GLOBAL__sub_I__ZN6eeprom15write_ff_to_ramEv
+    {standard input}:1288   .bss._ZL5Port0:00000000 .LANCHOR2
+    {standard input}:1295   .bss._ZL5Port1:00000000 .LANCHOR3
+    {standard input}:1302   .bss._ZL5Port2:00000000 .LANCHOR4
+    {standard input}:1309   .bss._ZL5Port3:00000000 .LANCHOR5
+    {standard input}:1316   .bss._ZL5Port4:00000000 .LANCHOR6
+    {standard input}:1333   .bss._ZL8NullPort:00000000 .LANCHOR7
+    {standard input}:1340   .bss._ZL7NullPin:00000000 .LANCHOR8
+    {standard input}:1266   .init_array:00000000 $d
+    {standard input}:1269   .rodata:00000000 $d
+    {standard input}:1287   .bss._ZL5Port0:00000000 $d
+    {standard input}:1291   .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:1294   .bss._ZL5Port1:00000000 $d
+    {standard input}:1298   .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:1301   .bss._ZL5Port2:00000000 $d
+    {standard input}:1305   .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:1308   .bss._ZL5Port3:00000000 $d
+    {standard input}:1312   .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:1315   .bss._ZL5Port4:00000000 $d
+    {standard input}:1319   .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:1322   .rodata.str1.4:00000000 $d
+    {standard input}:1326   .rodata.str1.4:00000018 .LC6
+    {standard input}:1332   .bss._ZL8NullPort:00000000 $d
+    {standard input}:1336   .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:1339   .bss._ZL7NullPin:00000000 $d
+    {standard input}:1343   .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:1346   .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE:00000000 $d
+    {standard input}:1350   .rodata._ZN23replicator_axis_lengthsL12axis_lengthsE:00000000 _ZN23replicator_axis_lengthsL12axis_lengthsE
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
 xprintf
-SystemCoreClock
-_ZN3IAP5eraseEii
 _ZN6eeprom16clearflashupdateEv
 _ZN6eeprom10setEeprom8Eth
 _ZN6eeprom11setEeprom16Ett
 default_therm_table
 _ZN6eeprom10getEeprom8Eth
 _ZN6eeprom11setEeprom32Etm
+_ZN6eeprom11getEeprom16Ett
 _ZN7LPCPortC1Eh
 _ZN3PinC1ERK7LPCPorth

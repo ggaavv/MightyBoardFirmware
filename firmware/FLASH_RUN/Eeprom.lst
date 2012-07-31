@@ -280,7 +280,7 @@
  207              	 .loc 1 34 0
  208 0020 4FF06403 	 mov r3,#100
  209 0024 03FB0044 	 mla r4,r3,r0,r4
- 210 0028 40F22B23 	 movw r3,#555
+ 210 0028 40F22A23 	 movw r3,#554
  211 002c 9C42     	 cmp r4,r3
  212 002e 1AD0     	 beq .L9
   38:src/MightyBoard/shared/Eeprom.cc **** 	if (prom_version[1] == 0xff || prom_version[1] < 2) {
@@ -295,7 +295,7 @@
  220              	.L11:
   44:src/MightyBoard/shared/Eeprom.cc **** 	prom_version[0] = firmware_version % 100;
  221              	 .loc 1 44 0
- 222 003e 4FF03701 	 mov r1,#55
+ 222 003e 4FF03601 	 mov r1,#54
  223 0042 8DF80410 	 strb r1,[sp,#4]
   45:src/MightyBoard/shared/Eeprom.cc **** 	prom_version[1] = firmware_version / 100;
  224              	 .loc 1 45 0

@@ -305,10 +305,12 @@ void setDefaultsAcceleration(){
 //	eeprom_write_word((uint16_t*)(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_RATES_OFFSET + 8), DEFAULT_B_ACCELERATION);
 
 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 0, DEFAULT_MAX_XY_JERK);
+	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 2, DEFAULT_MAX_XY_JERK);
 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4, DEFAULT_MAX_Z_JERK);
 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6, DEFAULT_MAX_A_JERK);
 	setEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8, DEFAULT_MAX_B_JERK);
 //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 0), DEFAULT_MAX_XY_JERK);
+//	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 2), DEFAULT_MAX_XY_JERK);
 //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 4), DEFAULT_MAX_Z_JERK);
 //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 6), DEFAULT_MAX_A_JERK);
 //	setEepromFixed16((eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::AXIS_JERK_OFFSET + 8), DEFAULT_MAX_B_JERK);
@@ -445,6 +447,27 @@ void storeToolheadToleranceDefaults(){
 //	eeprom_write_block((uint8_t*)&(offsets[0]),(uint8_t*)(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS), 12 );
 }
 
+void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
+	
+	uint16_t hours = eeprom::getEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET,0);
+	uint8_t minutes = eeprom::getEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET,0);
+	
+	uint8_t total_minutes = new_minutes + minutes;
+	minutes = total_minutes % 60;
+	
+	// increment hours if minutes are over 60
+	if(total_minutes > 60){
+		hours++;
+	}
+	
+	// update build time
+	setEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET, hours + new_hours);
+	setEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET, minutes);
+//	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), hours + new_hours);
+//	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), minutes);
+
+}
+
 /// Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
 	write_ff_to_ram();
@@ -459,6 +482,12 @@ void fullResetEEPROM() {
 	
 	// toolhead offset defaults
 	storeToolheadToleranceDefaults();
+	
+	// set build time to zero
+	setEeprom16(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET, 0);
+	setEeprom8(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET, 0);
+//	eeprom_write_word((uint16_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::HOURS_OFFSET), 0);
+//	eeprom_write_byte((uint8_t*)(eeprom_offsets::TOTAL_BUILD_TIME + build_time_offsets::MINUTES_OFFSET), 0);
 	
 	factoryResetEEPROM();
 }

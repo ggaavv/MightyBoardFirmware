@@ -35,8 +35,8 @@
   10:src/MightyBoard/shared/Interface.cc **** namespace interface {
   11:src/MightyBoard/shared/Interface.cc **** 
   12:src/MightyBoard/shared/Interface.cc **** 
-  13:src/MightyBoard/shared/Interface.cc **** LiquidCrystalSerial* lcd;
-  14:src/MightyBoard/shared/Interface.cc **** InterfaceBoard* board;
+  13:src/MightyBoard/shared/Interface.cc **** static LiquidCrystalSerial* lcd;   // TODO decide if these need to be static (static added bye gavi
+  14:src/MightyBoard/shared/Interface.cc **** static InterfaceBoard* board;		// TODO decide if these need to be static (static added bye gavin)
   15:src/MightyBoard/shared/Interface.cc **** 
   16:src/MightyBoard/shared/Interface.cc **** bool isConnected() {
   27              	 .loc 1 16 0
@@ -493,11 +493,11 @@
  378 0024 38BD     	 pop {r3,r4,r5,pc}
  379              	 .cfi_endproc
  380              	.LFE120:
- 382 0026 00BF     	 .section .text._GLOBAL__sub_I__ZN9interface3lcdE,"ax",%progbits
+ 382 0026 00BF     	 .section .text._GLOBAL__sub_I__ZN9interface11isConnectedEv,"ax",%progbits
  383              	 .align 2
  384              	 .thumb
  385              	 .thumb_func
- 387              	_GLOBAL__sub_I__ZN9interface3lcdE:
+ 387              	_GLOBAL__sub_I__ZN9interface11isConnectedEv:
  388              	.LFB122:
   79:src/MightyBoard/shared/Interface.cc **** 
   80:src/MightyBoard/shared/Interface.cc **** }
@@ -642,77 +642,75 @@
  444              	.LFE122:
  446              	 .section .init_array,"aw",%init_array
  447              	 .align 2
- 448 0000 00000000 	 .word _GLOBAL__sub_I__ZN9interface3lcdE(target1)
- 449              	 .global _ZN9interface5boardE
- 450              	 .global _ZN9interface3lcdE
- 451              	 .section .bss._ZL5Port0,"aw",%nobits
- 452              	 .align 2
- 453              	 .set .LANCHOR2,.+0
- 456              	_ZL5Port0:
- 457 0000 00       	 .space 1
- 458 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
- 459              	 .align 2
- 460              	 .set .LANCHOR3,.+0
- 463              	_ZL5Port1:
- 464 0000 00       	 .space 1
- 465 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
- 466              	 .align 2
- 467              	 .set .LANCHOR4,.+0
- 470              	_ZL5Port2:
- 471 0000 00       	 .space 1
- 472 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
- 473              	 .align 2
- 474              	 .set .LANCHOR5,.+0
- 477              	_ZL5Port3:
- 478 0000 00       	 .space 1
- 479 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
- 480              	 .align 2
- 481              	 .set .LANCHOR6,.+0
- 484              	_ZL5Port4:
- 485 0000 00       	 .space 1
- 486 0001 000000   	 .section .bss._ZN9interface5boardE,"aw",%nobits
- 487              	 .align 2
- 488              	 .set .LANCHOR0,.+0
- 491              	_ZN9interface5boardE:
- 492 0000 00000000 	 .space 4
- 493              	 .section .bss._ZN9interface3lcdE,"aw",%nobits
- 494              	 .align 2
- 495              	 .set .LANCHOR1,.+0
- 498              	_ZN9interface3lcdE:
- 499 0000 00000000 	 .space 4
- 500              	 .section .bss._ZL7NullPin,"aw",%nobits
- 501              	 .align 2
- 502              	 .set .LANCHOR8,.+0
- 505              	_ZL7NullPin:
- 506 0000 00000000 	 .space 5
- 506      00
- 507 0005 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
- 508              	 .align 2
- 509              	 .set .LANCHOR7,.+0
- 512              	_ZL8NullPort:
- 513 0000 00       	 .space 1
- 514 0001 000000   	 .text
- 515              	.Letext0:
- 516              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
- 517              	 .file 5 "src/MightyBoard/shared/Types.hh"
- 518              	 .file 6 "src/MightyBoard/shared/Timeout.hh"
- 519              	 .file 7 "src/MightyBoard/shared/ButtonArray.hh"
- 520              	 .file 8 "src/MightyBoard/shared/InterfaceBoard.hh"
- 521              	 .file 9 "src/MightyBoard/shared/LiquidCrystalSerial.hh"
- 522              	 .file 10 "src/MightyBoard/shared/Menu.hh"
- 523              	 .file 11 "src/MightyBoard/Motherboard/UtilityScripts.hh"
- 524              	 .file 12 "src/MightyBoard/shared/Interface.hh"
- 525              	 .file 13 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 448 0000 00000000 	 .word _GLOBAL__sub_I__ZN9interface11isConnectedEv(target1)
+ 449              	 .section .bss._ZL5Port0,"aw",%nobits
+ 450              	 .align 2
+ 451              	 .set .LANCHOR2,.+0
+ 454              	_ZL5Port0:
+ 455 0000 00       	 .space 1
+ 456 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 457              	 .align 2
+ 458              	 .set .LANCHOR3,.+0
+ 461              	_ZL5Port1:
+ 462 0000 00       	 .space 1
+ 463 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 464              	 .align 2
+ 465              	 .set .LANCHOR4,.+0
+ 468              	_ZL5Port2:
+ 469 0000 00       	 .space 1
+ 470 0001 000000   	 .section .bss._ZN9interfaceL5boardE,"aw",%nobits
+ 471              	 .align 2
+ 472              	 .set .LANCHOR0,.+0
+ 475              	_ZN9interfaceL5boardE:
+ 476 0000 00000000 	 .space 4
+ 477              	 .section .bss._ZL5Port4,"aw",%nobits
+ 478              	 .align 2
+ 479              	 .set .LANCHOR6,.+0
+ 482              	_ZL5Port4:
+ 483 0000 00       	 .space 1
+ 484 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 485              	 .align 2
+ 486              	 .set .LANCHOR5,.+0
+ 489              	_ZL5Port3:
+ 490 0000 00       	 .space 1
+ 491 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 492              	 .align 2
+ 493              	 .set .LANCHOR7,.+0
+ 496              	_ZL8NullPort:
+ 497 0000 00       	 .space 1
+ 498 0001 000000   	 .section .bss._ZN9interfaceL3lcdE,"aw",%nobits
+ 499              	 .align 2
+ 500              	 .set .LANCHOR1,.+0
+ 503              	_ZN9interfaceL3lcdE:
+ 504 0000 00000000 	 .space 4
+ 505              	 .section .bss._ZL7NullPin,"aw",%nobits
+ 506              	 .align 2
+ 507              	 .set .LANCHOR8,.+0
+ 510              	_ZL7NullPin:
+ 511 0000 00000000 	 .space 5
+ 511      00
+ 512 0005 000000   	 .text
+ 513              	.Letext0:
+ 514              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 515              	 .file 5 "src/MightyBoard/shared/Types.hh"
+ 516              	 .file 6 "src/MightyBoard/shared/Timeout.hh"
+ 517              	 .file 7 "src/MightyBoard/shared/ButtonArray.hh"
+ 518              	 .file 8 "src/MightyBoard/shared/InterfaceBoard.hh"
+ 519              	 .file 9 "src/MightyBoard/shared/LiquidCrystalSerial.hh"
+ 520              	 .file 10 "src/MightyBoard/shared/Menu.hh"
+ 521              	 .file 11 "src/MightyBoard/Motherboard/UtilityScripts.hh"
+ 522              	 .file 12 "src/MightyBoard/shared/Interface.hh"
+ 523              	 .file 13 "src/MightyBoard/Motherboard/system/core_cm3.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 Interface.cc
     {standard input}:19     .text._ZN9interface11isConnectedEv:00000000 $t
     {standard input}:24     .text._ZN9interface11isConnectedEv:00000000 _ZN9interface11isConnectedEv
-    {standard input}:488    .bss._ZN9interface5boardE:00000000 .LANCHOR0
+    {standard input}:472    .bss._ZN9interfaceL5boardE:00000000 .LANCHOR0
     {standard input}:117    .text._ZN9interface18setBuildPercentageEh:00000000 $t
     {standard input}:122    .text._ZN9interface18setBuildPercentageEh:00000000 _ZN9interface18setBuildPercentageEh
     {standard input}:147    .text._ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial:00000000 $t
     {standard input}:152    .text._ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial:00000000 _ZN9interface4initEP14InterfaceBoardP19LiquidCrystalSerial
-    {standard input}:495    .bss._ZN9interface3lcdE:00000000 .LANCHOR1
+    {standard input}:500    .bss._ZN9interfaceL3lcdE:00000000 .LANCHOR1
     {standard input}:174    .text._ZN9interface10pushScreenEP6Screen:00000000 $t
     {standard input}:179    .text._ZN9interface10pushScreenEP6Screen:00000000 _ZN9interface10pushScreenEP6Screen
     {standard input}:205    .text._ZN9interface12pushNoUpdateEP6Screen:00000000 $t
@@ -727,34 +725,34 @@ DEFINED SYMBOLS
     {standard input}:322    .text._ZN9interface8doUpdateEv:00000000 _ZN9interface8doUpdateEv
     {standard input}:344    .text._ZN9interface7setLEDsEb:00000000 $t
     {standard input}:349    .text._ZN9interface7setLEDsEb:00000000 _ZN9interface7setLEDsEb
-    {standard input}:383    .text._GLOBAL__sub_I__ZN9interface3lcdE:00000000 $t
-    {standard input}:387    .text._GLOBAL__sub_I__ZN9interface3lcdE:00000000 _GLOBAL__sub_I__ZN9interface3lcdE
-    {standard input}:453    .bss._ZL5Port0:00000000 .LANCHOR2
-    {standard input}:460    .bss._ZL5Port1:00000000 .LANCHOR3
-    {standard input}:467    .bss._ZL5Port2:00000000 .LANCHOR4
-    {standard input}:474    .bss._ZL5Port3:00000000 .LANCHOR5
-    {standard input}:481    .bss._ZL5Port4:00000000 .LANCHOR6
-    {standard input}:509    .bss._ZL8NullPort:00000000 .LANCHOR7
-    {standard input}:502    .bss._ZL7NullPin:00000000 .LANCHOR8
+    {standard input}:383    .text._GLOBAL__sub_I__ZN9interface11isConnectedEv:00000000 $t
+    {standard input}:387    .text._GLOBAL__sub_I__ZN9interface11isConnectedEv:00000000 _GLOBAL__sub_I__ZN9interface11isConnectedEv
+    {standard input}:451    .bss._ZL5Port0:00000000 .LANCHOR2
+    {standard input}:458    .bss._ZL5Port1:00000000 .LANCHOR3
+    {standard input}:465    .bss._ZL5Port2:00000000 .LANCHOR4
+    {standard input}:486    .bss._ZL5Port3:00000000 .LANCHOR5
+    {standard input}:479    .bss._ZL5Port4:00000000 .LANCHOR6
+    {standard input}:493    .bss._ZL8NullPort:00000000 .LANCHOR7
+    {standard input}:507    .bss._ZL7NullPin:00000000 .LANCHOR8
     {standard input}:447    .init_array:00000000 $d
-    {standard input}:491    .bss._ZN9interface5boardE:00000000 _ZN9interface5boardE
-    {standard input}:498    .bss._ZN9interface3lcdE:00000000 _ZN9interface3lcdE
-    {standard input}:452    .bss._ZL5Port0:00000000 $d
-    {standard input}:456    .bss._ZL5Port0:00000000 _ZL5Port0
-    {standard input}:459    .bss._ZL5Port1:00000000 $d
-    {standard input}:463    .bss._ZL5Port1:00000000 _ZL5Port1
-    {standard input}:466    .bss._ZL5Port2:00000000 $d
-    {standard input}:470    .bss._ZL5Port2:00000000 _ZL5Port2
-    {standard input}:473    .bss._ZL5Port3:00000000 $d
-    {standard input}:477    .bss._ZL5Port3:00000000 _ZL5Port3
-    {standard input}:480    .bss._ZL5Port4:00000000 $d
-    {standard input}:484    .bss._ZL5Port4:00000000 _ZL5Port4
-    {standard input}:487    .bss._ZN9interface5boardE:00000000 $d
-    {standard input}:494    .bss._ZN9interface3lcdE:00000000 $d
-    {standard input}:501    .bss._ZL7NullPin:00000000 $d
-    {standard input}:505    .bss._ZL7NullPin:00000000 _ZL7NullPin
-    {standard input}:508    .bss._ZL8NullPort:00000000 $d
-    {standard input}:512    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:450    .bss._ZL5Port0:00000000 $d
+    {standard input}:454    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:457    .bss._ZL5Port1:00000000 $d
+    {standard input}:461    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:464    .bss._ZL5Port2:00000000 $d
+    {standard input}:468    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:471    .bss._ZN9interfaceL5boardE:00000000 $d
+    {standard input}:475    .bss._ZN9interfaceL5boardE:00000000 _ZN9interfaceL5boardE
+    {standard input}:478    .bss._ZL5Port4:00000000 $d
+    {standard input}:482    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:485    .bss._ZL5Port3:00000000 $d
+    {standard input}:489    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:492    .bss._ZL8NullPort:00000000 $d
+    {standard input}:496    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:499    .bss._ZN9interfaceL3lcdE:00000000 $d
+    {standard input}:503    .bss._ZN9interfaceL3lcdE:00000000 _ZN9interfaceL3lcdE
+    {standard input}:506    .bss._ZL7NullPin:00000000 $d
+    {standard input}:510    .bss._ZL7NullPin:00000000 _ZL7NullPin
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS

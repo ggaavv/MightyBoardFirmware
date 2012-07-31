@@ -21,7 +21,7 @@
   21              	 .thumb
   22              	 .thumb_func
   24              	_ZN6Cutoff14isCutoffActiveEv:
-  25              	.LFB60:
+  25              	.LFB72:
   26              	 .file 1 "src/MightyBoard/Motherboard/Cutoff.cc"
    1:src/MightyBoard/Motherboard/Cutoff.cc **** /*
    2:src/MightyBoard/Motherboard/Cutoff.cc ****  * Copyright 2011 by Alison Leonard	 <alison@makerbot.com>
@@ -42,7 +42,7 @@
   17:src/MightyBoard/Motherboard/Cutoff.cc **** 
   18:src/MightyBoard/Motherboard/Cutoff.cc **** #include "Cutoff.hh"
   19:src/MightyBoard/Motherboard/Cutoff.cc **** #include "Pin.hh"
-  20:src/MightyBoard/Motherboard/Cutoff.cc **** //#include "Piezo.hh"
+  20:src/MightyBoard/Motherboard/Cutoff.cc **** #include "Piezo.hh"
   21:src/MightyBoard/Motherboard/Cutoff.cc **** 
   22:src/MightyBoard/Motherboard/Cutoff.cc **** 
   23:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::init()
@@ -70,206 +70,673 @@
   28              	 .cfi_startproc
   29              	 
   30              	 
-  31              	 
-  32              	.LVL0:
+  31              	.LVL0:
+  32 0000 00B5     	 push {lr}
+  33              	.LCFI0:
+  34              	 .cfi_def_cfa_offset 4
+  35              	 .cfi_offset 14,-4
+  36 0002 87B0     	 sub sp,sp,#28
+  37              	.LCFI1:
+  38              	 .cfi_def_cfa_offset 32
   44:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if cutoff test pin is high or if cutoff output is latched high, flag as cutoff active
-  45:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_TEST.getValue() || CUTOFF_SR_CHECK.getValue())
+  45:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_TEST.getValue() || CUTOFF_SR_CHECK.getValue())
+  39              	 .loc 1 45 0
+  40 0004 02A8     	 add r0,sp,#8
+  41              	.LVL1:
+  42 0006 4FF0FF01 	 mov r1,#255
+  43 000a FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  44 000e 6846     	 mov r0,sp
+  45 0010 02A9     	 add r1,sp,#8
+  46 0012 4FF0FF02 	 mov r2,#255
+  47 0016 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  48              	.LVL2:
+  49              	.LBB6:
+  50              	.LBB7:
+  51              	 .file 2 "src/MightyBoard/shared/Pin.hh"
+   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
+   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
+   3:src/MightyBoard/shared/Pin.hh **** 
+   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
+   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
+   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
+   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
+   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
+   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
+  10:src/MightyBoard/shared/Pin.hh **** }
+  11:src/MightyBoard/shared/Pin.hh **** 
+  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
+  13:src/MightyBoard/shared/Pin.hh **** class Pin {
+  14:src/MightyBoard/shared/Pin.hh **** private:
+  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
+  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
+  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
+  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
+  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
+  20:src/MightyBoard/shared/Pin.hh **** 
+  21:src/MightyBoard/shared/Pin.hh **** public:
+  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
+  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
+  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
+  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
+  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
+  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  52              	 .loc 2 28 0
+  53 001a 9DF80130 	 ldrb r3,[sp,#1]
+  54 001e 7BB9     	 cbnz r3,.L2
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+  55              	 .loc 2 30 0
+  56 0020 9DF80000 	 ldrb r0,[sp,#0]
+  57 0024 FFF7FEFF 	 bl FIO_ReadValue
+  58 0028 9DF80230 	 ldrb r3,[sp,#2]
+  59 002c 4FF00102 	 mov r2,#1
+  60 0030 02FA03F3 	 lsl r3,r2,r3
+  61              	.LBE7:
+  62              	.LBE6:
+  63              	 .loc 1 45 0
+  64 0034 0340     	 ands r3,r3,r0
+  65 0036 13F0FF0F 	 tst r3,#255
+  66 003a 18BF     	 it ne
+  67 003c 0120     	 movne r0,#1
+  68 003e 1FD1     	 bne .L3
+  69              	.L2:
+  70              	 .loc 1 45 0 is_stmt 0 discriminator 2
+  71 0040 05A8     	 add r0,sp,#20
+  72 0042 4FF0FF01 	 mov r1,#255
+  73 0046 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+  74 004a 03A8     	 add r0,sp,#12
+  75 004c 05A9     	 add r1,sp,#20
+  76 004e 4FF0FF02 	 mov r2,#255
+  77 0052 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+  78              	.LVL3:
+  79              	.LBB8:
+  80              	.LBB9:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  81              	 .loc 2 28 0 is_stmt 1 discriminator 2
+  82 0056 9DF80D30 	 ldrb r3,[sp,#13]
+  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
+  83              	 .loc 2 29 0 discriminator 2
+  84 005a 4FF00000 	 mov r0,#0
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+  85              	 .loc 2 28 0 discriminator 2
+  86 005e 7BB9     	 cbnz r3,.L3
+  87              	 .loc 2 30 0
+  88 0060 9DF80C00 	 ldrb r0,[sp,#12]
+  89 0064 FFF7FEFF 	 bl FIO_ReadValue
+  90 0068 9DF80E30 	 ldrb r3,[sp,#14]
+  91 006c 4FF00102 	 mov r2,#1
+  92 0070 02FA03F3 	 lsl r3,r2,r3
+  93 0074 0340     	 ands r3,r3,r0
+  94 0076 13F0FF0F 	 tst r3,#255
+  95 007a 0CBF     	 ite eq
+  96 007c 0020     	 moveq r0,#0
+  97 007e 0120     	 movne r0,#1
+  98              	.LVL4:
+  99              	.L3:
+ 100              	.LBE9:
+ 101              	.LBE8:
   46:src/MightyBoard/Motherboard/Cutoff.cc **** 		return true;
-  47:src/MightyBoard/Motherboard/Cutoff.cc **** //	else
-  48:src/MightyBoard/Motherboard/Cutoff.cc **** //		return false;
+  47:src/MightyBoard/Motherboard/Cutoff.cc **** 	else
+  48:src/MightyBoard/Motherboard/Cutoff.cc **** 		return false;
   49:src/MightyBoard/Motherboard/Cutoff.cc **** }
-  33              	 .loc 1 49 0
-  34 0000 4FF00100 	 mov r0,#1
-  35              	.LVL1:
-  36 0004 7047     	 bx lr
-  37              	 .cfi_endproc
-  38              	.LFE60:
-  40 0006 00BF     	 .section .text._ZN6Cutoff6enableEv,"ax",%progbits
-  41              	 .align 2
-  42              	 .global _ZN6Cutoff6enableEv
-  43              	 .thumb
-  44              	 .thumb_func
-  46              	_ZN6Cutoff6enableEv:
-  47              	.LFB61:
+ 102              	 .loc 1 49 0 discriminator 4
+ 103 0080 07B0     	 add sp,sp,#28
+ 104 0082 00BD     	 pop {pc}
+ 105              	 .cfi_endproc
+ 106              	.LFE72:
+ 108              	 .section .text._ZN6Cutoff11resetCutoffEv,"ax",%progbits
+ 109              	 .align 2
+ 110              	 .global _ZN6Cutoff11resetCutoffEv
+ 111              	 .thumb
+ 112              	 .thumb_func
+ 114              	_ZN6Cutoff11resetCutoffEv:
+ 115              	.LFB75:
   50:src/MightyBoard/Motherboard/Cutoff.cc **** 
   51:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::enable()
   52:src/MightyBoard/Motherboard/Cutoff.cc **** {
-  48              	 .loc 1 52 0
-  49              	 .cfi_startproc
-  50              	 
-  51              	 
-  52              	 
-  53              	.LVL2:
   53:src/MightyBoard/Motherboard/Cutoff.cc **** 	// cutoff test pin is an input
-  54:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setValue(false);
-  55:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setDirection(false);
+  54:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setValue(false);
+  55:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setDirection(false);
   56:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   57:src/MightyBoard/Motherboard/Cutoff.cc **** 	// set enabled flag
   58:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoff_enabled = true;
-  54              	 .loc 1 58 0
-  55 0000 4FF00103 	 mov r3,#1
-  56 0004 0370     	 strb r3,[r0,#0]
   59:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   60:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if output is shut off (high when off), toggle reset pin
-  61:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_SR_CHECK.getValue())
+  61:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_SR_CHECK.getValue())
   62:src/MightyBoard/Motherboard/Cutoff.cc **** 		resetCutoff();
   63:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   64:src/MightyBoard/Motherboard/Cutoff.cc **** 	// set reset line to default value (low)
-  65:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setValue(false);
+  65:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_RESET.setValue(false);
   66:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   67:src/MightyBoard/Motherboard/Cutoff.cc **** }
-  57              	 .loc 1 67 0
-  58 0006 7047     	 bx lr
-  59              	 .cfi_endproc
-  60              	.LFE61:
-  62              	 .section .text._ZN6Cutoff7disableEv,"ax",%progbits
-  63              	 .align 2
-  64              	 .global _ZN6Cutoff7disableEv
-  65              	 .thumb
-  66              	 .thumb_func
-  68              	_ZN6Cutoff7disableEv:
-  69              	.LFB62:
   68:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::disable()
   69:src/MightyBoard/Motherboard/Cutoff.cc **** {
-  70              	 .loc 1 69 0
-  71              	 .cfi_startproc
-  72              	 
-  73              	 
-  74              	 
-  75              	.LVL3:
   70:src/MightyBoard/Motherboard/Cutoff.cc **** 	// cutoff test pin is an output and pulled down
-  71:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setValue(false);
-  72:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_TEST.setDirection(true);
+  71:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setValue(false);
+  72:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setDirection(true);
   73:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   74:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoff_enabled = false;
-  76              	 .loc 1 74 0
-  77 0000 4FF00003 	 mov r3,#0
-  78 0004 0370     	 strb r3,[r0,#0]
   75:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if output is shut off (high when off), toggle reset pin
-  76:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_SR_CHECK.getValue())
+  76:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_SR_CHECK.getValue())
   77:src/MightyBoard/Motherboard/Cutoff.cc **** 		resetCutoff();
   78:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   79:src/MightyBoard/Motherboard/Cutoff.cc **** 	// set reset line to default value (low)
-  80:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setValue(false);
+  80:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_RESET.setValue(false);
   81:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   82:src/MightyBoard/Motherboard/Cutoff.cc **** }
-  79              	 .loc 1 82 0
-  80 0006 7047     	 bx lr
-  81              	 .cfi_endproc
-  82              	.LFE62:
-  84              	 .section .text._ZN6Cutoff4initEv,"ax",%progbits
-  85              	 .align 2
-  86              	 .global _ZN6Cutoff4initEv
-  87              	 .thumb
-  88              	 .thumb_func
-  90              	_ZN6Cutoff4initEv:
-  91              	.LFB59:
-  24:src/MightyBoard/Motherboard/Cutoff.cc **** {
-  92              	 .loc 1 24 0
-  93              	 .cfi_startproc
-  94              	 
-  95              	 
-  96              	.LVL4:
-  97 0000 10B5     	 push {r4,lr}
-  98              	.LCFI0:
-  99              	 .cfi_def_cfa_offset 8
- 100              	 .cfi_offset 14,-4
- 101              	 .cfi_offset 4,-8
- 102 0002 0446     	 mov r4,r0
-  36:src/MightyBoard/Motherboard/Cutoff.cc **** 		disable();
- 103              	 .loc 1 36 0
- 104 0004 FFF7FEFF 	 bl _ZN6Cutoff7disableEv
- 105              	.LVL5:
-  38:src/MightyBoard/Motherboard/Cutoff.cc **** 	noiseCount = 0;
- 106              	 .loc 1 38 0
- 107 0008 4FF00003 	 mov r3,#0
- 108 000c 6370     	 strb r3,[r4,#1]
-  39:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoffCount = 0;
- 109              	 .loc 1 39 0
- 110 000e A370     	 strb r3,[r4,#2]
-  40:src/MightyBoard/Motherboard/Cutoff.cc **** 	alarmRun = false;
- 111              	 .loc 1 40 0
- 112 0010 E370     	 strb r3,[r4,#3]
-  41:src/MightyBoard/Motherboard/Cutoff.cc **** }
- 113              	 .loc 1 41 0
- 114 0012 10BD     	 pop {r4,pc}
- 115              	 .cfi_endproc
- 116              	.LFE59:
- 118              	 .section .text._ZN6Cutoff11resetCutoffEv,"ax",%progbits
- 119              	 .align 2
- 120              	 .global _ZN6Cutoff11resetCutoffEv
- 121              	 .thumb
- 122              	 .thumb_func
- 124              	_ZN6Cutoff11resetCutoffEv:
- 125              	.LFB63:
   83:src/MightyBoard/Motherboard/Cutoff.cc **** 
   84:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::resetCutoff(){
- 126              	 .loc 1 84 0
- 127              	 .cfi_startproc
- 128              	 
- 129              	 
- 130              	 
- 131              	.LVL6:
+ 116              	 .loc 1 84 0
+ 117              	 .cfi_startproc
+ 118              	 
+ 119              	 
+ 120              	.LVL5:
+ 121 0000 10B5     	 push {r4,lr}
+ 122              	.LCFI2:
+ 123              	 .cfi_def_cfa_offset 8
+ 124              	 .cfi_offset 14,-4
+ 125              	 .cfi_offset 4,-8
+ 126 0002 8CB0     	 sub sp,sp,#48
+ 127              	.LCFI3:
+ 128              	 .cfi_def_cfa_offset 56
+ 129 0004 0446     	 mov r4,r0
   85:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   86:src/MightyBoard/Motherboard/Cutoff.cc **** 	//Timeout resetTimeout;
   87:src/MightyBoard/Motherboard/Cutoff.cc **** 
   88:src/MightyBoard/Motherboard/Cutoff.cc **** 	// abort if cutoff test is high
-  89:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_TEST.getValue())
-  90:src/MightyBoard/Motherboard/Cutoff.cc **** //		return;
+  89:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_TEST.getValue())
+ 130              	 .loc 1 89 0
+ 131 0006 02A8     	 add r0,sp,#8
+ 132              	.LVL6:
+ 133 0008 4FF0FF01 	 mov r1,#255
+ 134 000c FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 135 0010 6846     	 mov r0,sp
+ 136 0012 02A9     	 add r1,sp,#8
+ 137 0014 4FF0FF02 	 mov r2,#255
+ 138 0018 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 139              	.LVL7:
+ 140              	.LBB18:
+ 141              	.LBB19:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 142              	 .loc 2 28 0
+ 143 001c 9DF80130 	 ldrb r3,[sp,#1]
+ 144 0020 6BB9     	 cbnz r3,.L8
+ 145              	 .loc 2 30 0
+ 146 0022 9DF80000 	 ldrb r0,[sp,#0]
+ 147 0026 FFF7FEFF 	 bl FIO_ReadValue
+ 148 002a 9DF80230 	 ldrb r3,[sp,#2]
+ 149 002e 4FF00102 	 mov r2,#1
+ 150 0032 02FA03F3 	 lsl r3,r2,r3
+ 151              	.LBE19:
+ 152              	.LBE18:
+ 153              	 .loc 1 89 0
+ 154 0036 0340     	 ands r3,r3,r0
+ 155 0038 13F0FF0F 	 tst r3,#255
+ 156 003c 4FD1     	 bne .L7
+ 157              	.L8:
+  90:src/MightyBoard/Motherboard/Cutoff.cc **** 		return;
   91:src/MightyBoard/Motherboard/Cutoff.cc **** 		
   92:src/MightyBoard/Motherboard/Cutoff.cc **** 	// toggle reset pin	
-  93:src/MightyBoard/Motherboard/Cutoff.cc **** //	CUTOFF_RESET.setValue(true);
+  93:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_RESET.setValue(true);
+ 158              	 .loc 1 93 0
+ 159 003e 05A8     	 add r0,sp,#20
+ 160 0040 4FF0FF01 	 mov r1,#255
+ 161 0044 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 162 0048 03A8     	 add r0,sp,#12
+ 163 004a 05A9     	 add r1,sp,#20
+ 164 004c 4FF0FF02 	 mov r2,#255
+ 165 0050 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 166              	.LVL8:
+ 167              	.LBB20:
+ 168              	.LBB21:
+  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
+  32:src/MightyBoard/shared/Pin.hh **** 	};
+  33:src/MightyBoard/shared/Pin.hh **** 
+  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 169              	 .loc 2 35 0
+ 170 0054 9DF80D30 	 ldrb r3,[sp,#13]
+ 171 0058 4BB9     	 cbnz r3,.L10
+  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
+  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
+  38:src/MightyBoard/shared/Pin.hh **** 
+  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
+  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
+  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
+  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
+  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
+  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
+ 172              	 .loc 2 44 0
+ 173 005a 9DF80E30 	 ldrb r3,[sp,#14]
+ 174 005e 9DF80C00 	 ldrb r0,[sp,#12]
+ 175 0062 4FF00101 	 mov r1,#1
+ 176 0066 01FA03F1 	 lsl r1,r1,r3
+ 177 006a FFF7FEFF 	 bl GPIO_SetValue
+ 178              	.L10:
+ 179              	.LBE21:
+ 180              	.LBE20:
   94:src/MightyBoard/Motherboard/Cutoff.cc **** 	
   95:src/MightyBoard/Motherboard/Cutoff.cc **** 	// ensure that reset worked
   96:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if not, enable hardware circuit
-  97:src/MightyBoard/Motherboard/Cutoff.cc **** //	if(CUTOFF_SR_CHECK.getValue())
-  98:src/MightyBoard/Motherboard/Cutoff.cc **** //		disable();
+  97:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_SR_CHECK.getValue())
+ 181              	 .loc 1 97 0
+ 182 006e 08A8     	 add r0,sp,#32
+ 183 0070 4FF0FF01 	 mov r1,#255
+ 184 0074 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 185 0078 06A8     	 add r0,sp,#24
+ 186 007a 08A9     	 add r1,sp,#32
+ 187 007c 4FF0FF02 	 mov r2,#255
+ 188 0080 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 189              	.LVL9:
+ 190              	.LBB22:
+ 191              	.LBB23:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 192              	 .loc 2 28 0
+ 193 0084 9DF81930 	 ldrb r3,[sp,#25]
+ 194 0088 8BB9     	 cbnz r3,.L11
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 195              	 .loc 2 30 0
+ 196 008a 9DF81800 	 ldrb r0,[sp,#24]
+ 197 008e FFF7FEFF 	 bl FIO_ReadValue
+ 198 0092 9DF81A30 	 ldrb r3,[sp,#26]
+ 199 0096 4FF00102 	 mov r2,#1
+ 200 009a 02FA03F3 	 lsl r3,r2,r3
+ 201              	.LBE23:
+ 202              	.LBE22:
+ 203              	 .loc 1 97 0
+ 204 009e 0340     	 ands r3,r3,r0
+ 205 00a0 13F0FF0F 	 tst r3,#255
+ 206 00a4 03D0     	 beq .L11
+  98:src/MightyBoard/Motherboard/Cutoff.cc **** 		disable();
+ 207              	 .loc 1 98 0
+ 208 00a6 2046     	 mov r0,r4
+ 209 00a8 FFF7FEFF 	 bl _ZN6Cutoff7disableEv
+ 210 00ac 17E0     	 b .L7
+ 211              	.L11:
   99:src/MightyBoard/Motherboard/Cutoff.cc **** 	// if reset OK, return reset line to default (pulled down)
- 100:src/MightyBoard/Motherboard/Cutoff.cc **** //	else
- 101:src/MightyBoard/Motherboard/Cutoff.cc **** //		CUTOFF_RESET.setValue(false);
+ 100:src/MightyBoard/Motherboard/Cutoff.cc **** 	else
+ 101:src/MightyBoard/Motherboard/Cutoff.cc **** 		CUTOFF_RESET.setValue(false);
+ 212              	 .loc 1 101 0
+ 213 00ae 0BA8     	 add r0,sp,#44
+ 214 00b0 4FF0FF01 	 mov r1,#255
+ 215 00b4 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 216 00b8 09A8     	 add r0,sp,#36
+ 217 00ba 0BA9     	 add r1,sp,#44
+ 218 00bc 4FF0FF02 	 mov r2,#255
+ 219 00c0 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 220              	.LVL10:
+ 221              	.LBB24:
+ 222              	.LBB25:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 223              	 .loc 2 35 0
+ 224 00c4 9DF82530 	 ldrb r3,[sp,#37]
+ 225 00c8 4BB9     	 cbnz r3,.L7
+  45:src/MightyBoard/shared/Pin.hh **** 		} else {
+  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
+  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
+  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+ 226              	 .loc 2 48 0
+ 227 00ca 9DF82630 	 ldrb r3,[sp,#38]
+ 228 00ce 9DF82400 	 ldrb r0,[sp,#36]
+ 229 00d2 4FF00101 	 mov r1,#1
+ 230 00d6 01FA03F1 	 lsl r1,r1,r3
+ 231 00da FFF7FEFF 	 bl GPIO_ClearValue
+ 232              	.LVL11:
+ 233              	.L7:
+ 234              	.LBE25:
+ 235              	.LBE24:
  102:src/MightyBoard/Motherboard/Cutoff.cc **** }
- 132              	 .loc 1 102 0
- 133 0000 7047     	 bx lr
- 134              	 .cfi_endproc
- 135              	.LFE63:
- 137 0002 00BF     	 .section .text._ZN6Cutoff8setAlarmEv,"ax",%progbits
- 138              	 .align 2
- 139              	 .global _ZN6Cutoff8setAlarmEv
- 140              	 .thumb
- 141              	 .thumb_func
- 143              	_ZN6Cutoff8setAlarmEv:
- 144              	.LFB64:
+ 236              	 .loc 1 102 0
+ 237 00de 0CB0     	 add sp,sp,#48
+ 238 00e0 10BD     	 pop {r4,pc}
+ 239              	 .cfi_endproc
+ 240              	.LFE75:
+ 242 00e2 00BF     	 .section .text._ZN6Cutoff7disableEv,"ax",%progbits
+ 243              	 .align 2
+ 244              	 .global _ZN6Cutoff7disableEv
+ 245              	 .thumb
+ 246              	 .thumb_func
+ 248              	_ZN6Cutoff7disableEv:
+ 249              	.LFB74:
+  69:src/MightyBoard/Motherboard/Cutoff.cc **** {
+ 250              	 .loc 1 69 0
+ 251              	 .cfi_startproc
+ 252              	 
+ 253              	 
+ 254              	.LVL12:
+ 255 0000 10B5     	 push {r4,lr}
+ 256              	.LCFI4:
+ 257              	 .cfi_def_cfa_offset 8
+ 258              	 .cfi_offset 14,-4
+ 259              	 .cfi_offset 4,-8
+ 260 0002 8CB0     	 sub sp,sp,#48
+ 261              	.LCFI5:
+ 262              	 .cfi_def_cfa_offset 56
+ 263 0004 0446     	 mov r4,r0
+  71:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setValue(false);
+ 264              	 .loc 1 71 0
+ 265 0006 02A8     	 add r0,sp,#8
+ 266              	.LVL13:
+ 267 0008 4FF0FF01 	 mov r1,#255
+ 268 000c FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 269 0010 6846     	 mov r0,sp
+ 270 0012 02A9     	 add r1,sp,#8
+ 271 0014 4FF0FF02 	 mov r2,#255
+ 272 0018 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 273              	.LVL14:
+ 274              	.LBB32:
+ 275              	.LBB33:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 276              	 .loc 2 35 0
+ 277 001c 9DF80130 	 ldrb r3,[sp,#1]
+ 278 0020 4BB9     	 cbnz r3,.L13
+ 279              	 .loc 2 48 0
+ 280 0022 9DF80230 	 ldrb r3,[sp,#2]
+ 281 0026 9DF80000 	 ldrb r0,[sp,#0]
+ 282 002a 4FF00101 	 mov r1,#1
+ 283 002e 01FA03F1 	 lsl r1,r1,r3
+ 284 0032 FFF7FEFF 	 bl GPIO_ClearValue
+ 285              	.L13:
+ 286              	.LBE33:
+ 287              	.LBE32:
+  72:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setDirection(true);
+ 288              	 .loc 1 72 0
+ 289 0036 05A8     	 add r0,sp,#20
+ 290 0038 4FF0FF01 	 mov r1,#255
+ 291 003c FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 292 0040 03A8     	 add r0,sp,#12
+ 293 0042 05A9     	 add r1,sp,#20
+ 294 0044 4FF0FF02 	 mov r2,#255
+ 295 0048 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 296 004c 03A8     	 add r0,sp,#12
+ 297 004e 4FF00101 	 mov r1,#1
+ 298 0052 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  74:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoff_enabled = false;
+ 299              	 .loc 1 74 0
+ 300 0056 4FF00003 	 mov r3,#0
+ 301 005a 2370     	 strb r3,[r4,#0]
+  76:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_SR_CHECK.getValue())
+ 302              	 .loc 1 76 0
+ 303 005c 08A8     	 add r0,sp,#32
+ 304 005e 4FF0FF01 	 mov r1,#255
+ 305 0062 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 306 0066 06A8     	 add r0,sp,#24
+ 307 0068 08A9     	 add r1,sp,#32
+ 308 006a 4FF0FF02 	 mov r2,#255
+ 309 006e FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 310              	.LVL15:
+ 311              	.LBB34:
+ 312              	.LBB35:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 313              	 .loc 2 28 0
+ 314 0072 9DF81930 	 ldrb r3,[sp,#25]
+ 315 0076 83B9     	 cbnz r3,.L14
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 316              	 .loc 2 30 0
+ 317 0078 9DF81800 	 ldrb r0,[sp,#24]
+ 318 007c FFF7FEFF 	 bl FIO_ReadValue
+ 319 0080 9DF81A30 	 ldrb r3,[sp,#26]
+ 320 0084 4FF00102 	 mov r2,#1
+ 321 0088 02FA03F3 	 lsl r3,r2,r3
+ 322              	.LBE35:
+ 323              	.LBE34:
+  76:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_SR_CHECK.getValue())
+ 324              	 .loc 1 76 0
+ 325 008c 0340     	 ands r3,r3,r0
+ 326 008e 13F0FF0F 	 tst r3,#255
+ 327 0092 02D0     	 beq .L14
+  77:src/MightyBoard/Motherboard/Cutoff.cc **** 		resetCutoff();
+ 328              	 .loc 1 77 0
+ 329 0094 2046     	 mov r0,r4
+ 330 0096 FFF7FEFF 	 bl _ZN6Cutoff11resetCutoffEv
+ 331              	.L14:
+  80:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_RESET.setValue(false);
+ 332              	 .loc 1 80 0
+ 333 009a 0BA8     	 add r0,sp,#44
+ 334 009c 4FF0FF01 	 mov r1,#255
+ 335 00a0 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 336 00a4 09A8     	 add r0,sp,#36
+ 337 00a6 0BA9     	 add r1,sp,#44
+ 338 00a8 4FF0FF02 	 mov r2,#255
+ 339 00ac FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 340              	.LVL16:
+ 341              	.LBB36:
+ 342              	.LBB37:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 343              	 .loc 2 35 0
+ 344 00b0 9DF82530 	 ldrb r3,[sp,#37]
+ 345 00b4 4BB9     	 cbnz r3,.L12
+ 346              	 .loc 2 48 0
+ 347 00b6 9DF82630 	 ldrb r3,[sp,#38]
+ 348 00ba 9DF82400 	 ldrb r0,[sp,#36]
+ 349 00be 4FF00101 	 mov r1,#1
+ 350 00c2 01FA03F1 	 lsl r1,r1,r3
+ 351 00c6 FFF7FEFF 	 bl GPIO_ClearValue
+ 352              	.L12:
+ 353              	.LBE37:
+ 354              	.LBE36:
+  82:src/MightyBoard/Motherboard/Cutoff.cc **** }
+ 355              	 .loc 1 82 0
+ 356 00ca 0CB0     	 add sp,sp,#48
+ 357 00cc 10BD     	 pop {r4,pc}
+ 358              	 .cfi_endproc
+ 359              	.LFE74:
+ 361 00ce 00BF     	 .section .text._ZN6Cutoff4initEv,"ax",%progbits
+ 362              	 .align 2
+ 363              	 .global _ZN6Cutoff4initEv
+ 364              	 .thumb
+ 365              	 .thumb_func
+ 367              	_ZN6Cutoff4initEv:
+ 368              	.LFB71:
+  24:src/MightyBoard/Motherboard/Cutoff.cc **** {
+ 369              	 .loc 1 24 0
+ 370              	 .cfi_startproc
+ 371              	 
+ 372              	 
+ 373              	.LVL17:
+ 374 0000 10B5     	 push {r4,lr}
+ 375              	.LCFI6:
+ 376              	 .cfi_def_cfa_offset 8
+ 377              	 .cfi_offset 14,-4
+ 378              	 .cfi_offset 4,-8
+ 379 0002 0446     	 mov r4,r0
+  36:src/MightyBoard/Motherboard/Cutoff.cc **** 		disable();
+ 380              	 .loc 1 36 0
+ 381 0004 FFF7FEFF 	 bl _ZN6Cutoff7disableEv
+ 382              	.LVL18:
+  38:src/MightyBoard/Motherboard/Cutoff.cc **** 	noiseCount = 0;
+ 383              	 .loc 1 38 0
+ 384 0008 4FF00003 	 mov r3,#0
+ 385 000c 6370     	 strb r3,[r4,#1]
+  39:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoffCount = 0;
+ 386              	 .loc 1 39 0
+ 387 000e A370     	 strb r3,[r4,#2]
+  40:src/MightyBoard/Motherboard/Cutoff.cc **** 	alarmRun = false;
+ 388              	 .loc 1 40 0
+ 389 0010 E370     	 strb r3,[r4,#3]
+  41:src/MightyBoard/Motherboard/Cutoff.cc **** }
+ 390              	 .loc 1 41 0
+ 391 0012 10BD     	 pop {r4,pc}
+ 392              	 .cfi_endproc
+ 393              	.LFE71:
+ 395              	 .section .text._ZN6Cutoff6enableEv,"ax",%progbits
+ 396              	 .align 2
+ 397              	 .global _ZN6Cutoff6enableEv
+ 398              	 .thumb
+ 399              	 .thumb_func
+ 401              	_ZN6Cutoff6enableEv:
+ 402              	.LFB73:
+  52:src/MightyBoard/Motherboard/Cutoff.cc **** {
+ 403              	 .loc 1 52 0
+ 404              	 .cfi_startproc
+ 405              	 
+ 406              	 
+ 407              	.LVL19:
+ 408 0000 10B5     	 push {r4,lr}
+ 409              	.LCFI7:
+ 410              	 .cfi_def_cfa_offset 8
+ 411              	 .cfi_offset 14,-4
+ 412              	 .cfi_offset 4,-8
+ 413 0002 8CB0     	 sub sp,sp,#48
+ 414              	.LCFI8:
+ 415              	 .cfi_def_cfa_offset 56
+ 416 0004 0446     	 mov r4,r0
+  54:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setValue(false);
+ 417              	 .loc 1 54 0
+ 418 0006 02A8     	 add r0,sp,#8
+ 419              	.LVL20:
+ 420 0008 4FF0FF01 	 mov r1,#255
+ 421 000c FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 422 0010 6846     	 mov r0,sp
+ 423 0012 02A9     	 add r1,sp,#8
+ 424 0014 4FF0FF02 	 mov r2,#255
+ 425 0018 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 426              	.LVL21:
+ 427              	.LBB44:
+ 428              	.LBB45:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 429              	 .loc 2 35 0
+ 430 001c 9DF80130 	 ldrb r3,[sp,#1]
+ 431 0020 4BB9     	 cbnz r3,.L18
+ 432              	 .loc 2 48 0
+ 433 0022 9DF80230 	 ldrb r3,[sp,#2]
+ 434 0026 9DF80000 	 ldrb r0,[sp,#0]
+ 435 002a 4FF00101 	 mov r1,#1
+ 436 002e 01FA03F1 	 lsl r1,r1,r3
+ 437 0032 FFF7FEFF 	 bl GPIO_ClearValue
+ 438              	.L18:
+ 439              	.LBE45:
+ 440              	.LBE44:
+  55:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_TEST.setDirection(false);
+ 441              	 .loc 1 55 0
+ 442 0036 05A8     	 add r0,sp,#20
+ 443 0038 4FF0FF01 	 mov r1,#255
+ 444 003c FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 445 0040 03A8     	 add r0,sp,#12
+ 446 0042 05A9     	 add r1,sp,#20
+ 447 0044 4FF0FF02 	 mov r2,#255
+ 448 0048 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 449 004c 03A8     	 add r0,sp,#12
+ 450 004e 4FF00001 	 mov r1,#0
+ 451 0052 FFF7FEFF 	 bl _ZNK3Pin12setDirectionEb
+  58:src/MightyBoard/Motherboard/Cutoff.cc **** 	cutoff_enabled = true;
+ 452              	 .loc 1 58 0
+ 453 0056 4FF00103 	 mov r3,#1
+ 454 005a 2370     	 strb r3,[r4,#0]
+  61:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_SR_CHECK.getValue())
+ 455              	 .loc 1 61 0
+ 456 005c 08A8     	 add r0,sp,#32
+ 457 005e 4FF0FF01 	 mov r1,#255
+ 458 0062 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 459 0066 06A8     	 add r0,sp,#24
+ 460 0068 08A9     	 add r1,sp,#32
+ 461 006a 4FF0FF02 	 mov r2,#255
+ 462 006e FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 463              	.LVL22:
+ 464              	.LBB46:
+ 465              	.LBB47:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 466              	 .loc 2 28 0
+ 467 0072 9DF81930 	 ldrb r3,[sp,#25]
+ 468 0076 83B9     	 cbnz r3,.L19
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 469              	 .loc 2 30 0
+ 470 0078 9DF81800 	 ldrb r0,[sp,#24]
+ 471 007c FFF7FEFF 	 bl FIO_ReadValue
+ 472 0080 9DF81A30 	 ldrb r3,[sp,#26]
+ 473 0084 4FF00102 	 mov r2,#1
+ 474 0088 02FA03F3 	 lsl r3,r2,r3
+ 475              	.LBE47:
+ 476              	.LBE46:
+  61:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(CUTOFF_SR_CHECK.getValue())
+ 477              	 .loc 1 61 0
+ 478 008c 0340     	 ands r3,r3,r0
+ 479 008e 13F0FF0F 	 tst r3,#255
+ 480 0092 02D0     	 beq .L19
+  62:src/MightyBoard/Motherboard/Cutoff.cc **** 		resetCutoff();
+ 481              	 .loc 1 62 0
+ 482 0094 2046     	 mov r0,r4
+ 483 0096 FFF7FEFF 	 bl _ZN6Cutoff11resetCutoffEv
+ 484              	.L19:
+  65:src/MightyBoard/Motherboard/Cutoff.cc **** 	CUTOFF_RESET.setValue(false);
+ 485              	 .loc 1 65 0
+ 486 009a 0BA8     	 add r0,sp,#44
+ 487 009c 4FF0FF01 	 mov r1,#255
+ 488 00a0 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 489 00a4 09A8     	 add r0,sp,#36
+ 490 00a6 0BA9     	 add r1,sp,#44
+ 491 00a8 4FF0FF02 	 mov r2,#255
+ 492 00ac FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 493              	.LVL23:
+ 494              	.LBB48:
+ 495              	.LBB49:
+  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 496              	 .loc 2 35 0
+ 497 00b0 9DF82530 	 ldrb r3,[sp,#37]
+ 498 00b4 4BB9     	 cbnz r3,.L17
+ 499              	 .loc 2 48 0
+ 500 00b6 9DF82630 	 ldrb r3,[sp,#38]
+ 501 00ba 9DF82400 	 ldrb r0,[sp,#36]
+ 502 00be 4FF00101 	 mov r1,#1
+ 503 00c2 01FA03F1 	 lsl r1,r1,r3
+ 504 00c6 FFF7FEFF 	 bl GPIO_ClearValue
+ 505              	.L17:
+ 506              	.LBE49:
+ 507              	.LBE48:
+  67:src/MightyBoard/Motherboard/Cutoff.cc **** }
+ 508              	 .loc 1 67 0
+ 509 00ca 0CB0     	 add sp,sp,#48
+ 510 00cc 10BD     	 pop {r4,pc}
+ 511              	 .cfi_endproc
+ 512              	.LFE73:
+ 514 00ce 00BF     	 .section .text._ZN6Cutoff8setAlarmEv,"ax",%progbits
+ 515              	 .align 2
+ 516              	 .global _ZN6Cutoff8setAlarmEv
+ 517              	 .thumb
+ 518              	 .thumb_func
+ 520              	_ZN6Cutoff8setAlarmEv:
+ 521              	.LFB76:
  103:src/MightyBoard/Motherboard/Cutoff.cc **** 
  104:src/MightyBoard/Motherboard/Cutoff.cc **** // call piezo alarm in cutoff is triggered
  105:src/MightyBoard/Motherboard/Cutoff.cc **** void Cutoff::setAlarm()
  106:src/MightyBoard/Motherboard/Cutoff.cc **** {
- 145              	 .loc 1 106 0
- 146              	 .cfi_startproc
- 147              	 
- 148              	 
- 149              	 
- 150              	.LVL7:
+ 522              	 .loc 1 106 0
+ 523              	 .cfi_startproc
+ 524              	 
+ 525              	 
+ 526              	.LVL24:
+ 527 0000 10B5     	 push {r4,lr}
+ 528              	.LCFI9:
+ 529              	 .cfi_def_cfa_offset 8
+ 530              	 .cfi_offset 14,-4
+ 531              	 .cfi_offset 4,-8
+ 532 0002 0446     	 mov r4,r0
  107:src/MightyBoard/Motherboard/Cutoff.cc **** 	if(!alarmRun)
- 151              	 .loc 1 107 0
- 152 0000 C378     	 ldrb r3,[r0,#3]
- 153 0002 13B9     	 cbnz r3,.L6
+ 533              	 .loc 1 107 0
+ 534 0004 C378     	 ldrb r3,[r0,#3]
+ 535 0006 33B9     	 cbnz r3,.L21
  108:src/MightyBoard/Motherboard/Cutoff.cc **** 	{
- 109:src/MightyBoard/Motherboard/Cutoff.cc **** //		Piezo::errorTone(5);
+ 109:src/MightyBoard/Motherboard/Cutoff.cc **** 		Piezo::errorTone(5);
+ 536              	 .loc 1 109 0
+ 537 0008 4FF00500 	 mov r0,#5
+ 538              	.LVL25:
+ 539 000c FFF7FEFF 	 bl _ZN5Piezo9errorToneEh
  110:src/MightyBoard/Motherboard/Cutoff.cc **** 		alarmRun = true;
- 154              	 .loc 1 110 0
- 155 0004 4FF00103 	 mov r3,#1
- 156 0008 C370     	 strb r3,[r0,#3]
- 157              	.L6:
- 158 000a 7047     	 bx lr
- 159              	 .cfi_endproc
- 160              	.LFE64:
- 162              	 .section .text._ZN6Cutoff13noiseResponseEv,"ax",%progbits
- 163              	 .align 2
- 164              	 .global _ZN6Cutoff13noiseResponseEv
- 165              	 .thumb
- 166              	 .thumb_func
- 168              	_ZN6Cutoff13noiseResponseEv:
- 169              	.LFB65:
+ 540              	 .loc 1 110 0
+ 541 0010 4FF00103 	 mov r3,#1
+ 542 0014 E370     	 strb r3,[r4,#3]
+ 543              	.L21:
+ 544 0016 10BD     	 pop {r4,pc}
+ 545              	 .cfi_endproc
+ 546              	.LFE76:
+ 548              	 .section .text._ZN6Cutoff13noiseResponseEv,"ax",%progbits
+ 549              	 .align 2
+ 550              	 .global _ZN6Cutoff13noiseResponseEv
+ 551              	 .thumb
+ 552              	 .thumb_func
+ 554              	_ZN6Cutoff13noiseResponseEv:
+ 555              	.LFB77:
  111:src/MightyBoard/Motherboard/Cutoff.cc **** 	}
  112:src/MightyBoard/Motherboard/Cutoff.cc **** }
  113:src/MightyBoard/Motherboard/Cutoff.cc **** 
@@ -279,87 +746,148 @@
  117:src/MightyBoard/Motherboard/Cutoff.cc **** // we expect that a spike in power has occured thus we should reset the
  118:src/MightyBoard/Motherboard/Cutoff.cc **** // cutoff circuit
  119:src/MightyBoard/Motherboard/Cutoff.cc **** bool Cutoff::noiseResponse(){
- 170              	 .loc 1 119 0
- 171              	 .cfi_startproc
- 172              	 
- 173              	 
- 174              	.LVL8:
- 175 0000 08B5     	 push {r3,lr}
- 176              	.LCFI1:
- 177              	 .cfi_def_cfa_offset 8
- 178              	 .cfi_offset 14,-4
- 179              	 .cfi_offset 3,-8
+ 556              	 .loc 1 119 0
+ 557              	 .cfi_startproc
+ 558              	 
+ 559              	 
+ 560              	.LVL26:
+ 561 0000 10B5     	 push {r4,lr}
+ 562              	.LCFI10:
+ 563              	 .cfi_def_cfa_offset 8
+ 564              	 .cfi_offset 14,-4
+ 565              	 .cfi_offset 4,-8
+ 566 0002 84B0     	 sub sp,sp,#16
+ 567              	.LCFI11:
+ 568              	 .cfi_def_cfa_offset 24
+ 569 0004 0446     	 mov r4,r0
  120:src/MightyBoard/Motherboard/Cutoff.cc **** 	
  121:src/MightyBoard/Motherboard/Cutoff.cc **** 		// not noise if cutoff has been high for longer than cutoff limit
  122:src/MightyBoard/Motherboard/Cutoff.cc **** 		if(cutoffCount > CUTOFF_COUNT_LIMIT)
- 180              	 .loc 1 122 0
- 181 0002 8378     	 ldrb r3,[r0,#2]
- 182 0004 142B     	 cmp r3,#20
- 183 0006 04D9     	 bls .L9
+ 570              	 .loc 1 122 0
+ 571 0006 8378     	 ldrb r3,[r0,#2]
+ 572 0008 142B     	 cmp r3,#20
+ 573 000a 04D9     	 bls .L24
  123:src/MightyBoard/Motherboard/Cutoff.cc **** 		{
  124:src/MightyBoard/Motherboard/Cutoff.cc **** 			setAlarm();
- 184              	 .loc 1 124 0
- 185 0008 FFF7FEFF 	 bl _ZN6Cutoff8setAlarmEv
- 186              	.LVL9:
+ 574              	 .loc 1 124 0
+ 575 000c FFF7FEFF 	 bl _ZN6Cutoff8setAlarmEv
+ 576              	.LVL27:
  125:src/MightyBoard/Motherboard/Cutoff.cc **** 			return false;
- 187              	 .loc 1 125 0
- 188 000c 4FF00000 	 mov r0,#0
- 189 0010 08BD     	 pop {r3,pc}
- 190              	.LVL10:
- 191              	.L9:
+ 577              	 .loc 1 125 0
+ 578 0010 4FF00000 	 mov r0,#0
+ 579 0014 35E0     	 b .L25
+ 580              	.L24:
  126:src/MightyBoard/Motherboard/Cutoff.cc **** 		}
  127:src/MightyBoard/Motherboard/Cutoff.cc **** 			
  128:src/MightyBoard/Motherboard/Cutoff.cc **** 		// if cutoff test line is high do nothing / clear cutoffCount
- 129:src/MightyBoard/Motherboard/Cutoff.cc **** //		if(CUTOFF_TEST.getValue())
- 130:src/MightyBoard/Motherboard/Cutoff.cc **** //		{
+ 129:src/MightyBoard/Motherboard/Cutoff.cc **** 		if(CUTOFF_TEST.getValue())
+ 581              	 .loc 1 129 0
+ 582 0016 03A8     	 add r0,sp,#12
+ 583 0018 4FF0FF01 	 mov r1,#255
+ 584 001c FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 585 0020 01A8     	 add r0,sp,#4
+ 586 0022 03A9     	 add r1,sp,#12
+ 587 0024 4FF0FF02 	 mov r2,#255
+ 588 0028 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 589              	.LVL28:
+ 590              	.LBB52:
+ 591              	.LBB53:
+  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
+ 592              	 .loc 2 28 0
+ 593 002c 9DF80530 	 ldrb r3,[sp,#5]
+ 594 0030 ABB9     	 cbnz r3,.L26
+  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+ 595              	 .loc 2 30 0
+ 596 0032 9DF80400 	 ldrb r0,[sp,#4]
+ 597 0036 FFF7FEFF 	 bl FIO_ReadValue
+ 598 003a 9DF80630 	 ldrb r3,[sp,#6]
+ 599 003e 4FF00102 	 mov r2,#1
+ 600 0042 02FA03F3 	 lsl r3,r2,r3
+ 601              	.LBE53:
+ 602              	.LBE52:
+ 603              	 .loc 1 129 0
+ 604 0046 0340     	 ands r3,r3,r0
+ 605 0048 13F0FF0F 	 tst r3,#255
+ 606 004c 07D0     	 beq .L26
+ 130:src/MightyBoard/Motherboard/Cutoff.cc **** 		{
  131:src/MightyBoard/Motherboard/Cutoff.cc **** 			noiseCount = 0;
+ 607              	 .loc 1 131 0
+ 608 004e 4FF00003 	 mov r3,#0
+ 609 0052 6370     	 strb r3,[r4,#1]
  132:src/MightyBoard/Motherboard/Cutoff.cc **** 			cutoffCount++;
- 133:src/MightyBoard/Motherboard/Cutoff.cc **** //		}
+ 610              	 .loc 1 132 0
+ 611 0054 A378     	 ldrb r3,[r4,#2]
+ 612 0056 9B18     	 adds r3,r3,r2
+ 613 0058 A370     	 strb r3,[r4,#2]
+ 133:src/MightyBoard/Motherboard/Cutoff.cc **** 		}
  134:src/MightyBoard/Motherboard/Cutoff.cc **** 		// if cutoff test line is low, reset circuit - check low 5 times
  135:src/MightyBoard/Motherboard/Cutoff.cc **** 		// before resetting.  
- 136:src/MightyBoard/Motherboard/Cutoff.cc **** //		else{
+ 136:src/MightyBoard/Motherboard/Cutoff.cc **** 		else{
  137:src/MightyBoard/Motherboard/Cutoff.cc **** 			if(noiseCount > NOISE_COUNT_LIMIT){
  138:src/MightyBoard/Motherboard/Cutoff.cc **** 					resetCutoff();
  139:src/MightyBoard/Motherboard/Cutoff.cc **** 					noiseCount = 0;
  140:src/MightyBoard/Motherboard/Cutoff.cc **** 			}
  141:src/MightyBoard/Motherboard/Cutoff.cc **** 			noiseCount++;
- 192              	 .loc 1 141 0
- 193 0012 4FF00103 	 mov r3,#1
- 194 0016 4370     	 strb r3,[r0,#1]
  142:src/MightyBoard/Motherboard/Cutoff.cc **** 			cutoffCount = 0;
- 195              	 .loc 1 142 0
- 196 0018 4FF00002 	 mov r2,#0
- 197 001c 8270     	 strb r2,[r0,#2]
- 143:src/MightyBoard/Motherboard/Cutoff.cc **** //		}
+ 143:src/MightyBoard/Motherboard/Cutoff.cc **** 		}
  144:src/MightyBoard/Motherboard/Cutoff.cc **** 		
  145:src/MightyBoard/Motherboard/Cutoff.cc **** 		return true;
- 198              	 .loc 1 145 0
- 199 001e 1846     	 mov r0,r3
- 200              	.LVL11:
+ 614              	 .loc 1 145 0
+ 615 005a 1046     	 mov r0,r2
+ 616 005c 11E0     	 b .L25
+ 617              	.L26:
+ 137:src/MightyBoard/Motherboard/Cutoff.cc **** 			if(noiseCount > NOISE_COUNT_LIMIT){
+ 618              	 .loc 1 137 0
+ 619 005e 6378     	 ldrb r3,[r4,#1]
+ 620 0060 052B     	 cmp r3,#5
+ 621 0062 05D9     	 bls .L27
+ 138:src/MightyBoard/Motherboard/Cutoff.cc **** 					resetCutoff();
+ 622              	 .loc 1 138 0
+ 623 0064 2046     	 mov r0,r4
+ 624 0066 FFF7FEFF 	 bl _ZN6Cutoff11resetCutoffEv
+ 139:src/MightyBoard/Motherboard/Cutoff.cc **** 					noiseCount = 0;
+ 625              	 .loc 1 139 0
+ 626 006a 4FF00003 	 mov r3,#0
+ 627 006e 6370     	 strb r3,[r4,#1]
+ 628              	.L27:
+ 141:src/MightyBoard/Motherboard/Cutoff.cc **** 			noiseCount++;
+ 629              	 .loc 1 141 0
+ 630 0070 6378     	 ldrb r3,[r4,#1]
+ 631 0072 03F10103 	 add r3,r3,#1
+ 632 0076 6370     	 strb r3,[r4,#1]
+ 142:src/MightyBoard/Motherboard/Cutoff.cc **** 			cutoffCount = 0;
+ 633              	 .loc 1 142 0
+ 634 0078 4FF00003 	 mov r3,#0
+ 635 007c A370     	 strb r3,[r4,#2]
+ 636              	 .loc 1 145 0
+ 637 007e 4FF00100 	 mov r0,#1
+ 638              	.LVL29:
+ 639              	.L25:
  146:src/MightyBoard/Motherboard/Cutoff.cc **** }
- 201              	 .loc 1 146 0
- 202 0020 08BD     	 pop {r3,pc}
- 203              	 .cfi_endproc
- 204              	.LFE65:
- 206 0022 00BF     	 .section .text._GLOBAL__sub_I__ZN6Cutoff4initEv,"ax",%progbits
- 207              	 .align 2
- 208              	 .thumb
- 209              	 .thumb_func
- 211              	_GLOBAL__sub_I__ZN6Cutoff4initEv:
- 212              	.LFB67:
- 213              	 .loc 1 146 0
- 214              	 .cfi_startproc
- 215              	 
- 216              	 
- 217 0000 10B5     	 push {r4,lr}
- 218              	.LCFI2:
- 219              	 .cfi_def_cfa_offset 8
- 220              	 .cfi_offset 14,-4
- 221              	 .cfi_offset 4,-8
- 222              	.LVL12:
- 223              	.LBB4:
- 224              	.LBB5:
- 225              	 .file 2 "src/MightyBoard/shared/LPCPort.hh"
+ 640              	 .loc 1 146 0
+ 641 0082 04B0     	 add sp,sp,#16
+ 642 0084 10BD     	 pop {r4,pc}
+ 643              	 .cfi_endproc
+ 644              	.LFE77:
+ 646 0086 00BF     	 .section .text._GLOBAL__sub_I__ZN6Cutoff4initEv,"ax",%progbits
+ 647              	 .align 2
+ 648              	 .thumb
+ 649              	 .thumb_func
+ 651              	_GLOBAL__sub_I__ZN6Cutoff4initEv:
+ 652              	.LFB79:
+ 653              	 .loc 1 146 0
+ 654              	 .cfi_startproc
+ 655              	 
+ 656              	 
+ 657 0000 10B5     	 push {r4,lr}
+ 658              	.LCFI12:
+ 659              	 .cfi_def_cfa_offset 8
+ 660              	 .cfi_offset 14,-4
+ 661              	 .cfi_offset 4,-8
+ 662              	.LVL30:
+ 663              	.LBB56:
+ 664              	.LBB57:
+ 665              	 .file 3 "src/MightyBoard/shared/LPCPort.hh"
    1:src/MightyBoard/shared/LPCPort.hh **** /*
    2:src/MightyBoard/shared/LPCPort.hh **** * Copyright 2010 by Adam Mayer	 <adam@makerbot.com>
    3:src/MightyBoard/shared/LPCPort.hh **** *
@@ -409,92 +937,43 @@
   47:src/MightyBoard/shared/LPCPort.hh **** 
   48:src/MightyBoard/shared/LPCPort.hh **** 
   49:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port0(0);
- 226              	 .loc 2 49 0
- 227 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
- 228 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
- 229 000a 4FF00001 	 mov r1,#0
- 230 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 666              	 .loc 3 49 0
+ 667 0002 40F20000 	 movw r0,#:lower16:.LANCHOR0
+ 668 0006 C0F20000 	 movt r0,#:upper16:.LANCHOR0
+ 669 000a 4FF00001 	 mov r1,#0
+ 670 000e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   50:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port1(1);
- 231              	 .loc 2 50 0
- 232 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
- 233 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
- 234 001a 4FF00101 	 mov r1,#1
- 235 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 671              	 .loc 3 50 0
+ 672 0012 40F20000 	 movw r0,#:lower16:.LANCHOR1
+ 673 0016 C0F20000 	 movt r0,#:upper16:.LANCHOR1
+ 674 001a 4FF00101 	 mov r1,#1
+ 675 001e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   51:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port2(2);
- 236              	 .loc 2 51 0
- 237 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
- 238 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
- 239 002a 4FF00201 	 mov r1,#2
- 240 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 676              	 .loc 3 51 0
+ 677 0022 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 678 0026 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 679 002a 4FF00201 	 mov r1,#2
+ 680 002e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   52:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port3(3);
- 241              	 .loc 2 52 0
- 242 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
- 243 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
- 244 003a 4FF00301 	 mov r1,#3
- 245 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 681              	 .loc 3 52 0
+ 682 0032 40F20000 	 movw r0,#:lower16:.LANCHOR3
+ 683 0036 C0F20000 	 movt r0,#:upper16:.LANCHOR3
+ 684 003a 4FF00301 	 mov r1,#3
+ 685 003e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   53:src/MightyBoard/shared/LPCPort.hh **** const LPCPort Port4(4);
- 246              	 .loc 2 53 0
- 247 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
- 248 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
- 249 004a 4FF00401 	 mov r1,#4
- 250 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
+ 686              	 .loc 3 53 0
+ 687 0042 40F20000 	 movw r0,#:lower16:.LANCHOR4
+ 688 0046 C0F20000 	 movt r0,#:upper16:.LANCHOR4
+ 689 004a 4FF00401 	 mov r1,#4
+ 690 004e FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   54:src/MightyBoard/shared/LPCPort.hh **** 
   55:src/MightyBoard/shared/LPCPort.hh **** const LPCPort NullPort(0xff);
- 251              	 .loc 2 55 0
- 252 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
- 253 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
- 254 005a 2046     	 mov r0,r4
- 255 005c 4FF0FF01 	 mov r1,#255
- 256 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
- 257              	 .file 3 "src/MightyBoard/shared/Pin.hh"
-   1:src/MightyBoard/shared/Pin.hh **** #ifndef PIN_HH
-   2:src/MightyBoard/shared/Pin.hh **** #define PIN_HH
-   3:src/MightyBoard/shared/Pin.hh **** 
-   4:src/MightyBoard/shared/Pin.hh **** #include "LPCPort.hh"
-   5:src/MightyBoard/shared/Pin.hh **** #include "Pin.hh"
-   6:src/MightyBoard/shared/Pin.hh **** extern "C" {
-   7:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_gpio.h"
-   8:src/MightyBoard/shared/Pin.hh **** 	#include "lpc17xx_pinsel.h"
-   9:src/MightyBoard/shared/Pin.hh **** 	#include "comm.h"
-  10:src/MightyBoard/shared/Pin.hh **** }
-  11:src/MightyBoard/shared/Pin.hh **** 
-  12:src/MightyBoard/shared/Pin.hh **** /// \ingroup HardwareLibraries
-  13:src/MightyBoard/shared/Pin.hh **** class Pin {
-  14:src/MightyBoard/shared/Pin.hh **** private:
-  15:src/MightyBoard/shared/Pin.hh **** 	uint8_t port_base;
-  16:src/MightyBoard/shared/Pin.hh **** 	bool is_null;
-  17:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_index;
-  18:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask;
-  19:src/MightyBoard/shared/Pin.hh **** 	uint8_t pin_mask_inverted;
-  20:src/MightyBoard/shared/Pin.hh **** 
-  21:src/MightyBoard/shared/Pin.hh **** public:
-  22:src/MightyBoard/shared/Pin.hh **** 	Pin();
-  23:src/MightyBoard/shared/Pin.hh **** 	Pin(const LPCPort& port_in, uint8_t pin_index_in);
-  24:src/MightyBoard/shared/Pin.hh **** 	Pin(const Pin& other_pin);
-  25:src/MightyBoard/shared/Pin.hh **** 	bool isNull() const;
-  26:src/MightyBoard/shared/Pin.hh **** 	void setDirection(bool out) const;
-  27:src/MightyBoard/shared/Pin.hh **** 	bool /*Pin::*/getValue() const {
-  28:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
-  29:src/MightyBoard/shared/Pin.hh **** 			return false; // null pin is always low ... ?
-  30:src/MightyBoard/shared/Pin.hh **** 		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
-  31:src/MightyBoard/shared/Pin.hh **** //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
-  32:src/MightyBoard/shared/Pin.hh **** 	};
-  33:src/MightyBoard/shared/Pin.hh **** 
-  34:src/MightyBoard/shared/Pin.hh **** 	void /*Pin::*/setValue(bool on) const {
-  35:src/MightyBoard/shared/Pin.hh **** 		if (is_null)
-  36:src/MightyBoard/shared/Pin.hh **** 		 	return;
-  37:src/MightyBoard/shared/Pin.hh **** 		// uint8_t oldSREG = SREG;
-  38:src/MightyBoard/shared/Pin.hh **** 
-  39:src/MightyBoard/shared/Pin.hh **** //		xprintf("on:%d port_base:%d pi_index:%d" " (%s:%d)\n",on,port_base,pin_index,_F_,_L_);
-  40:src/MightyBoard/shared/Pin.hh **** 		// cli();
-  41:src/MightyBoard/shared/Pin.hh **** 		if (on) {
-  42:src/MightyBoard/shared/Pin.hh **** //			PORTx |= pin_mask;
-  43:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_SetValue,_F_,_L_);
-  44:src/MightyBoard/shared/Pin.hh **** 			GPIO_SetValue(port_base, _BV(pin_index));
-  45:src/MightyBoard/shared/Pin.hh **** 		} else {
-  46:src/MightyBoard/shared/Pin.hh **** //			PORTx &= pin_mask_inverted;
-  47:src/MightyBoard/shared/Pin.hh **** //			xprintf("%x (%s:%d)\n",&GPIO_ClearValue,_F_,_L_);
-  48:src/MightyBoard/shared/Pin.hh **** 			GPIO_ClearValue(port_base, _BV(pin_index));
+ 691              	 .loc 3 55 0
+ 692 0052 40F20004 	 movw r4,#:lower16:.LANCHOR5
+ 693 0056 C0F20004 	 movt r4,#:upper16:.LANCHOR5
+ 694 005a 2046     	 mov r0,r4
+ 695 005c 4FF0FF01 	 mov r1,#255
+ 696 0060 FFF7FEFF 	 bl _ZN7LPCPortC1Eh
   49:src/MightyBoard/shared/Pin.hh **** 		}
   50:src/MightyBoard/shared/Pin.hh **** 		// SREG = oldSREG;
   51:src/MightyBoard/shared/Pin.hh **** 	};
@@ -523,104 +1002,109 @@
   74:src/MightyBoard/shared/Pin.hh **** };
   75:src/MightyBoard/shared/Pin.hh **** 
   76:src/MightyBoard/shared/Pin.hh **** static const Pin NullPin(NullPort, 0);
- 258              	 .loc 3 76 0
- 259 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
- 260 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
- 261 006c 2146     	 mov r1,r4
- 262 006e 4FF00002 	 mov r2,#0
- 263 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
- 264              	.LBE5:
- 265              	.LBE4:
- 266              	 .loc 1 146 0
- 267 0076 10BD     	 pop {r4,pc}
- 268              	 .cfi_endproc
- 269              	.LFE67:
- 271              	 .section .init_array,"aw",%init_array
- 272              	 .align 2
- 273 0000 00000000 	 .word _GLOBAL__sub_I__ZN6Cutoff4initEv(target1)
- 274              	 .section .bss._ZL5Port0,"aw",%nobits
- 275              	 .align 2
- 276              	 .set .LANCHOR0,.+0
- 279              	_ZL5Port0:
- 280 0000 00       	 .space 1
- 281 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
- 282              	 .align 2
- 283              	 .set .LANCHOR1,.+0
- 286              	_ZL5Port1:
- 287 0000 00       	 .space 1
- 288 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
- 289              	 .align 2
- 290              	 .set .LANCHOR2,.+0
- 293              	_ZL5Port2:
- 294 0000 00       	 .space 1
- 295 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
- 296              	 .align 2
- 297              	 .set .LANCHOR3,.+0
- 300              	_ZL5Port3:
- 301 0000 00       	 .space 1
- 302 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
- 303              	 .align 2
- 304              	 .set .LANCHOR4,.+0
- 307              	_ZL5Port4:
- 308 0000 00       	 .space 1
- 309 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
- 310              	 .align 2
- 311              	 .set .LANCHOR5,.+0
- 314              	_ZL8NullPort:
- 315 0000 00       	 .space 1
- 316 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
- 317              	 .align 2
- 318              	 .set .LANCHOR6,.+0
- 321              	_ZL7NullPin:
- 322 0000 00000000 	 .space 5
- 322      00
- 323 0005 000000   	 .text
- 324              	.Letext0:
- 325              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
- 326              	 .file 5 "src/MightyBoard/Motherboard/Cutoff.hh"
- 327              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 697              	 .loc 2 76 0
+ 698 0064 40F20000 	 movw r0,#:lower16:.LANCHOR6
+ 699 0068 C0F20000 	 movt r0,#:upper16:.LANCHOR6
+ 700 006c 2146     	 mov r1,r4
+ 701 006e 4FF00002 	 mov r2,#0
+ 702 0072 FFF7FEFF 	 bl _ZN3PinC1ERK7LPCPorth
+ 703              	.LBE57:
+ 704              	.LBE56:
+ 705              	 .loc 1 146 0
+ 706 0076 10BD     	 pop {r4,pc}
+ 707              	 .cfi_endproc
+ 708              	.LFE79:
+ 710              	 .section .init_array,"aw",%init_array
+ 711              	 .align 2
+ 712 0000 00000000 	 .word _GLOBAL__sub_I__ZN6Cutoff4initEv(target1)
+ 713              	 .section .bss._ZL5Port0,"aw",%nobits
+ 714              	 .align 2
+ 715              	 .set .LANCHOR0,.+0
+ 718              	_ZL5Port0:
+ 719 0000 00       	 .space 1
+ 720 0001 000000   	 .section .bss._ZL5Port1,"aw",%nobits
+ 721              	 .align 2
+ 722              	 .set .LANCHOR1,.+0
+ 725              	_ZL5Port1:
+ 726 0000 00       	 .space 1
+ 727 0001 000000   	 .section .bss._ZL5Port2,"aw",%nobits
+ 728              	 .align 2
+ 729              	 .set .LANCHOR2,.+0
+ 732              	_ZL5Port2:
+ 733 0000 00       	 .space 1
+ 734 0001 000000   	 .section .bss._ZL5Port3,"aw",%nobits
+ 735              	 .align 2
+ 736              	 .set .LANCHOR3,.+0
+ 739              	_ZL5Port3:
+ 740 0000 00       	 .space 1
+ 741 0001 000000   	 .section .bss._ZL5Port4,"aw",%nobits
+ 742              	 .align 2
+ 743              	 .set .LANCHOR4,.+0
+ 746              	_ZL5Port4:
+ 747 0000 00       	 .space 1
+ 748 0001 000000   	 .section .bss._ZL8NullPort,"aw",%nobits
+ 749              	 .align 2
+ 750              	 .set .LANCHOR5,.+0
+ 753              	_ZL8NullPort:
+ 754 0000 00       	 .space 1
+ 755 0001 000000   	 .section .bss._ZL7NullPin,"aw",%nobits
+ 756              	 .align 2
+ 757              	 .set .LANCHOR6,.+0
+ 760              	_ZL7NullPin:
+ 761 0000 00000000 	 .space 5
+ 761      00
+ 762 0005 000000   	 .text
+ 763              	.Letext0:
+ 764              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 765              	 .file 5 "src/MightyBoard/Motherboard/Cutoff.hh"
+ 766              	 .file 6 "src/MightyBoard/Motherboard/system/core_cm3.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 Cutoff.cc
     {standard input}:19     .text._ZN6Cutoff14isCutoffActiveEv:00000000 $t
     {standard input}:24     .text._ZN6Cutoff14isCutoffActiveEv:00000000 _ZN6Cutoff14isCutoffActiveEv
-    {standard input}:41     .text._ZN6Cutoff6enableEv:00000000 $t
-    {standard input}:46     .text._ZN6Cutoff6enableEv:00000000 _ZN6Cutoff6enableEv
-    {standard input}:63     .text._ZN6Cutoff7disableEv:00000000 $t
-    {standard input}:68     .text._ZN6Cutoff7disableEv:00000000 _ZN6Cutoff7disableEv
-    {standard input}:85     .text._ZN6Cutoff4initEv:00000000 $t
-    {standard input}:90     .text._ZN6Cutoff4initEv:00000000 _ZN6Cutoff4initEv
-    {standard input}:119    .text._ZN6Cutoff11resetCutoffEv:00000000 $t
-    {standard input}:124    .text._ZN6Cutoff11resetCutoffEv:00000000 _ZN6Cutoff11resetCutoffEv
-    {standard input}:138    .text._ZN6Cutoff8setAlarmEv:00000000 $t
-    {standard input}:143    .text._ZN6Cutoff8setAlarmEv:00000000 _ZN6Cutoff8setAlarmEv
-    {standard input}:163    .text._ZN6Cutoff13noiseResponseEv:00000000 $t
-    {standard input}:168    .text._ZN6Cutoff13noiseResponseEv:00000000 _ZN6Cutoff13noiseResponseEv
-    {standard input}:207    .text._GLOBAL__sub_I__ZN6Cutoff4initEv:00000000 $t
-    {standard input}:211    .text._GLOBAL__sub_I__ZN6Cutoff4initEv:00000000 _GLOBAL__sub_I__ZN6Cutoff4initEv
-    {standard input}:276    .bss._ZL5Port0:00000000 .LANCHOR0
-    {standard input}:283    .bss._ZL5Port1:00000000 .LANCHOR1
-    {standard input}:290    .bss._ZL5Port2:00000000 .LANCHOR2
-    {standard input}:297    .bss._ZL5Port3:00000000 .LANCHOR3
-    {standard input}:304    .bss._ZL5Port4:00000000 .LANCHOR4
-    {standard input}:311    .bss._ZL8NullPort:00000000 .LANCHOR5
-    {standard input}:318    .bss._ZL7NullPin:00000000 .LANCHOR6
-    {standard input}:272    .init_array:00000000 $d
-    {standard input}:275    .bss._ZL5Port0:00000000 $d
-    {standard input}:279    .bss._ZL5Port0:00000000 _ZL5Port0
-    {standard input}:282    .bss._ZL5Port1:00000000 $d
-    {standard input}:286    .bss._ZL5Port1:00000000 _ZL5Port1
-    {standard input}:289    .bss._ZL5Port2:00000000 $d
-    {standard input}:293    .bss._ZL5Port2:00000000 _ZL5Port2
-    {standard input}:296    .bss._ZL5Port3:00000000 $d
-    {standard input}:300    .bss._ZL5Port3:00000000 _ZL5Port3
-    {standard input}:303    .bss._ZL5Port4:00000000 $d
-    {standard input}:307    .bss._ZL5Port4:00000000 _ZL5Port4
-    {standard input}:310    .bss._ZL8NullPort:00000000 $d
-    {standard input}:314    .bss._ZL8NullPort:00000000 _ZL8NullPort
-    {standard input}:317    .bss._ZL7NullPin:00000000 $d
-    {standard input}:321    .bss._ZL7NullPin:00000000 _ZL7NullPin
+    {standard input}:109    .text._ZN6Cutoff11resetCutoffEv:00000000 $t
+    {standard input}:114    .text._ZN6Cutoff11resetCutoffEv:00000000 _ZN6Cutoff11resetCutoffEv
+    {standard input}:248    .text._ZN6Cutoff7disableEv:00000000 _ZN6Cutoff7disableEv
+    {standard input}:243    .text._ZN6Cutoff7disableEv:00000000 $t
+    {standard input}:362    .text._ZN6Cutoff4initEv:00000000 $t
+    {standard input}:367    .text._ZN6Cutoff4initEv:00000000 _ZN6Cutoff4initEv
+    {standard input}:396    .text._ZN6Cutoff6enableEv:00000000 $t
+    {standard input}:401    .text._ZN6Cutoff6enableEv:00000000 _ZN6Cutoff6enableEv
+    {standard input}:515    .text._ZN6Cutoff8setAlarmEv:00000000 $t
+    {standard input}:520    .text._ZN6Cutoff8setAlarmEv:00000000 _ZN6Cutoff8setAlarmEv
+    {standard input}:549    .text._ZN6Cutoff13noiseResponseEv:00000000 $t
+    {standard input}:554    .text._ZN6Cutoff13noiseResponseEv:00000000 _ZN6Cutoff13noiseResponseEv
+    {standard input}:647    .text._GLOBAL__sub_I__ZN6Cutoff4initEv:00000000 $t
+    {standard input}:651    .text._GLOBAL__sub_I__ZN6Cutoff4initEv:00000000 _GLOBAL__sub_I__ZN6Cutoff4initEv
+    {standard input}:715    .bss._ZL5Port0:00000000 .LANCHOR0
+    {standard input}:722    .bss._ZL5Port1:00000000 .LANCHOR1
+    {standard input}:729    .bss._ZL5Port2:00000000 .LANCHOR2
+    {standard input}:736    .bss._ZL5Port3:00000000 .LANCHOR3
+    {standard input}:743    .bss._ZL5Port4:00000000 .LANCHOR4
+    {standard input}:750    .bss._ZL8NullPort:00000000 .LANCHOR5
+    {standard input}:757    .bss._ZL7NullPin:00000000 .LANCHOR6
+    {standard input}:711    .init_array:00000000 $d
+    {standard input}:714    .bss._ZL5Port0:00000000 $d
+    {standard input}:718    .bss._ZL5Port0:00000000 _ZL5Port0
+    {standard input}:721    .bss._ZL5Port1:00000000 $d
+    {standard input}:725    .bss._ZL5Port1:00000000 _ZL5Port1
+    {standard input}:728    .bss._ZL5Port2:00000000 $d
+    {standard input}:732    .bss._ZL5Port2:00000000 _ZL5Port2
+    {standard input}:735    .bss._ZL5Port3:00000000 $d
+    {standard input}:739    .bss._ZL5Port3:00000000 _ZL5Port3
+    {standard input}:742    .bss._ZL5Port4:00000000 $d
+    {standard input}:746    .bss._ZL5Port4:00000000 _ZL5Port4
+    {standard input}:749    .bss._ZL8NullPort:00000000 $d
+    {standard input}:753    .bss._ZL8NullPort:00000000 _ZL8NullPort
+    {standard input}:756    .bss._ZL7NullPin:00000000 $d
+    {standard input}:760    .bss._ZL7NullPin:00000000 _ZL7NullPin
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
 _ZN7LPCPortC1Eh
 _ZN3PinC1ERK7LPCPorth
+FIO_ReadValue
+GPIO_SetValue
+GPIO_ClearValue
+_ZNK3Pin12setDirectionEb
+_ZN5Piezo9errorToneEh

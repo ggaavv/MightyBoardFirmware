@@ -27,7 +27,8 @@ FLASH_RUN/ExtruderBoard.o: src/MightyBoard/Motherboard/ExtruderBoard.cc \
  src/MightyBoard/shared/LPCPort.hh \
  src/MightyBoard/Motherboard/Configuration.hh \
  src/MightyBoard/shared/Eeprom.hh \
- src/MightyBoard/Motherboard/lib/include/lpc17xx_timer.h
+ src/MightyBoard/Motherboard/lib/include/lpc17xx_timer.h \
+ src/MightyBoard/Motherboard/lib/include/lpc17xx_pwm.h
 
 src/MightyBoard/Motherboard/ExtruderBoard.hh:
 
@@ -96,3 +97,5 @@ src/MightyBoard/Motherboard/Configuration.hh:
 src/MightyBoard/shared/Eeprom.hh:
 
 src/MightyBoard/Motherboard/lib/include/lpc17xx_timer.h:
+
+src/MightyBoard/Motherboard/lib/include/lpc17xx_pwm.h:

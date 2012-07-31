@@ -16,7 +16,10 @@ FLASH_RUN/Cutoff.o: src/MightyBoard/Motherboard/Cutoff.cc \
  src/MightyBoard/Motherboard/system/lpc17xx.h \
  src/MightyBoard/Motherboard/comm.h \
  src/MightyBoard/Motherboard/lib/include/lpc17xx_uart.h \
- src/MightyBoard/Motherboard/term_io.h src/MightyBoard/Motherboard/comm.h
+ src/MightyBoard/Motherboard/term_io.h src/MightyBoard/Motherboard/comm.h \
+ src/MightyBoard/Motherboard/Piezo.hh src/MightyBoard/shared/Timeout.hh \
+ src/MightyBoard/shared/Types.hh src/MightyBoard/shared/Types.hh \
+ src/MightyBoard/shared/CircularBuffer.hh
 
 src/MightyBoard/Motherboard/Cutoff.hh:
 
@@ -57,3 +60,13 @@ src/MightyBoard/Motherboard/lib/include/lpc17xx_uart.h:
 src/MightyBoard/Motherboard/term_io.h:
 
 src/MightyBoard/Motherboard/comm.h:
+
+src/MightyBoard/Motherboard/Piezo.hh:
+
+src/MightyBoard/shared/Timeout.hh:
+
+src/MightyBoard/shared/Types.hh:
+
+src/MightyBoard/shared/Types.hh:
+
+src/MightyBoard/shared/CircularBuffer.hh:

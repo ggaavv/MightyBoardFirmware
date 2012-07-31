@@ -96,8 +96,8 @@ bool hard_reset = false;
 bool cancelBuild = false;
 
 void runHostSlice() {
-
-        InPacket& in = UART::getHostUART().in;
+		
+         InPacket& in = UART::getHostUART().in;
         OutPacket& out = UART::getHostUART().out;
 	if (out.isSending()) {
 		// still sending; wait until send is complete before reading new host packets.
@@ -105,8 +105,8 @@ void runHostSlice() {
 	}
     // soft reset the machine unless waiting to notify repG that a cancel has occured
 	if (do_host_reset && (!cancelBuild || cancel_timeout.hasElapsed())){
-
-
+		
+		
 		
 		if((buildState == BUILD_RUNNING) || (buildState == BUILD_PAUSED)){
 			stopBuild();
@@ -114,9 +114,8 @@ void runHostSlice() {
 		do_host_reset = false;
 
 		// reset local board
-
-
-		reset(hard_reset);
+		
+ 		reset(hard_reset);
 		
         // hard_reset can be called, but is not called by any
         // a hard reset calls the start up sound and resets heater errors
@@ -635,10 +634,10 @@ char* getMachineName() {
 
 	// If EEPROM is zero, load in a default. The 0 is there on purpose
 	// since this fallback should only happen on EEPROM total failure
-	static PROGMEM char defaultMachineName[] =  "The Replicat0r";
+	static PROGMEM prog_uchar defaultMachineName[] =  "The Replicat0r";
 
 	if (machineName[0] == 0) {
-		for(uint8_t i = 0; i < 15; i++) {
+		for(uint8_t i = 0; i < 14; i++) {
 			machineName[i] = defaultMachineName[i];
 //			machineName[i] = pgm_read_byte_near(defaultMachineName+i);
 		}
@@ -729,6 +728,7 @@ void startPrintTime(){
 void stopPrintTime(){
 	
 	getPrintTime(last_print_hours, last_print_minutes);
+	eeprom::updateBuildTime(last_print_hours, last_print_minutes);
 	print_time = Timeout();
 	print_time_hours = 0;
 }
@@ -745,8 +745,13 @@ void managePrintTime(){
 /// returns time hours and minutes since the start of the print
 void getPrintTime(uint8_t& hours, uint8_t& minutes){
 	
-	hours = print_time_hours;
-	minutes = print_time.getCurrentElapsed() / 60000000;
+	if(!print_time.isActive()){
+		hours = last_print_hours;
+		minutes = last_print_minutes;
+	} else{
+		hours = print_time_hours;
+		minutes = print_time.getCurrentElapsed() / 60000000;
+	}
 	return;
 }
 

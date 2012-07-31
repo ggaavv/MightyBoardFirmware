@@ -238,13 +238,13 @@
   96 002c 30BD     	 pop {r4,r5,pc}
   97              	 .cfi_endproc
   98              	.LFE57:
- 100 002e 00BF     	 .section .text.comm_init,"ax",%progbits
+ 100 002e 00BF     	 .section .text.comm_put,"ax",%progbits
  101              	 .align 2
- 102              	 .global comm_init
+ 102              	 .global comm_put
  103              	 .thumb
  104              	 .thumb_func
- 106              	comm_init:
- 107              	.LFB61:
+ 106              	comm_put:
+ 107              	.LFB60:
  145:src/MightyBoard/Motherboard/comm.c **** 
  146:src/MightyBoard/Motherboard/comm.c **** uint8_t comm_get(void){
  147:src/MightyBoard/Motherboard/comm.c **** #if 0
@@ -283,10 +283,43 @@
  180:src/MightyBoard/Motherboard/comm.c **** #endif
  181:src/MightyBoard/Motherboard/comm.c **** 
  182:src/MightyBoard/Motherboard/comm.c **** void comm_put(uint8_t d){
- 183:src/MightyBoard/Motherboard/comm.c **** //	UART_Send(LPC_UART0, &d, 1, BLOCKING);//without interrupt
- 184:src/MightyBoard/Motherboard/comm.c **** 	UARTSend(LPC_UART0, &d, 1);//with interrupt
+ 108              	 .loc 1 182 0
+ 109              	 .cfi_startproc
+ 110              	 
+ 111              	 
+ 112              	.LVL4:
+ 113 0000 00B5     	 push {lr}
+ 114              	.LCFI3:
+ 115              	 .cfi_def_cfa_offset 4
+ 116              	 .cfi_offset 14,-4
+ 117 0002 83B0     	 sub sp,sp,#12
+ 118              	.LCFI4:
+ 119              	 .cfi_def_cfa_offset 16
+ 120 0004 02A9     	 add r1,sp,#8
+ 121 0006 01F8010D 	 strb r0,[r1,#-1]!
+ 183:src/MightyBoard/Motherboard/comm.c **** 	UART_Send(LPC_UART0, &d, 1, BLOCKING);//without interrupt
+ 122              	 .loc 1 183 0
+ 123 000a 4FF44040 	 mov r0,#49152
+ 124              	.LVL5:
+ 125 000e C4F20000 	 movt r0,16384
+ 126 0012 4FF00102 	 mov r2,#1
+ 127 0016 1346     	 mov r3,r2
+ 128 0018 FFF7FEFF 	 bl UART_Send
+ 184:src/MightyBoard/Motherboard/comm.c **** //	UARTSend(LPC_UART0, &d, 1);//with interrupt
  185:src/MightyBoard/Motherboard/comm.c **** ////	serial_writechar(d);
  186:src/MightyBoard/Motherboard/comm.c **** }
+ 129              	 .loc 1 186 0
+ 130 001c 03B0     	 add sp,sp,#12
+ 131 001e 00BD     	 pop {pc}
+ 132              	 .cfi_endproc
+ 133              	.LFE60:
+ 135              	 .section .text.comm_init,"ax",%progbits
+ 136              	 .align 2
+ 137              	 .global comm_init
+ 138              	 .thumb
+ 139              	 .thumb_func
+ 141              	comm_init:
+ 142              	.LFB61:
  187:src/MightyBoard/Motherboard/comm.c **** 
  188:src/MightyBoard/Motherboard/comm.c **** #if 0
  189:src/MightyBoard/Motherboard/comm.c **** void comm_puts(const void *str){
@@ -299,29 +332,29 @@
  196:src/MightyBoard/Motherboard/comm.c **** #endif
  197:src/MightyBoard/Motherboard/comm.c **** 
  198:src/MightyBoard/Motherboard/comm.c **** void comm_init(void){
- 108              	 .loc 1 198 0
- 109              	 .cfi_startproc
- 110              	 
- 111              	 
- 112 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
- 113              	.LCFI3:
- 114              	 .cfi_def_cfa_offset 24
- 115              	 .cfi_offset 14,-4
- 116              	 .cfi_offset 8,-8
- 117              	 .cfi_offset 7,-12
- 118              	 .cfi_offset 6,-16
- 119              	 .cfi_offset 5,-20
- 120              	 .cfi_offset 4,-24
- 121 0004 84B0     	 sub sp,sp,#16
- 122              	.LCFI4:
- 123              	 .cfi_def_cfa_offset 40
+ 143              	 .loc 1 198 0
+ 144              	 .cfi_startproc
+ 145              	 
+ 146              	 
+ 147 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 148              	.LCFI5:
+ 149              	 .cfi_def_cfa_offset 24
+ 150              	 .cfi_offset 14,-4
+ 151              	 .cfi_offset 8,-8
+ 152              	 .cfi_offset 7,-12
+ 153              	 .cfi_offset 6,-16
+ 154              	 .cfi_offset 5,-20
+ 155              	 .cfi_offset 4,-24
+ 156 0004 84B0     	 sub sp,sp,#16
+ 157              	.LCFI6:
+ 158              	 .cfi_def_cfa_offset 40
  199:src/MightyBoard/Motherboard/comm.c **** 
  200:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE_LEN=0;
- 124              	 .loc 1 200 0
- 125 0006 40F20003 	 movw r3,#:lower16:.LANCHOR1
- 126 000a C0F20003 	 movt r3,#:upper16:.LANCHOR1
- 127 000e 4FF00004 	 mov r4,#0
- 128 0012 1C60     	 str r4,[r3,#0]
+ 159              	 .loc 1 200 0
+ 160 0006 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 161 000a C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 162 000e 4FF00004 	 mov r4,#0
+ 163 0012 1C60     	 str r4,[r3,#0]
  201:src/MightyBoard/Motherboard/comm.c **** 
  202:src/MightyBoard/Motherboard/comm.c **** 	// UART Configuration structure variable
  203:src/MightyBoard/Motherboard/comm.c **** 	UART_CFG_Type UARTConfigStruct;
@@ -332,40 +365,40 @@
  208:src/MightyBoard/Motherboard/comm.c **** 
  209:src/MightyBoard/Motherboard/comm.c **** 	//Initialize UART0 pin connect
  210:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Funcnum = 1;
- 129              	 .loc 1 210 0
- 130 0014 4FF00106 	 mov r6,#1
- 131 0018 8DF80260 	 strb r6,[sp,#2]
+ 164              	 .loc 1 210 0
+ 165 0014 4FF00106 	 mov r6,#1
+ 166 0018 8DF80260 	 strb r6,[sp,#2]
  211:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.OpenDrain = 0;
- 132              	 .loc 1 211 0
- 133 001c 8DF80440 	 strb r4,[sp,#4]
+ 167              	 .loc 1 211 0
+ 168 001c 8DF80440 	 strb r4,[sp,#4]
  212:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Pinmode = 0;
- 134              	 .loc 1 212 0
- 135 0020 8DF80340 	 strb r4,[sp,#3]
+ 169              	 .loc 1 212 0
+ 170 0020 8DF80340 	 strb r4,[sp,#3]
  213:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Pinnum = 2;
- 136              	 .loc 1 213 0
- 137 0024 4FF00208 	 mov r8,#2
- 138 0028 8DF80180 	 strb r8,[sp,#1]
+ 171              	 .loc 1 213 0
+ 172 0024 4FF00208 	 mov r8,#2
+ 173 0028 8DF80180 	 strb r8,[sp,#1]
  214:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Portnum = 0;
- 139              	 .loc 1 214 0
- 140 002c 04AD     	 add r5,sp,#16
- 141 002e 05F8104D 	 strb r4,[r5,#-16]!
+ 174              	 .loc 1 214 0
+ 175 002c 04AD     	 add r5,sp,#16
+ 176 002e 05F8104D 	 strb r4,[r5,#-16]!
  215:src/MightyBoard/Motherboard/comm.c **** 	PINSEL_ConfigPin(&PinCfg);
- 142              	 .loc 1 215 0
- 143 0032 6846     	 mov r0,sp
- 144 0034 FFF7FEFF 	 bl PINSEL_ConfigPin
+ 177              	 .loc 1 215 0
+ 178 0032 6846     	 mov r0,sp
+ 179 0034 FFF7FEFF 	 bl PINSEL_ConfigPin
  216:src/MightyBoard/Motherboard/comm.c **** 	PinCfg.Pinnum = 3;
- 145              	 .loc 1 216 0
- 146 0038 4FF00307 	 mov r7,#3
- 147 003c 8DF80170 	 strb r7,[sp,#1]
+ 180              	 .loc 1 216 0
+ 181 0038 4FF00307 	 mov r7,#3
+ 182 003c 8DF80170 	 strb r7,[sp,#1]
  217:src/MightyBoard/Motherboard/comm.c **** 	PINSEL_ConfigPin(&PinCfg);
- 148              	 .loc 1 217 0
- 149 0040 6846     	 mov r0,sp
- 150 0042 FFF7FEFF 	 bl PINSEL_ConfigPin
+ 183              	 .loc 1 217 0
+ 184 0040 6846     	 mov r0,sp
+ 185 0042 FFF7FEFF 	 bl PINSEL_ConfigPin
  218:src/MightyBoard/Motherboard/comm.c **** 
  219:src/MightyBoard/Motherboard/comm.c **** 	UART_ConfigStructInit(&UARTConfigStruct);
- 151              	 .loc 1 219 0
- 152 0046 02A8     	 add r0,sp,#8
- 153 0048 FFF7FEFF 	 bl UART_ConfigStructInit
+ 186              	 .loc 1 219 0
+ 187 0046 02A8     	 add r0,sp,#8
+ 188 0048 FFF7FEFF 	 bl UART_ConfigStructInit
  220:src/MightyBoard/Motherboard/comm.c **** 	// Re-configure baudrate to 115200bps
  221:src/MightyBoard/Motherboard/comm.c **** 	/* Initialize UART Configuration parameter structure to default state:
  222:src/MightyBoard/Motherboard/comm.c **** 	 * Baudrate = 115200bps
@@ -374,80 +407,80 @@
  225:src/MightyBoard/Motherboard/comm.c **** 	 * None parity
  226:src/MightyBoard/Motherboard/comm.c **** 	 */
  227:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Baud_rate = 512000;
- 154              	 .loc 1 227 0
- 155 004c 4FF4FA23 	 mov r3,#512000
- 156 0050 0293     	 str r3,[sp,#8]
+ 189              	 .loc 1 227 0
+ 190 004c 4FF4FA23 	 mov r3,#512000
+ 191 0050 0293     	 str r3,[sp,#8]
  228:src/MightyBoard/Motherboard/comm.c **** //	UARTConfigStruct.Baud_rate = 115200;
  229:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Parity = UART_PARITY_NONE;
- 157              	 .loc 1 229 0
- 158 0052 8DF80C40 	 strb r4,[sp,#12]
+ 192              	 .loc 1 229 0
+ 193 0052 8DF80C40 	 strb r4,[sp,#12]
  230:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Stopbits = UART_STOPBIT_1;
- 159              	 .loc 1 230 0
- 160 0056 8DF80E40 	 strb r4,[sp,#14]
+ 194              	 .loc 1 230 0
+ 195 0056 8DF80E40 	 strb r4,[sp,#14]
  231:src/MightyBoard/Motherboard/comm.c **** 	UARTConfigStruct.Databits = UART_DATABIT_8;
- 161              	 .loc 1 231 0
- 162 005a 8DF80D70 	 strb r7,[sp,#13]
+ 196              	 .loc 1 231 0
+ 197 005a 8DF80D70 	 strb r7,[sp,#13]
  232:src/MightyBoard/Motherboard/comm.c **** 
  233:src/MightyBoard/Motherboard/comm.c **** 	// Initialize UART0 peripheral with given to corresponding parameter
  234:src/MightyBoard/Motherboard/comm.c **** 	UART_Init(LPC_UART0, &UARTConfigStruct);
- 163              	 .loc 1 234 0
- 164 005e 4FF44045 	 mov r5,#49152
- 165 0062 C4F20005 	 movt r5,16384
- 166 0066 2846     	 mov r0,r5
- 167 0068 02A9     	 add r1,sp,#8
- 168 006a FFF7FEFF 	 bl UART_Init
+ 198              	 .loc 1 234 0
+ 199 005e 4FF44045 	 mov r5,#49152
+ 200 0062 C4F20005 	 movt r5,16384
+ 201 0066 2846     	 mov r0,r5
+ 202 0068 02A9     	 add r1,sp,#8
+ 203 006a FFF7FEFF 	 bl UART_Init
  235:src/MightyBoard/Motherboard/comm.c **** 
  236:src/MightyBoard/Motherboard/comm.c **** 	// Enable UART Transmit
  237:src/MightyBoard/Motherboard/comm.c **** 	UART_TxCmd(LPC_UART0, ENABLE);
- 169              	 .loc 1 237 0
- 170 006e 2846     	 mov r0,r5
- 171 0070 3146     	 mov r1,r6
- 172 0072 FFF7FEFF 	 bl UART_TxCmd
+ 204              	 .loc 1 237 0
+ 205 006e 2846     	 mov r0,r5
+ 206 0070 3146     	 mov r1,r6
+ 207 0072 FFF7FEFF 	 bl UART_TxCmd
  238:src/MightyBoard/Motherboard/comm.c **** #if 1
  239:src/MightyBoard/Motherboard/comm.c ****     /* Enable UART Rx interrupt */
  240:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_RBR, ENABLE);
- 173              	 .loc 1 240 0
- 174 0076 2846     	 mov r0,r5
- 175 0078 2146     	 mov r1,r4
- 176 007a 3246     	 mov r2,r6
- 177 007c FFF7FEFF 	 bl UART_IntConfig
+ 208              	 .loc 1 240 0
+ 209 0076 2846     	 mov r0,r5
+ 210 0078 2146     	 mov r1,r4
+ 211 007a 3246     	 mov r2,r6
+ 212 007c FFF7FEFF 	 bl UART_IntConfig
  241:src/MightyBoard/Motherboard/comm.c **** 	/* Enable UART line status interrupt */
  242:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_RLS, ENABLE);
- 178              	 .loc 1 242 0
- 179 0080 2846     	 mov r0,r5
- 180 0082 4146     	 mov r1,r8
- 181 0084 3246     	 mov r2,r6
- 182 0086 FFF7FEFF 	 bl UART_IntConfig
+ 213              	 .loc 1 242 0
+ 214 0080 2846     	 mov r0,r5
+ 215 0082 4146     	 mov r1,r8
+ 216 0084 3246     	 mov r2,r6
+ 217 0086 FFF7FEFF 	 bl UART_IntConfig
  243:src/MightyBoard/Motherboard/comm.c **** 	/*
  244:src/MightyBoard/Motherboard/comm.c **** 	 * Do not enable transmit interrupt here, since it is handled by
  245:src/MightyBoard/Motherboard/comm.c **** 	 * UART_Send() function, just to reset Tx Interrupt state for the
  246:src/MightyBoard/Motherboard/comm.c **** 	 * first time
  247:src/MightyBoard/Motherboard/comm.c **** 	 */
  248:src/MightyBoard/Motherboard/comm.c **** 	TxIntStat = RESET;
- 183              	 .loc 1 248 0
- 184 008a 40F20003 	 movw r3,#:lower16:TxIntStat
- 185 008e C0F20003 	 movt r3,#:upper16:TxIntStat
- 186 0092 1C70     	 strb r4,[r3,#0]
+ 218              	 .loc 1 248 0
+ 219 008a 40F20003 	 movw r3,#:lower16:TxIntStat
+ 220 008e C0F20003 	 movt r3,#:upper16:TxIntStat
+ 221 0092 1C70     	 strb r4,[r3,#0]
  249:src/MightyBoard/Motherboard/comm.c **** 
  250:src/MightyBoard/Motherboard/comm.c **** 	// Reset ring buf head and tail idx
  251:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.rx_head);
- 187              	 .loc 1 251 0
- 188 0094 40F20003 	 movw r3,#:lower16:rb
- 189 0098 C0F20003 	 movt r3,#:upper16:rb
- 190 009c 9C60     	 str r4,[r3,#8]
+ 222              	 .loc 1 251 0
+ 223 0094 40F20003 	 movw r3,#:lower16:rb
+ 224 0098 C0F20003 	 movt r3,#:upper16:rb
+ 225 009c 9C60     	 str r4,[r3,#8]
  252:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.rx_tail);
- 191              	 .loc 1 252 0
- 192 009e DC60     	 str r4,[r3,#12]
+ 226              	 .loc 1 252 0
+ 227 009e DC60     	 str r4,[r3,#12]
  253:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.tx_head);
- 193              	 .loc 1 253 0
- 194 00a0 1C60     	 str r4,[r3,#0]
+ 228              	 .loc 1 253 0
+ 229 00a0 1C60     	 str r4,[r3,#0]
  254:src/MightyBoard/Motherboard/comm.c **** 	__BUF_RESET(rb.tx_tail);
- 195              	 .loc 1 254 0
- 196 00a2 5C60     	 str r4,[r3,#4]
- 197              	.LVL4:
- 198              	.LBB11:
- 199              	.LBB12:
- 200              	 .file 2 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 230              	 .loc 1 254 0
+ 231 00a2 5C60     	 str r4,[r3,#4]
+ 232              	.LVL6:
+ 233              	.LBB11:
+ 234              	.LBB12:
+ 235              	 .file 2 "src/MightyBoard/Motherboard/system/core_cm3.h"
    1:src/MightyBoard/Motherboard/system/core_cm3.h **** /**************************************************************************//**
    2:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @file     core_cm3.h
    3:src/MightyBoard/Motherboard/system/core_cm3.h ****  * @brief    CMSIS Cortex-M3 Core Peripheral Access Layer Header File
@@ -1458,22 +1491,22 @@
 1008:src/MightyBoard/Motherboard/system/core_cm3.h ****     SCB->SHP[((uint32_t)(IRQn) & 0xF)-4] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff); } /* set 
 1009:src/MightyBoard/Motherboard/system/core_cm3.h ****   else {
 1010:src/MightyBoard/Motherboard/system/core_cm3.h ****     NVIC->IP[(uint32_t)(IRQn)] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff);    }        /* set 
- 201              	 .loc 2 1010 0
- 202 00a4 4FF46143 	 mov r3,#57600
- 203 00a8 CEF20003 	 movt r3,57344
- 204 00ac 4FF05002 	 mov r2,#80
- 205 00b0 83F80523 	 strb r2,[r3,#773]
- 206              	.LVL5:
- 207              	.LBE12:
- 208              	.LBE11:
- 209              	.LBB13:
- 210              	.LBB14:
+ 236              	 .loc 2 1010 0
+ 237 00a4 4FF46143 	 mov r3,#57600
+ 238 00a8 CEF20003 	 movt r3,57344
+ 239 00ac 4FF05002 	 mov r2,#80
+ 240 00b0 83F80523 	 strb r2,[r3,#773]
+ 241              	.LVL7:
+ 242              	.LBE12:
+ 243              	.LBE11:
+ 244              	.LBB13:
+ 245              	.LBB14:
  923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
- 211              	 .loc 2 923 0
- 212 00b4 4FF02002 	 mov r2,#32
- 213 00b8 1A60     	 str r2,[r3,#0]
- 214              	.LBE14:
- 215              	.LBE13:
+ 246              	 .loc 2 923 0
+ 247 00b4 4FF02002 	 mov r2,#32
+ 248 00b8 1A60     	 str r2,[r3,#0]
+ 249              	.LBE14:
+ 250              	.LBE13:
  255:src/MightyBoard/Motherboard/comm.c **** 
  256:src/MightyBoard/Motherboard/comm.c ****     /* preemption = 1, sub-priority = 1 */
  257:src/MightyBoard/Motherboard/comm.c ****     NVIC_SetPriority(UART0_IRQn, 10);
@@ -1481,18 +1514,18 @@
  259:src/MightyBoard/Motherboard/comm.c ****     NVIC_EnableIRQ(UART0_IRQn);
  260:src/MightyBoard/Motherboard/comm.c **** #endif
  261:src/MightyBoard/Motherboard/comm.c **** }
- 216              	 .loc 1 261 0
- 217 00ba 04B0     	 add sp,sp,#16
- 218 00bc BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
- 219              	 .cfi_endproc
- 220              	.LFE61:
- 222              	 .section .text.UART_IntReceive,"ax",%progbits
- 223              	 .align 2
- 224              	 .global UART_IntReceive
- 225              	 .thumb
- 226              	 .thumb_func
- 228              	UART_IntReceive:
- 229              	.LFB63:
+ 251              	 .loc 1 261 0
+ 252 00ba 04B0     	 add sp,sp,#16
+ 253 00bc BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 254              	 .cfi_endproc
+ 255              	.LFE61:
+ 257              	 .section .text.UART_IntReceive,"ax",%progbits
+ 258              	 .align 2
+ 259              	 .global UART_IntReceive
+ 260              	 .thumb
+ 261              	 .thumb_func
+ 263              	UART_IntReceive:
+ 264              	.LFB63:
  262:src/MightyBoard/Motherboard/comm.c **** 
  263:src/MightyBoard/Motherboard/comm.c **** 
  264:src/MightyBoard/Motherboard/comm.c **** #if 1
@@ -1543,20 +1576,20 @@
  309:src/MightyBoard/Motherboard/comm.c ****  *********************************************************************/
  310:src/MightyBoard/Motherboard/comm.c **** void UART_IntReceive(void)
  311:src/MightyBoard/Motherboard/comm.c **** {
- 230              	 .loc 1 311 0
- 231              	 .cfi_startproc
- 232              	 
- 233              	 
- 234 0000 70B5     	 push {r4,r5,r6,lr}
- 235              	.LCFI5:
- 236              	 .cfi_def_cfa_offset 16
- 237              	 .cfi_offset 14,-4
- 238              	 .cfi_offset 6,-8
- 239              	 .cfi_offset 5,-12
- 240              	 .cfi_offset 4,-16
- 241 0002 82B0     	 sub sp,sp,#8
- 242              	.LCFI6:
- 243              	 .cfi_def_cfa_offset 24
+ 265              	 .loc 1 311 0
+ 266              	 .cfi_startproc
+ 267              	 
+ 268              	 
+ 269 0000 70B5     	 push {r4,r5,r6,lr}
+ 270              	.LCFI7:
+ 271              	 .cfi_def_cfa_offset 16
+ 272              	 .cfi_offset 14,-4
+ 273              	 .cfi_offset 6,-8
+ 274              	 .cfi_offset 5,-12
+ 275              	 .cfi_offset 4,-16
+ 276 0002 82B0     	 sub sp,sp,#8
+ 277              	.LCFI8:
+ 278              	 .cfi_def_cfa_offset 24
  312:src/MightyBoard/Motherboard/comm.c **** 	uint8_t tmpc;
  313:src/MightyBoard/Motherboard/comm.c **** 	uint32_t rLen;
  314:src/MightyBoard/Motherboard/comm.c **** /*
@@ -1572,93 +1605,93 @@
  324:src/MightyBoard/Motherboard/comm.c **** 		// If data received
  325:src/MightyBoard/Motherboard/comm.c **** 		if (rLen){
  326:src/MightyBoard/Motherboard/comm.c **** 			UART_LINE[UART_LINE_LEN++]=tmpc;
- 244              	 .loc 1 326 0
- 245 0004 40F20004 	 movw r4,#:lower16:.LANCHOR1
- 246 0008 C0F20004 	 movt r4,#:upper16:.LANCHOR1
- 247 000c 40F20005 	 movw r5,#:lower16:UART_LINE
- 248 0010 C0F20005 	 movt r5,#:upper16:UART_LINE
+ 279              	 .loc 1 326 0
+ 280 0004 40F20004 	 movw r4,#:lower16:.LANCHOR1
+ 281 0008 C0F20004 	 movt r4,#:upper16:.LANCHOR1
+ 282 000c 40F20005 	 movw r5,#:lower16:UART_LINE
+ 283 0010 C0F20005 	 movt r5,#:upper16:UART_LINE
  327:src/MightyBoard/Motherboard/comm.c **** 			if((tmpc=='\r')||(tmpc=='\n')){
  328:src/MightyBoard/Motherboard/comm.c **** 				LINE_READY = 1;
- 249              	 .loc 1 328 0
- 250 0014 40F20006 	 movw r6,#:lower16:.LANCHOR2
- 251 0018 C0F20006 	 movt r6,#:upper16:.LANCHOR2
- 252              	.LVL6:
- 253              	.L15:
+ 284              	 .loc 1 328 0
+ 285 0014 40F20006 	 movw r6,#:lower16:.LANCHOR2
+ 286 0018 C0F20006 	 movt r6,#:upper16:.LANCHOR2
+ 287              	.LVL8:
+ 288              	.L16:
  323:src/MightyBoard/Motherboard/comm.c **** 		rLen = UART_Receive((LPC_UART_TypeDef *)LPC_UART0, &tmpc, 1, NONE_BLOCKING);
- 254              	 .loc 1 323 0
- 255 001c 4FF44040 	 mov r0,#49152
- 256 0020 C4F20000 	 movt r0,16384
- 257 0024 0DF10701 	 add r1,sp,#7
- 258 0028 4FF00102 	 mov r2,#1
- 259 002c 4FF00003 	 mov r3,#0
- 260 0030 FFF7FEFF 	 bl UART_Receive
- 261              	.LVL7:
+ 289              	 .loc 1 323 0
+ 290 001c 4FF44040 	 mov r0,#49152
+ 291 0020 C4F20000 	 movt r0,16384
+ 292 0024 0DF10701 	 add r1,sp,#7
+ 293 0028 4FF00102 	 mov r2,#1
+ 294 002c 4FF00003 	 mov r3,#0
+ 295 0030 FFF7FEFF 	 bl UART_Receive
+ 296              	.LVL9:
  325:src/MightyBoard/Motherboard/comm.c **** 		if (rLen){
- 262              	 .loc 1 325 0
- 263 0034 0028     	 cmp r0,#0
- 264 0036 39D0     	 beq .L8
+ 297              	 .loc 1 325 0
+ 298 0034 0028     	 cmp r0,#0
+ 299 0036 39D0     	 beq .L9
  326:src/MightyBoard/Motherboard/comm.c **** 			UART_LINE[UART_LINE_LEN++]=tmpc;
- 265              	 .loc 1 326 0
- 266 0038 2368     	 ldr r3,[r4,#0]
- 267 003a 9DF80720 	 ldrb r2,[sp,#7]
- 268 003e EA54     	 strb r2,[r5,r3]
- 269 0040 03F10103 	 add r3,r3,#1
- 270 0044 2360     	 str r3,[r4,#0]
+ 300              	 .loc 1 326 0
+ 301 0038 2368     	 ldr r3,[r4,#0]
+ 302 003a 9DF80720 	 ldrb r2,[sp,#7]
+ 303 003e EA54     	 strb r2,[r5,r3]
+ 304 0040 03F10103 	 add r3,r3,#1
+ 305 0044 2360     	 str r3,[r4,#0]
  327:src/MightyBoard/Motherboard/comm.c **** 			if((tmpc=='\r')||(tmpc=='\n')){
- 271              	 .loc 1 327 0
- 272 0046 0A2A     	 cmp r2,#10
- 273 0048 14BF     	 ite ne
- 274 004a 0023     	 movne r3,#0
- 275 004c 0123     	 moveq r3,#1
- 276 004e 0D2A     	 cmp r2,#13
- 277 0050 08BF     	 it eq
- 278 0052 43F00103 	 orreq r3,r3,#1
- 279 0056 4BB1     	 cbz r3,.L10
- 280              	 .loc 1 328 0
- 281 0058 4FF00103 	 mov r3,#1
- 282 005c 3360     	 str r3,[r6,#0]
+ 306              	 .loc 1 327 0
+ 307 0046 0A2A     	 cmp r2,#10
+ 308 0048 14BF     	 ite ne
+ 309 004a 0023     	 movne r3,#0
+ 310 004c 0123     	 moveq r3,#1
+ 311 004e 0D2A     	 cmp r2,#13
+ 312 0050 08BF     	 it eq
+ 313 0052 43F00103 	 orreq r3,r3,#1
+ 314 0056 4BB1     	 cbz r3,.L11
+ 315              	 .loc 1 328 0
+ 316 0058 4FF00103 	 mov r3,#1
+ 317 005c 3360     	 str r3,[r6,#0]
  329:src/MightyBoard/Motherboard/comm.c **** 				UART_LINE[UART_LINE_LEN-1]='\0';
- 283              	 .loc 1 329 0
- 284 005e 2168     	 ldr r1,[r4,#0]
- 285 0060 01F1FF31 	 add r1,r1,#-1
- 286 0064 4FF00003 	 mov r3,#0
- 287 0068 6B54     	 strb r3,[r5,r1]
+ 318              	 .loc 1 329 0
+ 319 005e 2168     	 ldr r1,[r4,#0]
+ 320 0060 01F1FF31 	 add r1,r1,#-1
+ 321 0064 4FF00003 	 mov r3,#0
+ 322 0068 6B54     	 strb r3,[r5,r1]
  330:src/MightyBoard/Motherboard/comm.c **** 				UART_LINE_LEN=0;
- 288              	 .loc 1 330 0
- 289 006a 2360     	 str r3,[r4,#0]
- 290              	.L10:
+ 323              	 .loc 1 330 0
+ 324 006a 2360     	 str r3,[r4,#0]
+ 325              	.L11:
  331:src/MightyBoard/Motherboard/comm.c **** 			}
  332:src/MightyBoard/Motherboard/comm.c **** 			/* Check if buffer is more space
  333:src/MightyBoard/Motherboard/comm.c **** 			 * If no more space, remaining character will be trimmed out
  334:src/MightyBoard/Motherboard/comm.c **** 			 */
  335:src/MightyBoard/Motherboard/comm.c **** 			if (!__BUF_IS_FULL(rb.rx_head,rb.rx_tail)){
- 291              	 .loc 1 335 0
- 292 006c 40F20003 	 movw r3,#:lower16:rb
- 293 0070 C0F20003 	 movt r3,#:upper16:rb
- 294 0074 D968     	 ldr r1,[r3,#12]
- 295 0076 9B68     	 ldr r3,[r3,#8]
- 296 0078 03F10103 	 add r3,r3,#1
- 297 007c 4B40     	 eors r3,r3,r1
- 298 007e 4FEA8353 	 lsl r3,r3,#22
- 299 0082 4FEA9353 	 lsr r3,r3,#22
- 300 0086 002B     	 cmp r3,#0
- 301 0088 C8D0     	 beq .L15
+ 326              	 .loc 1 335 0
+ 327 006c 40F20003 	 movw r3,#:lower16:rb
+ 328 0070 C0F20003 	 movt r3,#:upper16:rb
+ 329 0074 D968     	 ldr r1,[r3,#12]
+ 330 0076 9B68     	 ldr r3,[r3,#8]
+ 331 0078 03F10103 	 add r3,r3,#1
+ 332 007c 4B40     	 eors r3,r3,r1
+ 333 007e 4FEA8353 	 lsl r3,r3,#22
+ 334 0082 4FEA9353 	 lsr r3,r3,#22
+ 335 0086 002B     	 cmp r3,#0
+ 336 0088 C8D0     	 beq .L16
  336:src/MightyBoard/Motherboard/comm.c **** 				rb.rx[rb.rx_head] = tmpc;
- 302              	 .loc 1 336 0
- 303 008a 40F20003 	 movw r3,#:lower16:rb
- 304 008e C0F20003 	 movt r3,#:upper16:rb
- 305 0092 9968     	 ldr r1,[r3,#8]
- 306 0094 5918     	 adds r1,r3,r1
- 307 0096 81F81024 	 strb r2,[r1,#1040]
+ 337              	 .loc 1 336 0
+ 338 008a 40F20003 	 movw r3,#:lower16:rb
+ 339 008e C0F20003 	 movt r3,#:upper16:rb
+ 340 0092 9968     	 ldr r1,[r3,#8]
+ 341 0094 5918     	 adds r1,r3,r1
+ 342 0096 81F81024 	 strb r2,[r1,#1040]
  337:src/MightyBoard/Motherboard/comm.c **** 				__BUF_INCR(rb.rx_head);
- 308              	 .loc 1 337 0
- 309 009a 9A68     	 ldr r2,[r3,#8]
- 310 009c 02F10102 	 add r2,r2,#1
- 311 00a0 4FEA8252 	 lsl r2,r2,#22
- 312 00a4 4FEA9252 	 lsr r2,r2,#22
- 313 00a8 9A60     	 str r2,[r3,#8]
- 314 00aa B7E7     	 b .L15
- 315              	.L8:
+ 343              	 .loc 1 337 0
+ 344 009a 9A68     	 ldr r2,[r3,#8]
+ 345 009c 02F10102 	 add r2,r2,#1
+ 346 00a0 4FEA8252 	 lsl r2,r2,#22
+ 347 00a4 4FEA9252 	 lsr r2,r2,#22
+ 348 00a8 9A60     	 str r2,[r3,#8]
+ 349 00aa B7E7     	 b .L16
+ 350              	.L9:
  338:src/MightyBoard/Motherboard/comm.c **** 			}
  339:src/MightyBoard/Motherboard/comm.c **** 		}
  340:src/MightyBoard/Motherboard/comm.c **** 		// no more data
@@ -1667,18 +1700,18 @@
  343:src/MightyBoard/Motherboard/comm.c **** 		}
  344:src/MightyBoard/Motherboard/comm.c **** 	}
  345:src/MightyBoard/Motherboard/comm.c **** }
- 316              	 .loc 1 345 0
- 317 00ac 02B0     	 add sp,sp,#8
- 318 00ae 70BD     	 pop {r4,r5,r6,pc}
- 319              	 .cfi_endproc
- 320              	.LFE63:
- 322              	 .section .text.UART_IntTransmit,"ax",%progbits
- 323              	 .align 2
- 324              	 .global UART_IntTransmit
- 325              	 .thumb
- 326              	 .thumb_func
- 328              	UART_IntTransmit:
- 329              	.LFB64:
+ 351              	 .loc 1 345 0
+ 352 00ac 02B0     	 add sp,sp,#8
+ 353 00ae 70BD     	 pop {r4,r5,r6,pc}
+ 354              	 .cfi_endproc
+ 355              	.LFE63:
+ 357              	 .section .text.UART_IntTransmit,"ax",%progbits
+ 358              	 .align 2
+ 359              	 .global UART_IntTransmit
+ 360              	 .thumb
+ 361              	 .thumb_func
+ 363              	UART_IntTransmit:
+ 364              	.LFB64:
  346:src/MightyBoard/Motherboard/comm.c **** 
  347:src/MightyBoard/Motherboard/comm.c **** /********************************************************************//**
  348:src/MightyBoard/Motherboard/comm.c ****  * @brief 		UART transmit function (ring buffer used)
@@ -1687,17 +1720,17 @@
  351:src/MightyBoard/Motherboard/comm.c ****  *********************************************************************/
  352:src/MightyBoard/Motherboard/comm.c **** void UART_IntTransmit(void)
  353:src/MightyBoard/Motherboard/comm.c **** {
- 330              	 .loc 1 353 0
- 331              	 .cfi_startproc
- 332              	 
- 333              	 
- 334 0000 70B5     	 push {r4,r5,r6,lr}
- 335              	.LCFI7:
- 336              	 .cfi_def_cfa_offset 16
- 337              	 .cfi_offset 14,-4
- 338              	 .cfi_offset 6,-8
- 339              	 .cfi_offset 5,-12
- 340              	 .cfi_offset 4,-16
+ 365              	 .loc 1 353 0
+ 366              	 .cfi_startproc
+ 367              	 
+ 368              	 
+ 369 0000 70B5     	 push {r4,r5,r6,lr}
+ 370              	.LCFI9:
+ 371              	 .cfi_def_cfa_offset 16
+ 372              	 .cfi_offset 14,-4
+ 373              	 .cfi_offset 6,-8
+ 374              	 .cfi_offset 5,-12
+ 375              	 .cfi_offset 4,-16
  354:src/MightyBoard/Motherboard/comm.c **** /*
  355:src/MightyBoard/Motherboard/comm.c **** 	if(TX_TOG)
  356:src/MightyBoard/Motherboard/comm.c **** 		GPIO_SetValue(LED_2_PORT, LED_2_BIT);
@@ -1708,73 +1741,73 @@
  361:src/MightyBoard/Motherboard/comm.c **** 
  362:src/MightyBoard/Motherboard/comm.c ****     // Disable THRE interrupt
  363:src/MightyBoard/Motherboard/comm.c ****     UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_THRE, DISABLE);
- 341              	 .loc 1 363 0
- 342 0002 4FF44040 	 mov r0,#49152
- 343 0006 C4F20000 	 movt r0,16384
- 344 000a 4FF00101 	 mov r1,#1
- 345 000e 4FF00002 	 mov r2,#0
- 346 0012 FFF7FEFF 	 bl UART_IntConfig
+ 376              	 .loc 1 363 0
+ 377 0002 4FF44040 	 mov r0,#49152
+ 378 0006 C4F20000 	 movt r0,16384
+ 379 000a 4FF00101 	 mov r1,#1
+ 380 000e 4FF00002 	 mov r2,#0
+ 381 0012 FFF7FEFF 	 bl UART_IntConfig
  364:src/MightyBoard/Motherboard/comm.c **** 
  365:src/MightyBoard/Motherboard/comm.c **** 	/* Wait for FIFO buffer empty, transfer UART_TX_FIFO_SIZE bytes
  366:src/MightyBoard/Motherboard/comm.c **** 	 * of data or break whenever ring buffers are empty */
  367:src/MightyBoard/Motherboard/comm.c **** 	/* Wait until THR empty */
  368:src/MightyBoard/Motherboard/comm.c ****     while (UART_CheckBusy((LPC_UART_TypeDef *)LPC_UART0) == SET);
- 347              	 .loc 1 368 0
- 348 0016 4FF44044 	 mov r4,#49152
- 349 001a C4F20004 	 movt r4,16384
- 350              	.L17:
- 351              	 .loc 1 368 0 is_stmt 0 discriminator 1
- 352 001e 2046     	 mov r0,r4
- 353 0020 FFF7FEFF 	 bl UART_CheckBusy
- 354 0024 0128     	 cmp r0,#1
- 355 0026 FAD0     	 beq .L17
+ 382              	 .loc 1 368 0
+ 383 0016 4FF44044 	 mov r4,#49152
+ 384 001a C4F20004 	 movt r4,16384
+ 385              	.L18:
+ 386              	 .loc 1 368 0 is_stmt 0 discriminator 1
+ 387 001e 2046     	 mov r0,r4
+ 388 0020 FFF7FEFF 	 bl UART_CheckBusy
+ 389 0024 0128     	 cmp r0,#1
+ 390 0026 FAD0     	 beq .L18
  369:src/MightyBoard/Motherboard/comm.c **** 
  370:src/MightyBoard/Motherboard/comm.c **** 	while (!__BUF_IS_EMPTY(rb.tx_head,rb.tx_tail))
- 356              	 .loc 1 370 0 is_stmt 1 discriminator 1
- 357 0028 40F20003 	 movw r3,#:lower16:rb
- 358 002c C0F20003 	 movt r3,#:upper16:rb
- 359 0030 1A68     	 ldr r2,[r3,#0]
- 360 0032 5B68     	 ldr r3,[r3,#4]
- 361 0034 5340     	 eors r3,r3,r2
- 362 0036 4FEA8353 	 lsl r3,r3,#22
- 363 003a 4FEA9353 	 lsr r3,r3,#22
- 364 003e 2BB3     	 cbz r3,.L18
+ 391              	 .loc 1 370 0 is_stmt 1 discriminator 1
+ 392 0028 40F20003 	 movw r3,#:lower16:rb
+ 393 002c C0F20003 	 movt r3,#:upper16:rb
+ 394 0030 1A68     	 ldr r2,[r3,#0]
+ 395 0032 5B68     	 ldr r3,[r3,#4]
+ 396 0034 5340     	 eors r3,r3,r2
+ 397 0036 4FEA8353 	 lsl r3,r3,#22
+ 398 003a 4FEA9353 	 lsr r3,r3,#22
+ 399 003e 2BB3     	 cbz r3,.L19
  371:src/MightyBoard/Motherboard/comm.c ****     {
  372:src/MightyBoard/Motherboard/comm.c ****         /* Move a piece of data into the transmit FIFO */
  373:src/MightyBoard/Motherboard/comm.c ****     	if (UART_Send((LPC_UART_TypeDef *)LPC_UART0, (uint8_t *)&rb.tx[rb.tx_tail], 1, NONE_BLOCKING))
- 365              	 .loc 1 373 0
- 366 0040 40F20004 	 movw r4,#:lower16:rb
- 367 0044 C0F20004 	 movt r4,#:upper16:rb
- 368 0048 4FF44045 	 mov r5,#49152
- 369 004c C4F20005 	 movt r5,16384
- 370 0050 4FF00106 	 mov r6,#1
- 371              	.L22:
- 372 0054 6168     	 ldr r1,[r4,#4]
- 373 0056 01F11001 	 add r1,r1,#16
- 374 005a 2846     	 mov r0,r5
- 375 005c 6118     	 adds r1,r4,r1
- 376 005e 3246     	 mov r2,r6
- 377 0060 4FF00003 	 mov r3,#0
- 378 0064 FFF7FEFF 	 bl UART_Send
- 379 0068 80B1     	 cbz r0,.L18
+ 400              	 .loc 1 373 0
+ 401 0040 40F20004 	 movw r4,#:lower16:rb
+ 402 0044 C0F20004 	 movt r4,#:upper16:rb
+ 403 0048 4FF44045 	 mov r5,#49152
+ 404 004c C4F20005 	 movt r5,16384
+ 405 0050 4FF00106 	 mov r6,#1
+ 406              	.L23:
+ 407 0054 6168     	 ldr r1,[r4,#4]
+ 408 0056 01F11001 	 add r1,r1,#16
+ 409 005a 2846     	 mov r0,r5
+ 410 005c 6118     	 adds r1,r4,r1
+ 411 005e 3246     	 mov r2,r6
+ 412 0060 4FF00003 	 mov r3,#0
+ 413 0064 FFF7FEFF 	 bl UART_Send
+ 414 0068 80B1     	 cbz r0,.L19
  374:src/MightyBoard/Motherboard/comm.c ****         /* Update transmit ring FIFO tail pointer */
  375:src/MightyBoard/Motherboard/comm.c ****         __BUF_INCR(rb.tx_tail);
- 380              	 .loc 1 375 0
- 381 006a 6368     	 ldr r3,[r4,#4]
- 382 006c 03F10103 	 add r3,r3,#1
- 383 0070 4FEA8353 	 lsl r3,r3,#22
- 384 0074 4FEA9353 	 lsr r3,r3,#22
- 385 0078 6360     	 str r3,[r4,#4]
+ 415              	 .loc 1 375 0
+ 416 006a 6368     	 ldr r3,[r4,#4]
+ 417 006c 03F10103 	 add r3,r3,#1
+ 418 0070 4FEA8353 	 lsl r3,r3,#22
+ 419 0074 4FEA9353 	 lsr r3,r3,#22
+ 420 0078 6360     	 str r3,[r4,#4]
  370:src/MightyBoard/Motherboard/comm.c **** 	while (!__BUF_IS_EMPTY(rb.tx_head,rb.tx_tail))
- 386              	 .loc 1 370 0
- 387 007a 2368     	 ldr r3,[r4,#0]
- 388 007c 6268     	 ldr r2,[r4,#4]
- 389 007e 5340     	 eors r3,r3,r2
- 390 0080 4FEA8353 	 lsl r3,r3,#22
- 391 0084 4FEA9353 	 lsr r3,r3,#22
- 392 0088 002B     	 cmp r3,#0
- 393 008a E3D1     	 bne .L22
- 394              	.L18:
+ 421              	 .loc 1 370 0
+ 422 007a 2368     	 ldr r3,[r4,#0]
+ 423 007c 6268     	 ldr r2,[r4,#4]
+ 424 007e 5340     	 eors r3,r3,r2
+ 425 0080 4FEA8353 	 lsl r3,r3,#22
+ 426 0084 4FEA9353 	 lsr r3,r3,#22
+ 427 0088 002B     	 cmp r3,#0
+ 428 008a E3D1     	 bne .L23
+ 429              	.L19:
  376:src/MightyBoard/Motherboard/comm.c ****     	} else {
  377:src/MightyBoard/Motherboard/comm.c ****     		break;
  378:src/MightyBoard/Motherboard/comm.c ****     	}
@@ -1783,56 +1816,56 @@
  381:src/MightyBoard/Motherboard/comm.c ****     /* If there is no more data to send, disable the transmit
  382:src/MightyBoard/Motherboard/comm.c ****        interrupt - else enable it or keep it enabled */
  383:src/MightyBoard/Motherboard/comm.c **** 	if (__BUF_IS_EMPTY(rb.tx_head, rb.tx_tail)) {
- 395              	 .loc 1 383 0
- 396 008c 40F20003 	 movw r3,#:lower16:rb
- 397 0090 C0F20003 	 movt r3,#:upper16:rb
- 398 0094 1A68     	 ldr r2,[r3,#0]
- 399 0096 5B68     	 ldr r3,[r3,#4]
- 400 0098 5340     	 eors r3,r3,r2
- 401 009a 4FEA8353 	 lsl r3,r3,#22
- 402 009e 4FEA9353 	 lsr r3,r3,#22
- 403 00a2 8BB9     	 cbnz r3,.L20
+ 430              	 .loc 1 383 0
+ 431 008c 40F20003 	 movw r3,#:lower16:rb
+ 432 0090 C0F20003 	 movt r3,#:upper16:rb
+ 433 0094 1A68     	 ldr r2,[r3,#0]
+ 434 0096 5B68     	 ldr r3,[r3,#4]
+ 435 0098 5340     	 eors r3,r3,r2
+ 436 009a 4FEA8353 	 lsl r3,r3,#22
+ 437 009e 4FEA9353 	 lsr r3,r3,#22
+ 438 00a2 8BB9     	 cbnz r3,.L21
  384:src/MightyBoard/Motherboard/comm.c ****     	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_THRE, DISABLE);
- 404              	 .loc 1 384 0
- 405 00a4 4FF44040 	 mov r0,#49152
- 406 00a8 C4F20000 	 movt r0,16384
- 407 00ac 4FF00101 	 mov r1,#1
- 408 00b0 4FF00002 	 mov r2,#0
- 409 00b4 FFF7FEFF 	 bl UART_IntConfig
+ 439              	 .loc 1 384 0
+ 440 00a4 4FF44040 	 mov r0,#49152
+ 441 00a8 C4F20000 	 movt r0,16384
+ 442 00ac 4FF00101 	 mov r1,#1
+ 443 00b0 4FF00002 	 mov r2,#0
+ 444 00b4 FFF7FEFF 	 bl UART_IntConfig
  385:src/MightyBoard/Motherboard/comm.c ****     	// Reset Tx Interrupt state
  386:src/MightyBoard/Motherboard/comm.c ****     	TxIntStat = RESET;
- 410              	 .loc 1 386 0
- 411 00b8 40F20003 	 movw r3,#:lower16:TxIntStat
- 412 00bc C0F20003 	 movt r3,#:upper16:TxIntStat
- 413 00c0 4FF00002 	 mov r2,#0
- 414 00c4 1A70     	 strb r2,[r3,#0]
- 415 00c6 70BD     	 pop {r4,r5,r6,pc}
- 416              	.L20:
+ 445              	 .loc 1 386 0
+ 446 00b8 40F20003 	 movw r3,#:lower16:TxIntStat
+ 447 00bc C0F20003 	 movt r3,#:upper16:TxIntStat
+ 448 00c0 4FF00002 	 mov r2,#0
+ 449 00c4 1A70     	 strb r2,[r3,#0]
+ 450 00c6 70BD     	 pop {r4,r5,r6,pc}
+ 451              	.L21:
  387:src/MightyBoard/Motherboard/comm.c ****     }
  388:src/MightyBoard/Motherboard/comm.c ****     else{
  389:src/MightyBoard/Motherboard/comm.c ****       	// Set Tx Interrupt state
  390:src/MightyBoard/Motherboard/comm.c **** 		TxIntStat = SET;
- 417              	 .loc 1 390 0
- 418 00c8 40F20003 	 movw r3,#:lower16:TxIntStat
- 419 00cc C0F20003 	 movt r3,#:upper16:TxIntStat
- 420 00d0 4FF00102 	 mov r2,#1
- 421 00d4 1A70     	 strb r2,[r3,#0]
+ 452              	 .loc 1 390 0
+ 453 00c8 40F20003 	 movw r3,#:lower16:TxIntStat
+ 454 00cc C0F20003 	 movt r3,#:upper16:TxIntStat
+ 455 00d0 4FF00102 	 mov r2,#1
+ 456 00d4 1A70     	 strb r2,[r3,#0]
  391:src/MightyBoard/Motherboard/comm.c ****     	UART_IntConfig((LPC_UART_TypeDef *)LPC_UART0, UART_INTCFG_THRE, ENABLE);
- 422              	 .loc 1 391 0
- 423 00d6 4FF44040 	 mov r0,#49152
- 424 00da C4F20000 	 movt r0,16384
- 425 00de 1146     	 mov r1,r2
- 426 00e0 FFF7FEFF 	 bl UART_IntConfig
- 427 00e4 70BD     	 pop {r4,r5,r6,pc}
- 428              	 .cfi_endproc
- 429              	.LFE64:
- 431 00e6 00BF     	 .section .text.UART_IntErr,"ax",%progbits
- 432              	 .align 2
- 433              	 .global UART_IntErr
- 434              	 .thumb
- 435              	 .thumb_func
- 437              	UART_IntErr:
- 438              	.LFB65:
+ 457              	 .loc 1 391 0
+ 458 00d6 4FF44040 	 mov r0,#49152
+ 459 00da C4F20000 	 movt r0,16384
+ 460 00de 1146     	 mov r1,r2
+ 461 00e0 FFF7FEFF 	 bl UART_IntConfig
+ 462 00e4 70BD     	 pop {r4,r5,r6,pc}
+ 463              	 .cfi_endproc
+ 464              	.LFE64:
+ 466 00e6 00BF     	 .section .text.UART_IntErr,"ax",%progbits
+ 467              	 .align 2
+ 468              	 .global UART_IntErr
+ 469              	 .thumb
+ 470              	 .thumb_func
+ 472              	UART_IntErr:
+ 473              	.LFB65:
  392:src/MightyBoard/Motherboard/comm.c ****     }
  393:src/MightyBoard/Motherboard/comm.c **** }
  394:src/MightyBoard/Motherboard/comm.c **** 
@@ -1844,99 +1877,99 @@
  400:src/MightyBoard/Motherboard/comm.c ****  **********************************************************************/
  401:src/MightyBoard/Motherboard/comm.c **** void UART_IntErr(uint8_t bLSErrType)
  402:src/MightyBoard/Motherboard/comm.c **** {
- 439              	 .loc 1 402 0
- 440              	 .cfi_startproc
- 441              	 
- 442              	 
- 443              	 
- 444              	.LVL8:
- 445              	.L26:
- 446 0000 FEE7     	 b .L26
- 447              	 .cfi_endproc
- 448              	.LFE65:
- 450 0002 00BF     	 .section .text.UART0_IRQHandler,"ax",%progbits
- 451              	 .align 2
- 452              	 .global UART0_IRQHandler
- 453              	 .thumb
- 454              	 .thumb_func
- 456              	UART0_IRQHandler:
- 457              	.LFB62:
+ 474              	 .loc 1 402 0
+ 475              	 .cfi_startproc
+ 476              	 
+ 477              	 
+ 478              	 
+ 479              	.LVL10:
+ 480              	.L27:
+ 481 0000 FEE7     	 b .L27
+ 482              	 .cfi_endproc
+ 483              	.LFE65:
+ 485 0002 00BF     	 .section .text.UART0_IRQHandler,"ax",%progbits
+ 486              	 .align 2
+ 487              	 .global UART0_IRQHandler
+ 488              	 .thumb
+ 489              	 .thumb_func
+ 491              	UART0_IRQHandler:
+ 492              	.LFB62:
  272:src/MightyBoard/Motherboard/comm.c **** {
- 458              	 .loc 1 272 0
- 459              	 .cfi_startproc
- 460              	 
- 461              	 
+ 493              	 .loc 1 272 0
+ 494              	 .cfi_startproc
+ 495              	 
+ 496              	 
  272:src/MightyBoard/Motherboard/comm.c **** {
- 462              	 .loc 1 272 0
- 463 0000 10B5     	 push {r4,lr}
- 464              	.LCFI8:
- 465              	 .cfi_def_cfa_offset 8
- 466              	 .cfi_offset 14,-4
- 467              	 .cfi_offset 4,-8
+ 497              	 .loc 1 272 0
+ 498 0000 10B5     	 push {r4,lr}
+ 499              	.LCFI10:
+ 500              	 .cfi_def_cfa_offset 8
+ 501              	 .cfi_offset 14,-4
+ 502              	 .cfi_offset 4,-8
  276:src/MightyBoard/Motherboard/comm.c **** 	intsrc = UART_GetIntId(LPC_UART0);
- 468              	 .loc 1 276 0
- 469 0002 4FF44040 	 mov r0,#49152
- 470 0006 C4F20000 	 movt r0,16384
- 471 000a FFF7FEFF 	 bl UART_GetIntId
- 472              	.LVL9:
+ 503              	 .loc 1 276 0
+ 504 0002 4FF44040 	 mov r0,#49152
+ 505 0006 C4F20000 	 movt r0,16384
+ 506 000a FFF7FEFF 	 bl UART_GetIntId
+ 507              	.LVL11:
  277:src/MightyBoard/Motherboard/comm.c **** 	tmp = intsrc & UART_IIR_INTID_MASK;
- 473              	 .loc 1 277 0
- 474 000e 00F00E04 	 and r4,r0,#14
- 475              	.LVL10:
+ 508              	 .loc 1 277 0
+ 509 000e 00F00E04 	 and r4,r0,#14
+ 510              	.LVL12:
  281:src/MightyBoard/Motherboard/comm.c **** 	if (tmp == UART_IIR_INTID_RLS){
- 476              	 .loc 1 281 0
- 477 0012 062C     	 cmp r4,#6
- 478 0014 0AD1     	 bne .L28
+ 511              	 .loc 1 281 0
+ 512 0012 062C     	 cmp r4,#6
+ 513 0014 0AD1     	 bne .L29
  283:src/MightyBoard/Motherboard/comm.c **** 		tmp1 = UART_GetLineStatus(LPC_UART0);
- 479              	 .loc 1 283 0
- 480 0016 4FF44040 	 mov r0,#49152
- 481              	.LVL11:
- 482 001a C4F20000 	 movt r0,16384
- 483 001e FFF7FEFF 	 bl UART_GetLineStatus
- 484              	.LVL12:
+ 514              	 .loc 1 283 0
+ 515 0016 4FF44040 	 mov r0,#49152
+ 516              	.LVL13:
+ 517 001a C4F20000 	 movt r0,16384
+ 518 001e FFF7FEFF 	 bl UART_GetLineStatus
+ 519              	.LVL14:
  288:src/MightyBoard/Motherboard/comm.c **** 		if (tmp1) {
- 485              	 .loc 1 288 0
- 486 0022 10F09E00 	 ands r0,r0,#158
- 487              	.LVL13:
- 488 0026 10D0     	 beq .L27
+ 520              	 .loc 1 288 0
+ 521 0022 10F09E00 	 ands r0,r0,#158
+ 522              	.LVL15:
+ 523 0026 10D0     	 beq .L28
  289:src/MightyBoard/Motherboard/comm.c **** 			UART_IntErr(tmp1);
- 489              	 .loc 1 289 0
- 490 0028 FFF7FEFF 	 bl UART_IntErr
- 491              	.LVL14:
- 492              	.L28:
+ 524              	 .loc 1 289 0
+ 525 0028 FFF7FEFF 	 bl UART_IntErr
+ 526              	.LVL16:
+ 527              	.L29:
  294:src/MightyBoard/Motherboard/comm.c **** 	if ((tmp == UART_IIR_INTID_RDA) || (tmp == UART_IIR_INTID_CTI)){
- 493              	 .loc 1 294 0
- 494 002c 0C2C     	 cmp r4,#12
- 495 002e 14BF     	 ite ne
- 496 0030 0023     	 movne r3,#0
- 497 0032 0123     	 moveq r3,#1
- 498 0034 042C     	 cmp r4,#4
- 499 0036 08BF     	 it eq
- 500 0038 43F00103 	 orreq r3,r3,#1
- 501 003c 0BB1     	 cbz r3,.L30
+ 528              	 .loc 1 294 0
+ 529 002c 0C2C     	 cmp r4,#12
+ 530 002e 14BF     	 ite ne
+ 531 0030 0023     	 movne r3,#0
+ 532 0032 0123     	 moveq r3,#1
+ 533 0034 042C     	 cmp r4,#4
+ 534 0036 08BF     	 it eq
+ 535 0038 43F00103 	 orreq r3,r3,#1
+ 536 003c 0BB1     	 cbz r3,.L31
  295:src/MightyBoard/Motherboard/comm.c **** 		UART_IntReceive();
- 502              	 .loc 1 295 0
- 503 003e FFF7FEFF 	 bl UART_IntReceive
- 504              	.LVL15:
- 505              	.L30:
+ 537              	 .loc 1 295 0
+ 538 003e FFF7FEFF 	 bl UART_IntReceive
+ 539              	.LVL17:
+ 540              	.L31:
  299:src/MightyBoard/Motherboard/comm.c **** 	if (tmp == UART_IIR_INTID_THRE){
- 506              	 .loc 1 299 0
- 507 0042 022C     	 cmp r4,#2
- 508 0044 01D1     	 bne .L27
+ 541              	 .loc 1 299 0
+ 542 0042 022C     	 cmp r4,#2
+ 543 0044 01D1     	 bne .L28
  300:src/MightyBoard/Motherboard/comm.c **** 		UART_IntTransmit();
- 509              	 .loc 1 300 0
- 510 0046 FFF7FEFF 	 bl UART_IntTransmit
- 511              	.L27:
- 512 004a 10BD     	 pop {r4,pc}
- 513              	 .cfi_endproc
- 514              	.LFE62:
- 516              	 .section .text.UARTSend,"ax",%progbits
- 517              	 .align 2
- 518              	 .global UARTSend
- 519              	 .thumb
- 520              	 .thumb_func
- 522              	UARTSend:
- 523              	.LFB66:
+ 544              	 .loc 1 300 0
+ 545 0046 FFF7FEFF 	 bl UART_IntTransmit
+ 546              	.L28:
+ 547 004a 10BD     	 pop {r4,pc}
+ 548              	 .cfi_endproc
+ 549              	.LFE62:
+ 551              	 .section .text.UARTSend,"ax",%progbits
+ 552              	 .align 2
+ 553              	 .global UARTSend
+ 554              	 .thumb
+ 555              	 .thumb_func
+ 557              	UARTSend:
+ 558              	.LFB66:
  403:src/MightyBoard/Motherboard/comm.c **** 	uint8_t test;
  404:src/MightyBoard/Motherboard/comm.c **** 	// Loop forever
  405:src/MightyBoard/Motherboard/comm.c **** 	while (1){
@@ -1956,22 +1989,22 @@
  419:src/MightyBoard/Motherboard/comm.c ****  **********************************************************************/
  420:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTSend(LPC_UART_TypeDef *UARTPort, uint8_t *txbuf, uint8_t buflen)
  421:src/MightyBoard/Motherboard/comm.c **** {
- 524              	 .loc 1 421 0
- 525              	 .cfi_startproc
- 526              	 
- 527              	 
- 528              	.LVL16:
- 529 0000 70B5     	 push {r4,r5,r6,lr}
- 530              	.LCFI9:
- 531              	 .cfi_def_cfa_offset 16
- 532              	 .cfi_offset 14,-4
- 533              	 .cfi_offset 6,-8
- 534              	 .cfi_offset 5,-12
- 535              	 .cfi_offset 4,-16
- 536 0002 0646     	 mov r6,r0
- 537 0004 0D46     	 mov r5,r1
- 538 0006 1446     	 mov r4,r2
- 539              	.LVL17:
+ 559              	 .loc 1 421 0
+ 560              	 .cfi_startproc
+ 561              	 
+ 562              	 
+ 563              	.LVL18:
+ 564 0000 70B5     	 push {r4,r5,r6,lr}
+ 565              	.LCFI11:
+ 566              	 .cfi_def_cfa_offset 16
+ 567              	 .cfi_offset 14,-4
+ 568              	 .cfi_offset 6,-8
+ 569              	 .cfi_offset 5,-12
+ 570              	 .cfi_offset 4,-16
+ 571 0002 0646     	 mov r6,r0
+ 572 0004 0D46     	 mov r5,r1
+ 573 0006 1446     	 mov r4,r2
+ 574              	.LVL19:
  422:src/MightyBoard/Motherboard/comm.c ****     uint8_t *data = (uint8_t *) txbuf;
  423:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
  424:src/MightyBoard/Motherboard/comm.c **** 
@@ -1979,93 +2012,93 @@
  426:src/MightyBoard/Motherboard/comm.c **** 	   read so the UART transmit interrupt won't cause problems
  427:src/MightyBoard/Motherboard/comm.c **** 	   with the index values */
  428:src/MightyBoard/Motherboard/comm.c ****     UART_IntConfig(UARTPort, UART_INTCFG_THRE, DISABLE);
- 540              	 .loc 1 428 0
- 541 0008 4FF00101 	 mov r1,#1
- 542              	.LVL18:
- 543 000c 4FF00002 	 mov r2,#0
- 544              	.LVL19:
- 545 0010 FFF7FEFF 	 bl UART_IntConfig
- 546              	.LVL20:
+ 575              	 .loc 1 428 0
+ 576 0008 4FF00101 	 mov r1,#1
+ 577              	.LVL20:
+ 578 000c 4FF00002 	 mov r2,#0
+ 579              	.LVL21:
+ 580 0010 FFF7FEFF 	 bl UART_IntConfig
+ 581              	.LVL22:
  429:src/MightyBoard/Motherboard/comm.c **** 
  430:src/MightyBoard/Motherboard/comm.c **** 	/* Loop until transmit run buffer is full or until n_bytes
  431:src/MightyBoard/Motherboard/comm.c **** 	   expires */
  432:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!__BUF_IS_FULL(rb.tx_head, rb.tx_tail)))
- 547              	 .loc 1 432 0
- 548 0014 002C     	 cmp r4,#0
- 549 0016 34D0     	 beq .L36
- 550 0018 40F20003 	 movw r3,#:lower16:rb
- 551 001c C0F20003 	 movt r3,#:upper16:rb
- 552 0020 5A68     	 ldr r2,[r3,#4]
- 553 0022 1B68     	 ldr r3,[r3,#0]
- 554 0024 03F10103 	 add r3,r3,#1
- 555 0028 5340     	 eors r3,r3,r2
- 556 002a 4FEA8353 	 lsl r3,r3,#22
- 557 002e 4FEA9353 	 lsr r3,r3,#22
- 558 0032 4BB3     	 cbz r3,.L37
+ 582              	 .loc 1 432 0
+ 583 0014 002C     	 cmp r4,#0
+ 584 0016 34D0     	 beq .L37
+ 585 0018 40F20003 	 movw r3,#:lower16:rb
+ 586 001c C0F20003 	 movt r3,#:upper16:rb
+ 587 0020 5A68     	 ldr r2,[r3,#4]
+ 588 0022 1B68     	 ldr r3,[r3,#0]
+ 589 0024 03F10103 	 add r3,r3,#1
+ 590 0028 5340     	 eors r3,r3,r2
+ 591 002a 4FEA8353 	 lsl r3,r3,#22
+ 592 002e 4FEA9353 	 lsr r3,r3,#22
+ 593 0032 4BB3     	 cbz r3,.L38
  420:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTSend(LPC_UART_TypeDef *UARTPort, uint8_t *txbuf, uint8_t buflen)
- 559              	 .loc 1 420 0
- 560 0034 04F1FF30 	 add r0,r4,#-1
- 561 0038 C0B2     	 uxtb r0,r0
- 562 003a 00F10100 	 add r0,r0,#1
+ 594              	 .loc 1 420 0
+ 595 0034 04F1FF30 	 add r0,r4,#-1
+ 596 0038 C0B2     	 uxtb r0,r0
+ 597 003a 00F10100 	 add r0,r0,#1
  423:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
- 563              	 .loc 1 423 0
- 564 003e 4FF00004 	 mov r4,#0
- 565              	.LVL21:
+ 598              	 .loc 1 423 0
+ 599 003e 4FF00004 	 mov r4,#0
+ 600              	.LVL23:
  433:src/MightyBoard/Motherboard/comm.c **** 	{
  434:src/MightyBoard/Motherboard/comm.c **** 		/* Write data from buffer into ring buffer */
  435:src/MightyBoard/Motherboard/comm.c **** 		rb.tx[rb.tx_head] = *data;
- 566              	 .loc 1 435 0
- 567 0042 40F20003 	 movw r3,#:lower16:rb
- 568 0046 C0F20003 	 movt r3,#:upper16:rb
- 569              	.LVL22:
- 570              	.L33:
- 571 004a 1A68     	 ldr r2,[r3,#0]
- 572 004c 295D     	 ldrb r1,[r5,r4]
- 573 004e 9A18     	 adds r2,r3,r2
- 574 0050 1174     	 strb r1,[r2,#16]
+ 601              	 .loc 1 435 0
+ 602 0042 40F20003 	 movw r3,#:lower16:rb
+ 603 0046 C0F20003 	 movt r3,#:upper16:rb
+ 604              	.LVL24:
+ 605              	.L34:
+ 606 004a 1A68     	 ldr r2,[r3,#0]
+ 607 004c 295D     	 ldrb r1,[r5,r4]
+ 608 004e 9A18     	 adds r2,r3,r2
+ 609 0050 1174     	 strb r1,[r2,#16]
  436:src/MightyBoard/Motherboard/comm.c **** 		data++;
  437:src/MightyBoard/Motherboard/comm.c **** 
  438:src/MightyBoard/Motherboard/comm.c **** 		/* Increment head pointer */
  439:src/MightyBoard/Motherboard/comm.c **** 		__BUF_INCR(rb.tx_head);
- 575              	 .loc 1 439 0
- 576 0052 1A68     	 ldr r2,[r3,#0]
- 577 0054 02F10102 	 add r2,r2,#1
- 578 0058 4FEA8252 	 lsl r2,r2,#22
- 579 005c 4FEA9252 	 lsr r2,r2,#22
- 580 0060 1A60     	 str r2,[r3,#0]
+ 610              	 .loc 1 439 0
+ 611 0052 1A68     	 ldr r2,[r3,#0]
+ 612 0054 02F10102 	 add r2,r2,#1
+ 613 0058 4FEA8252 	 lsl r2,r2,#22
+ 614 005c 4FEA9252 	 lsr r2,r2,#22
+ 615 0060 1A60     	 str r2,[r3,#0]
  440:src/MightyBoard/Motherboard/comm.c **** 
  441:src/MightyBoard/Motherboard/comm.c **** 		/* Increment data count and decrement buffer size count */
  442:src/MightyBoard/Motherboard/comm.c **** 		bytes++;
- 581              	 .loc 1 442 0
- 582 0062 04F10104 	 add r4,r4,#1
- 583              	.LVL23:
+ 616              	 .loc 1 442 0
+ 617 0062 04F10104 	 add r4,r4,#1
+ 618              	.LVL25:
  432:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!__BUF_IS_FULL(rb.tx_head, rb.tx_tail)))
- 584              	 .loc 1 432 0
- 585 0066 8442     	 cmp r4,r0
- 586 0068 10D0     	 beq .L32
+ 619              	 .loc 1 432 0
+ 620 0066 8442     	 cmp r4,r0
+ 621 0068 10D0     	 beq .L33
  432:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!__BUF_IS_FULL(rb.tx_head, rb.tx_tail)))
- 587              	 .loc 1 432 0 is_stmt 0 discriminator 2
- 588 006a 5968     	 ldr r1,[r3,#4]
- 589 006c 1A68     	 ldr r2,[r3,#0]
- 590 006e 02F10102 	 add r2,r2,#1
- 591 0072 4A40     	 eors r2,r2,r1
- 592 0074 4FEA8252 	 lsl r2,r2,#22
- 593 0078 4FEA9252 	 lsr r2,r2,#22
- 594 007c 002A     	 cmp r2,#0
- 595 007e E4D1     	 bne .L33
- 596 0080 04E0     	 b .L32
- 597              	.LVL24:
- 598              	.L36:
+ 622              	 .loc 1 432 0 is_stmt 0 discriminator 2
+ 623 006a 5968     	 ldr r1,[r3,#4]
+ 624 006c 1A68     	 ldr r2,[r3,#0]
+ 625 006e 02F10102 	 add r2,r2,#1
+ 626 0072 4A40     	 eors r2,r2,r1
+ 627 0074 4FEA8252 	 lsl r2,r2,#22
+ 628 0078 4FEA9252 	 lsr r2,r2,#22
+ 629 007c 002A     	 cmp r2,#0
+ 630 007e E4D1     	 bne .L34
+ 631 0080 04E0     	 b .L33
+ 632              	.LVL26:
+ 633              	.L37:
  423:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
- 599              	 .loc 1 423 0 is_stmt 1
- 600 0082 4FF00004 	 mov r4,#0
- 601              	.LVL25:
- 602 0086 01E0     	 b .L32
- 603              	.LVL26:
- 604              	.L37:
- 605 0088 4FF00004 	 mov r4,#0
- 606              	.LVL27:
- 607              	.L32:
+ 634              	 .loc 1 423 0 is_stmt 1
+ 635 0082 4FF00004 	 mov r4,#0
+ 636              	.LVL27:
+ 637 0086 01E0     	 b .L33
+ 638              	.LVL28:
+ 639              	.L38:
+ 640 0088 4FF00004 	 mov r4,#0
+ 641              	.LVL29:
+ 642              	.L33:
  443:src/MightyBoard/Motherboard/comm.c **** 		buflen--;
  444:src/MightyBoard/Motherboard/comm.c **** 	}
  445:src/MightyBoard/Motherboard/comm.c **** 
@@ -2076,79 +2109,44 @@
  450:src/MightyBoard/Motherboard/comm.c **** 	 * this interrupt type
  451:src/MightyBoard/Motherboard/comm.c **** 	 */
  452:src/MightyBoard/Motherboard/comm.c **** 	if (TxIntStat == RESET) {
- 608              	 .loc 1 452 0
- 609 008c 40F20003 	 movw r3,#:lower16:TxIntStat
- 610 0090 C0F20003 	 movt r3,#:upper16:TxIntStat
- 611 0094 1B78     	 ldrb r3,[r3,#0]
- 612 0096 13B9     	 cbnz r3,.L34
+ 643              	 .loc 1 452 0
+ 644 008c 40F20003 	 movw r3,#:lower16:TxIntStat
+ 645 0090 C0F20003 	 movt r3,#:upper16:TxIntStat
+ 646 0094 1B78     	 ldrb r3,[r3,#0]
+ 647 0096 13B9     	 cbnz r3,.L35
  453:src/MightyBoard/Motherboard/comm.c **** 		UART_IntTransmit();
- 613              	 .loc 1 453 0
- 614 0098 FFF7FEFF 	 bl UART_IntTransmit
- 615 009c 05E0     	 b .L35
- 616              	.L34:
+ 648              	 .loc 1 453 0
+ 649 0098 FFF7FEFF 	 bl UART_IntTransmit
+ 650 009c 05E0     	 b .L36
+ 651              	.L35:
  454:src/MightyBoard/Motherboard/comm.c **** 	}
  455:src/MightyBoard/Motherboard/comm.c **** 	/*
  456:src/MightyBoard/Motherboard/comm.c **** 	 * Otherwise, re-enables Tx Interrupt
  457:src/MightyBoard/Motherboard/comm.c **** 	 */
  458:src/MightyBoard/Motherboard/comm.c **** 	else {
  459:src/MightyBoard/Motherboard/comm.c **** 		UART_IntConfig(UARTPort, UART_INTCFG_THRE, ENABLE);
- 617              	 .loc 1 459 0
- 618 009e 3046     	 mov r0,r6
- 619 00a0 4FF00101 	 mov r1,#1
- 620 00a4 0A46     	 mov r2,r1
- 621 00a6 FFF7FEFF 	 bl UART_IntConfig
- 622              	.L35:
+ 652              	 .loc 1 459 0
+ 653 009e 3046     	 mov r0,r6
+ 654 00a0 4FF00101 	 mov r1,#1
+ 655 00a4 0A46     	 mov r2,r1
+ 656 00a6 FFF7FEFF 	 bl UART_IntConfig
+ 657              	.L36:
  460:src/MightyBoard/Motherboard/comm.c **** 	}
  461:src/MightyBoard/Motherboard/comm.c **** 
  462:src/MightyBoard/Motherboard/comm.c ****     return bytes;
  463:src/MightyBoard/Motherboard/comm.c **** }
- 623              	 .loc 1 463 0
- 624 00aa 2046     	 mov r0,r4
- 625 00ac 70BD     	 pop {r4,r5,r6,pc}
- 626              	 .cfi_endproc
- 627              	.LFE66:
- 629 00ae 00BF     	 .section .text.comm_put,"ax",%progbits
- 630              	 .align 2
- 631              	 .global comm_put
- 632              	 .thumb
- 633              	 .thumb_func
- 635              	comm_put:
- 636              	.LFB60:
- 182:src/MightyBoard/Motherboard/comm.c **** void comm_put(uint8_t d){
- 637              	 .loc 1 182 0
- 638              	 .cfi_startproc
- 639              	 
- 640              	 
- 641              	.LVL28:
- 642 0000 00B5     	 push {lr}
- 643              	.LCFI10:
- 644              	 .cfi_def_cfa_offset 4
- 645              	 .cfi_offset 14,-4
- 646 0002 83B0     	 sub sp,sp,#12
- 647              	.LCFI11:
- 648              	 .cfi_def_cfa_offset 16
- 649 0004 02A9     	 add r1,sp,#8
- 650 0006 01F8010D 	 strb r0,[r1,#-1]!
- 184:src/MightyBoard/Motherboard/comm.c **** 	UARTSend(LPC_UART0, &d, 1);//with interrupt
- 651              	 .loc 1 184 0
- 652 000a 4FF44040 	 mov r0,#49152
- 653              	.LVL29:
- 654 000e C4F20000 	 movt r0,16384
- 655 0012 4FF00102 	 mov r2,#1
- 656 0016 FFF7FEFF 	 bl UARTSend
- 186:src/MightyBoard/Motherboard/comm.c **** }
- 657              	 .loc 1 186 0
- 658 001a 03B0     	 add sp,sp,#12
- 659 001c 00BD     	 pop {pc}
- 660              	 .cfi_endproc
- 661              	.LFE60:
- 663 001e 00BF     	 .section .text.UARTReceive,"ax",%progbits
- 664              	 .align 2
- 665              	 .global UARTReceive
- 666              	 .thumb
- 667              	 .thumb_func
- 669              	UARTReceive:
- 670              	.LFB67:
+ 658              	 .loc 1 463 0
+ 659 00aa 2046     	 mov r0,r4
+ 660 00ac 70BD     	 pop {r4,r5,r6,pc}
+ 661              	 .cfi_endproc
+ 662              	.LFE66:
+ 664 00ae 00BF     	 .section .text.UARTReceive,"ax",%progbits
+ 665              	 .align 2
+ 666              	 .global UARTReceive
+ 667              	 .thumb
+ 668              	 .thumb_func
+ 670              	UARTReceive:
+ 671              	.LFB67:
  464:src/MightyBoard/Motherboard/comm.c **** 
  465:src/MightyBoard/Motherboard/comm.c **** 
  466:src/MightyBoard/Motherboard/comm.c **** /*********************************************************************//**
@@ -2161,22 +2159,22 @@
  473:src/MightyBoard/Motherboard/comm.c ****  **********************************************************************/
  474:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTReceive(LPC_UART_TypeDef *UARTPort, uint8_t *rxbuf, uint8_t buflen)
  475:src/MightyBoard/Motherboard/comm.c **** {
- 671              	 .loc 1 475 0
- 672              	 .cfi_startproc
- 673              	 
+ 672              	 .loc 1 475 0
+ 673              	 .cfi_startproc
  674              	 
- 675              	.LVL30:
- 676 0000 70B5     	 push {r4,r5,r6,lr}
- 677              	.LCFI12:
- 678              	 .cfi_def_cfa_offset 16
- 679              	 .cfi_offset 14,-4
- 680              	 .cfi_offset 6,-8
- 681              	 .cfi_offset 5,-12
- 682              	 .cfi_offset 4,-16
- 683 0002 0646     	 mov r6,r0
- 684 0004 0D46     	 mov r5,r1
- 685 0006 1446     	 mov r4,r2
- 686              	.LVL31:
+ 675              	 
+ 676              	.LVL30:
+ 677 0000 70B5     	 push {r4,r5,r6,lr}
+ 678              	.LCFI12:
+ 679              	 .cfi_def_cfa_offset 16
+ 680              	 .cfi_offset 14,-4
+ 681              	 .cfi_offset 6,-8
+ 682              	 .cfi_offset 5,-12
+ 683              	 .cfi_offset 4,-16
+ 684 0002 0646     	 mov r6,r0
+ 685 0004 0D46     	 mov r5,r1
+ 686 0006 1446     	 mov r4,r2
+ 687              	.LVL31:
  476:src/MightyBoard/Motherboard/comm.c ****     uint8_t *data = (uint8_t *) rxbuf;
  477:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
  478:src/MightyBoard/Motherboard/comm.c **** 
@@ -2184,566 +2182,566 @@
  480:src/MightyBoard/Motherboard/comm.c **** 	   read so the UART receive interrupt won't cause problems
  481:src/MightyBoard/Motherboard/comm.c **** 	   with the index values */
  482:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig(UARTPort, UART_INTCFG_RBR, DISABLE);
- 687              	 .loc 1 482 0
- 688 0008 4FF00001 	 mov r1,#0
- 689              	.LVL32:
- 690 000c 0A46     	 mov r2,r1
- 691              	.LVL33:
- 692 000e FFF7FEFF 	 bl UART_IntConfig
- 693              	.LVL34:
+ 688              	 .loc 1 482 0
+ 689 0008 4FF00001 	 mov r1,#0
+ 690              	.LVL32:
+ 691 000c 0A46     	 mov r2,r1
+ 692              	.LVL33:
+ 693 000e FFF7FEFF 	 bl UART_IntConfig
+ 694              	.LVL34:
  483:src/MightyBoard/Motherboard/comm.c **** 
  484:src/MightyBoard/Motherboard/comm.c **** 	/* Loop until receive buffer ring is empty or
  485:src/MightyBoard/Motherboard/comm.c **** 		until max_bytes expires */
  486:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!(__BUF_IS_EMPTY(rb.rx_head, rb.rx_tail))))
- 694              	 .loc 1 486 0
- 695 0012 8CB3     	 cbz r4,.L43
- 696 0014 40F20003 	 movw r3,#:lower16:rb
- 697 0018 C0F20003 	 movt r3,#:upper16:rb
- 698 001c 9A68     	 ldr r2,[r3,#8]
- 699 001e DB68     	 ldr r3,[r3,#12]
- 700 0020 5340     	 eors r3,r3,r2
- 701 0022 4FEA8353 	 lsl r3,r3,#22
- 702 0026 4FEA9353 	 lsr r3,r3,#22
- 703 002a 43B3     	 cbz r3,.L44
+ 695              	 .loc 1 486 0
+ 696 0012 8CB3     	 cbz r4,.L43
+ 697 0014 40F20003 	 movw r3,#:lower16:rb
+ 698 0018 C0F20003 	 movt r3,#:upper16:rb
+ 699 001c 9A68     	 ldr r2,[r3,#8]
+ 700 001e DB68     	 ldr r3,[r3,#12]
+ 701 0020 5340     	 eors r3,r3,r2
+ 702 0022 4FEA8353 	 lsl r3,r3,#22
+ 703 0026 4FEA9353 	 lsr r3,r3,#22
+ 704 002a 43B3     	 cbz r3,.L44
  474:src/MightyBoard/Motherboard/comm.c **** uint32_t UARTReceive(LPC_UART_TypeDef *UARTPort, uint8_t *rxbuf, uint8_t buflen)
- 704              	 .loc 1 474 0
- 705 002c 04F1FF31 	 add r1,r4,#-1
- 706 0030 C9B2     	 uxtb r1,r1
- 707 0032 01F10101 	 add r1,r1,#1
+ 705              	 .loc 1 474 0
+ 706 002c 04F1FF31 	 add r1,r4,#-1
+ 707 0030 C9B2     	 uxtb r1,r1
+ 708 0032 01F10101 	 add r1,r1,#1
  477:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
- 708              	 .loc 1 477 0
- 709 0036 4FF00004 	 mov r4,#0
- 710              	.LVL35:
+ 709              	 .loc 1 477 0
+ 710 0036 4FF00004 	 mov r4,#0
+ 711              	.LVL35:
  487:src/MightyBoard/Motherboard/comm.c **** 	{
  488:src/MightyBoard/Motherboard/comm.c **** 		/* Read data from ring buffer into user buffer */
  489:src/MightyBoard/Motherboard/comm.c **** 		*data = rb.rx[rb.rx_tail];
- 711              	 .loc 1 489 0
- 712 003a 40F20003 	 movw r3,#:lower16:rb
- 713 003e C0F20003 	 movt r3,#:upper16:rb
- 714              	.LVL36:
- 715              	.L42:
- 716 0042 DA68     	 ldr r2,[r3,#12]
- 717 0044 9A18     	 adds r2,r3,r2
- 718 0046 92F81024 	 ldrb r2,[r2,#1040]
- 719 004a 2A55     	 strb r2,[r5,r4]
+ 712              	 .loc 1 489 0
+ 713 003a 40F20003 	 movw r3,#:lower16:rb
+ 714 003e C0F20003 	 movt r3,#:upper16:rb
+ 715              	.LVL36:
+ 716              	.L42:
+ 717 0042 DA68     	 ldr r2,[r3,#12]
+ 718 0044 9A18     	 adds r2,r3,r2
+ 719 0046 92F81024 	 ldrb r2,[r2,#1040]
+ 720 004a 2A55     	 strb r2,[r5,r4]
  490:src/MightyBoard/Motherboard/comm.c **** 		data++;
  491:src/MightyBoard/Motherboard/comm.c **** 
  492:src/MightyBoard/Motherboard/comm.c **** 		/* Update tail pointer */
  493:src/MightyBoard/Motherboard/comm.c **** 		__BUF_INCR(rb.rx_tail);
- 720              	 .loc 1 493 0
- 721 004c DA68     	 ldr r2,[r3,#12]
- 722 004e 02F10102 	 add r2,r2,#1
- 723 0052 4FEA8252 	 lsl r2,r2,#22
- 724 0056 4FEA9252 	 lsr r2,r2,#22
- 725 005a DA60     	 str r2,[r3,#12]
+ 721              	 .loc 1 493 0
+ 722 004c DA68     	 ldr r2,[r3,#12]
+ 723 004e 02F10102 	 add r2,r2,#1
+ 724 0052 4FEA8252 	 lsl r2,r2,#22
+ 725 0056 4FEA9252 	 lsr r2,r2,#22
+ 726 005a DA60     	 str r2,[r3,#12]
  494:src/MightyBoard/Motherboard/comm.c **** 
  495:src/MightyBoard/Motherboard/comm.c **** 		/* Increment data count and decrement buffer size count */
  496:src/MightyBoard/Motherboard/comm.c **** 		bytes++;
- 726              	 .loc 1 496 0
- 727 005c 04F10104 	 add r4,r4,#1
- 728              	.LVL37:
+ 727              	 .loc 1 496 0
+ 728 005c 04F10104 	 add r4,r4,#1
+ 729              	.LVL37:
  486:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!(__BUF_IS_EMPTY(rb.rx_head, rb.rx_tail))))
- 729              	 .loc 1 486 0
- 730 0060 8C42     	 cmp r4,r1
- 731 0062 0ED0     	 beq .L41
+ 730              	 .loc 1 486 0
+ 731 0060 8C42     	 cmp r4,r1
+ 732 0062 0ED0     	 beq .L41
  486:src/MightyBoard/Motherboard/comm.c **** 	while ((buflen > 0) && (!(__BUF_IS_EMPTY(rb.rx_head, rb.rx_tail))))
- 732              	 .loc 1 486 0 is_stmt 0 discriminator 2
- 733 0064 9A68     	 ldr r2,[r3,#8]
- 734 0066 D868     	 ldr r0,[r3,#12]
- 735 0068 4240     	 eors r2,r2,r0
- 736 006a 4FEA8252 	 lsl r2,r2,#22
- 737 006e 4FEA9252 	 lsr r2,r2,#22
- 738 0072 002A     	 cmp r2,#0
- 739 0074 E5D1     	 bne .L42
- 740 0076 04E0     	 b .L41
- 741              	.LVL38:
- 742              	.L43:
+ 733              	 .loc 1 486 0 is_stmt 0 discriminator 2
+ 734 0064 9A68     	 ldr r2,[r3,#8]
+ 735 0066 D868     	 ldr r0,[r3,#12]
+ 736 0068 4240     	 eors r2,r2,r0
+ 737 006a 4FEA8252 	 lsl r2,r2,#22
+ 738 006e 4FEA9252 	 lsr r2,r2,#22
+ 739 0072 002A     	 cmp r2,#0
+ 740 0074 E5D1     	 bne .L42
+ 741 0076 04E0     	 b .L41
+ 742              	.LVL38:
+ 743              	.L43:
  477:src/MightyBoard/Motherboard/comm.c ****     uint32_t bytes = 0;
- 743              	 .loc 1 477 0 is_stmt 1
- 744 0078 4FF00004 	 mov r4,#0
- 745              	.LVL39:
- 746 007c 01E0     	 b .L41
- 747              	.LVL40:
- 748              	.L44:
- 749 007e 4FF00004 	 mov r4,#0
- 750              	.LVL41:
- 751              	.L41:
+ 744              	 .loc 1 477 0 is_stmt 1
+ 745 0078 4FF00004 	 mov r4,#0
+ 746              	.LVL39:
+ 747 007c 01E0     	 b .L41
+ 748              	.LVL40:
+ 749              	.L44:
+ 750 007e 4FF00004 	 mov r4,#0
+ 751              	.LVL41:
+ 752              	.L41:
  497:src/MightyBoard/Motherboard/comm.c **** 		buflen--;
  498:src/MightyBoard/Motherboard/comm.c **** 	}
  499:src/MightyBoard/Motherboard/comm.c **** 
  500:src/MightyBoard/Motherboard/comm.c **** 	/* Re-enable UART interrupts */
  501:src/MightyBoard/Motherboard/comm.c **** 	UART_IntConfig(UARTPort, UART_INTCFG_RBR, ENABLE);
- 752              	 .loc 1 501 0
- 753 0082 3046     	 mov r0,r6
- 754 0084 4FF00001 	 mov r1,#0
- 755 0088 4FF00102 	 mov r2,#1
- 756 008c FFF7FEFF 	 bl UART_IntConfig
+ 753              	 .loc 1 501 0
+ 754 0082 3046     	 mov r0,r6
+ 755 0084 4FF00001 	 mov r1,#0
+ 756 0088 4FF00102 	 mov r2,#1
+ 757 008c FFF7FEFF 	 bl UART_IntConfig
  502:src/MightyBoard/Motherboard/comm.c **** 
  503:src/MightyBoard/Motherboard/comm.c ****     return bytes;
  504:src/MightyBoard/Motherboard/comm.c **** }
- 757              	 .loc 1 504 0
- 758 0090 2046     	 mov r0,r4
- 759 0092 70BD     	 pop {r4,r5,r6,pc}
- 760              	 .cfi_endproc
- 761              	.LFE67:
- 763              	 .section .text.comm_flush,"ax",%progbits
- 764              	 .align 2
- 765              	 .global comm_flush
- 766              	 .thumb
- 767              	 .thumb_func
- 769              	comm_flush:
- 770              	.LFB59:
+ 758              	 .loc 1 504 0
+ 759 0090 2046     	 mov r0,r4
+ 760 0092 70BD     	 pop {r4,r5,r6,pc}
+ 761              	 .cfi_endproc
+ 762              	.LFE67:
+ 764              	 .section .text.comm_flush,"ax",%progbits
+ 765              	 .align 2
+ 766              	 .global comm_flush
+ 767              	 .thumb
+ 768              	 .thumb_func
+ 770              	comm_flush:
+ 771              	.LFB59:
  164:src/MightyBoard/Motherboard/comm.c **** void comm_flush(void){
- 771              	 .loc 1 164 0
- 772              	 .cfi_startproc
- 773              	 
+ 772              	 .loc 1 164 0
+ 773              	 .cfi_startproc
  774              	 
- 775 0000 10B5     	 push {r4,lr}
- 776              	.LCFI13:
- 777              	 .cfi_def_cfa_offset 8
- 778              	 .cfi_offset 14,-4
- 779              	 .cfi_offset 4,-8
- 780 0002 82B0     	 sub sp,sp,#8
- 781              	.LCFI14:
- 782              	 .cfi_def_cfa_offset 16
+ 775              	 
+ 776 0000 10B5     	 push {r4,lr}
+ 777              	.LCFI13:
+ 778              	 .cfi_def_cfa_offset 8
+ 779              	 .cfi_offset 14,-4
+ 780              	 .cfi_offset 4,-8
+ 781 0002 82B0     	 sub sp,sp,#8
+ 782              	.LCFI14:
+ 783              	 .cfi_def_cfa_offset 16
  167:src/MightyBoard/Motherboard/comm.c **** 	while (UARTReceive(LPC_UART0, buffer, 1));
- 783              	 .loc 1 167 0
- 784 0004 4FF44044 	 mov r4,#49152
- 785 0008 C4F20004 	 movt r4,16384
- 786              	.L47:
+ 784              	 .loc 1 167 0
+ 785 0004 4FF44044 	 mov r4,#49152
+ 786 0008 C4F20004 	 movt r4,16384
+ 787              	.L47:
  167:src/MightyBoard/Motherboard/comm.c **** 	while (UARTReceive(LPC_UART0, buffer, 1));
- 787              	 .loc 1 167 0 is_stmt 0 discriminator 1
- 788 000c 2046     	 mov r0,r4
- 789 000e 01A9     	 add r1,sp,#4
- 790 0010 4FF00102 	 mov r2,#1
- 791 0014 FFF7FEFF 	 bl UARTReceive
- 792 0018 0028     	 cmp r0,#0
- 793 001a F7D1     	 bne .L47
+ 788              	 .loc 1 167 0 is_stmt 0 discriminator 1
+ 789 000c 2046     	 mov r0,r4
+ 790 000e 01A9     	 add r1,sp,#4
+ 791 0010 4FF00102 	 mov r2,#1
+ 792 0014 FFF7FEFF 	 bl UARTReceive
+ 793 0018 0028     	 cmp r0,#0
+ 794 001a F7D1     	 bne .L47
  169:src/MightyBoard/Motherboard/comm.c **** }
- 794              	 .loc 1 169 0 is_stmt 1
- 795 001c 02B0     	 add sp,sp,#8
- 796 001e 10BD     	 pop {r4,pc}
- 797              	 .cfi_endproc
- 798              	.LFE59:
- 800              	 .section .text.exec_cmd,"ax",%progbits
- 801              	 .align 2
- 802              	 .global exec_cmd
- 803              	 .thumb
- 804              	 .thumb_func
- 806              	exec_cmd:
- 807              	.LFB55:
+ 795              	 .loc 1 169 0 is_stmt 1
+ 796 001c 02B0     	 add sp,sp,#8
+ 797 001e 10BD     	 pop {r4,pc}
+ 798              	 .cfi_endproc
+ 799              	.LFE59:
+ 801              	 .section .text.exec_cmd,"ax",%progbits
+ 802              	 .align 2
+ 803              	 .global exec_cmd
+ 804              	 .thumb
+ 805              	 .thumb_func
+ 807              	exec_cmd:
+ 808              	.LFB55:
   70:src/MightyBoard/Motherboard/comm.c **** void exec_cmd(char *cmd){
- 808              	 .loc 1 70 0
- 809              	 .cfi_startproc
- 810              	 
+ 809              	 .loc 1 70 0
+ 810              	 .cfi_startproc
  811              	 
- 812              	.LVL42:
- 813 0000 10B5     	 push {r4,lr}
- 814              	.LCFI15:
- 815              	 .cfi_def_cfa_offset 8
- 816              	 .cfi_offset 14,-4
- 817              	 .cfi_offset 4,-8
- 818 0002 0446     	 mov r4,r0
+ 812              	 
+ 813              	.LVL42:
+ 814 0000 10B5     	 push {r4,lr}
+ 815              	.LCFI15:
+ 816              	 .cfi_def_cfa_offset 8
+ 817              	 .cfi_offset 14,-4
+ 818              	 .cfi_offset 4,-8
+ 819 0002 0446     	 mov r4,r0
   71:src/MightyBoard/Motherboard/comm.c **** 	comm_flush();
- 819              	 .loc 1 71 0
- 820 0004 FFF7FEFF 	 bl comm_flush
- 821              	.LVL43:
+ 820              	 .loc 1 71 0
+ 821 0004 FFF7FEFF 	 bl comm_flush
+ 822              	.LVL43:
   72:src/MightyBoard/Motherboard/comm.c **** 	if(stricmp(cmd,"b")==0){
- 822              	 .loc 1 72 0
- 823 0008 2046     	 mov r0,r4
- 824 000a 40F20001 	 movw r1,#:lower16:.LC1
- 825 000e C0F20001 	 movt r1,#:upper16:.LC1
- 826 0012 FFF7FEFF 	 bl strcasecmp
- 827 0016 50BB     	 cbnz r0,.L50
- 828              	.LBB15:
+ 823              	 .loc 1 72 0
+ 824 0008 2046     	 mov r0,r4
+ 825 000a 40F20001 	 movw r1,#:lower16:.LC1
+ 826 000e C0F20001 	 movt r1,#:upper16:.LC1
+ 827 0012 FFF7FEFF 	 bl strcasecmp
+ 828 0016 50BB     	 cbnz r0,.L50
+ 829              	.LBB15:
   73:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "resetting to bootloader" " (%s:%d)\n",_F_,_L_);
- 829              	 .loc 1 73 0 discriminator 1
- 830 0018 40F20000 	 movw r0,#:lower16:.LC2
- 831 001c C0F20000 	 movt r0,#:upper16:.LC2
- 832 0020 4449     	 ldr r1,.L57
- 833 0022 4FF04902 	 mov r2,#73
- 834 0026 FFF7FEFF 	 bl xprintf
+ 830              	 .loc 1 73 0 discriminator 1
+ 831 0018 40F20000 	 movw r0,#:lower16:.LC2
+ 832 001c C0F20000 	 movt r0,#:upper16:.LC2
+ 833 0020 4449     	 ldr r1,.L57
+ 834 0022 4FF04902 	 mov r2,#73
+ 835 0026 FFF7FEFF 	 bl xprintf
   74:src/MightyBoard/Motherboard/comm.c **** 		SCB->VTOR = (BOOTLOADER_START & 0x1FFFFF80);
- 835              	 .loc 1 74 0 discriminator 1
- 836 002a 4FF46D43 	 mov r3,#60672
- 837 002e CEF20003 	 movt r3,57344
- 838 0032 4FF00002 	 mov r2,#0
- 839 0036 9A60     	 str r2,[r3,#8]
+ 836              	 .loc 1 74 0 discriminator 1
+ 837 002a 4FF46D43 	 mov r3,#60672
+ 838 002e CEF20003 	 movt r3,57344
+ 839 0032 4FF00002 	 mov r2,#0
+ 840 0036 9A60     	 str r2,[r3,#8]
   75:src/MightyBoard/Motherboard/comm.c **** 		RTC_WriteGPREG(LPC_RTC, 2, 0xbbbbbbbb);
- 840              	 .loc 1 75 0 discriminator 1
- 841 0038 4FF48040 	 mov r0,#16384
- 842 003c C4F20200 	 movt r0,16386
- 843 0040 4FF00201 	 mov r1,#2
- 844 0044 4FF0BB32 	 mov r2,#-1145324613
- 845 0048 FFF7FEFF 	 bl RTC_WriteGPREG
+ 841              	 .loc 1 75 0 discriminator 1
+ 842 0038 4FF48040 	 mov r0,#16384
+ 843 003c C4F20200 	 movt r0,16386
+ 844 0040 4FF00201 	 mov r1,#2
+ 845 0044 4FF0BB32 	 mov r2,#-1145324613
+ 846 0048 FFF7FEFF 	 bl RTC_WriteGPREG
   76:src/MightyBoard/Motherboard/comm.c **** 		WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET);
- 846              	 .loc 1 76 0 discriminator 1
- 847 004c 4FF00100 	 mov r0,#1
- 848 0050 0146     	 mov r1,r0
- 849 0052 FFF7FEFF 	 bl WDT_Init
+ 847              	 .loc 1 76 0 discriminator 1
+ 848 004c 4FF00100 	 mov r0,#1
+ 849 0050 0146     	 mov r1,r0
+ 850 0052 FFF7FEFF 	 bl WDT_Init
   77:src/MightyBoard/Motherboard/comm.c **** 		WDT_Start(1);
- 850              	 .loc 1 77 0 discriminator 1
- 851 0056 4FF00100 	 mov r0,#1
- 852 005a FFF7FEFF 	 bl WDT_Start
- 853              	.LVL44:
- 854              	.LBB16:
- 855              	.LBB17:
+ 851              	 .loc 1 77 0 discriminator 1
+ 852 0056 4FF00100 	 mov r0,#1
+ 853 005a FFF7FEFF 	 bl WDT_Start
+ 854              	.LVL44:
+ 855              	.LBB16:
+ 856              	.LBB17:
  923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
- 856              	 .loc 2 923 0 discriminator 1
- 857 005e 4FF46143 	 mov r3,#57600
- 858 0062 CEF20003 	 movt r3,57344
- 859 0066 4FF00102 	 mov r2,#1
- 860 006a 1A60     	 str r2,[r3,#0]
- 861 006c 10BD     	 pop {r4,pc}
- 862              	.LVL45:
- 863              	.L50:
- 864              	.LBE17:
- 865              	.LBE16:
- 866              	.LBE15:
+ 857              	 .loc 2 923 0 discriminator 1
+ 858 005e 4FF46143 	 mov r3,#57600
+ 859 0062 CEF20003 	 movt r3,57344
+ 860 0066 4FF00102 	 mov r2,#1
+ 861 006a 1A60     	 str r2,[r3,#0]
+ 862 006c 10BD     	 pop {r4,pc}
+ 863              	.LVL45:
+ 864              	.L50:
+ 865              	.LBE17:
+ 866              	.LBE16:
+ 867              	.LBE15:
   80:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"r")==0){
- 867              	 .loc 1 80 0
- 868 006e 2046     	 mov r0,r4
- 869 0070 40F20001 	 movw r1,#:lower16:.LC4
- 870 0074 C0F20001 	 movt r1,#:upper16:.LC4
- 871 0078 FFF7FEFF 	 bl strcasecmp
- 872 007c C8B9     	 cbnz r0,.L52
+ 868              	 .loc 1 80 0
+ 869 006e 2046     	 mov r0,r4
+ 870 0070 40F20001 	 movw r1,#:lower16:.LC4
+ 871 0074 C0F20001 	 movt r1,#:upper16:.LC4
+ 872 0078 FFF7FEFF 	 bl strcasecmp
+ 873 007c C8B9     	 cbnz r0,.L52
   81:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "reseting" " (%s:%d)\n",_F_,_L_);
- 873              	 .loc 1 81 0 discriminator 1
- 874 007e 40F20000 	 movw r0,#:lower16:.LC5
- 875 0082 C0F20000 	 movt r0,#:upper16:.LC5
- 876 0086 2B49     	 ldr r1,.L57
- 877 0088 4FF05102 	 mov r2,#81
- 878 008c FFF7FEFF 	 bl xprintf
+ 874              	 .loc 1 81 0 discriminator 1
+ 875 007e 40F20000 	 movw r0,#:lower16:.LC5
+ 876 0082 C0F20000 	 movt r0,#:upper16:.LC5
+ 877 0086 2B49     	 ldr r1,.L57
+ 878 0088 4FF05102 	 mov r2,#81
+ 879 008c FFF7FEFF 	 bl xprintf
   82:src/MightyBoard/Motherboard/comm.c **** 		WDT_Init(WDT_CLKSRC_PCLK, WDT_MODE_RESET);
- 879              	 .loc 1 82 0 discriminator 1
- 880 0090 4FF00100 	 mov r0,#1
- 881 0094 0146     	 mov r1,r0
- 882 0096 FFF7FEFF 	 bl WDT_Init
+ 880              	 .loc 1 82 0 discriminator 1
+ 881 0090 4FF00100 	 mov r0,#1
+ 882 0094 0146     	 mov r1,r0
+ 883 0096 FFF7FEFF 	 bl WDT_Init
   83:src/MightyBoard/Motherboard/comm.c **** 		WDT_Start(1);
- 883              	 .loc 1 83 0 discriminator 1
- 884 009a 4FF00100 	 mov r0,#1
- 885 009e FFF7FEFF 	 bl WDT_Start
- 886              	.LVL46:
- 887              	.LBB18:
- 888              	.LBB19:
+ 884              	 .loc 1 83 0 discriminator 1
+ 885 009a 4FF00100 	 mov r0,#1
+ 886 009e FFF7FEFF 	 bl WDT_Start
+ 887              	.LVL46:
+ 888              	.LBB18:
+ 889              	.LBB19:
  923:src/MightyBoard/Motherboard/system/core_cm3.h ****   NVIC->ISER[((uint32_t)(IRQn) >> 5)] = (1 << ((uint32_t)(IRQn) & 0x1F)); /* enable interrupt */
- 889              	 .loc 2 923 0 discriminator 1
- 890 00a2 4FF46143 	 mov r3,#57600
- 891 00a6 CEF20003 	 movt r3,57344
- 892 00aa 4FF00102 	 mov r2,#1
- 893 00ae 1A60     	 str r2,[r3,#0]
- 894              	.L53:
- 895 00b0 FEE7     	 b .L53
- 896              	.LVL47:
- 897              	.L52:
- 898              	.LBE19:
- 899              	.LBE18:
+ 890              	 .loc 2 923 0 discriminator 1
+ 891 00a2 4FF46143 	 mov r3,#57600
+ 892 00a6 CEF20003 	 movt r3,57344
+ 893 00aa 4FF00102 	 mov r2,#1
+ 894 00ae 1A60     	 str r2,[r3,#0]
+ 895              	.L53:
+ 896 00b0 FEE7     	 b .L53
+ 897              	.LVL47:
+ 898              	.L52:
+ 899              	.LBE19:
+ 900              	.LBE18:
   88:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"t")==0){
- 900              	 .loc 1 88 0
- 901 00b2 2046     	 mov r0,r4
- 902 00b4 40F20001 	 movw r1,#:lower16:.LC6
- 903 00b8 C0F20001 	 movt r1,#:upper16:.LC6
- 904 00bc FFF7FEFF 	 bl strcasecmp
- 905 00c0 48B9     	 cbnz r0,.L54
+ 901              	 .loc 1 88 0
+ 902 00b2 2046     	 mov r0,r4
+ 903 00b4 40F20001 	 movw r1,#:lower16:.LC6
+ 904 00b8 C0F20001 	 movt r1,#:upper16:.LC6
+ 905 00bc FFF7FEFF 	 bl strcasecmp
+ 906 00c0 48B9     	 cbnz r0,.L54
   89:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "tests running" " (%s:%d)\n",_F_,_L_);
- 906              	 .loc 1 89 0 discriminator 1
- 907 00c2 40F20000 	 movw r0,#:lower16:.LC7
- 908 00c6 C0F20000 	 movt r0,#:upper16:.LC7
- 909 00ca 1A49     	 ldr r1,.L57
- 910 00cc 4FF05902 	 mov r2,#89
- 911 00d0 FFF7FEFF 	 bl xprintf
- 912 00d4 10BD     	 pop {r4,pc}
- 913              	.L54:
+ 907              	 .loc 1 89 0 discriminator 1
+ 908 00c2 40F20000 	 movw r0,#:lower16:.LC7
+ 909 00c6 C0F20000 	 movt r0,#:upper16:.LC7
+ 910 00ca 1A49     	 ldr r1,.L57
+ 911 00cc 4FF05902 	 mov r2,#89
+ 912 00d0 FFF7FEFF 	 bl xprintf
+ 913 00d4 10BD     	 pop {r4,pc}
+ 914              	.L54:
   91:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"q")==0){
- 914              	 .loc 1 91 0
- 915 00d6 2046     	 mov r0,r4
- 916 00d8 40F20001 	 movw r1,#:lower16:.LC8
- 917 00dc C0F20001 	 movt r1,#:upper16:.LC8
- 918 00e0 FFF7FEFF 	 bl strcasecmp
- 919 00e4 48B9     	 cbnz r0,.L55
+ 915              	 .loc 1 91 0
+ 916 00d6 2046     	 mov r0,r4
+ 917 00d8 40F20001 	 movw r1,#:lower16:.LC8
+ 918 00dc C0F20001 	 movt r1,#:upper16:.LC8
+ 919 00e0 FFF7FEFF 	 bl strcasecmp
+ 920 00e4 48B9     	 cbnz r0,.L55
   92:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "q" " (%s:%d)\n",_F_,_L_);
- 920              	 .loc 1 92 0 discriminator 1
- 921 00e6 40F20000 	 movw r0,#:lower16:.LC9
- 922 00ea C0F20000 	 movt r0,#:upper16:.LC9
- 923 00ee 1149     	 ldr r1,.L57
- 924 00f0 4FF05C02 	 mov r2,#92
- 925 00f4 FFF7FEFF 	 bl xprintf
- 926 00f8 10BD     	 pop {r4,pc}
- 927              	.L55:
+ 921              	 .loc 1 92 0 discriminator 1
+ 922 00e6 40F20000 	 movw r0,#:lower16:.LC9
+ 923 00ea C0F20000 	 movt r0,#:upper16:.LC9
+ 924 00ee 1149     	 ldr r1,.L57
+ 925 00f0 4FF05C02 	 mov r2,#92
+ 926 00f4 FFF7FEFF 	 bl xprintf
+ 927 00f8 10BD     	 pop {r4,pc}
+ 928              	.L55:
   94:src/MightyBoard/Motherboard/comm.c **** 	else if(stricmp(cmd,"")==0){
- 928              	 .loc 1 94 0
- 929 00fa 2046     	 mov r0,r4
- 930 00fc 40F20001 	 movw r1,#:lower16:.LC10
- 931 0100 C0F20001 	 movt r1,#:upper16:.LC10
- 932 0104 FFF7FEFF 	 bl strcasecmp
- 933 0108 48B9     	 cbnz r0,.L56
+ 929              	 .loc 1 94 0
+ 930 00fa 2046     	 mov r0,r4
+ 931 00fc 40F20001 	 movw r1,#:lower16:.LC10
+ 932 0100 C0F20001 	 movt r1,#:upper16:.LC10
+ 933 0104 FFF7FEFF 	 bl strcasecmp
+ 934 0108 48B9     	 cbnz r0,.L56
   95:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "\r\nr-Resets board\r\nb-Resets to bootloader\r\nt-led test\r\n" " (%s:%d)\n",_F_,_L
- 934              	 .loc 1 95 0 discriminator 1
- 935 010a 40F20000 	 movw r0,#:lower16:.LC11
- 936 010e C0F20000 	 movt r0,#:upper16:.LC11
- 937 0112 0849     	 ldr r1,.L57
- 938 0114 4FF05F02 	 mov r2,#95
- 939 0118 FFF7FEFF 	 bl xprintf
- 940 011c 10BD     	 pop {r4,pc}
- 941              	.L56:
+ 935              	 .loc 1 95 0 discriminator 1
+ 936 010a 40F20000 	 movw r0,#:lower16:.LC11
+ 937 010e C0F20000 	 movt r0,#:upper16:.LC11
+ 938 0112 0849     	 ldr r1,.L57
+ 939 0114 4FF05F02 	 mov r2,#95
+ 940 0118 FFF7FEFF 	 bl xprintf
+ 941 011c 10BD     	 pop {r4,pc}
+ 942              	.L56:
   98:src/MightyBoard/Motherboard/comm.c **** 		xprintf(INFO "Command not found (cmd=%s)" " (%s:%d)\n",cmd,_F_,_L_);
- 942              	 .loc 1 98 0 discriminator 1
- 943 011e 40F20000 	 movw r0,#:lower16:.LC12
- 944 0122 C0F20000 	 movt r0,#:upper16:.LC12
- 945 0126 2146     	 mov r1,r4
- 946 0128 024A     	 ldr r2,.L57
- 947 012a 4FF06203 	 mov r3,#98
- 948 012e FFF7FEFF 	 bl xprintf
- 949 0132 10BD     	 pop {r4,pc}
- 950              	.L58:
- 951              	 .align 2
- 952              	.L57:
- 953 0134 1C000000 	 .word .LC3+28
- 954              	 .cfi_endproc
- 955              	.LFE55:
- 957              	 .section .text.comm_get,"ax",%progbits
- 958              	 .align 2
- 959              	 .global comm_get
- 960              	 .thumb
- 961              	 .thumb_func
- 963              	comm_get:
- 964              	.LFB58:
+ 943              	 .loc 1 98 0 discriminator 1
+ 944 011e 40F20000 	 movw r0,#:lower16:.LC12
+ 945 0122 C0F20000 	 movt r0,#:upper16:.LC12
+ 946 0126 2146     	 mov r1,r4
+ 947 0128 024A     	 ldr r2,.L57
+ 948 012a 4FF06203 	 mov r3,#98
+ 949 012e FFF7FEFF 	 bl xprintf
+ 950 0132 10BD     	 pop {r4,pc}
+ 951              	.L58:
+ 952              	 .align 2
+ 953              	.L57:
+ 954 0134 1C000000 	 .word .LC3+28
+ 955              	 .cfi_endproc
+ 956              	.LFE55:
+ 958              	 .section .text.comm_get,"ax",%progbits
+ 959              	 .align 2
+ 960              	 .global comm_get
+ 961              	 .thumb
+ 962              	 .thumb_func
+ 964              	comm_get:
+ 965              	.LFB58:
  146:src/MightyBoard/Motherboard/comm.c **** uint8_t comm_get(void){
- 965              	 .loc 1 146 0
- 966              	 .cfi_startproc
- 967              	 
+ 966              	 .loc 1 146 0
+ 967              	 .cfi_startproc
  968              	 
- 969 0000 30B5     	 push {r4,r5,lr}
- 970              	.LCFI16:
- 971              	 .cfi_def_cfa_offset 12
- 972              	 .cfi_offset 14,-4
- 973              	 .cfi_offset 5,-8
- 974              	 .cfi_offset 4,-12
- 975 0002 83B0     	 sub sp,sp,#12
- 976              	.LCFI17:
- 977              	 .cfi_def_cfa_offset 24
+ 969              	 
+ 970 0000 30B5     	 push {r4,r5,lr}
+ 971              	.LCFI16:
+ 972              	 .cfi_def_cfa_offset 12
+ 973              	 .cfi_offset 14,-4
+ 974              	 .cfi_offset 5,-8
+ 975              	 .cfi_offset 4,-12
+ 976 0002 83B0     	 sub sp,sp,#12
+ 977              	.LCFI17:
+ 978              	 .cfi_def_cfa_offset 24
  156:src/MightyBoard/Motherboard/comm.c **** 		len = UARTReceive(LPC_UART0, buffer, 1);
- 978              	 .loc 1 156 0
- 979 0004 4FF44044 	 mov r4,#49152
- 980 0008 C4F20004 	 movt r4,16384
- 981 000c 4FF00105 	 mov r5,#1
- 982              	.L62:
- 983 0010 2046     	 mov r0,r4
- 984 0012 01A9     	 add r1,sp,#4
- 985 0014 2A46     	 mov r2,r5
- 986 0016 FFF7FEFF 	 bl UARTReceive
- 987              	.LVL48:
+ 979              	 .loc 1 156 0
+ 980 0004 4FF44044 	 mov r4,#49152
+ 981 0008 C4F20004 	 movt r4,16384
+ 982 000c 4FF00105 	 mov r5,#1
+ 983              	.L62:
+ 984 0010 2046     	 mov r0,r4
+ 985 0012 01A9     	 add r1,sp,#4
+ 986 0014 2A46     	 mov r2,r5
+ 987 0016 FFF7FEFF 	 bl UARTReceive
+ 988              	.LVL48:
  155:src/MightyBoard/Motherboard/comm.c **** 	while (len == 0){
- 988              	 .loc 1 155 0
- 989 001a C0B2     	 uxtb r0,r0
- 990 001c 0028     	 cmp r0,#0
- 991 001e F7D0     	 beq .L62
+ 989              	 .loc 1 155 0
+ 990 001a C0B2     	 uxtb r0,r0
+ 991 001c 0028     	 cmp r0,#0
+ 992 001e F7D0     	 beq .L62
  158:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE_LEN=0;
- 992              	 .loc 1 158 0
- 993 0020 40F20003 	 movw r3,#:lower16:.LANCHOR1
- 994 0024 C0F20003 	 movt r3,#:upper16:.LANCHOR1
- 995 0028 4FF00002 	 mov r2,#0
- 996 002c 1A60     	 str r2,[r3,#0]
+ 993              	 .loc 1 158 0
+ 994 0020 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 995 0024 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 996 0028 4FF00002 	 mov r2,#0
+ 997 002c 1A60     	 str r2,[r3,#0]
  159:src/MightyBoard/Motherboard/comm.c **** 	UART_LINE[0]='\0';
- 997              	 .loc 1 159 0
- 998 002e 40F20003 	 movw r3,#:lower16:UART_LINE
- 999 0032 C0F20003 	 movt r3,#:upper16:UART_LINE
- 1000 0036 1A70     	 strb r2,[r3,#0]
+ 998              	 .loc 1 159 0
+ 999 002e 40F20003 	 movw r3,#:lower16:UART_LINE
+ 1000 0032 C0F20003 	 movt r3,#:upper16:UART_LINE
+ 1001 0036 1A70     	 strb r2,[r3,#0]
  160:src/MightyBoard/Motherboard/comm.c **** 	return buffer;
- 1001              	 .loc 1 160 0
- 1002 0038 01A8     	 add r0,sp,#4
- 1003              	.LVL49:
+ 1002              	 .loc 1 160 0
+ 1003 0038 01A8     	 add r0,sp,#4
+ 1004              	.LVL49:
  162:src/MightyBoard/Motherboard/comm.c **** }
- 1004              	 .loc 1 162 0
- 1005 003a 00F0FC00 	 and r0,r0,#252
- 1006 003e 03B0     	 add sp,sp,#12
- 1007 0040 30BD     	 pop {r4,r5,pc}
- 1008              	 .cfi_endproc
- 1009              	.LFE58:
- 1011              	 .comm TxIntStat,1,1
- 1012              	 .comm rb,2064,4
- 1013              	 .global UART_LINE_LEN
- 1014              	 .comm UART_LINE,50,4
- 1015              	 .global TX_TOG
- 1016              	 .global RX_TOG
- 1017              	 .global LINE_READY
- 1018 0042 00BF     	 .section .bss.TX_TOG,"aw",%nobits
- 1019              	 .align 2
- 1022              	TX_TOG:
- 1023 0000 00000000 	 .space 4
- 1024              	 .section .rodata.__func__.7002,"a",%progbits
- 1025              	 .align 2
- 1026              	 .set .LANCHOR0,.+0
- 1029              	__func__.7002:
- 1030 0000 636F6D6D 	 .ascii "comm_test\000"
- 1030      5F746573 
- 1030      7400
- 1031 000a 0000     	 .section .bss.UART_LINE_LEN,"aw",%nobits
- 1032              	 .align 2
- 1033              	 .set .LANCHOR1,.+0
- 1036              	UART_LINE_LEN:
- 1037 0000 00000000 	 .space 4
- 1038              	 .section .bss.LINE_READY,"aw",%nobits
- 1039              	 .align 2
- 1040              	 .set .LANCHOR2,.+0
- 1043              	LINE_READY:
- 1044 0000 00000000 	 .space 4
- 1045              	 .section .rodata.str1.4,"aMS",%progbits,1
- 1046              	 .align 2
- 1047              	.LC0:
- 1048 0000 25737B0A 	 .ascii "%s{\012\000"
- 1048      00
- 1049 0005 000000   	 .space 3
- 1050              	.LC1:
- 1051 0008 6200     	 .ascii "b\000"
- 1052 000a 0000     	 .space 2
- 1053              	.LC2:
- 1054 000c 5B494E46 	 .ascii "[INFO]-resetting to bootloader (%s:%d)\012\000"
- 1054      4F5D2D72 
- 1054      65736574 
- 1054      74696E67 
- 1054      20746F20 
- 1055              	.LC3:
- 1056 0034 7372632F 	 .ascii "src/MightyBoard/Motherboard/comm.c\000"
- 1056      4D696768 
- 1056      7479426F 
- 1056      6172642F 
- 1056      4D6F7468 
- 1057 0057 00       	 .space 1
- 1058              	.LC4:
- 1059 0058 7200     	 .ascii "r\000"
- 1060 005a 0000     	 .space 2
- 1061              	.LC5:
- 1062 005c 5B494E46 	 .ascii "[INFO]-reseting (%s:%d)\012\000"
- 1062      4F5D2D72 
- 1062      65736574 
- 1062      696E6720 
- 1062      2825733A 
- 1063 0075 000000   	 .space 3
- 1064              	.LC6:
- 1065 0078 7400     	 .ascii "t\000"
- 1066 007a 0000     	 .space 2
- 1067              	.LC7:
- 1068 007c 5B494E46 	 .ascii "[INFO]-tests running (%s:%d)\012\000"
- 1068      4F5D2D74 
- 1068      65737473 
- 1068      2072756E 
- 1068      6E696E67 
- 1069 009a 0000     	 .space 2
- 1070              	.LC8:
- 1071 009c 7100     	 .ascii "q\000"
- 1072 009e 0000     	 .space 2
- 1073              	.LC9:
- 1074 00a0 5B494E46 	 .ascii "[INFO]-q (%s:%d)\012\000"
- 1074      4F5D2D71 
- 1074      20282573 
- 1074      3A256429 
- 1074      0A00
- 1075 00b2 0000     	 .space 2
- 1076              	.LC10:
- 1077 00b4 00       	 .ascii "\000"
- 1078 00b5 000000   	 .space 3
- 1079              	.LC11:
- 1080 00b8 5B494E46 	 .ascii "[INFO]-\015\012r-Resets board\015\012b-Resets to bo"
- 1080      4F5D2D0D 
- 1080      0A722D52 
- 1080      65736574 
- 1080      7320626F 
- 1081 00df 6F746C6F 	 .ascii "otloader\015\012t-led test\015\012 (%s:%d)\012\000"
- 1081      61646572 
- 1081      0D0A742D 
- 1081      6C656420 
- 1081      74657374 
- 1082 00ff 00       	 .space 1
- 1083              	.LC12:
- 1084 0100 5B494E46 	 .ascii "[INFO]-Command not found (cmd=%s) (%s:%d)\012\000"
- 1084      4F5D2D43 
- 1084      6F6D6D61 
- 1084      6E64206E 
- 1084      6F742066 
- 1085 012b 00       	 .section .bss.RX_TOG,"aw",%nobits
- 1086              	 .align 2
- 1089              	RX_TOG:
- 1090 0000 00000000 	 .space 4
- 1091              	 .text
- 1092              	.Letext0:
- 1093              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
- 1094              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
- 1095              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
- 1096              	 .file 6 "src/MightyBoard/Motherboard/lib/include/lpc17xx_uart.h"
- 1097              	 .file 7 "src/MightyBoard/Motherboard/lib/include/lpc17xx_pinsel.h"
- 1098              	 .file 8 "src/MightyBoard/Motherboard/lib/include/lpc17xx_wdt.h"
+ 1005              	 .loc 1 162 0
+ 1006 003a 00F0FC00 	 and r0,r0,#252
+ 1007 003e 03B0     	 add sp,sp,#12
+ 1008 0040 30BD     	 pop {r4,r5,pc}
+ 1009              	 .cfi_endproc
+ 1010              	.LFE58:
+ 1012              	 .comm TxIntStat,1,1
+ 1013              	 .comm rb,2064,4
+ 1014              	 .global UART_LINE_LEN
+ 1015              	 .comm UART_LINE,50,4
+ 1016              	 .global TX_TOG
+ 1017              	 .global RX_TOG
+ 1018              	 .global LINE_READY
+ 1019 0042 00BF     	 .section .bss.TX_TOG,"aw",%nobits
+ 1020              	 .align 2
+ 1023              	TX_TOG:
+ 1024 0000 00000000 	 .space 4
+ 1025              	 .section .rodata.__func__.7002,"a",%progbits
+ 1026              	 .align 2
+ 1027              	 .set .LANCHOR0,.+0
+ 1030              	__func__.7002:
+ 1031 0000 636F6D6D 	 .ascii "comm_test\000"
+ 1031      5F746573 
+ 1031      7400
+ 1032 000a 0000     	 .section .bss.UART_LINE_LEN,"aw",%nobits
+ 1033              	 .align 2
+ 1034              	 .set .LANCHOR1,.+0
+ 1037              	UART_LINE_LEN:
+ 1038 0000 00000000 	 .space 4
+ 1039              	 .section .bss.LINE_READY,"aw",%nobits
+ 1040              	 .align 2
+ 1041              	 .set .LANCHOR2,.+0
+ 1044              	LINE_READY:
+ 1045 0000 00000000 	 .space 4
+ 1046              	 .section .rodata.str1.4,"aMS",%progbits,1
+ 1047              	 .align 2
+ 1048              	.LC0:
+ 1049 0000 25737B0A 	 .ascii "%s{\012\000"
+ 1049      00
+ 1050 0005 000000   	 .space 3
+ 1051              	.LC1:
+ 1052 0008 6200     	 .ascii "b\000"
+ 1053 000a 0000     	 .space 2
+ 1054              	.LC2:
+ 1055 000c 5B494E46 	 .ascii "[INFO]-resetting to bootloader (%s:%d)\012\000"
+ 1055      4F5D2D72 
+ 1055      65736574 
+ 1055      74696E67 
+ 1055      20746F20 
+ 1056              	.LC3:
+ 1057 0034 7372632F 	 .ascii "src/MightyBoard/Motherboard/comm.c\000"
+ 1057      4D696768 
+ 1057      7479426F 
+ 1057      6172642F 
+ 1057      4D6F7468 
+ 1058 0057 00       	 .space 1
+ 1059              	.LC4:
+ 1060 0058 7200     	 .ascii "r\000"
+ 1061 005a 0000     	 .space 2
+ 1062              	.LC5:
+ 1063 005c 5B494E46 	 .ascii "[INFO]-reseting (%s:%d)\012\000"
+ 1063      4F5D2D72 
+ 1063      65736574 
+ 1063      696E6720 
+ 1063      2825733A 
+ 1064 0075 000000   	 .space 3
+ 1065              	.LC6:
+ 1066 0078 7400     	 .ascii "t\000"
+ 1067 007a 0000     	 .space 2
+ 1068              	.LC7:
+ 1069 007c 5B494E46 	 .ascii "[INFO]-tests running (%s:%d)\012\000"
+ 1069      4F5D2D74 
+ 1069      65737473 
+ 1069      2072756E 
+ 1069      6E696E67 
+ 1070 009a 0000     	 .space 2
+ 1071              	.LC8:
+ 1072 009c 7100     	 .ascii "q\000"
+ 1073 009e 0000     	 .space 2
+ 1074              	.LC9:
+ 1075 00a0 5B494E46 	 .ascii "[INFO]-q (%s:%d)\012\000"
+ 1075      4F5D2D71 
+ 1075      20282573 
+ 1075      3A256429 
+ 1075      0A00
+ 1076 00b2 0000     	 .space 2
+ 1077              	.LC10:
+ 1078 00b4 00       	 .ascii "\000"
+ 1079 00b5 000000   	 .space 3
+ 1080              	.LC11:
+ 1081 00b8 5B494E46 	 .ascii "[INFO]-\015\012r-Resets board\015\012b-Resets to bo"
+ 1081      4F5D2D0D 
+ 1081      0A722D52 
+ 1081      65736574 
+ 1081      7320626F 
+ 1082 00df 6F746C6F 	 .ascii "otloader\015\012t-led test\015\012 (%s:%d)\012\000"
+ 1082      61646572 
+ 1082      0D0A742D 
+ 1082      6C656420 
+ 1082      74657374 
+ 1083 00ff 00       	 .space 1
+ 1084              	.LC12:
+ 1085 0100 5B494E46 	 .ascii "[INFO]-Command not found (cmd=%s) (%s:%d)\012\000"
+ 1085      4F5D2D43 
+ 1085      6F6D6D61 
+ 1085      6E64206E 
+ 1085      6F742066 
+ 1086 012b 00       	 .section .bss.RX_TOG,"aw",%nobits
+ 1087              	 .align 2
+ 1090              	RX_TOG:
+ 1091 0000 00000000 	 .space 4
+ 1092              	 .text
+ 1093              	.Letext0:
+ 1094              	 .file 3 "src/MightyBoard/Motherboard/system/LPC17xx.h"
+ 1095              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1096              	 .file 5 "src/MightyBoard/Motherboard/lib/include/lpc_types.h"
+ 1097              	 .file 6 "src/MightyBoard/Motherboard/lib/include/lpc17xx_uart.h"
+ 1098              	 .file 7 "src/MightyBoard/Motherboard/lib/include/lpc17xx_pinsel.h"
+ 1099              	 .file 8 "src/MightyBoard/Motherboard/lib/include/lpc17xx_wdt.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 comm.c
     {standard input}:19     .text.comm_test:00000000 $t
     {standard input}:24     .text.comm_test:00000000 comm_test
-    {standard input}:1047   .rodata.str1.4:00000000 .LC0
-    {standard input}:1026   .rodata.__func__.7002:00000000 .LANCHOR0
+    {standard input}:1048   .rodata.str1.4:00000000 .LC0
+    {standard input}:1027   .rodata.__func__.7002:00000000 .LANCHOR0
     {standard input}:53     .text.comm_get2:00000000 $t
     {standard input}:58     .text.comm_get2:00000000 comm_get2
-    {standard input}:101    .text.comm_init:00000000 $t
-    {standard input}:106    .text.comm_init:00000000 comm_init
-    {standard input}:1033   .bss.UART_LINE_LEN:00000000 .LANCHOR1
+    {standard input}:101    .text.comm_put:00000000 $t
+    {standard input}:106    .text.comm_put:00000000 comm_put
+    {standard input}:136    .text.comm_init:00000000 $t
+    {standard input}:141    .text.comm_init:00000000 comm_init
+    {standard input}:1034   .bss.UART_LINE_LEN:00000000 .LANCHOR1
                             *COM*:00000001 TxIntStat
                             *COM*:00000810 rb
-    {standard input}:223    .text.UART_IntReceive:00000000 $t
-    {standard input}:228    .text.UART_IntReceive:00000000 UART_IntReceive
+    {standard input}:258    .text.UART_IntReceive:00000000 $t
+    {standard input}:263    .text.UART_IntReceive:00000000 UART_IntReceive
                             *COM*:00000032 UART_LINE
-    {standard input}:1040   .bss.LINE_READY:00000000 .LANCHOR2
-    {standard input}:323    .text.UART_IntTransmit:00000000 $t
-    {standard input}:328    .text.UART_IntTransmit:00000000 UART_IntTransmit
-    {standard input}:432    .text.UART_IntErr:00000000 $t
-    {standard input}:437    .text.UART_IntErr:00000000 UART_IntErr
-    {standard input}:451    .text.UART0_IRQHandler:00000000 $t
-    {standard input}:456    .text.UART0_IRQHandler:00000000 UART0_IRQHandler
-    {standard input}:517    .text.UARTSend:00000000 $t
-    {standard input}:522    .text.UARTSend:00000000 UARTSend
-    {standard input}:630    .text.comm_put:00000000 $t
-    {standard input}:635    .text.comm_put:00000000 comm_put
-    {standard input}:664    .text.UARTReceive:00000000 $t
-    {standard input}:669    .text.UARTReceive:00000000 UARTReceive
-    {standard input}:764    .text.comm_flush:00000000 $t
-    {standard input}:769    .text.comm_flush:00000000 comm_flush
-    {standard input}:801    .text.exec_cmd:00000000 $t
-    {standard input}:806    .text.exec_cmd:00000000 exec_cmd
-    {standard input}:1050   .rodata.str1.4:00000008 .LC1
-    {standard input}:1053   .rodata.str1.4:0000000c .LC2
-    {standard input}:1058   .rodata.str1.4:00000058 .LC4
-    {standard input}:1061   .rodata.str1.4:0000005c .LC5
-    {standard input}:1064   .rodata.str1.4:00000078 .LC6
-    {standard input}:1067   .rodata.str1.4:0000007c .LC7
-    {standard input}:1070   .rodata.str1.4:0000009c .LC8
-    {standard input}:1073   .rodata.str1.4:000000a0 .LC9
-    {standard input}:1076   .rodata.str1.4:000000b4 .LC10
-    {standard input}:1079   .rodata.str1.4:000000b8 .LC11
-    {standard input}:1083   .rodata.str1.4:00000100 .LC12
-    {standard input}:953    .text.exec_cmd:00000134 $d
-    {standard input}:958    .text.comm_get:00000000 $t
-    {standard input}:963    .text.comm_get:00000000 comm_get
-    {standard input}:1036   .bss.UART_LINE_LEN:00000000 UART_LINE_LEN
-    {standard input}:1022   .bss.TX_TOG:00000000 TX_TOG
-    {standard input}:1089   .bss.RX_TOG:00000000 RX_TOG
-    {standard input}:1043   .bss.LINE_READY:00000000 LINE_READY
-    {standard input}:1019   .bss.TX_TOG:00000000 $d
-    {standard input}:1025   .rodata.__func__.7002:00000000 $d
-    {standard input}:1029   .rodata.__func__.7002:00000000 __func__.7002
-    {standard input}:1032   .bss.UART_LINE_LEN:00000000 $d
-    {standard input}:1039   .bss.LINE_READY:00000000 $d
-    {standard input}:1046   .rodata.str1.4:00000000 $d
-    {standard input}:1055   .rodata.str1.4:00000034 .LC3
-    {standard input}:1086   .bss.RX_TOG:00000000 $d
+    {standard input}:1041   .bss.LINE_READY:00000000 .LANCHOR2
+    {standard input}:358    .text.UART_IntTransmit:00000000 $t
+    {standard input}:363    .text.UART_IntTransmit:00000000 UART_IntTransmit
+    {standard input}:467    .text.UART_IntErr:00000000 $t
+    {standard input}:472    .text.UART_IntErr:00000000 UART_IntErr
+    {standard input}:486    .text.UART0_IRQHandler:00000000 $t
+    {standard input}:491    .text.UART0_IRQHandler:00000000 UART0_IRQHandler
+    {standard input}:552    .text.UARTSend:00000000 $t
+    {standard input}:557    .text.UARTSend:00000000 UARTSend
+    {standard input}:665    .text.UARTReceive:00000000 $t
+    {standard input}:670    .text.UARTReceive:00000000 UARTReceive
+    {standard input}:765    .text.comm_flush:00000000 $t
+    {standard input}:770    .text.comm_flush:00000000 comm_flush
+    {standard input}:802    .text.exec_cmd:00000000 $t
+    {standard input}:807    .text.exec_cmd:00000000 exec_cmd
+    {standard input}:1051   .rodata.str1.4:00000008 .LC1
+    {standard input}:1054   .rodata.str1.4:0000000c .LC2
+    {standard input}:1059   .rodata.str1.4:00000058 .LC4
+    {standard input}:1062   .rodata.str1.4:0000005c .LC5
+    {standard input}:1065   .rodata.str1.4:00000078 .LC6
+    {standard input}:1068   .rodata.str1.4:0000007c .LC7
+    {standard input}:1071   .rodata.str1.4:0000009c .LC8
+    {standard input}:1074   .rodata.str1.4:000000a0 .LC9
+    {standard input}:1077   .rodata.str1.4:000000b4 .LC10
+    {standard input}:1080   .rodata.str1.4:000000b8 .LC11
+    {standard input}:1084   .rodata.str1.4:00000100 .LC12
+    {standard input}:954    .text.exec_cmd:00000134 $d
+    {standard input}:959    .text.comm_get:00000000 $t
+    {standard input}:964    .text.comm_get:00000000 comm_get
+    {standard input}:1037   .bss.UART_LINE_LEN:00000000 UART_LINE_LEN
+    {standard input}:1023   .bss.TX_TOG:00000000 TX_TOG
+    {standard input}:1090   .bss.RX_TOG:00000000 RX_TOG
+    {standard input}:1044   .bss.LINE_READY:00000000 LINE_READY
+    {standard input}:1020   .bss.TX_TOG:00000000 $d
+    {standard input}:1026   .rodata.__func__.7002:00000000 $d
+    {standard input}:1030   .rodata.__func__.7002:00000000 __func__.7002
+    {standard input}:1033   .bss.UART_LINE_LEN:00000000 $d
+    {standard input}:1040   .bss.LINE_READY:00000000 $d
+    {standard input}:1047   .rodata.str1.4:00000000 $d
+    {standard input}:1056   .rodata.str1.4:00000034 .LC3
+    {standard input}:1087   .bss.RX_TOG:00000000 $d
                      .debug_frame:00000010 $d
 
 UNDEFINED SYMBOLS
 xprintf
 UART_Receive
+UART_Send
 PINSEL_ConfigPin
 UART_ConfigStructInit
 UART_Init
 UART_TxCmd
 UART_IntConfig
 UART_CheckBusy
-UART_Send
 UART_GetIntId
 UART_GetLineStatus
 strcasecmp

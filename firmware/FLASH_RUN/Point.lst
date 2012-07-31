@@ -465,7 +465,7 @@
  353              	.LVL20:
  354              	.LBE17:
  124:src/MightyBoard/Motherboard/Point.cc **** 	return absPoint;
- 125:src/MightyBoard/Motherboard/Point.cc **** }...
+ 125:src/MightyBoard/Motherboard/Point.cc **** }
  355              	 .loc 1 125 0
  356 0038 2046     	 mov r0,r4
  357 003a 02B0     	 add sp,sp,#8

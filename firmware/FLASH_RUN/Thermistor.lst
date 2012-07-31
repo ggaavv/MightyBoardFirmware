@@ -64,11 +64,11 @@
   30              	 
   31              	 
   32              	.LVL0:
-  33              	.LBB133:
+  33              	.LBB134:
   34              	 .loc 1 35 0
   35 0000 014B     	 ldr r3,.L3
   36 0002 0360     	 str r3,[r0,#0]
-  37              	.LBE133:
+  37              	.LBE134:
   38 0004 7047     	 bx lr
   39              	.L4:
   40 0006 00BF     	 .align 2
@@ -153,18 +153,18 @@
   77              	 
   78              	 
   79              	.LVL2:
-  80              	.LBB134:
-  81              	.LBB135:
-  82              	.LBB136:
-  83              	.LBB137:
+  80              	.LBB135:
+  81              	.LBB136:
+  82              	.LBB137:
+  83              	.LBB138:
   35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
   84              	 .loc 1 35 0
   85 0000 014B     	 ldr r3,.L9
   86 0002 0360     	 str r3,[r0,#0]
-  87              	.LBE137:
-  88              	.LBE136:
-  89              	.LBE135:
-  90              	.LBE134:
+  87              	.LBE138:
+  88              	.LBE137:
+  89              	.LBE136:
+  90              	.LBE135:
   91              	 .loc 2 29 0
   92 0004 7047     	 bx lr
   93              	.L10:
@@ -192,22 +192,22 @@
  117              	 .cfi_offset 4,-8
  118 0002 0446     	 mov r4,r0
  119              	.LVL4:
- 120              	.LBB138:
- 121              	.LBB139:
- 122              	.LBB140:
- 123              	.LBB141:
- 124              	.LBB142:
- 125              	.LBB143:
+ 120              	.LBB139:
+ 121              	.LBB140:
+ 122              	.LBB141:
+ 123              	.LBB142:
+ 124              	.LBB143:
+ 125              	.LBB144:
   35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
  126              	 .loc 1 35 0
  127 0004 024B     	 ldr r3,.L15
  128 0006 0360     	 str r3,[r0,#0]
- 129              	.LBE143:
- 130              	.LBE142:
- 131              	.LBE141:
- 132              	.LBE140:
- 133              	.LBE139:
- 134              	.LBE138:
+ 129              	.LBE144:
+ 130              	.LBE143:
+ 131              	.LBE142:
+ 132              	.LBE141:
+ 133              	.LBE140:
+ 134              	.LBE139:
  135              	 .loc 2 29 0
  136 0008 FFF7FEFF 	 bl _ZdlPv
  137              	.LVL5:
@@ -239,16 +239,16 @@
  164              	 .cfi_offset 4,-8
  165 0002 0446     	 mov r4,r0
  166              	.LVL7:
- 167              	.LBB144:
- 168              	.LBB145:
- 169              	.LBB146:
+ 167              	.LBB145:
+ 168              	.LBB146:
+ 169              	.LBB147:
   35:src/MightyBoard/shared/TemperatureSensor.hh **** 	virtual ~TemperatureSensor(){};
  170              	 .loc 1 35 0
  171 0004 024B     	 ldr r3,.L20
  172 0006 0360     	 str r3,[r0,#0]
- 173              	.LBE146:
- 174              	.LBE145:
- 175              	.LBE144:
+ 173              	.LBE147:
+ 174              	.LBE146:
+ 175              	.LBE145:
  176 0008 FFF7FEFF 	 bl _ZdlPv
  177              	.LVL8:
  178 000c 2046     	 mov r0,r4
@@ -307,13 +307,17 @@
   38:src/MightyBoard/shared/Thermistor.cc ****     raw_valid(false),
   39:src/MightyBoard/shared/Thermistor.cc ****     table_index(table_index_in)
   40:src/MightyBoard/shared/Thermistor.cc **** {
-  41:src/MightyBoard/shared/Thermistor.cc ****         for (int i = 0; i < SAMPLE_COUNT; i++) {
-  42:src/MightyBoard/shared/Thermistor.cc ****             sample_buffer[i] = 0;
-  43:src/MightyBoard/shared/Thermistor.cc ****         }
-  44:src/MightyBoard/shared/Thermistor.cc **** }
-  45:src/MightyBoard/shared/Thermistor.cc **** 
-  46:src/MightyBoard/shared/Thermistor.cc **** void Thermistor::init() {
- 196              	 .loc 3 46 0
+  41:src/MightyBoard/shared/Thermistor.cc **** 	  if (analog_pin==0)
+  42:src/MightyBoard/shared/Thermistor.cc **** 		  analog_pin = 26;
+  43:src/MightyBoard/shared/Thermistor.cc **** 	  if (analog_pin==1)
+  44:src/MightyBoard/shared/Thermistor.cc **** 		  analog_pin = 25;
+  45:src/MightyBoard/shared/Thermistor.cc ****         for (int i = 0; i < SAMPLE_COUNT; i++) {
+  46:src/MightyBoard/shared/Thermistor.cc ****             sample_buffer[i] = 0;
+  47:src/MightyBoard/shared/Thermistor.cc ****         }
+  48:src/MightyBoard/shared/Thermistor.cc **** }
+  49:src/MightyBoard/shared/Thermistor.cc **** 
+  50:src/MightyBoard/shared/Thermistor.cc **** void Thermistor::init() {
+ 196              	 .loc 3 50 0
  197              	 .cfi_startproc
  198              	 
  199              	 
@@ -323,103 +327,107 @@
  203              	 .cfi_def_cfa_offset 8
  204              	 .cfi_offset 14,-4
  205              	 .cfi_offset 3,-8
-  47:src/MightyBoard/shared/Thermistor.cc ****   current_temp = 0;
- 206              	 .loc 3 47 0
+  51:src/MightyBoard/shared/Thermistor.cc ****   current_temp = 0;
+ 206              	 .loc 3 51 0
  207 0002 4FF00003 	 mov r3,#0
  208 0006 8380     	 strh r3,[r0,#4]
-  48:src/MightyBoard/shared/Thermistor.cc ****   if (analog_pin==0)
- 209              	 .loc 3 48 0
- 210 0008 8379     	 ldrb r3,[r0,#6]
- 211 000a 1BB9     	 cbnz r3,.L23
-  49:src/MightyBoard/shared/Thermistor.cc **** 	  analog_pin_out = 26;
- 212              	 .loc 3 49 0
- 213 000c 4FF01A03 	 mov r3,#26
- 214 0010 C371     	 strb r3,[r0,#7]
- 215 0012 03E0     	 b .L24
- 216              	.L23:
-  50:src/MightyBoard/shared/Thermistor.cc ****   if (analog_pin==1)
- 217              	 .loc 3 50 0
- 218 0014 012B     	 cmp r3,#1
-  51:src/MightyBoard/shared/Thermistor.cc **** 	  analog_pin_out = 25;
- 219              	 .loc 3 51 0
- 220 0016 04BF     	 itt eq
- 221 0018 1923     	 moveq r3,#25
- 222 001a C371     	 strbeq r3,[r0,#7]
- 223              	.L24:
-  52:src/MightyBoard/shared/Thermistor.cc **** 	initAnalogPin(analog_pin_out);
- 224              	 .loc 3 52 0
- 225 001c C079     	 ldrb r0,[r0,#7]
- 226              	.LVL10:
- 227 001e FFF7FEFF 	 bl _Z13initAnalogPinh
+  52:src/MightyBoard/shared/Thermistor.cc **** 	initAnalogPin(analog_pin);
+ 209              	 .loc 3 52 0
+ 210 0008 8079     	 ldrb r0,[r0,#6]
+ 211              	.LVL10:
+ 212 000a FFF7FEFF 	 bl _Z13initAnalogPinh
   53:src/MightyBoard/shared/Thermistor.cc **** }
- 228              	 .loc 3 53 0
- 229 0022 08BD     	 pop {r3,pc}
- 230              	 .cfi_endproc
- 231              	.LFE426:
- 233              	 .section .text._ZN10ThermistorC2Ehh,"ax",%progbits
- 234              	 .align 2
- 235              	 .global _ZN10ThermistorC2Ehh
- 236              	 .thumb
- 237              	 .thumb_func
- 239              	_ZN10ThermistorC2Ehh:
- 240              	.LFB424:
+ 213              	 .loc 3 53 0
+ 214 000e 08BD     	 pop {r3,pc}
+ 215              	 .cfi_endproc
+ 216              	.LFE426:
+ 218              	 .section .text._ZN10ThermistorC2Ehh,"ax",%progbits
+ 219              	 .align 2
+ 220              	 .global _ZN10ThermistorC2Ehh
+ 221              	 .thumb
+ 222              	 .thumb_func
+ 224              	_ZN10ThermistorC2Ehh:
+ 225              	.LFB424:
   35:src/MightyBoard/shared/Thermistor.cc **** Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
- 241              	 .loc 3 35 0
- 242              	 .cfi_startproc
- 243              	 
- 244              	 
- 245              	 
- 246              	.LVL11:
- 247              	.LBB147:
+ 226              	 .loc 3 35 0
+ 227              	 .cfi_startproc
+ 228              	 
+ 229              	 
+ 230              	 
+ 231              	.LVL11:
+ 232              	.LBB148:
   39:src/MightyBoard/shared/Thermistor.cc ****     table_index(table_index_in)
- 248              	 .loc 3 39 0
- 249 0000 094B     	 ldr r3,.L30
- 250 0002 0360     	 str r3,[r0,#0]
- 251 0004 8171     	 strb r1,[r0,#6]
- 252 0006 4FF00003 	 mov r3,#0
- 253 000a 8372     	 strb r3,[r0,#10]
- 254 000c 8377     	 strb r3,[r0,#30]
- 255 000e C277     	 strb r2,[r0,#31]
- 256              	.LVL12:
+ 233              	 .loc 3 39 0
+ 234 0000 0E4B     	 ldr r3,.L30
+ 235 0002 0360     	 str r3,[r0,#0]
+ 236 0004 8171     	 strb r1,[r0,#6]
+ 237 0006 4FF00003 	 mov r3,#0
+ 238 000a 8372     	 strb r3,[r0,#10]
+ 239 000c 8377     	 strb r3,[r0,#30]
+ 240 000e C277     	 strb r2,[r0,#31]
+ 241              	.LBB149:
+  41:src/MightyBoard/shared/Thermistor.cc **** 	  if (analog_pin==0)
+ 242              	 .loc 3 41 0
+ 243 0010 19B9     	 cbnz r1,.L25
+  42:src/MightyBoard/shared/Thermistor.cc **** 		  analog_pin = 26;
+ 244              	 .loc 3 42 0
+ 245 0012 4FF01A03 	 mov r3,#26
+ 246 0016 8371     	 strb r3,[r0,#6]
+ 247 0018 04E0     	 b .L26
+ 248              	.L25:
+  43:src/MightyBoard/shared/Thermistor.cc **** 	  if (analog_pin==1)
+ 249              	 .loc 3 43 0
+ 250 001a 8379     	 ldrb r3,[r0,#6]
+ 251 001c 012B     	 cmp r3,#1
+  44:src/MightyBoard/shared/Thermistor.cc **** 		  analog_pin = 25;
+ 252              	 .loc 3 44 0
+ 253 001e 04BF     	 itt eq
+ 254 0020 1923     	 moveq r3,#25
+ 255 0022 8371     	 strbeq r3,[r0,#6]
+ 256              	.L26:
+ 257              	.LVL12:
   35:src/MightyBoard/shared/Thermistor.cc **** Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
- 257              	 .loc 3 35 0
- 258 0010 00F10A02 	 add r2,r0,#10
- 259              	.LVL13:
- 260              	.LBE147:
- 261 0014 4FF00903 	 mov r3,#9
- 262              	.LBB149:
- 263              	.LBB148:
-  42:src/MightyBoard/shared/Thermistor.cc ****             sample_buffer[i] = 0;
- 264              	 .loc 3 42 0
- 265 0018 4FF00001 	 mov r1,#0
- 266              	.LVL14:
- 267              	.L27:
-  42:src/MightyBoard/shared/Thermistor.cc ****             sample_buffer[i] = 0;
- 268              	 .loc 3 42 0 is_stmt 0 discriminator 2
- 269 001c 22F8021F 	 strh r1,[r2,#2]!
-  41:src/MightyBoard/shared/Thermistor.cc ****         for (int i = 0; i < SAMPLE_COUNT; i++) {
- 270              	 .loc 3 41 0 is_stmt 1 discriminator 2
- 271 0020 013B     	 subs r3,r3,#1
- 272 0022 FBD1     	 bne .L27
- 273              	.LBE148:
- 274              	.LBE149:
-  44:src/MightyBoard/shared/Thermistor.cc **** }
- 275              	 .loc 3 44 0
- 276 0024 7047     	 bx lr
- 277              	.L31:
- 278 0026 00BF     	 .align 2
- 279              	.L30:
- 280 0028 08000000 	 .word .LANCHOR0+8
- 281              	 .cfi_endproc
- 282              	.LFE424:
- 284              	 .section .text._ZSt19__move_median_firstIPmEvT_S1_S1_,"axG",%progbits,_ZSt19__move_median_firstIPmEvT_S1_S1_,comdat
- 285              	 .align 2
- 286              	 .weak _ZSt19__move_median_firstIPmEvT_S1_S1_
- 287              	 .thumb
- 288              	 .thumb_func
- 290              	_ZSt19__move_median_firstIPmEvT_S1_S1_:
- 291              	.LFB437:
- 292              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_algo.h"
+ 258              	 .loc 3 35 0 discriminator 1
+ 259 0024 00F10A02 	 add r2,r0,#10
+ 260              	.LVL13:
+ 261              	.LBE149:
+ 262              	.LBE148:
+ 263 0028 4FF00903 	 mov r3,#9
+ 264              	.LBB152:
+ 265              	.LBB151:
+ 266              	.LBB150:
+  46:src/MightyBoard/shared/Thermistor.cc ****             sample_buffer[i] = 0;
+ 267              	 .loc 3 46 0 discriminator 1
+ 268 002c 4FF00001 	 mov r1,#0
+ 269              	.LVL14:
+ 270              	.L27:
+  46:src/MightyBoard/shared/Thermistor.cc ****             sample_buffer[i] = 0;
+ 271              	 .loc 3 46 0 is_stmt 0 discriminator 2
+ 272 0030 22F8021F 	 strh r1,[r2,#2]!
+  45:src/MightyBoard/shared/Thermistor.cc ****         for (int i = 0; i < SAMPLE_COUNT; i++) {
+ 273              	 .loc 3 45 0 is_stmt 1 discriminator 2
+ 274 0034 013B     	 subs r3,r3,#1
+ 275 0036 FBD1     	 bne .L27
+ 276              	.LBE150:
+ 277              	.LBE151:
+ 278              	.LBE152:
+  48:src/MightyBoard/shared/Thermistor.cc **** }
+ 279              	 .loc 3 48 0
+ 280 0038 7047     	 bx lr
+ 281              	.L31:
+ 282 003a 00BF     	 .align 2
+ 283              	.L30:
+ 284 003c 08000000 	 .word .LANCHOR0+8
+ 285              	 .cfi_endproc
+ 286              	.LFE424:
+ 288              	 .section .text._ZSt19__move_median_firstIPmEvT_S1_S1_,"axG",%progbits,_ZSt19__move_median_firstIPmEvT_S1_S1_,comdat
+ 289              	 .align 2
+ 290              	 .weak _ZSt19__move_median_firstIPmEvT_S1_S1_
+ 291              	 .thumb
+ 292              	 .thumb_func
+ 294              	_ZSt19__move_median_firstIPmEvT_S1_S1_:
+ 295              	.LFB437:
+ 296              	 .file 4 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_algo.h"
    1:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** // Algorithm implementation -*- C++ -*-
    2:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 
    3:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
@@ -500,39 +508,39 @@
   78:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   template<typename _Iterator>
   79:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     void
   80:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __move_median_first(_Iterator __a, _Iterator __b, _Iterator __c)
- 293              	 .loc 4 80 0
- 294              	 .cfi_startproc
- 295              	 
- 296              	 
- 297              	 
- 298              	.LVL15:
- 299 0000 30B4     	 push {r4,r5}
- 300              	.LCFI3:
- 301              	 .cfi_def_cfa_offset 8
- 302              	 .cfi_offset 5,-4
- 303              	 .cfi_offset 4,-8
+ 297              	 .loc 4 80 0
+ 298              	 .cfi_startproc
+ 299              	 
+ 300              	 
+ 301              	 
+ 302              	.LVL15:
+ 303 0000 30B4     	 push {r4,r5}
+ 304              	.LCFI3:
+ 305              	 .cfi_def_cfa_offset 8
+ 306              	 .cfi_offset 5,-4
+ 307              	 .cfi_offset 4,-8
   81:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     {
   82:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       // concept requirements
   83:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       __glibcxx_function_requires(_LessThanComparableConcept<
   84:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    typename iterator_traits<_Iterator>::value_type>)
   85:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 
   86:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       if (*__a < *__b)
- 304              	 .loc 4 86 0
- 305 0002 0368     	 ldr r3,[r0,#0]
- 306 0004 0C68     	 ldr r4,[r1,#0]
- 307 0006 A342     	 cmp r3,r4
- 308 0008 0AD2     	 bcs .L33
+ 308              	 .loc 4 86 0
+ 309 0002 0368     	 ldr r3,[r0,#0]
+ 310 0004 0C68     	 ldr r4,[r1,#0]
+ 311 0006 A342     	 cmp r3,r4
+ 312 0008 0AD2     	 bcs .L33
   87:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	{
   88:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  if (*__b < *__c)
- 309              	 .loc 4 88 0
- 310 000a 1568     	 ldr r5,[r2,#0]
- 311 000c AC42     	 cmp r4,r5
- 312              	.LBB150:
- 313              	.LBB151:
- 314              	.LBB152:
- 315              	.LBB153:
- 316              	.LBB154:
- 317              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/move.h"
+ 313              	 .loc 4 88 0
+ 314 000a 1568     	 ldr r5,[r2,#0]
+ 315 000c AC42     	 cmp r4,r5
+ 316              	.LBB153:
+ 317              	.LBB154:
+ 318              	.LBB155:
+ 319              	.LBB156:
+ 320              	.LBB157:
+ 321              	 .file 5 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/move.h"
    1:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h **** // Move, forward and identity for C++0x + swap -*- C++ -*-
    2:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h **** 
    3:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h **** // Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
@@ -661,103 +669,103 @@
  126:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h **** 
  127:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h ****       _Tp __tmp = _GLIBCXX_MOVE(__a);
  128:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h ****       __a = _GLIBCXX_MOVE(__b);
- 318              	 .loc 5 128 0
- 319 000e 3CBF     	 itt cc
- 320 0010 0460     	 strcc r4,[r0,#0]
+ 322              	 .loc 5 128 0
+ 323 000e 3CBF     	 itt cc
+ 324 0010 0460     	 strcc r4,[r0,#0]
  129:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h ****       __b = _GLIBCXX_MOVE(__tmp);
- 321              	 .loc 5 129 0
- 322 0012 0B60     	 strcc r3,[r1,#0]
- 323              	.LBE154:
- 324              	.LBE153:
- 325              	.LBE152:
- 326              	.LBE151:
- 327              	.LBE150:
- 328              	 .loc 4 88 0
- 329 0014 0DD3     	 bcc .L32
+ 325              	 .loc 5 129 0
+ 326 0012 0B60     	 strcc r3,[r1,#0]
+ 327              	.LBE157:
+ 328              	.LBE156:
+ 329              	.LBE155:
+ 330              	.LBE154:
+ 331              	.LBE153:
+ 332              	 .loc 4 88 0
+ 333 0014 0DD3     	 bcc .L32
   89:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    std::iter_swap(__a, __b);
   90:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  else if (*__a < *__c)
- 330              	 .loc 4 90 0
- 331 0016 AB42     	 cmp r3,r5
- 332              	.LBB155:
- 333              	.LBB156:
- 334              	.LBB157:
- 335              	.LBB158:
- 336              	.LBB159:
+ 334              	 .loc 4 90 0
+ 335 0016 AB42     	 cmp r3,r5
+ 336              	.LBB158:
+ 337              	.LBB159:
+ 338              	.LBB160:
+ 339              	.LBB161:
+ 340              	.LBB162:
  128:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h ****       __a = _GLIBCXX_MOVE(__b);
- 337              	 .loc 5 128 0
- 338 0018 3CBF     	 itt cc
- 339 001a 0560     	 strcc r5,[r0,#0]
- 340              	 .loc 5 129 0
- 341 001c 1360     	 strcc r3,[r2,#0]
- 342 001e 08E0     	 b .L32
- 343              	.L33:
- 344              	.LBE159:
- 345              	.LBE158:
- 346              	.LBE157:
- 347              	.LBE156:
- 348              	.LBE155:
+ 341              	 .loc 5 128 0
+ 342 0018 3CBF     	 itt cc
+ 343 001a 0560     	 strcc r5,[r0,#0]
+ 344              	 .loc 5 129 0
+ 345 001c 1360     	 strcc r3,[r2,#0]
+ 346 001e 08E0     	 b .L32
+ 347              	.L33:
+ 348              	.LBE162:
+ 349              	.LBE161:
+ 350              	.LBE160:
+ 351              	.LBE159:
+ 352              	.LBE158:
   91:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    std::iter_swap(__a, __c);
   92:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	}
   93:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       else if (*__a < *__c)
- 349              	 .loc 4 93 0
- 350 0020 1568     	 ldr r5,[r2,#0]
- 351 0022 AB42     	 cmp r3,r5
- 352 0024 05D3     	 bcc .L32
+ 353              	 .loc 4 93 0
+ 354 0020 1568     	 ldr r5,[r2,#0]
+ 355 0022 AB42     	 cmp r3,r5
+ 356 0024 05D3     	 bcc .L32
   94:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	return;
   95:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       else if (*__b < *__c)
- 353              	 .loc 4 95 0
- 354 0026 AC42     	 cmp r4,r5
- 355              	.LVL16:
- 356              	.LBB160:
- 357              	.LBB161:
- 358              	.LBB162:
- 359              	.LBB163:
- 360              	.LBB164:
+ 357              	 .loc 4 95 0
+ 358 0026 AC42     	 cmp r4,r5
+ 359              	.LVL16:
+ 360              	.LBB163:
+ 361              	.LBB164:
+ 362              	.LBB165:
+ 363              	.LBB166:
+ 364              	.LBB167:
  128:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h ****       __a = _GLIBCXX_MOVE(__b);
- 361              	 .loc 5 128 0
- 362 0028 39BF     	 ittee cc
- 363 002a 0560     	 strcc r5,[r0,#0]
- 364              	 .loc 5 129 0
- 365 002c 1360     	 strcc r3,[r2,#0]
- 366              	.LVL17:
- 367              	.LBE164:
- 368              	.LBE163:
- 369              	.LBE162:
- 370              	.LBE161:
- 371              	.LBE160:
- 372              	.LBB165:
- 373              	.LBB166:
- 374              	.LBB167:
- 375              	.LBB168:
- 376              	.LBB169:
+ 365              	 .loc 5 128 0
+ 366 0028 39BF     	 ittee cc
+ 367 002a 0560     	 strcc r5,[r0,#0]
+ 368              	 .loc 5 129 0
+ 369 002c 1360     	 strcc r3,[r2,#0]
+ 370              	.LVL17:
+ 371              	.LBE167:
+ 372              	.LBE166:
+ 373              	.LBE165:
+ 374              	.LBE164:
+ 375              	.LBE163:
+ 376              	.LBB168:
+ 377              	.LBB169:
+ 378              	.LBB170:
+ 379              	.LBB171:
+ 380              	.LBB172:
  128:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h ****       __a = _GLIBCXX_MOVE(__b);
- 377              	 .loc 5 128 0
- 378 002e 0460     	 strcs r4,[r0,#0]
- 379              	 .loc 5 129 0
- 380 0030 0B60     	 strcs r3,[r1,#0]
- 381              	.LVL18:
- 382              	.L32:
- 383              	.LBE169:
- 384              	.LBE168:
- 385              	.LBE167:
- 386              	.LBE166:
- 387              	.LBE165:
+ 381              	 .loc 5 128 0
+ 382 002e 0460     	 strcs r4,[r0,#0]
+ 383              	 .loc 5 129 0
+ 384 0030 0B60     	 strcs r3,[r1,#0]
+ 385              	.LVL18:
+ 386              	.L32:
+ 387              	.LBE172:
+ 388              	.LBE171:
+ 389              	.LBE170:
+ 390              	.LBE169:
+ 391              	.LBE168:
   96:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	std::iter_swap(__a, __c);
   97:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       else
   98:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	std::iter_swap(__a, __b);
   99:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     }
- 388              	 .loc 4 99 0
- 389 0032 30BC     	 pop {r4,r5}
- 390 0034 7047     	 bx lr
- 391              	 .cfi_endproc
- 392              	.LFE437:
- 394 0036 00BF     	 .section .text._ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_,"axG",%progbits,_ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_,comdat
- 395              	 .align 2
- 396              	 .weak _ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_
- 397              	 .thumb
- 398              	 .thumb_func
- 400              	_ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_:
- 401              	.LFB438:
+ 392              	 .loc 4 99 0
+ 393 0032 30BC     	 pop {r4,r5}
+ 394 0034 7047     	 bx lr
+ 395              	 .cfi_endproc
+ 396              	.LFE437:
+ 398 0036 00BF     	 .section .text._ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_,"axG",%progbits,_ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_,comdat
+ 399              	 .align 2
+ 400              	 .weak _ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_
+ 401              	 .thumb
+ 402              	 .thumb_func
+ 404              	_ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_:
+ 405              	.LFB438:
  100:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 
  101:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   /// Swaps the median value of *__a, *__b and *__c under __comp to *__a
  102:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   template<typename _Iterator, typename _Compare>
@@ -2866,226 +2874,226 @@
 2205:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   template<typename _RandomAccessIterator, typename _Tp>
 2206:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     _RandomAccessIterator
 2207:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __unguarded_partition(_RandomAccessIterator __first,
- 402              	 .loc 4 2207 0
- 403              	 .cfi_startproc
- 404              	 
- 405              	 
- 406              	 
- 407              	.LVL19:
- 408 0000 70B4     	 push {r4,r5,r6}
- 409              	.LCFI4:
- 410              	 .cfi_def_cfa_offset 12
- 411              	 .cfi_offset 6,-4
- 412              	 .cfi_offset 5,-8
- 413              	 .cfi_offset 4,-12
- 414              	.LVL20:
- 415              	.L43:
+ 406              	 .loc 4 2207 0
+ 407              	 .cfi_startproc
+ 408              	 
+ 409              	 
+ 410              	 
+ 411              	.LVL19:
+ 412 0000 70B4     	 push {r4,r5,r6}
+ 413              	.LCFI4:
+ 414              	 .cfi_def_cfa_offset 12
+ 415              	 .cfi_offset 6,-4
+ 416              	 .cfi_offset 5,-8
+ 417              	 .cfi_offset 4,-12
+ 418              	.LVL20:
+ 419              	.L43:
 2208:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 			  _RandomAccessIterator __last, const _Tp& __pivot)
 2209:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     {
 2210:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       while (true)
 2211:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	{
 2212:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  while (*__first < __pivot)
- 416              	 .loc 4 2212 0
- 417 0002 0568     	 ldr r5,[r0,#0]
- 418 0004 1468     	 ldr r4,[r2,#0]
- 419 0006 A542     	 cmp r5,r4
- 420 0008 06D2     	 bcs .L38
- 421 000a 0346     	 mov r3,r0
- 422              	.L39:
+ 420              	 .loc 4 2212 0
+ 421 0002 0568     	 ldr r5,[r0,#0]
+ 422 0004 1468     	 ldr r4,[r2,#0]
+ 423 0006 A542     	 cmp r5,r4
+ 424 0008 06D2     	 bcs .L38
+ 425 000a 0346     	 mov r3,r0
+ 426              	.L39:
 2213:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    ++__first;
- 423              	 .loc 4 2213 0
- 424 000c 00F10400 	 add r0,r0,#4
- 425              	.LVL21:
+ 427              	 .loc 4 2213 0
+ 428 000c 00F10400 	 add r0,r0,#4
+ 429              	.LVL21:
 2212:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  while (*__first < __pivot)
- 426              	 .loc 4 2212 0
- 427 0010 53F8045F 	 ldr r5,[r3,#4]!
- 428 0014 A542     	 cmp r5,r4
- 429 0016 F9D3     	 bcc .L39
- 430              	.L38:
+ 430              	 .loc 4 2212 0
+ 431 0010 53F8045F 	 ldr r5,[r3,#4]!
+ 432 0014 A542     	 cmp r5,r4
+ 433 0016 F9D3     	 bcc .L39
+ 434              	.L38:
 2214:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  --__last;
- 431              	 .loc 4 2214 0
- 432 0018 A1F10403 	 sub r3,r1,#4
- 433              	.LVL22:
+ 435              	 .loc 4 2214 0
+ 436 0018 A1F10403 	 sub r3,r1,#4
+ 437              	.LVL22:
 2215:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  while (__pivot < *__last)
- 434              	 .loc 4 2215 0
- 435 001c 51F8046C 	 ldr r6,[r1,#-4]
- 436 0020 A642     	 cmp r6,r4
+ 438              	 .loc 4 2215 0
+ 439 001c 51F8046C 	 ldr r6,[r1,#-4]
+ 440 0020 A642     	 cmp r6,r4
 2214:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  --__last;
- 437              	 .loc 4 2214 0
- 438 0022 98BF     	 it ls
- 439 0024 1946     	 movls r1,r3
- 440              	 .loc 4 2215 0
- 441 0026 06D9     	 bls .L40
- 442              	.L41:
+ 441              	 .loc 4 2214 0
+ 442 0022 98BF     	 it ls
+ 443 0024 1946     	 movls r1,r3
+ 444              	 .loc 4 2215 0
+ 445 0026 06D9     	 bls .L40
+ 446              	.L41:
 2207:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __unguarded_partition(_RandomAccessIterator __first,
- 443              	 .loc 4 2207 0
- 444 0028 A3F10401 	 sub r1,r3,#4
- 445              	.LVL23:
- 446              	 .loc 4 2215 0
- 447 002c 53F8046C 	 ldr r6,[r3,#-4]
- 448 0030 0B46     	 mov r3,r1
- 449 0032 A642     	 cmp r6,r4
- 450 0034 F8D8     	 bhi .L41
- 451              	.LVL24:
- 452              	.L40:
+ 447              	 .loc 4 2207 0
+ 448 0028 A3F10401 	 sub r1,r3,#4
+ 449              	.LVL23:
+ 450              	 .loc 4 2215 0
+ 451 002c 53F8046C 	 ldr r6,[r3,#-4]
+ 452 0030 0B46     	 mov r3,r1
+ 453 0032 A642     	 cmp r6,r4
+ 454 0034 F8D8     	 bhi .L41
+ 455              	.LVL24:
+ 456              	.L40:
 2216:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    --__last;
 2217:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  if (!(__first < __last))
- 453              	 .loc 4 2217 0
- 454 0036 8142     	 cmp r1,r0
- 455 0038 01D8     	 bhi .L42
+ 457              	 .loc 4 2217 0
+ 458 0036 8142     	 cmp r1,r0
+ 459 0038 01D8     	 bhi .L42
 2218:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    return __first;
 2219:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  std::iter_swap(__first, __last);
 2220:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  ++__first;
 2221:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	}
 2222:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     }
- 456              	 .loc 4 2222 0
- 457 003a 70BC     	 pop {r4,r5,r6}
- 458 003c 7047     	 bx lr
- 459              	.L42:
- 460              	.LVL25:
- 461              	.LBB170:
- 462              	.LBB171:
- 463              	.LBB172:
- 464              	.LBB173:
- 465              	.LBB174:
+ 460              	 .loc 4 2222 0
+ 461 003a 70BC     	 pop {r4,r5,r6}
+ 462 003c 7047     	 bx lr
+ 463              	.L42:
+ 464              	.LVL25:
+ 465              	.LBB173:
+ 466              	.LBB174:
+ 467              	.LBB175:
+ 468              	.LBB176:
+ 469              	.LBB177:
  128:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\move.h ****       __a = _GLIBCXX_MOVE(__b);
- 466              	 .loc 5 128 0
- 467 003e 40F8046B 	 str r6,[r0],#4
- 468              	.LVL26:
- 469              	 .loc 5 129 0
- 470 0042 0D60     	 str r5,[r1,#0]
- 471              	.LVL27:
- 472              	.LBE174:
- 473              	.LBE173:
- 474              	.LBE172:
- 475              	.LBE171:
- 476              	.LBE170:
+ 470              	 .loc 5 128 0
+ 471 003e 40F8046B 	 str r6,[r0],#4
+ 472              	.LVL26:
+ 473              	 .loc 5 129 0
+ 474 0042 0D60     	 str r5,[r1,#0]
+ 475              	.LVL27:
+ 476              	.LBE177:
+ 477              	.LBE176:
+ 478              	.LBE175:
+ 479              	.LBE174:
+ 480              	.LBE173:
 2210:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       while (true)
- 477              	 .loc 4 2210 0
- 478 0044 DDE7     	 b .L43
- 479              	 .cfi_endproc
- 480              	.LFE438:
- 482 0046 00BF     	 .section .text._ZSt25__unguarded_linear_insertIPmEvT_,"axG",%progbits,_ZSt25__unguarded_linear_insertIPmEvT_,comdat
- 483              	 .align 2
- 484              	 .weak _ZSt25__unguarded_linear_insertIPmEvT_
- 485              	 .thumb
- 486              	 .thumb_func
- 488              	_ZSt25__unguarded_linear_insertIPmEvT_:
- 489              	.LFB440:
+ 481              	 .loc 4 2210 0
+ 482 0044 DDE7     	 b .L43
+ 483              	 .cfi_endproc
+ 484              	.LFE438:
+ 486 0046 00BF     	 .section .text._ZSt25__unguarded_linear_insertIPmEvT_,"axG",%progbits,_ZSt25__unguarded_linear_insertIPmEvT_,comdat
+ 487              	 .align 2
+ 488              	 .weak _ZSt25__unguarded_linear_insertIPmEvT_
+ 489              	 .thumb
+ 490              	 .thumb_func
+ 492              	_ZSt25__unguarded_linear_insertIPmEvT_:
+ 493              	.LFB440:
 2062:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __unguarded_linear_insert(_RandomAccessIterator __last)
- 490              	 .loc 4 2062 0
- 491              	 .cfi_startproc
- 492              	 
- 493              	 
- 494              	 
- 495              	.LVL28:
- 496 0000 10B4     	 push {r4}
- 497              	.LCFI5:
- 498              	 .cfi_def_cfa_offset 4
- 499              	 .cfi_offset 4,-4
- 500              	.LBB175:
+ 494              	 .loc 4 2062 0
+ 495              	 .cfi_startproc
+ 496              	 
+ 497              	 
+ 498              	 
+ 499              	.LVL28:
+ 500 0000 10B4     	 push {r4}
+ 501              	.LCFI5:
+ 502              	 .cfi_def_cfa_offset 4
+ 503              	 .cfi_offset 4,-4
+ 504              	.LBB178:
 2065:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	__val = _GLIBCXX_MOVE(*__last);
- 501              	 .loc 4 2065 0
- 502 0002 0468     	 ldr r4,[r0,#0]
- 503              	.LVL29:
+ 505              	 .loc 4 2065 0
+ 506 0002 0468     	 ldr r4,[r0,#0]
+ 507              	.LVL29:
 2068:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       while (__val < *__next)
- 504              	 .loc 4 2068 0
- 505 0004 50F8043C 	 ldr r3,[r0,#-4]
- 506 0008 9C42     	 cmp r4,r3
+ 508              	 .loc 4 2068 0
+ 509 0004 50F8043C 	 ldr r3,[r0,#-4]
+ 510 0008 9C42     	 cmp r4,r3
 2067:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       --__next;
- 507              	 .loc 4 2067 0
- 508 000a 38BF     	 it cc
- 509 000c 021F     	 subcc r2,r0,#4
+ 511              	 .loc 4 2067 0
+ 512 000a 38BF     	 it cc
+ 513 000c 021F     	 subcc r2,r0,#4
 2068:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       while (__val < *__next)
- 510              	 .loc 4 2068 0
- 511 000e 01D3     	 bcc .L49
- 512 0010 07E0     	 b .L48
- 513              	.LVL30:
- 514              	.L50:
- 515 0012 0846     	 mov r0,r1
- 516              	.LVL31:
- 517              	.L49:
- 518 0014 1146     	 mov r1,r2
+ 514              	 .loc 4 2068 0
+ 515 000e 01D3     	 bcc .L49
+ 516 0010 07E0     	 b .L48
+ 517              	.LVL30:
+ 518              	.L50:
+ 519 0012 0846     	 mov r0,r1
+ 520              	.LVL31:
+ 521              	.L49:
+ 522 0014 1146     	 mov r1,r2
 2070:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  *__last = _GLIBCXX_MOVE(*__next);
- 519              	 .loc 4 2070 0
- 520 0016 0360     	 str r3,[r0,#0]
- 521              	.LVL32:
+ 523              	 .loc 4 2070 0
+ 524 0016 0360     	 str r3,[r0,#0]
+ 525              	.LVL32:
 2068:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       while (__val < *__next)
- 522              	 .loc 4 2068 0
- 523 0018 52F8043D 	 ldr r3,[r2,#-4]!
- 524              	.LVL33:
- 525 001c 9C42     	 cmp r4,r3
- 526 001e F8D3     	 bcc .L50
- 527 0020 0846     	 mov r0,r1
- 528              	.LVL34:
- 529              	.L48:
+ 526              	 .loc 4 2068 0
+ 527 0018 52F8043D 	 ldr r3,[r2,#-4]!
+ 528              	.LVL33:
+ 529 001c 9C42     	 cmp r4,r3
+ 530 001e F8D3     	 bcc .L50
+ 531 0020 0846     	 mov r0,r1
+ 532              	.LVL34:
+ 533              	.L48:
 2074:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       *__last = _GLIBCXX_MOVE(__val);
- 530              	 .loc 4 2074 0
- 531 0022 0460     	 str r4,[r0,#0]
- 532              	.LBE175:
+ 534              	 .loc 4 2074 0
+ 535 0022 0460     	 str r4,[r0,#0]
+ 536              	.LBE178:
 2075:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     }
- 533              	 .loc 4 2075 0
- 534 0024 10BC     	 pop {r4}
- 535 0026 7047     	 bx lr
- 536              	 .cfi_endproc
- 537              	.LFE440:
- 539              	 .section .text._ZSt16__insertion_sortIPmEvT_S1_,"axG",%progbits,_ZSt16__insertion_sortIPmEvT_S1_,comdat
- 540              	 .align 2
- 541              	 .weak _ZSt16__insertion_sortIPmEvT_S1_
- 542              	 .thumb
- 543              	 .thumb_func
- 545              	_ZSt16__insertion_sortIPmEvT_S1_:
- 546              	.LFB433:
+ 537              	 .loc 4 2075 0
+ 538 0024 10BC     	 pop {r4}
+ 539 0026 7047     	 bx lr
+ 540              	 .cfi_endproc
+ 541              	.LFE440:
+ 543              	 .section .text._ZSt16__insertion_sortIPmEvT_S1_,"axG",%progbits,_ZSt16__insertion_sortIPmEvT_S1_,comdat
+ 544              	 .align 2
+ 545              	 .weak _ZSt16__insertion_sortIPmEvT_S1_
+ 546              	 .thumb
+ 547              	 .thumb_func
+ 549              	_ZSt16__insertion_sortIPmEvT_S1_:
+ 550              	.LFB433:
 2099:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __insertion_sort(_RandomAccessIterator __first,
- 547              	 .loc 4 2099 0
- 548              	 .cfi_startproc
- 549              	 
- 550              	 
- 551              	.LVL35:
- 552 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
- 553              	.LCFI6:
- 554              	 .cfi_def_cfa_offset 24
- 555              	 .cfi_offset 14,-4
- 556              	 .cfi_offset 8,-8
- 557              	 .cfi_offset 7,-12
- 558              	 .cfi_offset 6,-16
- 559              	 .cfi_offset 5,-20
- 560              	 .cfi_offset 4,-24
- 561 0004 0546     	 mov r5,r0
- 562 0006 8846     	 mov r8,r1
- 563              	.LBB176:
+ 551              	 .loc 4 2099 0
+ 552              	 .cfi_startproc
+ 553              	 
+ 554              	 
+ 555              	.LVL35:
+ 556 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 557              	.LCFI6:
+ 558              	 .cfi_def_cfa_offset 24
+ 559              	 .cfi_offset 14,-4
+ 560              	 .cfi_offset 8,-8
+ 561              	 .cfi_offset 7,-12
+ 562              	 .cfi_offset 6,-16
+ 563              	 .cfi_offset 5,-20
+ 564              	 .cfi_offset 4,-24
+ 565 0004 0546     	 mov r5,r0
+ 566 0006 8846     	 mov r8,r1
+ 567              	.LBB179:
 2102:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       if (__first == __last)
- 564              	 .loc 4 2102 0
- 565 0008 8842     	 cmp r0,r1
- 566 000a 1BD0     	 beq .L51
- 567              	.LBB177:
+ 568              	 .loc 4 2102 0
+ 569 0008 8842     	 cmp r0,r1
+ 570 000a 1BD0     	 beq .L51
+ 571              	.LBB180:
 2105:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
- 568              	 .loc 4 2105 0
- 569 000c 00F10404 	 add r4,r0,#4
- 570              	.LVL36:
- 571 0010 A142     	 cmp r1,r4
- 572 0012 17D0     	 beq .L51
- 573 0014 4FF00006 	 mov r6,#0
- 574              	.LVL37:
- 575              	.L56:
- 576 0018 2046     	 mov r0,r4
- 577              	.LBB178:
+ 572              	 .loc 4 2105 0
+ 573 000c 00F10404 	 add r4,r0,#4
+ 574              	.LVL36:
+ 575 0010 A142     	 cmp r1,r4
+ 576 0012 17D0     	 beq .L51
+ 577 0014 4FF00006 	 mov r6,#0
+ 578              	.LVL37:
+ 579              	.L56:
+ 580 0018 2046     	 mov r0,r4
+ 581              	.LBB181:
 2107:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  if (*__i < *__first)
- 578              	 .loc 4 2107 0
- 579 001a 54F8047B 	 ldr r7,[r4],#4
- 580 001e 06F10406 	 add r6,r6,#4
- 581 0022 2B68     	 ldr r3,[r5,#0]
- 582 0024 9F42     	 cmp r7,r3
- 583 0026 09D2     	 bcs .L53
- 584              	.LVL38:
- 585              	.LBB179:
- 586              	.LBB180:
- 587              	.LBB181:
- 588              	.LBB182:
- 589              	.LBB183:
- 590              	.LBB184:
- 591              	.LBB185:
- 592              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_algobase.h"
+ 582              	 .loc 4 2107 0
+ 583 001a 54F8047B 	 ldr r7,[r4],#4
+ 584 001e 06F10406 	 add r6,r6,#4
+ 585 0022 2B68     	 ldr r3,[r5,#0]
+ 586 0024 9F42     	 cmp r7,r3
+ 587 0026 09D2     	 bcs .L53
+ 588              	.LVL38:
+ 589              	.LBB182:
+ 590              	.LBB183:
+ 591              	.LBB184:
+ 592              	.LBB185:
+ 593              	.LBB186:
+ 594              	.LBB187:
+ 595              	.LBB188:
+ 596              	 .file 6 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_algobase.h"
    1:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algobase.h **** // Core algorithmic facilities -*- C++ -*-
    2:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algobase.h **** 
    3:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algobase.h **** // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
@@ -3646,120 +3654,120 @@
  558:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algobase.h ****         {
  559:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algobase.h **** 	  const ptrdiff_t _Num = __last - __first;
  560:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algobase.h **** 	  if (_Num)
- 593              	 .loc 6 560 0
- 594 0028 B210     	 asrs r2,r6,#2
- 595 002a 05D0     	 beq .L54
+ 597              	 .loc 6 560 0
+ 598 0028 B210     	 asrs r2,r6,#2
+ 599 002a 05D0     	 beq .L54
  561:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algobase.h **** 	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
- 596              	 .loc 6 561 0
- 597 002c 4FEA8202 	 lsl r2,r2,#2
- 598 0030 A01A     	 subs r0,r4,r2
- 599              	.LVL39:
- 600 0032 2946     	 mov r1,r5
- 601 0034 FFF7FEFF 	 bl memmove
- 602              	.LVL40:
- 603              	.L54:
- 604              	.LBE185:
- 605              	.LBE184:
- 606              	.LBE183:
- 607              	.LBE182:
- 608              	.LBE181:
- 609              	.LBE180:
+ 600              	 .loc 6 561 0
+ 601 002c 4FEA8202 	 lsl r2,r2,#2
+ 602 0030 A01A     	 subs r0,r4,r2
+ 603              	.LVL39:
+ 604 0032 2946     	 mov r1,r5
+ 605 0034 FFF7FEFF 	 bl memmove
+ 606              	.LVL40:
+ 607              	.L54:
+ 608              	.LBE188:
+ 609              	.LBE187:
+ 610              	.LBE186:
+ 611              	.LBE185:
+ 612              	.LBE184:
+ 613              	.LBE183:
 2112:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	      *__first = _GLIBCXX_MOVE(__val);
- 610              	 .loc 4 2112 0
- 611 0038 2F60     	 str r7,[r5,#0]
- 612 003a 01E0     	 b .L55
- 613              	.LVL41:
- 614              	.L53:
- 615              	.LBE179:
+ 614              	 .loc 4 2112 0
+ 615 0038 2F60     	 str r7,[r5,#0]
+ 616 003a 01E0     	 b .L55
+ 617              	.LVL41:
+ 618              	.L53:
+ 619              	.LBE182:
 2115:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    std::__unguarded_linear_insert(__i);
- 616              	 .loc 4 2115 0
- 617 003c FFF7FEFF 	 bl _ZSt25__unguarded_linear_insertIPmEvT_
- 618              	.L55:
- 619              	.LBE178:
+ 620              	 .loc 4 2115 0
+ 621 003c FFF7FEFF 	 bl _ZSt25__unguarded_linear_insertIPmEvT_
+ 622              	.L55:
+ 623              	.LBE181:
 2105:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
- 620              	 .loc 4 2105 0
- 621 0040 A045     	 cmp r8,r4
- 622 0042 E9D1     	 bne .L56
- 623              	.L51:
- 624 0044 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
- 625              	.LBE177:
- 626              	.LBE176:
- 627              	 .cfi_endproc
- 628              	.LFE433:
- 630              	 .section .text._ZSt22__final_insertion_sortIPmEvT_S1_,"axG",%progbits,_ZSt22__final_insertion_sortIPmEvT_S1_,comdat
- 631              	 .align 2
- 632              	 .weak _ZSt22__final_insertion_sortIPmEvT_S1_
- 633              	 .thumb
- 634              	 .thumb_func
- 636              	_ZSt22__final_insertion_sortIPmEvT_S1_:
- 637              	.LFB430:
+ 624              	 .loc 4 2105 0
+ 625 0040 A045     	 cmp r8,r4
+ 626 0042 E9D1     	 bne .L56
+ 627              	.L51:
+ 628 0044 BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 629              	.LBE180:
+ 630              	.LBE179:
+ 631              	 .cfi_endproc
+ 632              	.LFE433:
+ 634              	 .section .text._ZSt22__final_insertion_sortIPmEvT_S1_,"axG",%progbits,_ZSt22__final_insertion_sortIPmEvT_S1_,comdat
+ 635              	 .align 2
+ 636              	 .weak _ZSt22__final_insertion_sortIPmEvT_S1_
+ 637              	 .thumb
+ 638              	 .thumb_func
+ 640              	_ZSt22__final_insertion_sortIPmEvT_S1_:
+ 641              	.LFB430:
 2176:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __final_insertion_sort(_RandomAccessIterator __first,
- 638              	 .loc 4 2176 0
- 639              	 .cfi_startproc
- 640              	 
- 641              	 
- 642              	.LVL42:
- 643 0000 38B5     	 push {r3,r4,r5,lr}
- 644              	.LCFI7:
- 645              	 .cfi_def_cfa_offset 16
- 646              	 .cfi_offset 14,-4
- 647              	 .cfi_offset 5,-8
- 648              	 .cfi_offset 4,-12
- 649              	 .cfi_offset 3,-16
- 650 0002 0D46     	 mov r5,r1
+ 642              	 .loc 4 2176 0
+ 643              	 .cfi_startproc
+ 644              	 
+ 645              	 
+ 646              	.LVL42:
+ 647 0000 38B5     	 push {r3,r4,r5,lr}
+ 648              	.LCFI7:
+ 649              	 .cfi_def_cfa_offset 16
+ 650              	 .cfi_offset 14,-4
+ 651              	 .cfi_offset 5,-8
+ 652              	 .cfi_offset 4,-12
+ 653              	 .cfi_offset 3,-16
+ 654 0002 0D46     	 mov r5,r1
 2179:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       if (__last - __first > int(_S_threshold))
- 651              	 .loc 4 2179 0
- 652 0004 0B1A     	 subs r3,r1,r0
- 653 0006 432B     	 cmp r3,#67
- 654 0008 0EDD     	 ble .L59
+ 655              	 .loc 4 2179 0
+ 656 0004 0B1A     	 subs r3,r1,r0
+ 657 0006 432B     	 cmp r3,#67
+ 658 0008 0EDD     	 ble .L59
 2181:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  std::__insertion_sort(__first, __first + int(_S_threshold));
- 655              	 .loc 4 2181 0
- 656 000a 00F14004 	 add r4,r0,#64
- 657 000e 2146     	 mov r1,r4
- 658              	.LVL43:
- 659 0010 FFF7FEFF 	 bl _ZSt16__insertion_sortIPmEvT_S1_
- 660              	.LVL44:
- 661              	.LBB186:
- 662              	.LBB187:
- 663              	.LBB188:
+ 659              	 .loc 4 2181 0
+ 660 000a 00F14004 	 add r4,r0,#64
+ 661 000e 2146     	 mov r1,r4
+ 662              	.LVL43:
+ 663 0010 FFF7FEFF 	 bl _ZSt16__insertion_sortIPmEvT_S1_
+ 664              	.LVL44:
+ 665              	.LBB189:
+ 666              	.LBB190:
+ 667              	.LBB191:
 2150:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       for (_RandomAccessIterator __i = __first; __i != __last; ++__i)
- 664              	 .loc 4 2150 0
- 665 0014 A542     	 cmp r5,r4
- 666 0016 09D0     	 beq .L58
- 667              	.LVL45:
- 668              	.L62:
+ 668              	 .loc 4 2150 0
+ 669 0014 A542     	 cmp r5,r4
+ 670 0016 09D0     	 beq .L58
+ 671              	.LVL45:
+ 672              	.L62:
 2151:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	std::__unguarded_linear_insert(__i);
- 669              	 .loc 4 2151 0
- 670 0018 2046     	 mov r0,r4
- 671 001a FFF7FEFF 	 bl _ZSt25__unguarded_linear_insertIPmEvT_
+ 673              	 .loc 4 2151 0
+ 674 0018 2046     	 mov r0,r4
+ 675 001a FFF7FEFF 	 bl _ZSt25__unguarded_linear_insertIPmEvT_
 2150:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       for (_RandomAccessIterator __i = __first; __i != __last; ++__i)
- 672              	 .loc 4 2150 0
- 673 001e 04F10404 	 add r4,r4,#4
- 674              	.LVL46:
- 675 0022 A542     	 cmp r5,r4
- 676 0024 F8D1     	 bne .L62
- 677 0026 38BD     	 pop {r3,r4,r5,pc}
- 678              	.LVL47:
- 679              	.L59:
- 680              	.LBE188:
- 681              	.LBE187:
- 682              	.LBE186:
+ 676              	 .loc 4 2150 0
+ 677 001e 04F10404 	 add r4,r4,#4
+ 678              	.LVL46:
+ 679 0022 A542     	 cmp r5,r4
+ 680 0024 F8D1     	 bne .L62
+ 681 0026 38BD     	 pop {r3,r4,r5,pc}
+ 682              	.LVL47:
+ 683              	.L59:
+ 684              	.LBE191:
+ 685              	.LBE190:
+ 686              	.LBE189:
 2185:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	std::__insertion_sort(__first, __last);
- 683              	 .loc 4 2185 0
- 684 0028 FFF7FEFF 	 bl _ZSt16__insertion_sortIPmEvT_S1_
- 685              	.LVL48:
- 686              	.L58:
- 687 002c 38BD     	 pop {r3,r4,r5,pc}
- 688              	 .cfi_endproc
- 689              	.LFE430:
- 691 002e 00BF     	 .section .text._ZSt11__push_heapIPmimEvT_T0_S2_T1_,"axG",%progbits,_ZSt11__push_heapIPmimEvT_T0_S2_T1_,comdat
- 692              	 .align 2
- 693              	 .weak _ZSt11__push_heapIPmimEvT_T0_S2_T1_
- 694              	 .thumb
- 695              	 .thumb_func
- 697              	_ZSt11__push_heapIPmimEvT_T0_S2_T1_:
- 698              	.LFB451:
- 699              	 .file 7 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_heap.h"
+ 687              	 .loc 4 2185 0
+ 688 0028 FFF7FEFF 	 bl _ZSt16__insertion_sortIPmEvT_S1_
+ 689              	.LVL48:
+ 690              	.L58:
+ 691 002c 38BD     	 pop {r3,r4,r5,pc}
+ 692              	 .cfi_endproc
+ 693              	.LFE430:
+ 695 002e 00BF     	 .section .text._ZSt11__push_heapIPmimEvT_T0_S2_T1_,"axG",%progbits,_ZSt11__push_heapIPmimEvT_T0_S2_T1_,comdat
+ 696              	 .align 2
+ 697              	 .weak _ZSt11__push_heapIPmimEvT_T0_S2_T1_
+ 698              	 .thumb
+ 699              	 .thumb_func
+ 701              	_ZSt11__push_heapIPmimEvT_T0_S2_T1_:
+ 702              	.LFB451:
+ 703              	 .file 7 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_heap.h"
    1:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** // Heap implementation -*- C++ -*-
    2:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 
    3:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
@@ -3892,75 +3900,75 @@
  130:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****   template<typename _RandomAccessIterator, typename _Distance, typename _Tp>
  131:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     void
  132:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     __push_heap(_RandomAccessIterator __first,
- 700              	 .loc 7 132 0
- 701              	 .cfi_startproc
- 702              	 
- 703              	 
- 704              	 
- 705              	.LVL49:
- 706 0000 30B4     	 push {r4,r5}
- 707              	.LCFI8:
- 708              	 .cfi_def_cfa_offset 8
- 709              	 .cfi_offset 5,-4
- 710              	 .cfi_offset 4,-8
- 711              	.LBB189:
+ 704              	 .loc 7 132 0
+ 705              	 .cfi_startproc
+ 706              	 
+ 707              	 
+ 708              	 
+ 709              	.LVL49:
+ 710 0000 30B4     	 push {r4,r5}
+ 711              	.LCFI8:
+ 712              	 .cfi_def_cfa_offset 8
+ 713              	 .cfi_offset 5,-4
+ 714              	 .cfi_offset 4,-8
+ 715              	.LBB192:
  133:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 		_Distance __holeIndex, _Distance __topIndex, _Tp __value)
  134:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     {
  135:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       _Distance __parent = (__holeIndex - 1) / 2;
- 712              	 .loc 7 135 0
- 713 0002 01F1FF34 	 add r4,r1,#-1
- 714 0006 04EBD474 	 add r4,r4,r4,lsr#31
- 715 000a 4FEA6404 	 asr r4,r4,#1
- 716              	.LVL50:
- 717              	.L66:
+ 716              	 .loc 7 135 0
+ 717 0002 01F1FF34 	 add r4,r1,#-1
+ 718 0006 04EBD474 	 add r4,r4,r4,lsr#31
+ 719 000a 4FEA6404 	 asr r4,r4,#1
+ 720              	.LVL50:
+ 721              	.L66:
  136:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       while (__holeIndex > __topIndex && *(__first + __parent) < __value)
- 718              	 .loc 7 136 0 discriminator 1
- 719 000e 9142     	 cmp r1,r2
- 720 0010 0DDD     	 ble .L65
- 721              	 .loc 7 136 0 is_stmt 0 discriminator 2
- 722 0012 50F82450 	 ldr r5,[r0,r4,lsl#2]
- 723 0016 9D42     	 cmp r5,r3
- 724 0018 09D2     	 bcs .L65
+ 722              	 .loc 7 136 0 discriminator 1
+ 723 000e 9142     	 cmp r1,r2
+ 724 0010 0DDD     	 ble .L65
+ 725              	 .loc 7 136 0 is_stmt 0 discriminator 2
+ 726 0012 50F82450 	 ldr r5,[r0,r4,lsl#2]
+ 727 0016 9D42     	 cmp r5,r3
+ 728 0018 09D2     	 bcs .L65
  137:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	{
  138:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __parent));
- 725              	 .loc 7 138 0 is_stmt 1 discriminator 5
- 726 001a 40F82150 	 str r5,[r0,r1,lsl#2]
- 727              	.LVL51:
+ 729              	 .loc 7 138 0 is_stmt 1 discriminator 5
+ 730 001a 40F82150 	 str r5,[r0,r1,lsl#2]
+ 731              	.LVL51:
  139:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __holeIndex = __parent;
  140:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __parent = (__holeIndex - 1) / 2;
- 728              	 .loc 7 140 0 discriminator 5
- 729 001e 04F1FF31 	 add r1,r4,#-1
- 730 0022 01EBD175 	 add r5,r1,r1,lsr#31
- 731              	.LVL52:
+ 732              	 .loc 7 140 0 discriminator 5
+ 733 001e 04F1FF31 	 add r1,r4,#-1
+ 734 0022 01EBD175 	 add r5,r1,r1,lsr#31
+ 735              	.LVL52:
  139:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __holeIndex = __parent;
- 732              	 .loc 7 139 0 discriminator 5
- 733 0026 2146     	 mov r1,r4
- 734              	.LBE189:
- 735              	 .loc 7 140 0 discriminator 5
- 736 0028 4FEA6504 	 asr r4,r5,#1
- 737              	.LVL53:
- 738 002c EFE7     	 b .L66
- 739              	.LVL54:
- 740              	.L65:
- 741              	.LBB190:
+ 736              	 .loc 7 139 0 discriminator 5
+ 737 0026 2146     	 mov r1,r4
+ 738              	.LBE192:
+ 739              	 .loc 7 140 0 discriminator 5
+ 740 0028 4FEA6504 	 asr r4,r5,#1
+ 741              	.LVL53:
+ 742 002c EFE7     	 b .L66
+ 743              	.LVL54:
+ 744              	.L65:
+ 745              	.LBB193:
  141:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	}
  142:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       *(__first + __holeIndex) = _GLIBCXX_MOVE(__value);
- 742              	 .loc 7 142 0
- 743 002e 40F82130 	 str r3,[r0,r1,lsl#2]
- 744              	.LBE190:
+ 746              	 .loc 7 142 0
+ 747 002e 40F82130 	 str r3,[r0,r1,lsl#2]
+ 748              	.LBE193:
  143:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     }
- 745              	 .loc 7 143 0
- 746 0032 30BC     	 pop {r4,r5}
- 747 0034 7047     	 bx lr
- 748              	 .cfi_endproc
- 749              	.LFE451:
- 751 0036 00BF     	 .section .text._ZSt13__adjust_heapIPmimEvT_T0_S2_T1_,"axG",%progbits,_ZSt13__adjust_heapIPmimEvT_T0_S2_T1_,comdat
- 752              	 .align 2
- 753              	 .weak _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
- 754              	 .thumb
- 755              	 .thumb_func
- 757              	_ZSt13__adjust_heapIPmimEvT_T0_S2_T1_:
- 758              	.LFB446:
+ 749              	 .loc 7 143 0
+ 750 0032 30BC     	 pop {r4,r5}
+ 751 0034 7047     	 bx lr
+ 752              	 .cfi_endproc
+ 753              	.LFE451:
+ 755 0036 00BF     	 .section .text._ZSt13__adjust_heapIPmimEvT_T0_S2_T1_,"axG",%progbits,_ZSt13__adjust_heapIPmimEvT_T0_S2_T1_,comdat
+ 756              	 .align 2
+ 757              	 .weak _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
+ 758              	 .thumb
+ 759              	 .thumb_func
+ 761              	_ZSt13__adjust_heapIPmimEvT_T0_S2_T1_:
+ 762              	.LFB446:
  144:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 
  145:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****   /**
  146:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****    *  @brief  Push an element onto a heap.
@@ -4044,119 +4052,119 @@
  224:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****   template<typename _RandomAccessIterator, typename _Distance, typename _Tp>
  225:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     void
  226:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     __adjust_heap(_RandomAccessIterator __first, _Distance __holeIndex,
- 759              	 .loc 7 226 0
- 760              	 .cfi_startproc
- 761              	 
- 762              	 
- 763              	.LVL55:
- 764 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
- 765              	.LCFI9:
- 766              	 .cfi_def_cfa_offset 24
- 767              	 .cfi_offset 14,-4
- 768              	 .cfi_offset 7,-8
- 769              	 .cfi_offset 6,-12
- 770              	 .cfi_offset 5,-16
- 771              	 .cfi_offset 4,-20
- 772              	 .cfi_offset 3,-24
- 773 0002 0C46     	 mov r4,r1
- 774              	.LVL56:
- 775              	.LBB191:
+ 763              	 .loc 7 226 0
+ 764              	 .cfi_startproc
+ 765              	 
+ 766              	 
+ 767              	.LVL55:
+ 768 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+ 769              	.LCFI9:
+ 770              	 .cfi_def_cfa_offset 24
+ 771              	 .cfi_offset 14,-4
+ 772              	 .cfi_offset 7,-8
+ 773              	 .cfi_offset 6,-12
+ 774              	 .cfi_offset 5,-16
+ 775              	 .cfi_offset 4,-20
+ 776              	 .cfi_offset 3,-24
+ 777 0002 0C46     	 mov r4,r1
+ 778              	.LVL56:
+ 779              	.LBB194:
  227:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 		  _Distance __len, _Tp __value)
  228:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     {
  229:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       const _Distance __topIndex = __holeIndex;
  230:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       _Distance __secondChild = __holeIndex;
  231:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       while (__secondChild < (__len - 1) / 2)
- 776              	 .loc 7 231 0
- 777 0004 02F1FF3E 	 add lr,r2,#-1
- 778 0008 0EEBDE7E 	 add lr,lr,lr,lsr#31
- 779 000c 4FEA6E0E 	 asr lr,lr,#1
- 780 0010 7145     	 cmp r1,lr
- 781 0012 B8BF     	 it lt
- 782 0014 0D46     	 movlt r5,r1
- 783 0016 01DB     	 blt .L70
- 784 0018 14E0     	 b .L68
- 785              	.LVL57:
- 786              	.L73:
- 787 001a 0D46     	 mov r5,r1
- 788              	.L70:
+ 780              	 .loc 7 231 0
+ 781 0004 02F1FF3E 	 add lr,r2,#-1
+ 782 0008 0EEBDE7E 	 add lr,lr,lr,lsr#31
+ 783 000c 4FEA6E0E 	 asr lr,lr,#1
+ 784 0010 7145     	 cmp r1,lr
+ 785 0012 B8BF     	 it lt
+ 786 0014 0D46     	 movlt r5,r1
+ 787 0016 01DB     	 blt .L70
+ 788 0018 14E0     	 b .L68
+ 789              	.LVL57:
+ 790              	.L73:
+ 791 001a 0D46     	 mov r5,r1
+ 792              	.L70:
  232:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	{
  233:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __secondChild = 2 * (__secondChild + 1);
- 789              	 .loc 7 233 0
- 790 001c 05F10101 	 add r1,r5,#1
- 791              	.LVL58:
- 792 0020 4FEA4101 	 lsl r1,r1,#1
- 793              	.LVL59:
+ 793              	 .loc 7 233 0
+ 794 001c 05F10101 	 add r1,r5,#1
+ 795              	.LVL58:
+ 796 0020 4FEA4101 	 lsl r1,r1,#1
+ 797              	.LVL59:
  234:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  if (*(__first + __secondChild) < *(__first + (__secondChild - 1)))
- 794              	 .loc 7 234 0
- 795 0024 01F1FF36 	 add r6,r1,#-1
- 796 0028 50F82170 	 ldr r7,[r0,r1,lsl#2]
- 797 002c 50F82660 	 ldr r6,[r0,r6,lsl#2]
- 798 0030 B742     	 cmp r7,r6
+ 798              	 .loc 7 234 0
+ 799 0024 01F1FF36 	 add r6,r1,#-1
+ 800 0028 50F82170 	 ldr r7,[r0,r1,lsl#2]
+ 801 002c 50F82660 	 ldr r6,[r0,r6,lsl#2]
+ 802 0030 B742     	 cmp r7,r6
  235:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	    __secondChild--;
- 799              	 .loc 7 235 0
- 800 0032 38BF     	 it cc
- 801 0034 01F1FF31 	 addcc r1,r1,#-1
- 802              	.LVL60:
+ 803              	 .loc 7 235 0
+ 804 0032 38BF     	 it cc
+ 805 0034 01F1FF31 	 addcc r1,r1,#-1
+ 806              	.LVL60:
  236:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __secondChild));
- 803              	 .loc 7 236 0
- 804 0038 50F82160 	 ldr r6,[r0,r1,lsl#2]
- 805 003c 40F82560 	 str r6,[r0,r5,lsl#2]
- 806              	.LVL61:
+ 807              	 .loc 7 236 0
+ 808 0038 50F82160 	 ldr r6,[r0,r1,lsl#2]
+ 809 003c 40F82560 	 str r6,[r0,r5,lsl#2]
+ 810              	.LVL61:
  231:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       while (__secondChild < (__len - 1) / 2)
- 807              	 .loc 7 231 0
- 808 0040 7145     	 cmp r1,lr
- 809 0042 EADB     	 blt .L73
- 810              	.L68:
+ 811              	 .loc 7 231 0
+ 812 0040 7145     	 cmp r1,lr
+ 813 0042 EADB     	 blt .L73
+ 814              	.L68:
  237:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __holeIndex = __secondChild;
  238:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	}
  239:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       if ((__len & 1) == 0 && __secondChild == (__len - 2) / 2)
- 811              	 .loc 7 239 0
- 812 0044 12F0010F 	 tst r2,#1
- 813 0048 0ED1     	 bne .L71
- 814              	 .loc 7 239 0 is_stmt 0 discriminator 1
- 815 004a A2F10202 	 sub r2,r2,#2
- 816              	.LVL62:
- 817 004e 02EBD272 	 add r2,r2,r2,lsr#31
- 818              	.LVL63:
- 819 0052 B1EB620F 	 cmp r1,r2,asr#1
+ 815              	 .loc 7 239 0
+ 816 0044 12F0010F 	 tst r2,#1
+ 817 0048 0ED1     	 bne .L71
+ 818              	 .loc 7 239 0 is_stmt 0 discriminator 1
+ 819 004a A2F10202 	 sub r2,r2,#2
+ 820              	.LVL62:
+ 821 004e 02EBD272 	 add r2,r2,r2,lsr#31
+ 822              	.LVL63:
+ 823 0052 B1EB620F 	 cmp r1,r2,asr#1
  240:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	{
  241:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __secondChild = 2 * (__secondChild + 1);
- 820              	 .loc 7 241 0 is_stmt 1 discriminator 1
- 821 0056 01BF     	 itttt eq
- 822 0058 4A00     	 lsleq r2,r1,#1
- 823              	.LVL64:
+ 824              	 .loc 7 241 0 is_stmt 1 discriminator 1
+ 825 0056 01BF     	 itttt eq
+ 826 0058 4A00     	 lsleq r2,r1,#1
+ 827              	.LVL64:
  242:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first
- 824              	 .loc 7 242 0 discriminator 1
- 825 005a 0132     	 addeq r2,r2,#1
- 826 005c 50F82250 	 ldreq r5,[r0,r2,lsl#2]
- 827 0060 40F82150 	 streq r5,[r0,r1,lsl#2]
+ 828              	 .loc 7 242 0 discriminator 1
+ 829 005a 0132     	 addeq r2,r2,#1
+ 830 005c 50F82250 	 ldreq r5,[r0,r2,lsl#2]
+ 831 0060 40F82150 	 streq r5,[r0,r1,lsl#2]
  243:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 						     + (__secondChild - 1)));
  244:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __holeIndex = __secondChild - 1;
- 828              	 .loc 7 244 0 discriminator 1
- 829 0064 08BF     	 it eq
- 830 0066 1146     	 moveq r1,r2
- 831              	.LVL65:
- 832              	.L71:
+ 832              	 .loc 7 244 0 discriminator 1
+ 833 0064 08BF     	 it eq
+ 834 0066 1146     	 moveq r1,r2
+ 835              	.LVL65:
+ 836              	.L71:
  245:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	}
  246:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       std::__push_heap(__first, __holeIndex, __topIndex,
- 833              	 .loc 7 246 0
- 834 0068 2246     	 mov r2,r4
- 835 006a FFF7FEFF 	 bl _ZSt11__push_heapIPmimEvT_T0_S2_T1_
- 836              	.LVL66:
- 837              	.LBE191:
+ 837              	 .loc 7 246 0
+ 838 0068 2246     	 mov r2,r4
+ 839 006a FFF7FEFF 	 bl _ZSt11__push_heapIPmimEvT_T0_S2_T1_
+ 840              	.LVL66:
+ 841              	.LBE194:
  247:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 		       _GLIBCXX_MOVE(__value));
  248:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     }
- 838              	 .loc 7 248 0
- 839 006e F8BD     	 pop {r3,r4,r5,r6,r7,pc}
- 840              	 .cfi_endproc
- 841              	.LFE446:
- 843              	 .section .text._ZSt9make_heapIPmEvT_S1_,"axG",%progbits,_ZSt9make_heapIPmEvT_S1_,comdat
- 844              	 .align 2
- 845              	 .weak _ZSt9make_heapIPmEvT_S1_
- 846              	 .thumb
- 847              	 .thumb_func
- 849              	_ZSt9make_heapIPmEvT_S1_:
- 850              	.LFB441:
+ 842              	 .loc 7 248 0
+ 843 006e F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 844              	 .cfi_endproc
+ 845              	.LFE446:
+ 847              	 .section .text._ZSt9make_heapIPmEvT_S1_,"axG",%progbits,_ZSt9make_heapIPmEvT_S1_,comdat
+ 848              	 .align 2
+ 849              	 .weak _ZSt9make_heapIPmEvT_S1_
+ 850              	 .thumb
+ 851              	 .thumb_func
+ 853              	_ZSt9make_heapIPmEvT_S1_:
+ 854              	.LFB441:
  249:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 
  250:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****   template<typename _RandomAccessIterator>
  251:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     inline void
@@ -4284,22 +4292,22 @@
  373:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****   template<typename _RandomAccessIterator>
  374:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     void
  375:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
- 851              	 .loc 7 375 0
- 852              	 .cfi_startproc
- 853              	 
- 854              	 
- 855              	.LVL67:
- 856 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
- 857              	.LCFI10:
- 858              	 .cfi_def_cfa_offset 24
- 859              	 .cfi_offset 14,-4
- 860              	 .cfi_offset 7,-8
- 861              	 .cfi_offset 6,-12
- 862              	 .cfi_offset 5,-16
- 863              	 .cfi_offset 4,-20
- 864              	 .cfi_offset 3,-24
- 865 0002 0646     	 mov r6,r0
- 866              	.LBB192:
+ 855              	 .loc 7 375 0
+ 856              	 .cfi_startproc
+ 857              	 
+ 858              	 
+ 859              	.LVL67:
+ 860 0000 F8B5     	 push {r3,r4,r5,r6,r7,lr}
+ 861              	.LCFI10:
+ 862              	 .cfi_def_cfa_offset 24
+ 863              	 .cfi_offset 14,-4
+ 864              	 .cfi_offset 7,-8
+ 865              	 .cfi_offset 6,-12
+ 866              	 .cfi_offset 5,-16
+ 867              	 .cfi_offset 4,-20
+ 868              	 .cfi_offset 3,-24
+ 869 0002 0646     	 mov r6,r0
+ 870              	.LBB195:
  376:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     {
  377:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       typedef typename iterator_traits<_RandomAccessIterator>::value_type
  378:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  _ValueType;
@@ -4313,144 +4321,144 @@
  386:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       __glibcxx_requires_valid_range(__first, __last);
  387:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 
  388:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       if (__last - __first < 2)
- 867              	 .loc 7 388 0
- 868 0004 091A     	 subs r1,r1,r0
- 869              	.LVL68:
- 870 0006 0729     	 cmp r1,#7
- 871 0008 14DD     	 ble .L74
+ 871              	 .loc 7 388 0
+ 872 0004 091A     	 subs r1,r1,r0
+ 873              	.LVL68:
+ 874 0006 0729     	 cmp r1,#7
+ 875 0008 14DD     	 ble .L74
  389:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	return;
  390:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 
  391:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       const _DistanceType __len = __last - __first;
- 872              	 .loc 7 391 0
- 873 000a 4FEAA107 	 asr r7,r1,#2
- 874              	.LVL69:
+ 876              	 .loc 7 391 0
+ 877 000a 4FEAA107 	 asr r7,r1,#2
+ 878              	.LVL69:
  392:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       _DistanceType __parent = (__len - 2) / 2;
- 875              	 .loc 7 392 0
- 876 000e A7F10204 	 sub r4,r7,#2
- 877 0012 04EBD474 	 add r4,r4,r4,lsr#31
- 878 0016 4FEA6404 	 asr r4,r4,#1
- 879              	.LVL70:
+ 879              	 .loc 7 392 0
+ 880 000e A7F10204 	 sub r4,r7,#2
+ 881 0012 04EBD474 	 add r4,r4,r4,lsr#31
+ 882 0016 4FEA6404 	 asr r4,r4,#1
+ 883              	.LVL70:
  375:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
- 880              	 .loc 7 375 0
- 881 001a 00EB8405 	 add r5,r0,r4,lsl#2
- 882              	.LVL71:
- 883              	.L76:
- 884              	.LBB193:
+ 884              	 .loc 7 375 0
+ 885 001a 00EB8405 	 add r5,r0,r4,lsl#2
+ 886              	.LVL71:
+ 887              	.L76:
+ 888              	.LBB196:
  393:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       while (true)
  394:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	{
  395:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  _ValueType __value = _GLIBCXX_MOVE(*(__first + __parent));
  396:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  std::__adjust_heap(__first, __parent, __len, _GLIBCXX_MOVE(__value));
- 885              	 .loc 7 396 0
- 886 001e 3046     	 mov r0,r6
- 887 0020 2146     	 mov r1,r4
- 888 0022 3A46     	 mov r2,r7
- 889 0024 55F80439 	 ldr r3,[r5],#-4
- 890              	.LVL72:
- 891 0028 FFF7FEFF 	 bl _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
- 892              	.LVL73:
+ 889              	 .loc 7 396 0
+ 890 001e 3046     	 mov r0,r6
+ 891 0020 2146     	 mov r1,r4
+ 892 0022 3A46     	 mov r2,r7
+ 893 0024 55F80439 	 ldr r3,[r5],#-4
+ 894              	.LVL72:
+ 895 0028 FFF7FEFF 	 bl _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
+ 896              	.LVL73:
  397:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  if (__parent == 0)
- 893              	 .loc 7 397 0
- 894 002c 14B1     	 cbz r4,.L74
+ 897              	 .loc 7 397 0
+ 898 002c 14B1     	 cbz r4,.L74
  398:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	    return;
  399:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	  __parent--;
- 895              	 .loc 7 399 0
- 896 002e 04F1FF34 	 add r4,r4,#-1
- 897              	.LVL74:
- 898              	.LBE193:
+ 899              	 .loc 7 399 0
+ 900 002e 04F1FF34 	 add r4,r4,#-1
+ 901              	.LVL74:
+ 902              	.LBE196:
  393:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       while (true)
- 899              	 .loc 7 393 0
- 900 0032 F4E7     	 b .L76
- 901              	.LVL75:
- 902              	.L74:
- 903 0034 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
- 904              	.LBE192:
- 905              	 .cfi_endproc
- 906              	.LFE441:
- 908 0036 00BF     	 .section .text._ZSt13__heap_selectIPmEvT_S1_S1_,"axG",%progbits,_ZSt13__heap_selectIPmEvT_S1_S1_,comdat
- 909              	 .align 2
- 910              	 .weak _ZSt13__heap_selectIPmEvT_S1_S1_
- 911              	 .thumb
- 912              	 .thumb_func
- 914              	_ZSt13__heap_selectIPmEvT_S1_S1_:
- 915              	.LFB435:
+ 903              	 .loc 7 393 0
+ 904 0032 F4E7     	 b .L76
+ 905              	.LVL75:
+ 906              	.L74:
+ 907 0034 F8BD     	 pop {r3,r4,r5,r6,r7,pc}
+ 908              	.LBE195:
+ 909              	 .cfi_endproc
+ 910              	.LFE441:
+ 912 0036 00BF     	 .section .text._ZSt13__heap_selectIPmEvT_S1_S1_,"axG",%progbits,_ZSt13__heap_selectIPmEvT_S1_S1_,comdat
+ 913              	 .align 2
+ 914              	 .weak _ZSt13__heap_selectIPmEvT_S1_S1_
+ 915              	 .thumb
+ 916              	 .thumb_func
+ 918              	_ZSt13__heap_selectIPmEvT_S1_S1_:
+ 919              	.LFB435:
 1899:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __heap_select(_RandomAccessIterator __first,
- 916              	 .loc 4 1899 0
- 917              	 .cfi_startproc
- 918              	 
- 919              	 
- 920              	.LVL76:
- 921 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
- 922              	.LCFI11:
- 923              	 .cfi_def_cfa_offset 24
- 924              	 .cfi_offset 14,-4
- 925              	 .cfi_offset 8,-8
- 926              	 .cfi_offset 7,-12
- 927              	 .cfi_offset 6,-16
- 928              	 .cfi_offset 5,-20
- 929              	 .cfi_offset 4,-24
- 930 0004 0546     	 mov r5,r0
- 931 0006 0C46     	 mov r4,r1
- 932 0008 1646     	 mov r6,r2
- 933              	.LBB194:
+ 920              	 .loc 4 1899 0
+ 921              	 .cfi_startproc
+ 922              	 
+ 923              	 
+ 924              	.LVL76:
+ 925 0000 2DE9F041 	 push {r4,r5,r6,r7,r8,lr}
+ 926              	.LCFI11:
+ 927              	 .cfi_def_cfa_offset 24
+ 928              	 .cfi_offset 14,-4
+ 929              	 .cfi_offset 8,-8
+ 930              	 .cfi_offset 7,-12
+ 931              	 .cfi_offset 6,-16
+ 932              	 .cfi_offset 5,-20
+ 933              	 .cfi_offset 4,-24
+ 934 0004 0546     	 mov r5,r0
+ 935 0006 0C46     	 mov r4,r1
+ 936 0008 1646     	 mov r6,r2
+ 937              	.LBB197:
 1903:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       std::make_heap(__first, __middle);
- 934              	 .loc 4 1903 0
- 935 000a FFF7FEFF 	 bl _ZSt9make_heapIPmEvT_S1_
- 936              	.LVL77:
- 937              	.LBB195:
+ 938              	 .loc 4 1903 0
+ 939 000a FFF7FEFF 	 bl _ZSt9make_heapIPmEvT_S1_
+ 940              	.LVL77:
+ 941              	.LBB198:
 1904:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
- 938              	 .loc 4 1904 0
- 939 000e B442     	 cmp r4,r6
- 940 0010 13D2     	 bcs .L77
- 941              	.LBB196:
- 942              	.LBB197:
+ 942              	 .loc 4 1904 0
+ 943 000e B442     	 cmp r4,r6
+ 944 0010 13D2     	 bcs .L77
+ 945              	.LBB199:
+ 946              	.LBB200:
  262:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       std::__adjust_heap(__first, _DistanceType(0),
- 943              	 .loc 7 262 0
- 944 0012 C5EB0408 	 rsb r8,r5,r4
- 945 0016 4FEAA808 	 asr r8,r8,#2
- 946 001a 4FF00007 	 mov r7,#0
- 947              	.LVL78:
- 948              	.L80:
- 949              	.LBE197:
- 950              	.LBE196:
+ 947              	 .loc 7 262 0
+ 948 0012 C5EB0408 	 rsb r8,r5,r4
+ 949 0016 4FEAA808 	 asr r8,r8,#2
+ 950 001a 4FF00007 	 mov r7,#0
+ 951              	.LVL78:
+ 952              	.L80:
+ 953              	.LBE200:
+ 954              	.LBE199:
 1905:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	if (*__i < *__first)
- 951              	 .loc 4 1905 0
- 952 001e 54F8043B 	 ldr r3,[r4],#4
- 953 0022 2A68     	 ldr r2,[r5,#0]
- 954 0024 9342     	 cmp r3,r2
- 955 0026 06D2     	 bcs .L79
- 956              	.LVL79:
- 957              	.LBB199:
- 958              	.LBB198:
+ 955              	 .loc 4 1905 0
+ 956 001e 54F8043B 	 ldr r3,[r4],#4
+ 957 0022 2A68     	 ldr r2,[r5,#0]
+ 958 0024 9342     	 cmp r3,r2
+ 959 0026 06D2     	 bcs .L79
+ 960              	.LVL79:
+ 961              	.LBB202:
+ 962              	.LBB201:
  261:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       *__result = _GLIBCXX_MOVE(*__first);
- 959              	 .loc 7 261 0
- 960 0028 44F8042C 	 str r2,[r4,#-4]
+ 963              	 .loc 7 261 0
+ 964 0028 44F8042C 	 str r2,[r4,#-4]
  262:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       std::__adjust_heap(__first, _DistanceType(0),
- 961              	 .loc 7 262 0
- 962 002c 2846     	 mov r0,r5
- 963 002e 3946     	 mov r1,r7
- 964 0030 4246     	 mov r2,r8
- 965 0032 FFF7FEFF 	 bl _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
- 966              	.LVL80:
- 967              	.L79:
- 968              	.LBE198:
- 969              	.LBE199:
+ 965              	 .loc 7 262 0
+ 966 002c 2846     	 mov r0,r5
+ 967 002e 3946     	 mov r1,r7
+ 968 0030 4246     	 mov r2,r8
+ 969 0032 FFF7FEFF 	 bl _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
+ 970              	.LVL80:
+ 971              	.L79:
+ 972              	.LBE201:
+ 973              	.LBE202:
 1904:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
- 970              	 .loc 4 1904 0
- 971 0036 A642     	 cmp r6,r4
- 972 0038 F1D8     	 bhi .L80
- 973              	.L77:
- 974 003a BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
- 975              	.LBE195:
- 976              	.LBE194:
- 977              	 .cfi_endproc
- 978              	.LFE435:
- 980 003e 00BF     	 .section .text._ZSt9sort_heapIPmEvT_S1_,"axG",%progbits,_ZSt9sort_heapIPmEvT_S1_,comdat
- 981              	 .align 2
- 982              	 .weak _ZSt9sort_heapIPmEvT_S1_
- 983              	 .thumb
- 984              	 .thumb_func
- 986              	_ZSt9sort_heapIPmEvT_S1_:
- 987              	.LFB436:
+ 974              	 .loc 4 1904 0
+ 975 0036 A642     	 cmp r6,r4
+ 976 0038 F1D8     	 bhi .L80
+ 977              	.L77:
+ 978 003a BDE8F081 	 pop {r4,r5,r6,r7,r8,pc}
+ 979              	.LBE198:
+ 980              	.LBE197:
+ 981              	 .cfi_endproc
+ 982              	.LFE435:
+ 984 003e 00BF     	 .section .text._ZSt9sort_heapIPmEvT_S1_,"axG",%progbits,_ZSt9sort_heapIPmEvT_S1_,comdat
+ 985              	 .align 2
+ 986              	 .weak _ZSt9sort_heapIPmEvT_S1_
+ 987              	 .thumb
+ 988              	 .thumb_func
+ 990              	_ZSt9sort_heapIPmEvT_S1_:
+ 991              	.LFB436:
  400:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 	}
  401:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     }
  402:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 
@@ -4506,19 +4514,19 @@
  452:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****   template<typename _RandomAccessIterator>
  453:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     void
  454:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
- 988              	 .loc 7 454 0
- 989              	 .cfi_startproc
- 990              	 
- 991              	 
- 992              	.LVL81:
- 993 0000 70B5     	 push {r4,r5,r6,lr}
- 994              	.LCFI12:
- 995              	 .cfi_def_cfa_offset 16
- 996              	 .cfi_offset 14,-4
- 997              	 .cfi_offset 6,-8
- 998              	 .cfi_offset 5,-12
- 999              	 .cfi_offset 4,-16
- 1000 0002 0546     	 mov r5,r0
+ 992              	 .loc 7 454 0
+ 993              	 .cfi_startproc
+ 994              	 
+ 995              	 
+ 996              	.LVL81:
+ 997 0000 70B5     	 push {r4,r5,r6,lr}
+ 998              	.LCFI12:
+ 999              	 .cfi_def_cfa_offset 16
+ 1000              	 .cfi_offset 14,-4
+ 1001              	 .cfi_offset 6,-8
+ 1002              	 .cfi_offset 5,-12
+ 1003              	 .cfi_offset 4,-16
+ 1004 0002 0546     	 mov r5,r0
  455:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     {
  456:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       // concept requirements
  457:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
@@ -4529,65 +4537,65 @@
  462:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       __glibcxx_requires_heap(__first, __last);
  463:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h **** 
  464:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       while (__last - __first > 1)
- 1001              	 .loc 7 464 0
- 1002 0004 0B1A     	 subs r3,r1,r0
- 1003 0006 072B     	 cmp r3,#7
- 1004 0008 13DD     	 ble .L82
+ 1005              	 .loc 7 464 0
+ 1006 0004 0B1A     	 subs r3,r1,r0
+ 1007 0006 072B     	 cmp r3,#7
+ 1008 0008 13DD     	 ble .L82
  454:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
- 1005              	 .loc 7 454 0
- 1006 000a 1946     	 mov r1,r3
- 1007              	.LVL82:
- 1008              	.LBB200:
- 1009              	.LBB201:
+ 1009              	 .loc 7 454 0
+ 1010 000a 1946     	 mov r1,r3
+ 1011              	.LVL82:
+ 1012              	.LBB203:
+ 1013              	.LBB204:
  262:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       std::__adjust_heap(__first, _DistanceType(0),
- 1010              	 .loc 7 262 0
- 1011 000c 4FF00006 	 mov r6,#0
- 1012              	.LVL83:
- 1013              	.L84:
- 1014              	.LBE201:
- 1015              	.LBE200:
+ 1014              	 .loc 7 262 0
+ 1015 000c 4FF00006 	 mov r6,#0
+ 1016              	.LVL83:
+ 1017              	.L84:
+ 1018              	.LBE204:
+ 1019              	.LBE203:
  454:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
- 1016              	 .loc 7 454 0
- 1017 0010 6A18     	 adds r2,r5,r1
- 1018              	.LBB203:
- 1019              	.LBB202:
+ 1020              	 .loc 7 454 0
+ 1021 0010 6A18     	 adds r2,r5,r1
+ 1022              	.LBB206:
+ 1023              	.LBB205:
  260:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       _ValueType __value = _GLIBCXX_MOVE(*__result);
- 1020              	 .loc 7 260 0
- 1021 0012 52F8043C 	 ldr r3,[r2,#-4]
- 1022              	.LVL84:
+ 1024              	 .loc 7 260 0
+ 1025 0012 52F8043C 	 ldr r3,[r2,#-4]
+ 1026              	.LVL84:
  261:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       *__result = _GLIBCXX_MOVE(*__first);
- 1023              	 .loc 7 261 0
- 1024 0016 2868     	 ldr r0,[r5,#0]
- 1025 0018 42F8040C 	 str r0,[r2,#-4]
+ 1027              	 .loc 7 261 0
+ 1028 0016 2868     	 ldr r0,[r5,#0]
+ 1029 0018 42F8040C 	 str r0,[r2,#-4]
  454:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
- 1026              	 .loc 7 454 0
- 1027 001c A1F10404 	 sub r4,r1,#4
+ 1030              	 .loc 7 454 0
+ 1031 001c A1F10404 	 sub r4,r1,#4
  262:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_heap.h ****       std::__adjust_heap(__first, _DistanceType(0),
- 1028              	 .loc 7 262 0
- 1029 0020 2846     	 mov r0,r5
- 1030 0022 3146     	 mov r1,r6
- 1031 0024 4FEAA402 	 asr r2,r4,#2
- 1032              	.LVL85:
- 1033 0028 FFF7FEFF 	 bl _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
- 1034              	.LVL86:
- 1035 002c 2146     	 mov r1,r4
- 1036              	.LBE202:
- 1037              	.LBE203:
- 1038              	 .loc 7 464 0
- 1039 002e 072C     	 cmp r4,#7
- 1040 0030 EEDC     	 bgt .L84
- 1041              	.LVL87:
- 1042              	.L82:
- 1043 0032 70BD     	 pop {r4,r5,r6,pc}
- 1044              	 .cfi_endproc
- 1045              	.LFE436:
- 1047              	 .section .text._ZSt16__introsort_loopIPmiEvT_S1_T0_,"axG",%progbits,_ZSt16__introsort_loopIPmiEvT_S1_T0_,comdat
- 1048              	 .align 2
- 1049              	 .weak _ZSt16__introsort_loopIPmiEvT_S1_T0_
- 1050              	 .thumb
- 1051              	 .thumb_func
- 1053              	_ZSt16__introsort_loopIPmiEvT_S1_T0_:
- 1054              	.LFB429:
+ 1032              	 .loc 7 262 0
+ 1033 0020 2846     	 mov r0,r5
+ 1034 0022 3146     	 mov r1,r6
+ 1035 0024 4FEAA402 	 asr r2,r4,#2
+ 1036              	.LVL85:
+ 1037 0028 FFF7FEFF 	 bl _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
+ 1038              	.LVL86:
+ 1039 002c 2146     	 mov r1,r4
+ 1040              	.LBE205:
+ 1041              	.LBE206:
+ 1042              	 .loc 7 464 0
+ 1043 002e 072C     	 cmp r4,#7
+ 1044 0030 EEDC     	 bgt .L84
+ 1045              	.LVL87:
+ 1046              	.L82:
+ 1047 0032 70BD     	 pop {r4,r5,r6,pc}
+ 1048              	 .cfi_endproc
+ 1049              	.LFE436:
+ 1051              	 .section .text._ZSt16__introsort_loopIPmiEvT_S1_T0_,"axG",%progbits,_ZSt16__introsort_loopIPmiEvT_S1_T0_,comdat
+ 1052              	 .align 2
+ 1053              	 .weak _ZSt16__introsort_loopIPmiEvT_S1_T0_
+ 1054              	 .thumb
+ 1055              	 .thumb_func
+ 1057              	_ZSt16__introsort_loopIPmiEvT_S1_T0_:
+ 1058              	.LFB429:
 2223:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 
 2224:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   /// This is a helper function...
 2225:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   template<typename _RandomAccessIterator, typename _Tp, typename _Compare>
@@ -4637,51 +4645,51 @@
 2269:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   template<typename _RandomAccessIterator, typename _Size>
 2270:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     void
 2271:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     __introsort_loop(_RandomAccessIterator __first,
- 1055              	 .loc 4 2271 0
- 1056              	 .cfi_startproc
- 1057              	 
- 1058              	 
- 1059              	.LVL88:
- 1060 0000 2DE9F843 	 push {r3,r4,r5,r6,r7,r8,r9,lr}
- 1061              	.LCFI13:
- 1062              	 .cfi_def_cfa_offset 32
- 1063              	 .cfi_offset 14,-4
- 1064              	 .cfi_offset 9,-8
- 1065              	 .cfi_offset 8,-12
- 1066              	 .cfi_offset 7,-16
- 1067              	 .cfi_offset 6,-20
- 1068              	 .cfi_offset 5,-24
- 1069              	 .cfi_offset 4,-28
- 1070              	 .cfi_offset 3,-32
- 1071 0004 0646     	 mov r6,r0
- 1072 0006 0C46     	 mov r4,r1
- 1073 0008 1546     	 mov r5,r2
- 1074              	.LBB204:
+ 1059              	 .loc 4 2271 0
+ 1060              	 .cfi_startproc
+ 1061              	 
+ 1062              	 
+ 1063              	.LVL88:
+ 1064 0000 2DE9F843 	 push {r3,r4,r5,r6,r7,r8,r9,lr}
+ 1065              	.LCFI13:
+ 1066              	 .cfi_def_cfa_offset 32
+ 1067              	 .cfi_offset 14,-4
+ 1068              	 .cfi_offset 9,-8
+ 1069              	 .cfi_offset 8,-12
+ 1070              	 .cfi_offset 7,-16
+ 1071              	 .cfi_offset 6,-20
+ 1072              	 .cfi_offset 5,-24
+ 1073              	 .cfi_offset 4,-28
+ 1074              	 .cfi_offset 3,-32
+ 1075 0004 0646     	 mov r6,r0
+ 1076 0006 0C46     	 mov r4,r1
+ 1077 0008 1546     	 mov r5,r2
+ 1078              	.LBB207:
 2272:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 		     _RandomAccessIterator __last,
 2273:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 		     _Size __depth_limit)
 2274:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     {
 2275:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       while (__last - __first > int(_S_threshold))
- 1075              	 .loc 4 2275 0
- 1076 000a 8046     	 mov r8,r0
- 1077 000c 0B1A     	 subs r3,r1,r0
- 1078 000e 432B     	 cmp r3,#67
- 1079 0010 2FDD     	 ble .L86
- 1080              	.LBB205:
+ 1079              	 .loc 4 2275 0
+ 1080 000a 8046     	 mov r8,r0
+ 1081 000c 0B1A     	 subs r3,r1,r0
+ 1082 000e 432B     	 cmp r3,#67
+ 1083 0010 2FDD     	 ble .L86
+ 1084              	.LBB208:
 2276:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	{
 2277:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  if (__depth_limit == 0)
- 1081              	 .loc 4 2277 0
- 1082 0012 7AB9     	 cbnz r2,.L92
- 1083 0014 01E0     	 b .L88
- 1084              	.LVL89:
- 1085              	.L90:
- 1086 0016 5DB9     	 cbnz r5,.L91
+ 1085              	 .loc 4 2277 0
+ 1086 0012 7AB9     	 cbnz r2,.L92
+ 1087 0014 01E0     	 b .L88
+ 1088              	.LVL89:
+ 1089              	.L90:
+ 1090 0016 5DB9     	 cbnz r5,.L91
 2253:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       return std::__unguarded_partition(__first + 1, __last, *__first);
- 1087              	 .loc 4 2253 0
- 1088 0018 3C46     	 mov r4,r7
- 1089              	.LVL90:
- 1090              	.L88:
- 1091              	.LBB206:
- 1092              	.LBB207:
+ 1091              	 .loc 4 2253 0
+ 1092 0018 3C46     	 mov r4,r7
+ 1093              	.LVL90:
+ 1094              	.L88:
+ 1095              	.LBB209:
+ 1096              	.LBB210:
 2278:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	    {
 2279:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	      _GLIBCXX_STD_A::partial_sort(__first, __last, __last);
 2280:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	      return;
@@ -7659,148 +7667,148 @@
 5252:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       __glibcxx_requires_valid_range(__middle, __last);
 5253:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 
 5254:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       std::__heap_select(__first, __middle, __last);
- 1093              	 .loc 4 5254 0
- 1094 001a 3046     	 mov r0,r6
- 1095 001c 2146     	 mov r1,r4
- 1096 001e 2246     	 mov r2,r4
- 1097 0020 FFF7FEFF 	 bl _ZSt13__heap_selectIPmEvT_S1_S1_
+ 1097              	 .loc 4 5254 0
+ 1098 001a 3046     	 mov r0,r6
+ 1099 001c 2146     	 mov r1,r4
+ 1100 001e 2246     	 mov r2,r4
+ 1101 0020 FFF7FEFF 	 bl _ZSt13__heap_selectIPmEvT_S1_S1_
 5255:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       std::sort_heap(__first, __middle);
- 1098              	 .loc 4 5255 0
- 1099 0024 3046     	 mov r0,r6
- 1100 0026 2146     	 mov r1,r4
- 1101 0028 FFF7FEFF 	 bl _ZSt9sort_heapIPmEvT_S1_
- 1102 002c BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
- 1103              	.LVL91:
- 1104              	.L91:
- 1105              	.LBE207:
- 1106              	.LBE206:
+ 1102              	 .loc 4 5255 0
+ 1103 0024 3046     	 mov r0,r6
+ 1104 0026 2146     	 mov r1,r4
+ 1105 0028 FFF7FEFF 	 bl _ZSt9sort_heapIPmEvT_S1_
+ 1106 002c BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 1107              	.LVL91:
+ 1108              	.L91:
+ 1109              	.LBE210:
+ 1110              	.LBE209:
 2253:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       return std::__unguarded_partition(__first + 1, __last, *__first);
- 1107              	 .loc 4 2253 0
- 1108 0030 3C46     	 mov r4,r7
- 1109              	.LVL92:
- 1110 0032 01E0     	 b .L93
- 1111              	.LVL93:
- 1112              	.L92:
- 1113              	.LBB208:
- 1114              	.LBB209:
- 1115 0034 00F10409 	 add r9,r0,#4
- 1116              	.LVL94:
- 1117              	.L93:
- 1118              	.LBE209:
- 1119              	.LBE208:
+ 1111              	 .loc 4 2253 0
+ 1112 0030 3C46     	 mov r4,r7
+ 1113              	.LVL92:
+ 1114 0032 01E0     	 b .L93
+ 1115              	.LVL93:
+ 1116              	.L92:
+ 1117              	.LBB211:
+ 1118              	.LBB212:
+ 1119 0034 00F10409 	 add r9,r0,#4
+ 1120              	.LVL94:
+ 1121              	.L93:
+ 1122              	.LBE212:
+ 1123              	.LBE211:
 2282:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  --__depth_limit;
- 1120              	 .loc 4 2282 0
- 1121 0038 05F1FF35 	 add r5,r5,#-1
- 1122              	.LVL95:
- 1123              	.LBB211:
- 1124              	.LBB210:
+ 1124              	 .loc 4 2282 0
+ 1125 0038 05F1FF35 	 add r5,r5,#-1
+ 1126              	.LVL95:
+ 1127              	.LBB214:
+ 1128              	.LBB213:
 2251:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       _RandomAccessIterator __mid = __first + (__last - __first) / 2;
- 1125              	 .loc 4 2251 0
- 1126 003c 4FEAA303 	 asr r3,r3,#2
- 1127              	.LVL96:
- 1128 0040 03EBD373 	 add r3,r3,r3,lsr#31
- 1129 0044 4FEA6301 	 asr r1,r3,#1
+ 1129              	 .loc 4 2251 0
+ 1130 003c 4FEAA303 	 asr r3,r3,#2
+ 1131              	.LVL96:
+ 1132 0040 03EBD373 	 add r3,r3,r3,lsr#31
+ 1133 0044 4FEA6301 	 asr r1,r3,#1
 2252:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       std::__move_median_first(__first, __mid, (__last - 1));
- 1130              	 .loc 4 2252 0
- 1131 0048 3046     	 mov r0,r6
- 1132 004a 06EB8101 	 add r1,r6,r1,lsl#2
- 1133 004e A4F10402 	 sub r2,r4,#4
- 1134 0052 FFF7FEFF 	 bl _ZSt19__move_median_firstIPmEvT_S1_S1_
+ 1134              	 .loc 4 2252 0
+ 1135 0048 3046     	 mov r0,r6
+ 1136 004a 06EB8101 	 add r1,r6,r1,lsl#2
+ 1137 004e A4F10402 	 sub r2,r4,#4
+ 1138 0052 FFF7FEFF 	 bl _ZSt19__move_median_firstIPmEvT_S1_S1_
 2253:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       return std::__unguarded_partition(__first + 1, __last, *__first);
- 1135              	 .loc 4 2253 0
- 1136 0056 4846     	 mov r0,r9
- 1137 0058 2146     	 mov r1,r4
- 1138 005a 3246     	 mov r2,r6
- 1139 005c FFF7FEFF 	 bl _ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_
- 1140 0060 0746     	 mov r7,r0
- 1141              	.LBE210:
- 1142              	.LBE211:
+ 1139              	 .loc 4 2253 0
+ 1140 0056 4846     	 mov r0,r9
+ 1141 0058 2146     	 mov r1,r4
+ 1142 005a 3246     	 mov r2,r6
+ 1143 005c FFF7FEFF 	 bl _ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_
+ 1144 0060 0746     	 mov r7,r0
+ 1145              	.LBE213:
+ 1146              	.LBE214:
 2285:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  std::__introsort_loop(__cut, __last, __depth_limit);
- 1143              	 .loc 4 2285 0
- 1144 0062 2146     	 mov r1,r4
- 1145 0064 2A46     	 mov r2,r5
- 1146 0066 FFF7FEFF 	 bl _ZSt16__introsort_loopIPmiEvT_S1_T0_
- 1147              	.LVL97:
- 1148              	.LBE205:
+ 1147              	 .loc 4 2285 0
+ 1148 0062 2146     	 mov r1,r4
+ 1149 0064 2A46     	 mov r2,r5
+ 1150 0066 FFF7FEFF 	 bl _ZSt16__introsort_loopIPmiEvT_S1_T0_
+ 1151              	.LVL97:
+ 1152              	.LBE208:
 2275:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       while (__last - __first > int(_S_threshold))
- 1149              	 .loc 4 2275 0
- 1150 006a C8EB0703 	 rsb r3,r8,r7
- 1151 006e 432B     	 cmp r3,#67
- 1152 0070 D1DC     	 bgt .L90
- 1153              	.LVL98:
- 1154              	.L86:
- 1155 0072 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
- 1156              	.LBE204:
- 1157              	 .cfi_endproc
- 1158              	.LFE429:
- 1160 0076 00BF     	 .section .text._ZN10Thermistor6updateEv,"ax",%progbits
- 1161              	 .align 2
- 1162              	 .global _ZN10Thermistor6updateEv
- 1163              	 .thumb
- 1164              	 .thumb_func
- 1166              	_ZN10Thermistor6updateEv:
- 1167              	.LFB427:
+ 1153              	 .loc 4 2275 0
+ 1154 006a C8EB0703 	 rsb r3,r8,r7
+ 1155 006e 432B     	 cmp r3,#67
+ 1156 0070 D1DC     	 bgt .L90
+ 1157              	.LVL98:
+ 1158              	.L86:
+ 1159 0072 BDE8F883 	 pop {r3,r4,r5,r6,r7,r8,r9,pc}
+ 1160              	.LBE207:
+ 1161              	 .cfi_endproc
+ 1162              	.LFE429:
+ 1164 0076 00BF     	 .section .text._ZN10Thermistor6updateEv,"ax",%progbits
+ 1165              	 .align 2
+ 1166              	 .global _ZN10Thermistor6updateEv
+ 1167              	 .thumb
+ 1168              	 .thumb_func
+ 1170              	_ZN10Thermistor6updateEv:
+ 1171              	.LFB427:
   54:src/MightyBoard/shared/Thermistor.cc **** 
   55:src/MightyBoard/shared/Thermistor.cc **** Thermistor::SensorState Thermistor::update() {
- 1168              	 .loc 3 55 0
- 1169              	 .cfi_startproc
- 1170              	 
- 1171              	 
- 1172              	.LVL99:
- 1173 0000 30B5     	 push {r4,r5,lr}
- 1174              	.LCFI14:
- 1175              	 .cfi_def_cfa_offset 12
- 1176              	 .cfi_offset 14,-4
- 1177              	 .cfi_offset 5,-8
- 1178              	 .cfi_offset 4,-12
- 1179 0002 8BB0     	 sub sp,sp,#44
- 1180              	.LCFI15:
- 1181              	 .cfi_def_cfa_offset 56
- 1182 0004 0446     	 mov r4,r0
- 1183              	.LBB212:
-  56:src/MightyBoard/shared/Thermistor.cc **** //	xprintf("Thermistor::SensorState Thermistor::update() {" " (%s:%d)\n",_F_,_L_);
+ 1172              	 .loc 3 55 0
+ 1173              	 .cfi_startproc
+ 1174              	 
+ 1175              	 
+ 1176              	.LVL99:
+ 1177 0000 30B5     	 push {r4,r5,lr}
+ 1178              	.LCFI14:
+ 1179              	 .cfi_def_cfa_offset 12
+ 1180              	 .cfi_offset 14,-4
+ 1181              	 .cfi_offset 5,-8
+ 1182              	 .cfi_offset 4,-12
+ 1183 0002 8BB0     	 sub sp,sp,#44
+ 1184              	.LCFI15:
+ 1185              	 .cfi_def_cfa_offset 56
+ 1186 0004 0446     	 mov r4,r0
+ 1187              	.LBB215:
+  56:src/MightyBoard/shared/Thermistor.cc **** //	xprintf("Thermistor::SensorState Thermistor::update()" "\n",analog_pin);
   57:src/MightyBoard/shared/Thermistor.cc **** 	int16_t temp;
   58:src/MightyBoard/shared/Thermistor.cc **** 	bool valid;
   59:src/MightyBoard/shared/Thermistor.cc **** 
   60:src/MightyBoard/shared/Thermistor.cc **** //	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
   61:src/MightyBoard/shared/Thermistor.cc **** 		valid = raw_valid;
- 1184              	 .loc 3 61 0
- 1185 0006 857A     	 ldrb r5,[r0,#10]
- 1186              	.LVL100:
+ 1188              	 .loc 3 61 0
+ 1189 0006 857A     	 ldrb r5,[r0,#10]
+ 1190              	.LVL100:
   62:src/MightyBoard/shared/Thermistor.cc **** 		temp = raw_value;
- 1187              	 .loc 3 62 0
- 1188 0008 0389     	 ldrh r3,[r0,#8]
+ 1191              	 .loc 3 62 0
+ 1192 0008 0389     	 ldrh r3,[r0,#8]
   63:src/MightyBoard/shared/Thermistor.cc **** 
   64:src/MightyBoard/shared/Thermistor.cc **** 		// Invalidate the result now that we have read it
   65:src/MightyBoard/shared/Thermistor.cc **** 		if (raw_valid) {
- 1189              	 .loc 3 65 0
- 1190 000a 837A     	 ldrb r3,[r0,#10]
- 1191 000c 13B1     	 cbz r3,.L95
+ 1193              	 .loc 3 65 0
+ 1194 000a 837A     	 ldrb r3,[r0,#10]
+ 1195 000c 13B1     	 cbz r3,.L95
   66:src/MightyBoard/shared/Thermistor.cc **** 			raw_valid = false;
- 1192              	 .loc 3 66 0
- 1193 000e 4FF00003 	 mov r3,#0
- 1194 0012 8372     	 strb r3,[r0,#10]
- 1195              	.L95:
+ 1196              	 .loc 3 66 0
+ 1197 000e 4FF00003 	 mov r3,#0
+ 1198 0012 8372     	 strb r3,[r0,#10]
+ 1199              	.L95:
   67:src/MightyBoard/shared/Thermistor.cc ****                 }
   68:src/MightyBoard/shared/Thermistor.cc **** //	}
   69:src/MightyBoard/shared/Thermistor.cc **** 
   70:src/MightyBoard/shared/Thermistor.cc **** 	// initiate next read
   71:src/MightyBoard/shared/Thermistor.cc **** 	if (!startAnalogRead(analog_pin,&raw_value, &raw_valid)) return SS_ADC_BUSY;
- 1196              	 .loc 3 71 0
- 1197 0014 A079     	 ldrb r0,[r4,#6]
- 1198              	.LVL101:
- 1199 0016 04F10801 	 add r1,r4,#8
- 1200 001a 04F10A02 	 add r2,r4,#10
- 1201 001e FFF7FEFF 	 bl _Z15startAnalogReadhPVsPVb
- 1202 0022 0028     	 cmp r0,#0
- 1203 0024 4AD0     	 beq .L100
+ 1200              	 .loc 3 71 0
+ 1201 0014 A079     	 ldrb r0,[r4,#6]
+ 1202              	.LVL101:
+ 1203 0016 04F10801 	 add r1,r4,#8
+ 1204 001a 04F10A02 	 add r2,r4,#10
+ 1205 001e FFF7FEFF 	 bl _Z15startAnalogReadhPVsPVb
+ 1206 0022 0028     	 cmp r0,#0
+ 1207 0024 4AD0     	 beq .L100
   72:src/MightyBoard/shared/Thermistor.cc **** 
   73:src/MightyBoard/shared/Thermistor.cc **** 	// If we haven't gotten data yet, return.
   74:src/MightyBoard/shared/Thermistor.cc **** 	if (!valid) return SS_ADC_WAITING;
- 1204              	 .loc 3 74 0
- 1205 0026 4FF00200 	 mov r0,#2
- 1206 002a 002D     	 cmp r5,#0
- 1207 002c 48D0     	 beq .L96
+ 1208              	 .loc 3 74 0
+ 1209 0026 4FF00200 	 mov r0,#2
+ 1210 002a 002D     	 cmp r5,#0
+ 1211 002c 48D0     	 beq .L96
   75:src/MightyBoard/shared/Thermistor.cc **** 
   76:src/MightyBoard/shared/Thermistor.cc **** //	sample_buffer[next_sample] = temp;
   77:src/MightyBoard/shared/Thermistor.cc **** //	next_sample = (next_sample+1) % SAMPLE_COUNT;
@@ -7813,60 +7821,59 @@
   84:src/MightyBoard/shared/Thermistor.cc **** 
   85:src/MightyBoard/shared/Thermistor.cc **** 	// my filter
   86:src/MightyBoard/shared/Thermistor.cc **** 	uint32_t sort_table[SAMPLE_COUNT];
-  87:src/MightyBoard/shared/Thermistor.cc **** 	static uint32_t adc_filtered = 0;
-  88:src/MightyBoard/shared/Thermistor.cc **** 	static uint32_t adc_table_index = 0;
-  89:src/MightyBoard/shared/Thermistor.cc **** 	static uint32_t adc_previous_samples[SAMPLE_COUNT];
-  90:src/MightyBoard/shared/Thermistor.cc **** 	adc_previous_samples[adc_table_index]=raw_value;
- 1208              	 .loc 3 90 0
- 1209 002e 40F20003 	 movw r3,#:lower16:.LANCHOR1
- 1210 0032 C0F20003 	 movt r3,#:upper16:.LANCHOR1
- 1211 0036 1968     	 ldr r1,[r3,#0]
- 1212 0038 2089     	 ldrh r0,[r4,#8]
- 1213 003a 40F20002 	 movw r2,#:lower16:.LANCHOR2
- 1214 003e C0F20002 	 movt r2,#:upper16:.LANCHOR2
- 1215 0042 00B2     	 sxth r0,r0
- 1216 0044 42F82100 	 str r0,[r2,r1,lsl#2]
-  91:src/MightyBoard/shared/Thermistor.cc **** 	adc_table_index++;
- 1217              	 .loc 3 91 0
- 1218 0048 01F10102 	 add r2,r1,#1
- 1219 004c 1A60     	 str r2,[r3,#0]
-  92:src/MightyBoard/shared/Thermistor.cc **** 	if (adc_table_index==SAMPLE_COUNT)
- 1220              	 .loc 3 92 0
- 1221 004e 092A     	 cmp r2,#9
-  93:src/MightyBoard/shared/Thermistor.cc **** 		adc_table_index=0;
- 1222              	 .loc 3 93 0
- 1223 0050 01BF     	 itttt eq
- 1224 0052 40F20003 	 movweq r3,#:lower16:.LANCHOR1
- 1225 0056 C0F20003 	 movteq r3,#:upper16:.LANCHOR1
- 1226 005a 0022     	 moveq r2,#0
- 1227 005c 1A60     	 streq r2,[r3,#0]
- 1228              	.LVL102:
- 1229              	.LBE212:
+  87:src/MightyBoard/shared/Thermistor.cc **** 	static uint32_t adc_table_index = 0;
+  88:src/MightyBoard/shared/Thermistor.cc **** 	static uint32_t adc_previous_samples[SAMPLE_COUNT];
+  89:src/MightyBoard/shared/Thermistor.cc **** 	adc_previous_samples[adc_table_index]=raw_value;
+ 1212              	 .loc 3 89 0
+ 1213 002e 40F20003 	 movw r3,#:lower16:.LANCHOR1
+ 1214 0032 C0F20003 	 movt r3,#:upper16:.LANCHOR1
+ 1215 0036 1968     	 ldr r1,[r3,#0]
+ 1216 0038 2089     	 ldrh r0,[r4,#8]
+ 1217 003a 40F20002 	 movw r2,#:lower16:.LANCHOR2
+ 1218 003e C0F20002 	 movt r2,#:upper16:.LANCHOR2
+ 1219 0042 00B2     	 sxth r0,r0
+ 1220 0044 42F82100 	 str r0,[r2,r1,lsl#2]
+  90:src/MightyBoard/shared/Thermistor.cc **** 	adc_table_index++;
+ 1221              	 .loc 3 90 0
+ 1222 0048 01F10102 	 add r2,r1,#1
+ 1223 004c 1A60     	 str r2,[r3,#0]
+  91:src/MightyBoard/shared/Thermistor.cc **** 	if (adc_table_index==SAMPLE_COUNT)
+ 1224              	 .loc 3 91 0
+ 1225 004e 092A     	 cmp r2,#9
+  92:src/MightyBoard/shared/Thermistor.cc **** 		adc_table_index=0;
+ 1226              	 .loc 3 92 0
+ 1227 0050 01BF     	 itttt eq
+ 1228 0052 40F20003 	 movweq r3,#:lower16:.LANCHOR1
+ 1229 0056 C0F20003 	 movteq r3,#:upper16:.LANCHOR1
+ 1230 005a 0022     	 moveq r2,#0
+ 1231 005c 1A60     	 streq r2,[r3,#0]
+ 1232              	.LVL102:
+ 1233              	.LBE215:
   55:src/MightyBoard/shared/Thermistor.cc **** Thermistor::SensorState Thermistor::update() {
- 1230              	 .loc 3 55 0
- 1231 005e 4FF00003 	 mov r3,#0
- 1232              	.LBB216:
- 1233              	.LBB213:
-  94:src/MightyBoard/shared/Thermistor.cc **** 	for (uint8_t i=0;i<SAMPLE_COUNT;i++)
-  95:src/MightyBoard/shared/Thermistor.cc **** 		sort_table[i]=adc_previous_samples[i];
- 1234              	 .loc 3 95 0
- 1235 0062 40F20000 	 movw r0,#:lower16:.LANCHOR2
- 1236 0066 C0F20000 	 movt r0,#:upper16:.LANCHOR2
- 1237              	.LVL103:
- 1238              	.L98:
- 1239              	 .loc 3 95 0 is_stmt 0 discriminator 2
- 1240 006a 1958     	 ldr r1,[r3,r0]
- 1241 006c 01AA     	 add r2,sp,#4
- 1242 006e 9950     	 str r1,[r3,r2]
- 1243 0070 03F10403 	 add r3,r3,#4
-  94:src/MightyBoard/shared/Thermistor.cc **** 	for (uint8_t i=0;i<SAMPLE_COUNT;i++)
- 1244              	 .loc 3 94 0 is_stmt 1 discriminator 2
- 1245 0074 242B     	 cmp r3,#36
- 1246 0076 F8D1     	 bne .L98
- 1247              	.LVL104:
- 1248              	.LBE213:
- 1249              	.LBB214:
- 1250              	.LBB215:
+ 1234              	 .loc 3 55 0
+ 1235 005e 4FF00003 	 mov r3,#0
+ 1236              	.LBB219:
+ 1237              	.LBB216:
+  93:src/MightyBoard/shared/Thermistor.cc **** 	for (uint8_t i=0;i<SAMPLE_COUNT;i++)
+  94:src/MightyBoard/shared/Thermistor.cc **** 		sort_table[i]=adc_previous_samples[i];
+ 1238              	 .loc 3 94 0
+ 1239 0062 40F20000 	 movw r0,#:lower16:.LANCHOR2
+ 1240 0066 C0F20000 	 movt r0,#:upper16:.LANCHOR2
+ 1241              	.LVL103:
+ 1242              	.L98:
+ 1243              	 .loc 3 94 0 is_stmt 0 discriminator 2
+ 1244 006a 1958     	 ldr r1,[r3,r0]
+ 1245 006c 01AA     	 add r2,sp,#4
+ 1246 006e 9950     	 str r1,[r3,r2]
+ 1247 0070 03F10403 	 add r3,r3,#4
+  93:src/MightyBoard/shared/Thermistor.cc **** 	for (uint8_t i=0;i<SAMPLE_COUNT;i++)
+ 1248              	 .loc 3 93 0 is_stmt 1 discriminator 2
+ 1249 0074 242B     	 cmp r3,#36
+ 1250 0076 F8D1     	 bne .L98
+ 1251              	.LVL104:
+ 1252              	.LBE216:
+ 1253              	.LBB217:
+ 1254              	.LBB218:
 5256:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****     }
 5257:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 
 5258:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****   /**
@@ -8019,145 +8026,141 @@
 5405:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h ****       if (__first != __last)
 5406:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	{
 5407:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  std::__introsort_loop(__first, __last,
- 1251              	 .loc 4 5407 0
- 1252 0078 1046     	 mov r0,r2
- 1253 007a 0AA9     	 add r1,sp,#40
- 1254 007c 4FF00602 	 mov r2,#6
- 1255              	.LVL105:
- 1256 0080 FFF7FEFF 	 bl _ZSt16__introsort_loopIPmiEvT_S1_T0_
- 1257              	.LVL106:
+ 1255              	 .loc 4 5407 0
+ 1256 0078 1046     	 mov r0,r2
+ 1257 007a 0AA9     	 add r1,sp,#40
+ 1258 007c 4FF00602 	 mov r2,#6
+ 1259              	.LVL105:
+ 1260 0080 FFF7FEFF 	 bl _ZSt16__introsort_loopIPmiEvT_S1_T0_
+ 1261              	.LVL106:
 5408:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 				std::__lg(__last - __first) * 2);
 5409:c:\program files\codesourcery\sourcery_codebench_lite_for_arm_eabi\bin\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits\stl_algo.h **** 	  std::__final_insertion_sort(__first, __last);
- 1258              	 .loc 4 5409 0
- 1259 0084 01A8     	 add r0,sp,#4
- 1260              	.LVL107:
- 1261 0086 0AA9     	 add r1,sp,#40
- 1262 0088 FFF7FEFF 	 bl _ZSt22__final_insertion_sortIPmEvT_S1_
- 1263              	.LVL108:
- 1264              	.LBE215:
- 1265              	.LBE214:
-  96:src/MightyBoard/shared/Thermistor.cc **** 	std::sort(sort_table, sort_table+SAMPLE_COUNT);
-  97:src/MightyBoard/shared/Thermistor.cc **** 	temp = sort_table[4];
- 1266              	 .loc 3 97 0
- 1267 008c BDF81400 	 ldrh r0,[sp,#20]
- 1268              	.LVL109:
-  98:src/MightyBoard/shared/Thermistor.cc **** 
-  99:src/MightyBoard/shared/Thermistor.cc **** 	// filter the ADC values with simple IIR
- 100:src/MightyBoard/shared/Thermistor.cc **** //	adc_filtered = ((adc_filtered * 7) + temp) / 8;
- 101:src/MightyBoard/shared/Thermistor.cc **** //	temp = adc_filtered;
- 102:src/MightyBoard/shared/Thermistor.cc **** 
- 103:src/MightyBoard/shared/Thermistor.cc **** 	// TODO: The raw_value appears to be 0 the first time this loop is run,
- 104:src/MightyBoard/shared/Thermistor.cc **** 	//       which causes this failsafe to trigger unnecessarily. Disabling
- 105:src/MightyBoard/shared/Thermistor.cc **** 	//       for now, since it doesn't work for ABP/HBP thermistors.
- 106:src/MightyBoard/shared/Thermistor.cc **** 	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
- 1269              	 .loc 3 106 0
- 1270 0090 A0F10202 	 sub r2,r0,#2
- 1271 0094 92B2     	 uxth r2,r2
- 1272 0096 40F6FC73 	 movw r3,#4092
- 1273 009a 9A42     	 cmp r2,r3
- 107:src/MightyBoard/shared/Thermistor.cc ****                 current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error conditio
- 1274              	 .loc 3 107 0
- 1275 009c 82BF     	 ittt hi
- 1276 009e 4FF48063 	 movhi r3,#1024
- 1277 00a2 A380     	 strhhi r3,[r4,#4]
- 108:src/MightyBoard/shared/Thermistor.cc **** 		return SS_ERROR_UNPLUGGED;
- 1278              	 .loc 3 108 0
- 1279 00a4 0320     	 movhi r0,#3
- 1280              	.LVL110:
- 106:src/MightyBoard/shared/Thermistor.cc **** 	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
- 1281              	 .loc 3 106 0
- 1282 00a6 0BD8     	 bhi .L96
- 109:src/MightyBoard/shared/Thermistor.cc **** 	}
- 110:src/MightyBoard/shared/Thermistor.cc **** 
- 111:src/MightyBoard/shared/Thermistor.cc **** //	int16_t avg = cumulative / SAMPLE_COUNT;
- 112:src/MightyBoard/shared/Thermistor.cc **** 
- 113:src/MightyBoard/shared/Thermistor.cc **** 	//current_temp = thermistorToCelsius(avg,table_index);
- 114:src/MightyBoard/shared/Thermistor.cc **** 	current_temp = thermistorToCelsius(temp,table_index);
- 1283              	 .loc 3 114 0
- 1284 00a8 00B2     	 sxth r0,r0
- 1285 00aa 94F91F10 	 ldrsb r1,[r4,#31]
- 1286 00ae FFF7FEFF 	 bl _Z19thermistorToCelsiussa
- 1287 00b2 80B2     	 uxth r0,r0
- 1288 00b4 A080     	 strh r0,[r4,#4]
- 115:src/MightyBoard/shared/Thermistor.cc **** 	return SS_OK;
- 1289              	 .loc 3 115 0
- 1290 00b6 4FF00000 	 mov r0,#0
- 1291 00ba 01E0     	 b .L96
- 1292              	.LVL111:
- 1293              	.L100:
+ 1262              	 .loc 4 5409 0
+ 1263 0084 01A8     	 add r0,sp,#4
+ 1264              	.LVL107:
+ 1265 0086 0AA9     	 add r1,sp,#40
+ 1266 0088 FFF7FEFF 	 bl _ZSt22__final_insertion_sortIPmEvT_S1_
+ 1267              	.LVL108:
+ 1268              	.LBE218:
+ 1269              	.LBE217:
+  95:src/MightyBoard/shared/Thermistor.cc **** 	std::sort(sort_table, sort_table+SAMPLE_COUNT);
+  96:src/MightyBoard/shared/Thermistor.cc **** 	temp = sort_table[4];
+ 1270              	 .loc 3 96 0
+ 1271 008c BDF81400 	 ldrh r0,[sp,#20]
+ 1272              	.LVL109:
+  97:src/MightyBoard/shared/Thermistor.cc **** 
+  98:src/MightyBoard/shared/Thermistor.cc **** 	// TODO: The raw_value appears to be 0 the first time this loop is run,
+  99:src/MightyBoard/shared/Thermistor.cc **** 	//       which causes this failsafe to trigger unnecessarily. Disabling
+ 100:src/MightyBoard/shared/Thermistor.cc **** 	//       for now, since it doesn't work for ABP/HBP thermistors.
+ 101:src/MightyBoard/shared/Thermistor.cc **** 	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
+ 1273              	 .loc 3 101 0
+ 1274 0090 A0F10202 	 sub r2,r0,#2
+ 1275 0094 92B2     	 uxth r2,r2
+ 1276 0096 40F6FC73 	 movw r3,#4092
+ 1277 009a 9A42     	 cmp r2,r3
+ 102:src/MightyBoard/shared/Thermistor.cc ****                 current_temp = BAD_TEMPERATURE;	// Set the temperature to 1024 as an error conditio
+ 1278              	 .loc 3 102 0
+ 1279 009c 82BF     	 ittt hi
+ 1280 009e 4FF48063 	 movhi r3,#1024
+ 1281 00a2 A380     	 strhhi r3,[r4,#4]
+ 103:src/MightyBoard/shared/Thermistor.cc **** 		return SS_ERROR_UNPLUGGED;
+ 1282              	 .loc 3 103 0
+ 1283 00a4 0320     	 movhi r0,#3
+ 1284              	.LVL110:
+ 101:src/MightyBoard/shared/Thermistor.cc **** 	if ((temp > ADC_RANGE - 2) || (temp < 2)) {
+ 1285              	 .loc 3 101 0
+ 1286 00a6 0BD8     	 bhi .L96
+ 104:src/MightyBoard/shared/Thermistor.cc **** 	}
+ 105:src/MightyBoard/shared/Thermistor.cc **** 
+ 106:src/MightyBoard/shared/Thermistor.cc **** //	int16_t avg = cumulative / SAMPLE_COUNT;
+ 107:src/MightyBoard/shared/Thermistor.cc **** 
+ 108:src/MightyBoard/shared/Thermistor.cc **** 	//current_temp = thermistorToCelsius(avg,table_index);
+ 109:src/MightyBoard/shared/Thermistor.cc **** 	current_temp = thermistorToCelsius(temp,table_index);
+ 1287              	 .loc 3 109 0
+ 1288 00a8 00B2     	 sxth r0,r0
+ 1289 00aa 94F91F10 	 ldrsb r1,[r4,#31]
+ 1290 00ae FFF7FEFF 	 bl _Z19thermistorToCelsiussa
+ 1291 00b2 80B2     	 uxth r0,r0
+ 1292 00b4 A080     	 strh r0,[r4,#4]
+ 110:src/MightyBoard/shared/Thermistor.cc **** 	return SS_OK;
+ 1293              	 .loc 3 110 0
+ 1294 00b6 4FF00000 	 mov r0,#0
+ 1295 00ba 01E0     	 b .L96
+ 1296              	.LVL111:
+ 1297              	.L100:
   71:src/MightyBoard/shared/Thermistor.cc **** 	if (!startAnalogRead(analog_pin,&raw_value, &raw_valid)) return SS_ADC_BUSY;
- 1294              	 .loc 3 71 0
- 1295 00bc 4FF00100 	 mov r0,#1
- 1296              	.L96:
- 1297              	.LBE216:
- 116:src/MightyBoard/shared/Thermistor.cc **** }
- 1298              	 .loc 3 116 0
- 1299 00c0 0BB0     	 add sp,sp,#44
- 1300 00c2 30BD     	 pop {r4,r5,pc}
- 1301              	 .cfi_endproc
- 1302              	.LFE427:
- 1304              	 .global _ZTV10Thermistor
- 1305              	 .weak _ZTV17TemperatureSensor
- 1306              	 .section .rodata._ZTV17TemperatureSensor,"aG",%progbits,_ZTV17TemperatureSensor,comdat
- 1307              	 .align 3
- 1310              	_ZTV17TemperatureSensor:
- 1311 0000 00000000 	 .word 0
- 1312 0004 00000000 	 .word 0
- 1313 0008 00000000 	 .word _ZN17TemperatureSensorD1Ev
- 1314 000c 00000000 	 .word _ZN17TemperatureSensorD0Ev
- 1315 0010 00000000 	 .word _ZN17TemperatureSensor4initEv
- 1316 0014 00000000 	 .word __cxa_pure_virtual
- 1317              	 .weak _ZN17TemperatureSensorD1Ev
- 1318              	 .thumb_set _ZN17TemperatureSensorD1Ev,_ZN17TemperatureSensorD2Ev
- 1319              	 .weak _ZN10ThermistorD1Ev
- 1320              	 .thumb_set _ZN10ThermistorD1Ev,_ZN10ThermistorD2Ev
- 1321              	 .global _ZN10ThermistorC1Ehh
- 1322              	 .thumb_set _ZN10ThermistorC1Ehh,_ZN10ThermistorC2Ehh
- 1323              	 .section .bss._ZZN10Thermistor6updateEvE20adc_previous_samples,"aw",%nobits
- 1324              	 .align 2
- 1325              	 .set .LANCHOR2,.+0
- 1328              	_ZZN10Thermistor6updateEvE20adc_previous_samples:
- 1329 0000 00000000 	 .space 36
- 1329      00000000 
- 1329      00000000 
- 1329      00000000 
- 1329      00000000 
- 1330              	 .section .rodata._ZTV10Thermistor,"a",%progbits
- 1331              	 .align 3
- 1332              	 .set .LANCHOR0,.+0
- 1335              	_ZTV10Thermistor:
- 1336 0000 00000000 	 .word 0
- 1337 0004 00000000 	 .word 0
- 1338 0008 00000000 	 .word _ZN10ThermistorD1Ev
- 1339 000c 00000000 	 .word _ZN10ThermistorD0Ev
- 1340 0010 00000000 	 .word _ZN10Thermistor4initEv
- 1341 0014 00000000 	 .word _ZN10Thermistor6updateEv
- 1342              	 .section .bss._ZZN10Thermistor6updateEvE15adc_table_index,"aw",%nobits
- 1343              	 .align 2
- 1344              	 .set .LANCHOR1,.+0
- 1347              	_ZZN10Thermistor6updateEvE15adc_table_index:
- 1348 0000 00000000 	 .space 4
- 1349              	 .text
- 1350              	.Letext0:
- 1351              	 .file 8 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
- 1352              	 .file 9 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/cstdlib"
- 1353              	 .file 10 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/arm-none-eabi/thumb2/bits/c++config.h"
- 1354              	 .file 11 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/cpp_type_traits.h"
- 1355              	 .file 12 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/debug/debug.h"
- 1356              	 .file 13 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/include/stddef.h"
- 1357              	 .file 14 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdlib.h"
- 1358              	 .file 15 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/ext/numeric_traits.h"
- 1359              	 .file 16 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_iterator_base_types.h"
- 1360              	 .file 17 "src/MightyBoard/shared/ThermistorTable.hh"
- 1361              	 .file 18 "<built-in>"
- 1362              	 .file 19 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/new"
- 1363              	 .file 20 "src/MightyBoard/Motherboard/system/core_cm3.h"
+ 1298              	 .loc 3 71 0
+ 1299 00bc 4FF00100 	 mov r0,#1
+ 1300              	.L96:
+ 1301              	.LBE219:
+ 111:src/MightyBoard/shared/Thermistor.cc **** }
+ 1302              	 .loc 3 111 0
+ 1303 00c0 0BB0     	 add sp,sp,#44
+ 1304 00c2 30BD     	 pop {r4,r5,pc}
+ 1305              	 .cfi_endproc
+ 1306              	.LFE427:
+ 1308              	 .global _ZTV10Thermistor
+ 1309              	 .weak _ZTV17TemperatureSensor
+ 1310              	 .section .rodata._ZTV17TemperatureSensor,"aG",%progbits,_ZTV17TemperatureSensor,comdat
+ 1311              	 .align 3
+ 1314              	_ZTV17TemperatureSensor:
+ 1315 0000 00000000 	 .word 0
+ 1316 0004 00000000 	 .word 0
+ 1317 0008 00000000 	 .word _ZN17TemperatureSensorD1Ev
+ 1318 000c 00000000 	 .word _ZN17TemperatureSensorD0Ev
+ 1319 0010 00000000 	 .word _ZN17TemperatureSensor4initEv
+ 1320 0014 00000000 	 .word __cxa_pure_virtual
+ 1321              	 .weak _ZN17TemperatureSensorD1Ev
+ 1322              	 .thumb_set _ZN17TemperatureSensorD1Ev,_ZN17TemperatureSensorD2Ev
+ 1323              	 .weak _ZN10ThermistorD1Ev
+ 1324              	 .thumb_set _ZN10ThermistorD1Ev,_ZN10ThermistorD2Ev
+ 1325              	 .global _ZN10ThermistorC1Ehh
+ 1326              	 .thumb_set _ZN10ThermistorC1Ehh,_ZN10ThermistorC2Ehh
+ 1327              	 .section .bss._ZZN10Thermistor6updateEvE20adc_previous_samples,"aw",%nobits
+ 1328              	 .align 2
+ 1329              	 .set .LANCHOR2,.+0
+ 1332              	_ZZN10Thermistor6updateEvE20adc_previous_samples:
+ 1333 0000 00000000 	 .space 36
+ 1333      00000000 
+ 1333      00000000 
+ 1333      00000000 
+ 1333      00000000 
+ 1334              	 .section .rodata._ZTV10Thermistor,"a",%progbits
+ 1335              	 .align 3
+ 1336              	 .set .LANCHOR0,.+0
+ 1339              	_ZTV10Thermistor:
+ 1340 0000 00000000 	 .word 0
+ 1341 0004 00000000 	 .word 0
+ 1342 0008 00000000 	 .word _ZN10ThermistorD1Ev
+ 1343 000c 00000000 	 .word _ZN10ThermistorD0Ev
+ 1344 0010 00000000 	 .word _ZN10Thermistor4initEv
+ 1345 0014 00000000 	 .word _ZN10Thermistor6updateEv
+ 1346              	 .section .bss._ZZN10Thermistor6updateEvE15adc_table_index,"aw",%nobits
+ 1347              	 .align 2
+ 1348              	 .set .LANCHOR1,.+0
+ 1351              	_ZZN10Thermistor6updateEvE15adc_table_index:
+ 1352 0000 00000000 	 .space 4
+ 1353              	 .text
+ 1354              	.Letext0:
+ 1355              	 .file 8 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdint.h"
+ 1356              	 .file 9 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/cstdlib"
+ 1357              	 .file 10 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/arm-none-eabi/thumb2/bits/c++config.h"
+ 1358              	 .file 11 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/cpp_type_traits.h"
+ 1359              	 .file 12 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/debug/debug.h"
+ 1360              	 .file 13 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/include/stddef.h"
+ 1361              	 .file 14 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/stdlib.h"
+ 1362              	 .file 15 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/ext/numeric_traits.h"
+ 1363              	 .file 16 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/bits/stl_iterator_base_types.h"
+ 1364              	 .file 17 "src/MightyBoard/shared/ThermistorTable.hh"
+ 1365              	 .file 18 "<built-in>"
+ 1366              	 .file 19 "c:\\program files\\codesourcery\\sourcery_codebench_lite_for_arm_eabi\\bin\\../lib/gcc/arm-none-eabi/4.6.3/../../../../arm-none-eabi/include/c++/4.6.3/new"
+ 1367              	 .file 20 "src/MightyBoard/Motherboard/system/core_cm3.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 Thermistor.cc
     {standard input}:19     .text._ZN17TemperatureSensorD2Ev:00000000 $t
     {standard input}:24     .text._ZN17TemperatureSensorD2Ev:00000000 _ZN17TemperatureSensorD2Ev
     {standard input}:42     .text._ZN17TemperatureSensorD2Ev:00000008 $d
-    {standard input}:1310   .rodata._ZTV17TemperatureSensor:00000000 _ZTV17TemperatureSensor
+    {standard input}:1314   .rodata._ZTV17TemperatureSensor:00000000 _ZTV17TemperatureSensor
     {standard input}:47     .text._ZN17TemperatureSensor4initEv:00000000 $t
     {standard input}:52     .text._ZN17TemperatureSensor4initEv:00000000 _ZN17TemperatureSensor4initEv
     {standard input}:66     .text._ZN10ThermistorD2Ev:00000000 $t
@@ -8171,45 +8174,45 @@ DEFINED SYMBOLS
     {standard input}:183    .text._ZN17TemperatureSensorD0Ev:00000010 $d
     {standard input}:188    .text._ZN10Thermistor4initEv:00000000 $t
     {standard input}:193    .text._ZN10Thermistor4initEv:00000000 _ZN10Thermistor4initEv
-    {standard input}:234    .text._ZN10ThermistorC2Ehh:00000000 $t
-    {standard input}:239    .text._ZN10ThermistorC2Ehh:00000000 _ZN10ThermistorC2Ehh
-    {standard input}:280    .text._ZN10ThermistorC2Ehh:00000028 $d
-    {standard input}:285    .text._ZSt19__move_median_firstIPmEvT_S1_S1_:00000000 $t
-    {standard input}:290    .text._ZSt19__move_median_firstIPmEvT_S1_S1_:00000000 _ZSt19__move_median_firstIPmEvT_S1_S1_
-    {standard input}:395    .text._ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_:00000000 $t
-    {standard input}:400    .text._ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_:00000000 _ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_
-    {standard input}:483    .text._ZSt25__unguarded_linear_insertIPmEvT_:00000000 $t
-    {standard input}:488    .text._ZSt25__unguarded_linear_insertIPmEvT_:00000000 _ZSt25__unguarded_linear_insertIPmEvT_
-    {standard input}:540    .text._ZSt16__insertion_sortIPmEvT_S1_:00000000 $t
-    {standard input}:545    .text._ZSt16__insertion_sortIPmEvT_S1_:00000000 _ZSt16__insertion_sortIPmEvT_S1_
-    {standard input}:631    .text._ZSt22__final_insertion_sortIPmEvT_S1_:00000000 $t
-    {standard input}:636    .text._ZSt22__final_insertion_sortIPmEvT_S1_:00000000 _ZSt22__final_insertion_sortIPmEvT_S1_
-    {standard input}:692    .text._ZSt11__push_heapIPmimEvT_T0_S2_T1_:00000000 $t
-    {standard input}:697    .text._ZSt11__push_heapIPmimEvT_T0_S2_T1_:00000000 _ZSt11__push_heapIPmimEvT_T0_S2_T1_
-    {standard input}:752    .text._ZSt13__adjust_heapIPmimEvT_T0_S2_T1_:00000000 $t
-    {standard input}:757    .text._ZSt13__adjust_heapIPmimEvT_T0_S2_T1_:00000000 _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
-    {standard input}:844    .text._ZSt9make_heapIPmEvT_S1_:00000000 $t
-    {standard input}:849    .text._ZSt9make_heapIPmEvT_S1_:00000000 _ZSt9make_heapIPmEvT_S1_
-    {standard input}:909    .text._ZSt13__heap_selectIPmEvT_S1_S1_:00000000 $t
-    {standard input}:914    .text._ZSt13__heap_selectIPmEvT_S1_S1_:00000000 _ZSt13__heap_selectIPmEvT_S1_S1_
-    {standard input}:981    .text._ZSt9sort_heapIPmEvT_S1_:00000000 $t
-    {standard input}:986    .text._ZSt9sort_heapIPmEvT_S1_:00000000 _ZSt9sort_heapIPmEvT_S1_
-    {standard input}:1048   .text._ZSt16__introsort_loopIPmiEvT_S1_T0_:00000000 $t
-    {standard input}:1053   .text._ZSt16__introsort_loopIPmiEvT_S1_T0_:00000000 _ZSt16__introsort_loopIPmiEvT_S1_T0_
-    {standard input}:1161   .text._ZN10Thermistor6updateEv:00000000 $t
-    {standard input}:1166   .text._ZN10Thermistor6updateEv:00000000 _ZN10Thermistor6updateEv
-    {standard input}:1344   .bss._ZZN10Thermistor6updateEvE15adc_table_index:00000000 .LANCHOR1
-    {standard input}:1325   .bss._ZZN10Thermistor6updateEvE20adc_previous_samples:00000000 .LANCHOR2
-    {standard input}:1335   .rodata._ZTV10Thermistor:00000000 _ZTV10Thermistor
-    {standard input}:1307   .rodata._ZTV17TemperatureSensor:00000000 $d
+    {standard input}:219    .text._ZN10ThermistorC2Ehh:00000000 $t
+    {standard input}:224    .text._ZN10ThermistorC2Ehh:00000000 _ZN10ThermistorC2Ehh
+    {standard input}:284    .text._ZN10ThermistorC2Ehh:0000003c $d
+    {standard input}:289    .text._ZSt19__move_median_firstIPmEvT_S1_S1_:00000000 $t
+    {standard input}:294    .text._ZSt19__move_median_firstIPmEvT_S1_S1_:00000000 _ZSt19__move_median_firstIPmEvT_S1_S1_
+    {standard input}:399    .text._ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_:00000000 $t
+    {standard input}:404    .text._ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_:00000000 _ZSt21__unguarded_partitionIPmmET_S1_S1_RKT0_
+    {standard input}:487    .text._ZSt25__unguarded_linear_insertIPmEvT_:00000000 $t
+    {standard input}:492    .text._ZSt25__unguarded_linear_insertIPmEvT_:00000000 _ZSt25__unguarded_linear_insertIPmEvT_
+    {standard input}:544    .text._ZSt16__insertion_sortIPmEvT_S1_:00000000 $t
+    {standard input}:549    .text._ZSt16__insertion_sortIPmEvT_S1_:00000000 _ZSt16__insertion_sortIPmEvT_S1_
+    {standard input}:635    .text._ZSt22__final_insertion_sortIPmEvT_S1_:00000000 $t
+    {standard input}:640    .text._ZSt22__final_insertion_sortIPmEvT_S1_:00000000 _ZSt22__final_insertion_sortIPmEvT_S1_
+    {standard input}:696    .text._ZSt11__push_heapIPmimEvT_T0_S2_T1_:00000000 $t
+    {standard input}:701    .text._ZSt11__push_heapIPmimEvT_T0_S2_T1_:00000000 _ZSt11__push_heapIPmimEvT_T0_S2_T1_
+    {standard input}:756    .text._ZSt13__adjust_heapIPmimEvT_T0_S2_T1_:00000000 $t
+    {standard input}:761    .text._ZSt13__adjust_heapIPmimEvT_T0_S2_T1_:00000000 _ZSt13__adjust_heapIPmimEvT_T0_S2_T1_
+    {standard input}:848    .text._ZSt9make_heapIPmEvT_S1_:00000000 $t
+    {standard input}:853    .text._ZSt9make_heapIPmEvT_S1_:00000000 _ZSt9make_heapIPmEvT_S1_
+    {standard input}:913    .text._ZSt13__heap_selectIPmEvT_S1_S1_:00000000 $t
+    {standard input}:918    .text._ZSt13__heap_selectIPmEvT_S1_S1_:00000000 _ZSt13__heap_selectIPmEvT_S1_S1_
+    {standard input}:985    .text._ZSt9sort_heapIPmEvT_S1_:00000000 $t
+    {standard input}:990    .text._ZSt9sort_heapIPmEvT_S1_:00000000 _ZSt9sort_heapIPmEvT_S1_
+    {standard input}:1052   .text._ZSt16__introsort_loopIPmiEvT_S1_T0_:00000000 $t
+    {standard input}:1057   .text._ZSt16__introsort_loopIPmiEvT_S1_T0_:00000000 _ZSt16__introsort_loopIPmiEvT_S1_T0_
+    {standard input}:1165   .text._ZN10Thermistor6updateEv:00000000 $t
+    {standard input}:1170   .text._ZN10Thermistor6updateEv:00000000 _ZN10Thermistor6updateEv
+    {standard input}:1348   .bss._ZZN10Thermistor6updateEvE15adc_table_index:00000000 .LANCHOR1
+    {standard input}:1329   .bss._ZZN10Thermistor6updateEvE20adc_previous_samples:00000000 .LANCHOR2
+    {standard input}:1339   .rodata._ZTV10Thermistor:00000000 _ZTV10Thermistor
+    {standard input}:1311   .rodata._ZTV17TemperatureSensor:00000000 $d
     {standard input}:24     .text._ZN17TemperatureSensorD2Ev:00000000 _ZN17TemperatureSensorD1Ev
     {standard input}:71     .text._ZN10ThermistorD2Ev:00000000 _ZN10ThermistorD1Ev
-    {standard input}:239    .text._ZN10ThermistorC2Ehh:00000000 _ZN10ThermistorC1Ehh
-    {standard input}:1324   .bss._ZZN10Thermistor6updateEvE20adc_previous_samples:00000000 $d
-    {standard input}:1328   .bss._ZZN10Thermistor6updateEvE20adc_previous_samples:00000000 _ZZN10Thermistor6updateEvE20adc_previous_samples
-    {standard input}:1331   .rodata._ZTV10Thermistor:00000000 $d
-    {standard input}:1343   .bss._ZZN10Thermistor6updateEvE15adc_table_index:00000000 $d
-    {standard input}:1347   .bss._ZZN10Thermistor6updateEvE15adc_table_index:00000000 _ZZN10Thermistor6updateEvE15adc_table_index
+    {standard input}:224    .text._ZN10ThermistorC2Ehh:00000000 _ZN10ThermistorC1Ehh
+    {standard input}:1328   .bss._ZZN10Thermistor6updateEvE20adc_previous_samples:00000000 $d
+    {standard input}:1332   .bss._ZZN10Thermistor6updateEvE20adc_previous_samples:00000000 _ZZN10Thermistor6updateEvE20adc_previous_samples
+    {standard input}:1335   .rodata._ZTV10Thermistor:00000000 $d
+    {standard input}:1347   .bss._ZZN10Thermistor6updateEvE15adc_table_index:00000000 $d
+    {standard input}:1351   .bss._ZZN10Thermistor6updateEvE15adc_table_index:00000000 _ZZN10Thermistor6updateEvE15adc_table_index
                      .debug_frame:00000010 $d
                            .group:00000000 _ZN17TemperatureSensorD5Ev
                            .group:00000000 _ZN10ThermistorD5Ev
