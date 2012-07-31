@@ -343,7 +343,7 @@ void factoryResetEEPROM() {
 
 //	xprintf("factoryResetEEPROM" " (%s:%d)\n",_F_,_L_);
 	// Default: enstops inverted, Z axis inverted
-	uint8_t endstop_invert = 0b10011111; // all endstops inverted
+	uint8_t endstop_invert = 0b10000000; // all endstops inverted
 
 	uint8_t home_direction = 0b11011; // X,Y Max, Z min  (AB max - to never halt on edge in stepper interface)
 
@@ -472,7 +472,7 @@ void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
 void fullResetEEPROM() {
 	write_ff_to_ram();
 	// axis inversion settings
-	uint8_t axis_invert = 0b10111; // invert XYBZ
+	uint8_t axis_invert = 0b10000; // invert XYBZ
 	setEeprom8(eeprom_offsets::AXIS_INVERSION, axis_invert);
 //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
 	

@@ -272,10 +272,8 @@ namespace planner {
 
 		/// if eeprom has not been initialized. store default values
 		if (eeprom::getEeprom32(eeprom_offsets::TOOLHEAD_OFFSET_SETTINGS, 0xFFFFFFFF) == 0xFFFFFFFF) {
-			xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 			eeprom::storeToolheadToleranceDefaults();
 		}
-		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 		
 		setAxisStepsPerMM(XSTEPS_PER_MM,0);
 		setAxisStepsPerMM(YSTEPS_PER_MM,1);               
@@ -283,16 +281,13 @@ namespace planner {
 		setAxisStepsPerMM(ASTEPS_PER_MM,3);
 		setAxisStepsPerMM(BSTEPS_PER_MM,4);
 
-		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 		// check that acceleration settings have been initialized 
 		// if not, load defaults
 
 		uint8_t accelerationStatus = eeprom::getEeprom8(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::DEFAULTS_FLAG, 0xFF);
 		if(accelerationStatus !=  _BV(ACCELERATION_INIT_BIT)){
-			xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 			eeprom::setDefaultsAcceleration();
 		}
-		xprintf("planner::init" " (%s:%d)\n",_F_,_L_);
 
 		// Master acceleration
 		setAcceleration((int32_t)eeprom::getEeprom16(eeprom_offsets::ACCELERATION_SETTINGS + acceleration_eeprom_offsets::ACCELERATION_RATE_OFFSET, DEFAULT_ACCELERATION));

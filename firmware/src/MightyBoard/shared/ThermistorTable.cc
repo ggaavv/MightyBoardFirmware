@@ -67,7 +67,6 @@ extern "C" {
 };*/
 TempTable const default_therm_table = {
   /* {ADC value Extruder0, temperature} */
-		{	92	,	300	}	,
 		{	105	,	290	}	,
 		{	121	,	280	}	,
 		{	140	,	270	}	,
@@ -121,6 +120,9 @@ inline Entry getEntry(int8_t entryIdx, int8_t which) {
 		// get from progmem
 		rv.adc = default_therm_table[entryIdx].adc;
 		rv.value = default_therm_table[entryIdx].value;
+		xprintf("default_therm_table:%d\n",entryIdx);
+		xprintf("adc:%d\n",rv.adc);
+		xprintf("value:%d\n",rv.value);
 //		xprintf("%d" " (%s:%d)\n",rv.adc,_F_,_L_);
 //		xprintf("%d" " (%s:%d)\n",rv.value,_F_,_L_);
 //		memcpy_P(&rv, (const void*)&(default_therm_table[entryIdx]), sizeof(Entry));
@@ -147,6 +149,9 @@ int16_t thermistorToCelsius(int16_t reading, int8_t table_idx) {
   }
   Entry eb = getEntry(bottom,table_idx);
   Entry et = getEntry(top,table_idx);
+	xprintf("default_therm_table\n\n\n");
+	xprintf("eb:%d\n",eb.value);
+	xprintf("et:%d\n",et.value);
   if (bottom == 0 && reading < eb.adc) {
 	  // out of scale; safety mode
 	  return 255;

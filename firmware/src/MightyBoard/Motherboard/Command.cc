@@ -177,13 +177,13 @@ void clearLineNumber() {
 
 // Handle movement comands -- called from a few places
 static void handleMovementCommand(const uint8_t &command) {
-	xprintf("handleMovementCommand" " (%s:%d)\n",_F_,_L_);
+//	xprintf("handleMovementCommand" " (%s:%d)\n",_F_,_L_);
 	// if we're already moving, check to make sure the buffer isn't full
 	if (/*mode == MOVING && */planner::isBufferFull()) {
 		return; // we'll be back!
 	}
 	if (command == HOST_CMD_QUEUE_POINT_EXT) {
-		xprintf("HOST_CMD_QUEUE_POINT_EXT" " (%s:%d)\n",_F_,_L_);
+//		xprintf("HOST_CMD_QUEUE_POINT_EXT" " (%s:%d)\n",_F_,_L_);
 		// check for completion
 		if (command_buffer.getLength() >= 25) {
 			Motherboard::getBoard().resetUserInputTimeout();
@@ -203,7 +203,7 @@ static void handleMovementCommand(const uint8_t &command) {
 		}
 	}
 	 else if (command == HOST_CMD_QUEUE_POINT_NEW) {
-		xprintf("HOST_CMD_QUEUE_POINT_NEW" " (%s:%d)\n",_F_,_L_);
+//		xprintf("HOST_CMD_QUEUE_POINT_NEW" " (%s:%d)\n",_F_,_L_);
 		// check for completion
 		if (command_buffer.getLength() >= 26) {
 			Motherboard::getBoard().resetUserInputTimeout();

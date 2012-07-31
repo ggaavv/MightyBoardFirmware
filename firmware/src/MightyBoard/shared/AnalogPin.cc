@@ -99,7 +99,6 @@ volatile bool* adc_finished; //< Flag to set once the data is sampled
 
 void initAnalogPin(uint8_t pin) {
 	xprintf("initAnalogPin pin:%d" " (%s:%d)\n",pin,_F_,_L_);
-	xprintf("pin-23:%d" " (%s:%d)\n",pin-23,_F_,_L_);
             // Analog pins are on ports F and K
 //            if (pin < 8) {
 //                    DDRF &= ~(_BV(pin));
@@ -206,6 +205,7 @@ void initAnalogPin(uint8_t pin) {
             ADC_IntConfig(LPC_ADC,ADC_ADINTEN3,DISABLE);
             ADC_ChannelCmd(LPC_ADC,ADC_CHANNEL_3,DISABLE);
     		*adc_destination = ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3);
+//    		xprintf("ADC3:%d\n",ADC_ChannelGetData(LPC_ADC,ADC_CHANNEL_3));
     	}
     	NVIC_DisableIRQ(ADC_IRQn);
     	*adc_finished = true;

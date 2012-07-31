@@ -106,7 +106,7 @@ void Motherboard::initClocks(){
 	TIM_TIMERCFG_Type TMR0_Cfg;
 	TIM_MATCHCFG_Type TMR0_Match;
 	TMR0_Cfg.PrescaleOption = TIM_PRESCALE_USVAL;
-	TMR0_Cfg.PrescaleValue = 30;
+	TMR0_Cfg.PrescaleValue = 1;
 	TMR0_Match.MatchChannel = TIM_MR0_INT;
 	TMR0_Match.IntOnMatch = ENABLE;
 	TMR0_Match.ResetOnMatch = ENABLE;

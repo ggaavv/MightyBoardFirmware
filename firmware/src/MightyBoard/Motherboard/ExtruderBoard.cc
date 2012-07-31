@@ -51,7 +51,7 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
 
 
 void ExtruderBoard::reset() {
-	xprintf("ExtruderBoard::reset()" " (%s:%d)\n",_F_,_L_);
+//	xprintf("ExtruderBoard::reset()" " (%s:%d)\n",_F_,_L_);
 	// Set the output mode for the mosfets.  
 	Heater_Pin.setValue(false);
 	Heater_Pin.setDirection(true);

@@ -39,9 +39,9 @@ Thermistor::Thermistor(uint8_t analog_pin_in, uint8_t table_index_in) :
     table_index(table_index_in)
 {
 	  if (analog_pin==0)
-		  analog_pin = 26;
-	  if (analog_pin==1)
 		  analog_pin = 25;
+	  if (analog_pin==1)
+		  analog_pin = 26;
         for (int i = 0; i < SAMPLE_COUNT; i++) {
             sample_buffer[i] = 0;
         }
@@ -107,5 +107,8 @@ Thermistor::SensorState Thermistor::update() {
 
 	//current_temp = thermistorToCelsius(avg,table_index);
 	current_temp = thermistorToCelsius(temp,table_index);
+
+	xprintf("current_temp:%d\n",temp);
+
 	return SS_OK;
 }

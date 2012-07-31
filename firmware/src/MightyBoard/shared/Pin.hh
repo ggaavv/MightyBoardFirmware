@@ -27,7 +27,7 @@ public:
 	bool /*Pin::*/getValue() const {
 		if (is_null)
 			return false; // null pin is always low ... ?
-		return ((uint8_t)(FIO_ReadValue(port_base) & _BV(pin_index))?1:0);
+		return (FIO_ReadValue(port_base) & _BV(pin_index)?1:0);
 //		return (uint8_t)((uint8_t)PINx & (uint8_t)pin_mask) != 0;
 	};
 
