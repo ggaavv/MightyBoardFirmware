@@ -66,8 +66,8 @@ Motherboard::Motherboard() :
             platform_heater(platform_thermistor,platform_element,SAMPLE_INTERVAL_MICROS_THERMISTOR,
             		eeprom_offsets::T0_DATA_BASE + toolhead_eeprom_offsets::HBP_PID_BASE, false), //TRICKY: HBP is only and anways on T0 for this machine
 			using_platform(false),
-			Extruder_One(0, EX1_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
-			Extruder_Two(1, EX2_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE),
+			Extruder_One(1, EX2_PWR, EX1_FAN, THERMOCOUPLE_CS1,eeprom_offsets::T0_DATA_BASE),
+			Extruder_Two(0, EX1_PWR, EX2_FAN, THERMOCOUPLE_CS2,eeprom_offsets::T1_DATA_BASE),
 			hasInterfaceBoard(0)
 {
 }
@@ -170,7 +170,7 @@ void Motherboard::initClocks(){
 	PWM_TIMERCFG_Type PWMCfgDat;
 	PWM_MATCHCFG_Type PWMMatchCfgDat;
 	PWMCfgDat.PrescaleOption = PWM_TIMER_PRESCALE_USVAL;
-	PWMCfgDat.PrescaleValue = 1000;
+	PWMCfgDat.PrescaleValue = 5000;
 	PWM_Init(LPC_PWM1, PWM_MODE_TIMER, &PWMCfgDat);
 	PWMMatchCfgDat.MatchChannel = 0;
 	PWMMatchCfgDat.IntOnMatch = DISABLE;
@@ -178,26 +178,26 @@ void Motherboard::initClocks(){
 	PWMMatchCfgDat.StopOnMatch = DISABLE;
 	PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
 	PWM_ResetCounter(LPC_PWM1);
-	PWM_MatchUpdate(LPC_PWM1, 0, 500, PWM_MATCH_UPDATE_NOW);
+	PWM_MatchUpdate(LPC_PWM1, 0, 256, PWM_MATCH_UPDATE_NOW);
 	PINSEL_CFG_Type PinCfg;
 
 	// reset and configure timer 1, the Extruder Two PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	PinCfg.Funcnum = 1;
-	PinCfg.OpenDrain = 0;
-	PinCfg.Pinmode = 0;
+	PinCfg.Funcnum = PINSEL_FUNC_1;
+	PinCfg.OpenDrain = PINSEL_PINMODE_NORMAL;
+	PinCfg.Pinmode = PINSEL_PINMODE_TRISTATE;
 	PinCfg.Portnum = 2;
 	PinCfg.Pinnum = 3;
 	PINSEL_ConfigPin(&PinCfg);
 	PWM_ChannelConfig(LPC_PWM1, 4, PWM_CHANNEL_SINGLE_EDGE);
-	PWM_MatchUpdate(LPC_PWM1, 4, 250, PWM_MATCH_UPDATE_NOW);
+	PWM_MatchUpdate(LPC_PWM1, 4, 128, PWM_MATCH_UPDATE_NOW);
 	PWMMatchCfgDat.MatchChannel = 4;
 	PWMMatchCfgDat.IntOnMatch = DISABLE;
 	PWMMatchCfgDat.ResetOnMatch = ENABLE;
 	PWMMatchCfgDat.StopOnMatch = DISABLE;
 	PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
-	PWM_ChannelCmd(LPC_PWM1, 4, ENABLE);
+//	PWM_ChannelCmd(LPC_PWM1, 4, ENABLE);
 //	TCCR1A = 0b00000001;
 //	TCCR1B = 0b00001011; /// set to PWM mode
 //	OCR1A = 0;
@@ -207,20 +207,20 @@ void Motherboard::initClocks(){
 	// reset and configure timer 2, the Extruder One PWM timer
 	// Mode: Fast PWM with TOP=0xFF (8bit) (WGM3:0 = 0101), cycle freq= 976 Hz
 	// Prescaler: 1/64 (250 KHz)
-	PinCfg.Funcnum = 1;
-	PinCfg.OpenDrain = 0;
-	PinCfg.Pinmode = 0;
+	PinCfg.Funcnum = PINSEL_FUNC_1;
+	PinCfg.OpenDrain = PINSEL_PINMODE_NORMAL;
+	PinCfg.Pinmode = PINSEL_PINMODE_TRISTATE;
 	PinCfg.Portnum = 2;
 	PinCfg.Pinnum = 4;
 	PINSEL_ConfigPin(&PinCfg);
 	PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
 	PWM_ChannelConfig(LPC_PWM1, 5, PWM_CHANNEL_SINGLE_EDGE);
-	PWM_MatchUpdate(LPC_PWM1, 5, 250, PWM_MATCH_UPDATE_NOW);
+	PWM_MatchUpdate(LPC_PWM1, 5, 128, PWM_MATCH_UPDATE_NOW);
 	PWMMatchCfgDat.MatchChannel = 5;
 	PWMMatchCfgDat.IntOnMatch = DISABLE;
 	PWMMatchCfgDat.ResetOnMatch = ENABLE;
 	PWMMatchCfgDat.StopOnMatch = DISABLE;
-	PWM_ChannelCmd(LPC_PWM1, 5, ENABLE);
+//	PWM_ChannelCmd(LPC_PWM1, 5, ENABLE);
 //	TCCR4A = 0b00000001;
 //	TCCR4B = 0b00001011; /// set to PWM mode
 //	OCR4A = 0;
@@ -239,7 +239,8 @@ enum stagger_timers{
 	STAGGER_MID,
 	STAGGER_EX2,
 	STAGGER_EX1
-}stagger = STAGGER_INTERFACE;
+}stagger = STAGGER_MID;
+//}stagger = STAGGER_INTERFACE;
 
 /// Reset the motherboard to its initial state.
 /// This only resets the board, and does not send a reset
@@ -265,7 +266,6 @@ void Motherboard::reset(bool hard_reset) {
 	UART::getHostUART().in.reset();
 	
 	micros = 0;
-	stagger = STAGGER_MID;
 	
 	initClocks();
 		
@@ -310,7 +310,7 @@ void Motherboard::reset(bool hard_reset) {
     if(hard_reset)
 	{
 		// Configure the debug pins.
-		DEBUG_LED1.setDirection(true);
+/*		DEBUG_LED1.setDirection(true);
 		DEBUG_LED2.setDirection(true);
 		DEBUG_LED3.setDirection(true);
 		DEBUG_LED4.setDirection(true);
@@ -321,7 +321,7 @@ void Motherboard::reset(bool hard_reset) {
 		DEBUG_PIN4.setDirection(true);
 		DEBUG_PIN5.setDirection(true);
 		DEBUG_PIN6.setDirection(true);
-		DEBUG_PIN7.setDirection(true);
+		DEBUG_PIN7.setDirection(true);*/
 		
 		RGB_LED::init();
 		
@@ -674,7 +674,7 @@ extern "C" void TIMER2_IRQHandler (void){
 	TIM_ClearIntPending(LPC_TIM2,TIM_MR0_INT);
 	
 	Motherboard::getBoard().UpdateMicros();
-	DEBUG_LED2.setValue(false);
+//	DEBUG_LED2.setValue(false);
 	
 	if(blink_overflow_counter++ <= 0x080)
 			return;
@@ -785,23 +785,21 @@ void BuildPlatformHeatingElement::setHeatingElement(uint8_t value) {
 //	}
 }
 
-/*
+
 extern "C" void HardFault_Handler (void){
 	__ASM("TST LR, #4");
 	__ASM("ITE EQ");
 	__ASM("MRSEQ R0, MSP");
 	__ASM("MRSNE R0, PSP");
 	__ASM("B hard_fault_handler_c");
-}
+//}
 	xprintf("HardFault_Handler" " (%s:%d)\n",_F_,_L_);
-	DEBUG_LED3.setDirection(true);
-	DEBUG_LED3.setValue(true);
 	_delay_ms(1);
 	NVIC_DisableIRQ(WDT_IRQn);
 	xprintf("WDT_IRQHandler" " (%s:%d)\n",_F_,_L_);
 	SCB->VTOR = (0x00000000 & 0x1FFFFF80);
 	RTC_WriteGPREG(LPC_RTC, 2, 0xbbbbbbbb);
-	WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET);
-	WDT_Start(1);
+//	WDT_Init (WDT_CLKSRC_PCLK, WDT_MODE_RESET);
+//	WDT_Start(1);
 	NVIC_EnableIRQ(WDT_IRQn);
-}*/
+}

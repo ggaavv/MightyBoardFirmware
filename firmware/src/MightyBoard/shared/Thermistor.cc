@@ -53,7 +53,7 @@ void Thermistor::init() {
 }
 
 Thermistor::SensorState Thermistor::update() {
-//	xprintf("Thermistor::SensorState Thermistor::update()" "\n",analog_pin);
+//	xprintf("Thermistor::SensorState Thermistor::update() %d" "\n",analog_pin);
 	int16_t temp;
 	bool valid;
 
@@ -73,8 +73,8 @@ Thermistor::SensorState Thermistor::update() {
 	// If we haven't gotten data yet, return.
 	if (!valid) return SS_ADC_WAITING;
 
-//	sample_buffer[next_sample] = temp;
-//	next_sample = (next_sample+1) % SAMPLE_COUNT;
+	sample_buffer[next_sample] = temp;
+	next_sample = (next_sample+1) % SAMPLE_COUNT;
 
 	// average
 //	int16_t cumulative = 0;
@@ -82,18 +82,17 @@ Thermistor::SensorState Thermistor::update() {
 //		cumulative += sample_buffer[i];
 //	}
 
-	// my filter
+	// my filter sorting
 	uint32_t sort_table[SAMPLE_COUNT];
-	static uint32_t adc_table_index = 0;
-	static uint32_t adc_previous_samples[SAMPLE_COUNT];
-	adc_previous_samples[adc_table_index]=raw_value;
-	adc_table_index++;
-	if (adc_table_index==SAMPLE_COUNT)
-		adc_table_index=0;
+	sample_buffer[next_sample]=raw_value;
 	for (uint8_t i=0;i<SAMPLE_COUNT;i++)
-		sort_table[i]=adc_previous_samples[i];
+		sort_table[i]=sample_buffer[i];
 	std::sort(sort_table, sort_table+SAMPLE_COUNT);
 	temp = sort_table[4];
+
+//	for (uint8_t i=0;i<9;i++){
+//		xprintf("i:%d sample_buffer[%d]:%d\n",i,i,sample_buffer[i]);
+//	}
 
 	// TODO: The raw_value appears to be 0 the first time this loop is run,
 	//       which causes this failsafe to trigger unnecessarily. Disabling
@@ -108,7 +107,7 @@ Thermistor::SensorState Thermistor::update() {
 	//current_temp = thermistorToCelsius(avg,table_index);
 	current_temp = thermistorToCelsius(temp,table_index);
 
-	xprintf("current_temp:%d\n",temp);
+//	xprintf("current_temp:%d\n",temp);
 
 	return SS_OK;
 }

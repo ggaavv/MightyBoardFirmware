@@ -235,7 +235,7 @@ bool processExtruderCommandPacket() {
 		switch (command) {
 		case SLAVE_CMD_SET_TEMP:
 //			xprintf("SLAVE_CMD_SET_TEMP" " (%s:%d)\n",_F_,_L_);
-			board.getPlatformHeater().set_target_temperature(pop16());
+			board.getExtruderBoard(id).getExtruderHeater().set_target_temperature(pop16());
 			/// if platform is actively heating and extruder is not cooling down, pause extruder
 			if(board.getPlatformHeater().isHeating() && !board.getPlatformHeater().isCooling() && !board.getExtruderBoard(id).getExtruderHeater().isCooling()){
 				check_temp_state = true;

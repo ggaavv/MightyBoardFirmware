@@ -173,13 +173,14 @@ static uint8_t sd_raw_send_command(uint8_t command, uint32_t arg);
 uint8_t sd_raw_init()
 {
     /* enable inputs for reading card status */
-    configure_pin_available();
-    configure_pin_locked();
+//    configure_pin_available();
+//    configure_pin_locked();
 
     /* enable outputs for MOSI, SCK, SS, input for MISO */
+    configure_pin_detect();
+    configure_pin_select();
     configure_pin_mosi();
     configure_pin_sck();
-    configure_pin_ss();
     configure_pin_miso();
 
     unselect_card();
@@ -190,7 +191,7 @@ uint8_t sd_raw_init()
     spi_cfg.CPOL = SPI_CPOL_HI;
     spi_cfg.Mode = SPI_MASTER_MODE;
     spi_cfg.DataOrder = SPI_DATA_MSB_FIRST;
-    spi_cfg.ClockRate = 50000000/128;
+    spi_cfg.ClockRate = 400000;
 
     SPI_Init((LPC_SPI_TypeDef *)LPC_SPI, &spi_cfg);
 

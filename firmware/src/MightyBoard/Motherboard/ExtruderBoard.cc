@@ -51,7 +51,7 @@ ExtruderBoard::ExtruderBoard(uint8_t slave_id_in, Pin HeaterPin_In, Pin FanPin_I
 
 
 void ExtruderBoard::reset() {
-//	xprintf("ExtruderBoard::reset()" " (%s:%d)\n",_F_,_L_);
+	xprintf("ExtruderBoard::reset()" " (%s:%d)\n",_F_,_L_);
 	// Set the output mode for the mosfets.  
 	Heater_Pin.setValue(false);
 	Heater_Pin.setDirection(true);
@@ -66,7 +66,6 @@ void ExtruderBoard::reset() {
 void ExtruderBoard::runExtruderSlice() {
         extruder_heater.manage_temperature();
         coolingFan.manageCoolingFan();
-
 }
 
 void ExtruderBoard::setFan(uint8_t on)
@@ -81,11 +80,11 @@ void ExtruderBoard::setFan(uint8_t on)
 void pwmEx2_On(bool on) {
 	if (on) {
 		PWM_ChannelCmd(LPC_PWM1, 4, ENABLE);
-//		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, ENABLE)" " (%s:%d)\n",_F_,_L_);
+		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, ENABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR1A |= 0b10000000;
 	} else {
 		PWM_ChannelCmd(LPC_PWM1, 4, DISABLE);
-//		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, DISABLE)" " (%s:%d)\n",_F_,_L_);
+		xprintf("PWM_ChannelCmd(LPC_PWM1, 4, DISABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR1A &= 0b00111111;
 	}
 }
@@ -94,11 +93,11 @@ void pwmEx2_On(bool on) {
 void pwmEx1_On(bool on) {
 	if (on) {
 		PWM_ChannelCmd(LPC_PWM1, 5, ENABLE);
-//		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, ENABLE)" " (%s:%d)\n",_F_,_L_);
+		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, ENABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR4A |= 0b10000000;
 	} else {
 		PWM_ChannelCmd(LPC_PWM1, 5, DISABLE);
-//		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, DISABLE)" " (%s:%d)\n",_F_,_L_);
+		xprintf("PWM_ChannelCmd(LPC_PWM1, 5, DISABLE)" " (%s:%d)\n",_F_,_L_);
 //		TCCR4A &= 0b00111111;
 	} 
 }
@@ -109,19 +108,17 @@ ExtruderHeatingElement::ExtruderHeatingElement(uint8_t id):
 }
 
 void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
-	
-	
 //  	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 	   if(heater_id == 0)
 	   { 
      		if (value == 0 || value == 255) {
 			pwmEx1_On(false);
 			EX1_PWR.setValue(value == 255);
+//			xprintf("PWM1 value:%d" " (%s:%d)\n",value,_F_,_L_);
 			} else {
+				PWM_MatchUpdate(LPC_PWM1, 4, value, PWM_MATCH_UPDATE_NOW);
 //				OCR4A = value;
 				pwmEx1_On(true);
-				
-				
 			}
 		}
 		else if(heater_id == 1)
@@ -129,8 +126,9 @@ void ExtruderHeatingElement::setHeatingElement(uint8_t value) {
      		if (value == 0 || value == 255) {
 			pwmEx2_On(false);
 			EX2_PWR.setValue(value == 255);
-			
+//			xprintf("PWM2 value:%d" " (%s:%d)\n",value,_F_,_L_);
 			} else {
+				PWM_MatchUpdate(LPC_PWM1, 5, value, PWM_MATCH_UPDATE_NOW);
 //				OCR1A = value;
 				pwmEx2_On(true);
 			}

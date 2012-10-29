@@ -44,10 +44,10 @@
 
 
 //		LPCMini LED's
-#define DEBUG_LED1 Pin(Port1,18)
-#define DEBUG_LED2 Pin(Port1,20)
-#define DEBUG_LED3 Pin(Port1,21)
-#define DEBUG_LED4 Pin(Port1,23)
+//#define DEBUG_LED1 Pin(Port1,18)
+//#define DEBUG_LED2 Pin(Port1,20)
+//#define DEBUG_LED3 Pin(Port1,21)
+//#define DEBUG_LED4 Pin(Port1,23)
 
 // Define as 1 if and SD card slot is present; 0 if not.
 #define HAS_SD          1
@@ -239,8 +239,8 @@
 #define PLATFORM_PIN            24
 
 /// POWER Pins for extruders, fans and heated build platform
-#define EX1_PWR	                Pin(Port2,4) // OC4A
-#define EX2_PWR	                Pin(Port2,3) // OC1A
+#define EX1_PWR	                Pin(Port2,3) // OC4A
+#define EX2_PWR	                Pin(Port2,4) // OC1A
 #define EX1_FAN                 Pin(NULL_PORT,NULL_PORT) // EX1_FAN
 #define HBP_HEAT                Pin(NULL_PORT,NULL_PORT) // OC5B
 #define EX2_FAN                 Pin(NULL_PORT,NULL_PORT)

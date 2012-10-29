@@ -77,8 +77,8 @@ void save_to_flash (void) {
 	xprintf("save_to_flash" " (%s:%d)\n",_F_,_L_);
 	__disable_irq ();
 	IAP in_ap_prog;
-//	int error_code_ret = in_ap_prog.erase(USER_FLASH_AREA_START, USER_FLASH_AREA_START);
-//	error_code_ret = in_ap_prog.write((char)0x10007000, (char)USER_FLASH_AREA_START, (int)USER_FLASH_AREA_SIZE );
+	int error_code_ret = in_ap_prog.erase(USER_FLASH_AREA_START, USER_FLASH_AREA_START);
+	error_code_ret = in_ap_prog.write((char)0x10007000, (char)USER_FLASH_AREA_START, (int)USER_FLASH_AREA_SIZE );
 	// read all variables back into Ram
 	__enable_irq ();
 	clearflashupdate();
@@ -351,7 +351,7 @@ void factoryResetEEPROM() {
 	uint16_t vidPid[] = {0x23C1, 0xB404};		/// PID/VID for the MightyBoard!
 
 	/// Write 'MainBoard' settings
-	char machine_name_in[] = "The Replicator";
+	char machine_name_in[] = "Reprap Poly";
 	for (uint8_t i=0;i<16;i++){
 		setEeprom8(eeprom_offsets::MACHINE_NAME+i, machine_name_in[i]);
 //		xprintf("%x %c" " (%s:%d)\n",EEPROM_START_ADDRESS + (eeprom_offsets::MACHINE_NAME+i)*4,eeprom_address(EEPROM_START_ADDRESS, eeprom_offsets::MACHINE_NAME+i),_F_,_L_);
@@ -470,9 +470,9 @@ void updateBuildTime(uint8_t new_hours, uint8_t new_minutes){
 
 /// Initialize entire eeprom map, including factor-set settings
 void fullResetEEPROM() {
-	write_ff_to_ram();
+//	write_ff_to_ram();
 	// axis inversion settings
-	uint8_t axis_invert = 0b10000; // invert XYBZ
+	uint8_t axis_invert = 0b11000; // invert XYBZ
 	setEeprom8(eeprom_offsets::AXIS_INVERSION, axis_invert);
 //	eeprom_write_byte((uint8_t*)eeprom_offsets::AXIS_INVERSION, axis_invert);
 	

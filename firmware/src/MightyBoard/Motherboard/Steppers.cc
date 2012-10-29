@@ -157,6 +157,7 @@ void InitPins(){
 #if STEPPER_COUNT > 3	
 	A_STEP_PIN.setDirection(true);
 	A_DIR_PIN.setDirection(true);
+	A_DIR_PIN.setValue(true);
 	A_ENABLE_PIN.setValue(true);
 	A_ENABLE_PIN.setDirection(true);
 /*		_SET_DIRECTION(A_DIR, true);
@@ -694,12 +695,12 @@ bool SetAccelerationOn(bool on){
 uint8_t getEndstopStatus(){
 
 	uint8_t status = 0;
-	status |= Z_MAX_PIN.getValue() ? 0x20 : 1;
-	status |= Z_MIN_PIN.getValue() ? 0x10 : 1;
-	status |= Y_MAX_PIN.getValue() ? 0x08 : 1;
-	status |= Y_MIN_PIN.getValue() ? 0x04 : 1;
-	status |= X_MAX_PIN.getValue() ? 0x02 : 1;
-	status |= X_MIN_PIN.getValue() ? 0x01 : 1;
+	status |= Z_MAX_PIN.getValue() ? 0x20 : 0;
+	status |= Z_MIN_PIN.getValue() ? 0x10 : 0;
+	status |= Y_MAX_PIN.getValue() ? 0x08 : 0;
+	status |= Y_MIN_PIN.getValue() ? 0x04 : 0;
+	status |= X_MAX_PIN.getValue() ? 0x02 : 0;
+	status |= X_MIN_PIN.getValue() ? 0x01 : 0;
 /*
 	uint8_t status = 0;
 	status |= (_READ(Z_MAX)) ? 0x20 : 0;
@@ -874,7 +875,7 @@ bool doInterrupt() {
 					counter[X_AXIS] += delta[X_AXIS];
 					if (counter[X_AXIS] >= 0) {
 						counter[X_AXIS] -= intervals;
-						bool hit_endstop = direction[X_AXIS] ? !X_MAX_PIN.getValue() : !X_MIN_PIN.getValue();
+						bool hit_endstop = direction[X_AXIS] ? X_MAX_PIN.getValue() : X_MIN_PIN.getValue();
 //						bool hit_endstop = direction[X_AXIS] ? !_READ(X_MAX) : !_READ(X_MIN);
 						if (!hit_endstop) {
 							X_STEP_PIN.setValue(true);
@@ -893,7 +894,7 @@ bool doInterrupt() {
 					counter[Y_AXIS] += delta[Y_AXIS];
 					if (counter[Y_AXIS] >= 0) {
 						counter[Y_AXIS] -= intervals;
-						bool hit_endstop = direction[Y_AXIS] ? !Y_MAX_PIN.getValue() : !Y_MIN_PIN.getValue();
+						bool hit_endstop = direction[Y_AXIS] ? Y_MAX_PIN.getValue() : Y_MIN_PIN.getValue();
 //						bool hit_endstop = direction[Y_AXIS] ? !_READ(Y_MAX) : !_READ(Y_MIN);
 						if (!hit_endstop) {
 							Y_STEP_PIN.setValue(true);
@@ -912,7 +913,7 @@ bool doInterrupt() {
 					counter[Z_AXIS] += delta[Z_AXIS];
 					if (counter[Z_AXIS] >= 0) {
 						counter[Z_AXIS] -= intervals;
-						bool hit_endstop = direction[Z_AXIS] ? !Z_MAX_PIN.getValue() : !Z_MIN_PIN.getValue();
+						bool hit_endstop = direction[Z_AXIS] ? Z_MAX_PIN.getValue() : Z_MIN_PIN.getValue();
 //						bool hit_endstop = direction[Z_AXIS] ? !_READ(Z_MAX) : !_READ(Z_MIN);
 						if (!hit_endstop) {
 							Z_STEP_PIN.setValue(true);

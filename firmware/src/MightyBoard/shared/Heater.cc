@@ -220,7 +220,6 @@ int16_t Heater::getDelta(){
 
 
 void Heater::manage_temperature() {
-//	xprintf("manage_temperature" " (%s:%d)\n",_F_,_L_);
 	if (next_sense_timeout.hasElapsed()) {
 		next_sense_timeout.start(sample_interval_micros);
 		switch (sensor.update()) {
@@ -247,7 +246,6 @@ void Heater::manage_temperature() {
 			return;
 			break;
 		}
-
 		current_temperature = sensor.getTemperature();
 		
 		if (!is_paused){
@@ -326,7 +324,6 @@ void Heater::manage_temperature() {
 			if (mv >255) { mv = 255; }
 			if (pid.getTarget() == 0) { mv = 0; }
 			set_output(mv);
-				
 		}
 	}
 }

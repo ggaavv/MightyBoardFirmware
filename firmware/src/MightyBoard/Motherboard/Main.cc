@@ -146,7 +146,7 @@ int main() {
 	comm_flush();
 	xprintf("\r\n\r\n\r\n\r\n\r\n**BOOTED**" " (%s:%d)\n",_F_,_L_);
 	if(0){
-		DEBUG_LED1.setDirection(true);
+/*		DEBUG_LED1.setDirection(true);
 		DEBUG_LED2.setDirection(true);
 		DEBUG_LED3.setDirection(true);
 		DEBUG_LED4.setDirection(true);
@@ -165,7 +165,7 @@ int main() {
 			DEBUG_LED4.setValue(true);
 			xprintf("after A_DIR_PIN.setValue(true);" " (%s:%d)\n",_F_,_L_);
 			_delay_us(10000);
-//		}
+//		}*/
 	}
 
 	Motherboard& board = Motherboard::getBoard();
